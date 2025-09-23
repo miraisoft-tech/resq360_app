@@ -1,0 +1,9 @@
+appName: resq360
+
+groups:
+  search-groups: Search Groups
+  new-group: New Group
+  mute: Mute
+  search: Search
+  share: Share
+  exit: Exit

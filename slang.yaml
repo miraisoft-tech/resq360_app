@@ -1,0 +1,9 @@
+# For development use. Make sure this mirrors the same config in build.yaml
+base_locale: en
+fallback_strategy: base_locale
+input_directory: lib/i18n
+input_file_pattern: .i18n.yaml
+output_directory: lib/i18n
+string_interpolation: dart
+key_case: camel
+key_map_case: camel
