@@ -6,6 +6,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/theme/app_theme.providers.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
+import 'package:resq360/features/intro/screens/splash_screen.dart';
 
 final container = ProviderContainer();
 Future<void> main() async {
@@ -85,15 +86,15 @@ class _MyAppState extends ConsumerState<MyApp> {
       child: ScreenUtilInit(
         designSize: designSize,
         minTextAdapt: true,
-        child: MaterialApp.router(
+        child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          routerConfig: AppRouter.goRouter,
           theme: themeData,
           // darkTheme: themeData.darkTheme,
           themeMode: themeMode,
           locale: TranslationProvider.of(context).flutterLocale,
           supportedLocales: AppLocaleUtils.supportedLocales,
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          home: const SplashScreen(),
           builder:
               (context, child) => Overlay(
                 initialEntries: [

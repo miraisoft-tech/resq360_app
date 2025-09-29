@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 class AppColorPalette extends ThemeExtension<AppColorPalette> {
   const AppColorPalette({
-    required this.remis,
-    required this.remisLite,
     required this.textColor,
     required this.primary,
     required this.secondary,
@@ -24,60 +22,31 @@ class AppColorPalette extends ThemeExtension<AppColorPalette> {
     required this.black,
   });
   AppColorPalette.light()
-    : remis = const MaterialColor(0xFF006D55, {
-        50: Color(0xFFe6eded), // rgb(230, 237, 237)
-        100: Color(0xFFb0c7c8), // rgb(176, 199, 200)
-        200: Color(0xFF8aacad), // rgb(138, 172, 173)
-        300: Color(0xFF548688), // rgb(84, 134, 136)
-        400: Color(0xFF336f71), // rgb(51, 111, 113)
-        500: Color(0xFF004b4d), // rgb(0, 75, 77)
-        600: Color(0xFF004446), // rgb(0, 68, 70)
-        700: Color(0xFF003537), // rgb(0, 53, 55)
-        800: Color(0xFF00292a), // rgb(0, 41, 42)
-        900: Color(0xFF002020), // rgb(0, 32, 32)
+    : textColor = const MaterialColor(0xFF656983, {
+        50: Color(0xFFedeeef),
+        100: Color(0xFFe4e6e8),
+        200: Color(0xFFc7cacf),
+        300: Color(0xFF4b5563),
+        400: Color(0xFF444d59),
+        500: Color(0xFF3c444f),
+        600: Color(0xFF38404a),
+        700: Color(0xFF2d333b),
+        800: Color(0xFF22262d),
+        900: Color(0xFF1a1e23),
       }),
-
-      remisLite = const MaterialColor(0xFF00635C, {
-        50: Color(0xFFE0EFED), // rgb(248, 252, 252)
-        100: Color(0xFFe8f4f4), // rgb(232, 244, 244)
-        200: Color(0xFFddefef), // rgb(221, 239, 239)
-        300: Color(0xFFcde8e8), // rgb(205, 232, 232)
-        400: Color(0xFFc3e3e4), // rgb(195, 227, 228)
-        500: Color(0xFFb4dcdd), // rgb(180, 220, 221)
-        600: Color(0xFFa4c8c9), // rgb(164, 200, 201)
-        700: Color(0xFF809c9d), // rgb(128, 156, 157)
-        800: Color(0xFF63797a), // rgb(99, 121, 122)
-        900: Color(0xFF4c5c5d), // rgb(76, 92, 93)
-      }),
-      textColor = const MaterialColor(0xFF656983, {
-        // Light variants
-        50: Color(0xFFedeeef), // White (Light)
-        100: Color(0xFFe4e6e8), // Light :hover
-        200: Color(0xFFc7cacf), // Light :active
-        // Normal variants
-        300: Color(0xFF4b5563), // Normal
-        400: Color(0xFF444d59), // Normal :hover
-        500: Color(0xFF3c444f), // Normal :active
-        // Dark variants
-        600: Color(0xFF38404a), // Dark
-        700: Color(0xFF2d333b), // Dark :hover
-        800: Color(0xFF22262d), // Dark :active
-        // Darker
-        900: Color(0xFF1a1e23), // Darker
-      }),
-      primary = const MaterialColor(0xFF000D3B, {
-        50: Color(0xFFE5EBFF),
-        100: Color(0xFFCCD7FF),
-        200: Color(0xFF99AFFF),
-        300: Color(0xFF6687FF),
-        400: Color(0xFF335FFF),
-        500: Color(0xFF000D3B),
-        550: Color(0xFF061341),
-        600: Color(0xFF002CCC),
-        700: Color(0xFF002199),
-        800: Color(0xFF001666),
-        900: Color(0xFF000B33),
-        950: Color(0xFF00061A),
+      primary = const MaterialColor(0xFFE8683B, {
+        50: Color(0xFFFDF4F0),
+        100: Color(0xFFFAE7DC),
+        200: Color(0xFFF5CFB9),
+        300: Color(0xFFF0B796),
+        400: Color(0xFFEC9F73),
+        500: Color(0xFFE8683B),
+        550: Color(0xFFE55D2E),
+        600: Color(0xFFD24A1F),
+        700: Color(0xFFB73D17),
+        800: Color(0xFF9C300F),
+        900: Color(0xFF812307),
+        950: Color(0xFF4A1504),
       }),
 
       secondary = const MaterialColor(0xFFE41A3C, {
@@ -160,19 +129,19 @@ class AppColorPalette extends ThemeExtension<AppColorPalette> {
       black = const Color(0xff000000);
 
   AppColorPalette.dark()
-    : primary = const MaterialColor(0xFF000D3B, {
-        50: Color(0xFFE5EBFF),
-        100: Color(0xFFCCD7FF),
-        200: Color(0xFF99AFFF),
-        300: Color(0xFF6687FF),
-        400: Color(0xFF335FFF),
-        500: Color(0xFF000D3B),
-        550: Color(0xFF061341),
-        600: Color(0xFF002CCC),
-        700: Color(0xFF002199),
-        800: Color(0xFF001666),
-        900: Color(0xFF000B33),
-        950: Color(0xFF00061A),
+    : primary = const MaterialColor(0xFFE8683B, {
+        50: Color(0xFFFDF4F0),
+        100: Color(0xFFFAE7DC),
+        200: Color(0xFFF5CFB9),
+        300: Color(0xFFF0B796),
+        400: Color(0xFFEC9F73),
+        500: Color(0xFFE8683B),
+        550: Color(0xFFE55D2E),
+        600: Color(0xFFD24A1F),
+        700: Color(0xFFB73D17),
+        800: Color(0xFF9C300F),
+        900: Color(0xFF812307),
+        950: Color(0xFF4A1504),
       }),
 
       secondary = const MaterialColor(0xFFE41A3C, {
@@ -244,7 +213,7 @@ class AppColorPalette extends ThemeExtension<AppColorPalette> {
       }),
       scaffoldBackgroundColor = const Color(0xffF6F4F0),
       black = const Color(0xff000000),
-      whiteColor = Colors.white,
+      whiteColor = const Color(0xffFFFFFF),
       lightGreyColor = const Color(0xFFF2F2F3),
       lightGreyColor2 = const Color(0xFFE5E5E6),
       lightGreyColor3 = const Color(0xFFCACACE),
@@ -253,20 +222,9 @@ class AppColorPalette extends ThemeExtension<AppColorPalette> {
       greyColor3 = const Color(0xFF98959D),
       greyColor4 = const Color(0xFF58585F),
       darkGreyColor = const Color(0xFF19191A),
-      remis = const MaterialColor(0xFF006D55, {
-        // Dark theme values
-      }),
-      remisLite = const MaterialColor(0xFF00635C, {
-        // Dark theme values
-      }),
-      textColor = const MaterialColor(0xFF656983, {
-        // Dark theme values
-      });
+      textColor = const MaterialColor(0xFF656983, {});
 
-  final MaterialColor remis;
-  final MaterialColor remisLite;
   final MaterialColor textColor;
-  //
   final MaterialColor primary;
   final MaterialColor secondary;
   final MaterialColor neutral;
@@ -312,8 +270,6 @@ class AppColorPalette extends ThemeExtension<AppColorPalette> {
     Color? black,
   }) {
     return AppColorPalette(
-      remis: remis ?? this.remis,
-      remisLite: remisLite ?? this.remisLite,
       textColor: textColor ?? this.textColor,
       primary: primary ?? this.primary,
       secondary: secondary ?? this.secondary,
@@ -346,8 +302,6 @@ class AppColorPalette extends ThemeExtension<AppColorPalette> {
     }
 
     return AppColorPalette(
-      remis: remis,
-      remisLite: remisLite,
       textColor: textColor,
       primary: primary,
       secondary: secondary,

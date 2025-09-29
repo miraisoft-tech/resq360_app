@@ -1,5 +1,6 @@
 export 'buttons.widgets.dart';
 export 'dialogs/dialogs.dart';
+export 'dot_indicator.dart';
 export 'filter_widget.dart';
 export 'general_container.dart';
 export 'inputs/__inputs.dart';

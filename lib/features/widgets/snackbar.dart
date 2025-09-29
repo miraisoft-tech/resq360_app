@@ -171,7 +171,7 @@ class _AnimatedColorSpinKitState extends State<AnimatedColorSpinKit>
 
     _colorAnimation = ColorTween(
       begin: Colors.white,
-      end: context.appColors.remis.shade500,
+      end: context.appColors.primary.shade500,
     ).animate(_controller);
   }
 
@@ -203,7 +203,7 @@ class LoadingDialogState extends State<LoadingDialogWidget> {
   @override
   Widget build(BuildContext context) {
     return SpinKitFadingCircle(
-      color: context.appColors.remis.shade600,
+      color: context.appColors.primary.shade600,
       size: 40,
     );
   }

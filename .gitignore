@@ -46,3 +46,10 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+
+*.g.dart
+**/*.g.dart
+/lib/gen/
+
+/lib/**.g.dart

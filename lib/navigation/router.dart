@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:resq360/core/utils/build_config.dart';
-import 'package:resq360/features/authentication/screens/splash_screen.dart';
+import 'package:resq360/features/intro/screens/splash_screen.dart';
 
 part 'auth_routes.dart';
 part 'intro_routes.dart';

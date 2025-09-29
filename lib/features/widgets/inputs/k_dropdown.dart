@@ -148,7 +148,7 @@ class _CustomDropdownButtonState extends ConsumerState<KDropDown> {
                 borderSide: BorderSide(
                   color:
                       _focusNode.hasFocus
-                          ? appTheme.remis.shade500
+                          ? appTheme.primary.shade500
                           : appTheme.neutral.shade400,
                 ),
                 borderRadius: BorderRadius.circular(10),

@@ -40,7 +40,7 @@ class GenText extends StatelessWidget {
       textAlign: textAlign,
       overflow: maxLines != null ? TextOverflow.ellipsis : null,
       style: TextStyle(
-        fontFamily: 'mono_sans',
+        fontFamily: 'inter',
         fontWeight: weight ?? FontWeight.w400,
         fontSize: size.sp,
         color: color ?? context.appColors.textColor.shade500,
@@ -54,8 +54,8 @@ class GenText extends StatelessWidget {
   }
 }
 
-class SFText extends ConsumerWidget {
-  const SFText(
+class UrbText extends ConsumerWidget {
+  const UrbText(
     this.text, {
     super.key,
     this.weight,
@@ -85,10 +85,10 @@ class SFText extends ConsumerWidget {
       textAlign: textAlign,
       overflow: maxLines != null ? TextOverflow.ellipsis : null,
       style: TextStyle(
-        fontFamily: 'sfpro',
+        fontFamily: 'urbanist',
         fontWeight: weight ?? FontWeight.w400,
         fontSize: size.sp,
-        color: color ?? context.appColors.remisLite.shade100,
+        color: color ?? context.appColors.primary.shade100,
         decoration: decoration,
         height: height / size,
         fontStyle: fontStyle,
