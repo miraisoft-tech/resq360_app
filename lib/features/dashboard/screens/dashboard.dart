@@ -1,10 +1,10 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/dashboard/screens/service_categories_screen.dart';
-import 'package:resq360/features/dashboard/screens/service_providers_screen.dart';
 import 'package:resq360/features/dashboard/widgets/ongoing_service_widget.dart';
 import 'package:resq360/features/dashboard/widgets/promo_card_widget.dart';
 import 'package:resq360/features/dashboard/widgets/recommended_card_widget.dart';
 import 'package:resq360/features/dashboard/widgets/service_category_widget.dart';
+import 'package:resq360/features/services/screens/service_categories_screen.dart';
+import 'package:resq360/features/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 
 class HomeScreen extends StatefulWidget {

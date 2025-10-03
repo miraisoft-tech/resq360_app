@@ -1,6 +1,8 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
+import 'package:resq360/features/bookings/screens/bookings_screen.dart';
 import 'package:resq360/features/dashboard/screens/dashboard.dart';
+import 'package:resq360/features/services/screens/service_categories_screen.dart';
 
 final dashboardViewModel = ChangeNotifierProvider<DashboardViewModel>(
   DashboardViewModel.new,
@@ -36,14 +38,14 @@ class DashboardViewModel extends ChangeNotifier {
       title: 'Home',
     ),
     NavItem(
-      body: const HomeScreen(),
+      body: const ServiceCategoryScreen(),
       selectedImgPath: AppAssets.ASSETS_NAVIGATION_SERVICES_SELECTED_SVG,
       unselectedImgPath: AppAssets.ASSETS_NAVIGATION_SERVICES_UNSELECTED_SVG,
       title: 'Services',
     ),
 
     NavItem(
-      body: const HomeScreen(),
+      body: const BookingsScreen(),
       selectedImgPath: AppAssets.ASSETS_NAVIGATION_BOOKINGS_SELECTED_SVG,
       unselectedImgPath: AppAssets.ASSETS_NAVIGATION_BOOKINGS_UNSELECTED_SVG,
       title: 'Bookings',

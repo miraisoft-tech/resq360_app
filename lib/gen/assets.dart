@@ -8,6 +8,10 @@ class AppAssets {
   static const String ASSETS_ICONS_ADDRES_V_ICON_SVG =
       'assets/icons/addres_v_icon.svg';
 
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/arrow_dropdown.svg)
+  static const String ASSETS_ICONS_ARROW_DROPDOWN_SVG =
+      'assets/icons/arrow_dropdown.svg';
+
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/back_icon.svg)
   static const String ASSETS_ICONS_BACK_ICON_SVG = 'assets/icons/back_icon.svg';
 
@@ -53,6 +57,9 @@ class AppAssets {
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/notification_bell.svg)
   static const String ASSETS_ICONS_NOTIFICATION_BELL_SVG =
       'assets/icons/notification_bell.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/receipt.svg)
+  static const String ASSETS_ICONS_RECEIPT_SVG = 'assets/icons/receipt.svg';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/search.svg)
   static const String ASSETS_ICONS_SEARCH_SVG = 'assets/icons/search.svg';

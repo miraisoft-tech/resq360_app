@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/dashboard/screens/service_provider_details_screen.dart';
+import 'package:resq360/features/services/screens/service_provider_details_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 
 class ServiceProvidersScreen extends StatefulWidget {

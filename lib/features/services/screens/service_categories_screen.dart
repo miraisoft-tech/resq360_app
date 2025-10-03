@@ -55,10 +55,13 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: colors.whiteColor,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.black),
-          onPressed: () => pop(context),
-        ),
+        leading:
+            Navigator.canPop(context)
+                ? IconButton(
+                  icon: Icon(Icons.arrow_back, color: colors.black),
+                  onPressed: () => pop(context),
+                )
+                : null,
         title: UrbText(
           'Service Category',
           size: 22,

@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
             WideButton(
               label: 'Log in',
               onPressed: () async {
-                await pushScreen(
+                await replaceScreen(
                   context,
                   const MainLayoutPage(),
                 );
