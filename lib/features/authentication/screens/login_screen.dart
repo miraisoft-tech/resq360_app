@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/authentication/screens/confirm_email_screen.dart';
 import 'package:resq360/features/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/authentication/screens/forgot_password_screen.dart';
+import 'package:resq360/features/dashboard/main_layout.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -90,9 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () async {
                 await pushScreen(
                   context,
-                  ConfirmEmailScreen(
-                    email: emailController.text,
-                  ),
+                  const MainLayoutPage(),
                 );
               },
             ),
