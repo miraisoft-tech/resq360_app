@@ -1,37 +1,50 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/authentication/data/service/auth.local.repo.dart';
+import 'package:resq360/features/authentication/screens/login_screen.dart';
+import 'package:resq360/features/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/intro/screens/intro_screen.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _goToNext() async {
     try {
+      await ref.read(authProvider).init();
+
+      final isIntroCompleted =
+          await AuthLocalRepo.instance.getIsIntroCompleted();
+
       Future.delayed(const Duration(seconds: 2), () async {
         if (!mounted) return;
 
-        await pushScreen(
-          context,
-          const IntroScreen(),
-        );
-
-        // if (!mounted) return;
-
-        // if (isOnboardingCompleted == false) {
-        // } else if (isIntroCompleted == false) {
-        // } else if (isIntroCompleted == true && (authRef.authInfo != null)) {
-
-        //       : DashboardArtisanRoute().go(context);
-        // } else {}
+        if (!isIntroCompleted) {
+          await replaceScreen(
+            context,
+            const IntroScreen(),
+          );
+        } else if (isIntroCompleted &&
+            (ref.read(authProvider).authInfo != null)) {
+        } else {
+          await replaceScreen(
+            context,
+            const LoginScreen(),
+          );
+        }
       });
     } on Exception catch (e, t) {
       log('e $e, $t');
 
-      if (mounted) {}
+      if (mounted) {
+        await replaceScreen(
+          context,
+          const IntroScreen(),
+        );
+      }
     }
   }
 

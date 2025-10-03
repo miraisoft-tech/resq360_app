@@ -49,5 +49,17 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSCameraUsageDescription</key>
+		<string>Allow ResQ360 take profile picture</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>ResQ360 needs to use your face id to authenticate you.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>ResQ360 requires access to your location to find users around you</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>ResQ360 needs access to your location to find users around you</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>ResQ360 needs access to your location to find users around you</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Pick image for profile picture</string>
 	</dict>
 </plist>

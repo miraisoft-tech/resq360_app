@@ -78,8 +78,9 @@ class _KFormFieldState extends ConsumerState<KFormField> {
                 children: [
                   GenText(
                     widget.label,
-                    height: 18.2,
-                    weight: FontWeight.w500,
+                    size: 12,
+                    height: 16.5,
+                    weight: FontWeight.w400,
                     color:
                         _focusNode.hasFocus || widget.controller.text.isNotEmpty
                             ? colors.black
@@ -114,7 +115,7 @@ class _KFormFieldState extends ConsumerState<KFormField> {
                 inputFormatters: widget.inputFormatters,
                 controller: widget.controller,
                 focusNode: widget.focusNode ?? _focusNode,
-                cursorColor: colors.black,
+                cursorColor: colors.primary.shade500,
                 obscureText: obscure,
                 cursorWidth: 1,
                 style: GoogleFonts.inter(
@@ -137,15 +138,15 @@ class _KFormFieldState extends ConsumerState<KFormField> {
                   ),
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16.w,
-                    vertical: 16.h,
+                    vertical: 12.h,
                   ),
                   hintText: (_focusNode.hasFocus) ? '' : widget.hintText,
                   hintStyle: TextStyle(
-                    fontFamily: 'sfpro',
+                    fontFamily: 'inter',
                     fontWeight: FontWeight.w400,
-                    fontSize: 12.sp,
-                    color: colors.textColor.shade300,
-                    height: 15.5 / 12,
+                    fontSize: 14.sp,
+                    color: colors.neutral.shade300,
+                    height: 24.5 / 14,
                   ),
                   prefixIcon:
                       (widget.prefixIcon != null)
@@ -203,7 +204,7 @@ class _KFormFieldState extends ConsumerState<KFormField> {
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: colors.black),
+                    borderSide: BorderSide(color: colors.primary.shade500),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   disabledBorder: OutlineInputBorder(

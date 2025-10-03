@@ -1,115 +1,60 @@
-// // ignore_for_file: document_ignores, use_build_context_synchronously
+import 'dart:async';
+import 'package:geolocator/geolocator.dart' as geo;
+import 'package:resq360/__lib.dart';
 
-// import 'dart:async';
-// import 'dart:io';
+abstract class BaseViewModel extends ChangeNotifier {
+  BaseViewModel() {
+    onInit();
+  }
 
-// import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-// import 'package:geolocator/geolocator.dart' as geo;
-// import 'package:remis_b2c/__lib.dart';
-// import 'package:remis_b2c/features/authentication/data/service/auth.local.repo.dart';
-// import 'package:remis_b2c/features/dashboard/widgets/location_permission_dialog.dart';
+  @protected
+  void onInit() {}
+}
 
-// abstract class BaseViewModel extends ChangeNotifier {
-//   BaseViewModel() {
-//     onInit();
-//   }
+mixin LocationMixin on BaseViewModel {
+  geo.Position? currentPosition;
 
-//   @protected
-//   void onInit() {}
-// }
+  @override
+  Future<void> onInit() async {
+    super.onInit();
+    await _initLocation();
+  }
 
-// mixin LocationMixin on BaseViewModel {
-//   geo.Position? currentPosition;
+  Future<void> _initLocation() async {
+    final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
 
-//   @override
-//   void onInit() {
-//     super.onInit();
-//     _initLocation();
-//   }
+    if (!serviceEnabled) {
+      await geo.Geolocator.openLocationSettings();
+      return;
+    }
 
-//   Future<void> _initLocation() async {
-//     final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
+    var permission = await geo.Geolocator.checkPermission();
+    if (permission == geo.LocationPermission.denied) {
+      permission = await geo.Geolocator.requestPermission();
+    }
+    if (permission == geo.LocationPermission.deniedForever) {
+      return;
+    }
 
-//     if (!serviceEnabled) {
-//       await geo.Geolocator.openLocationSettings();
-//       return;
-//     }
+    if (permission != geo.LocationPermission.always &&
+        permission != geo.LocationPermission.whileInUse) {
+      return;
+    }
 
-//     var permission = await geo.Geolocator.checkPermission();
-//     if (permission == geo.LocationPermission.denied) {
-//       permission = await geo.Geolocator.requestPermission();
-//     }
-//     if (permission == geo.LocationPermission.deniedForever) {
-//       return;
-//     }
+    const settings = geo.LocationSettings(
+      accuracy: geo.LocationAccuracy.high,
+      distanceFilter: 100,
+    );
 
-//     final hasRequested =
-//         await AuthLocalRepo.instance.getBackgroundLocationRequested();
+    currentPosition = await geo.Geolocator.getCurrentPosition(
+      locationSettings: settings,
+    );
+    log('Location fetched successfully!');
 
-//     if (permission == geo.LocationPermission.whileInUse && !hasRequested) {
-//       if (Platform.isAndroid) {
-//         await GeneralDialogs.showCustomDialog(
-//           AppRouter.buildContext,
-//           body: LocationPermissionDialog(
-//             onTap: ({required bool response}) async {
-//               if (response) {
-//                 permission = await geo.Geolocator.requestPermission();
-//                 await _requestPermissions();
-//               }
+    notifyListeners();
+    onLocationUpdated();
+  }
 
-//               await AuthLocalRepo.instance.saveBackgroundLocationRequested(
-//                 requested: true,
-//               );
-//             },
-//           ),
-//         );
-//       } else {
-//         permission = await geo.Geolocator.requestPermission();
-//         await _requestPermissions();
-
-//         await AuthLocalRepo.instance.saveBackgroundLocationRequested(
-//           requested: true,
-//         );
-//       }
-//     }
-
-//     if (permission != geo.LocationPermission.always &&
-//         permission != geo.LocationPermission.whileInUse) {
-//       return;
-//     }
-
-//     const settings = geo.LocationSettings(
-//       accuracy: geo.LocationAccuracy.high,
-//       distanceFilter: 100,
-//     );
-
-//     currentPosition = await geo.Geolocator.getCurrentPosition(
-//       locationSettings: settings,
-//     );
-//     log('Location fetched successfully!');
-
-//     notifyListeners();
-//     onLocationUpdated();
-//   }
-
-//   Future<void> _requestPermissions() async {
-//     // Request notification permission
-//     final notificationPermission =
-//         await FlutterForegroundTask.checkNotificationPermission();
-//     if (notificationPermission != NotificationPermission.granted) {
-//       await FlutterForegroundTask.requestNotificationPermission();
-//     }
-//     final context = AppRouter.buildContext;
-
-//     // Android specific permissions
-//     if (Theme.of(context).platform == TargetPlatform.android) {
-//       if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
-//         await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-//       }
-//     }
-//   }
-
-//   /// Override to react when location is ready.
-//   @protected
-//   void onLocationUpdated() {}
-// }
+  @protected
+  void onLocationUpdated() {}
+}

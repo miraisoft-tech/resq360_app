@@ -57,7 +57,7 @@ class WideButton extends StatelessWidget {
         style: TextButton.styleFrom(
           backgroundColor:
               onPressed == null
-                  ? const Color(0xffD9D9D9)
+                  ? const Color(0xffF2C079)
                   : (backgroundColor ?? colors.primary.shade500),
           disabledBackgroundColor: colors.textColor.shade300,
           shape: RoundedRectangleBorder(
@@ -84,7 +84,7 @@ class WideButton extends StatelessWidget {
                   label,
                   color:
                       onPressed == null
-                          ? colors.primary.shade200
+                          ? colors.neutral.shade400
                           : (textColor ?? colors.whiteColor),
                   weight: FontWeight.w700,
                   height: 20.5,

@@ -1,5 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
+import 'package:resq360/features/authentication/data/service/auth.local.repo.dart';
+import 'package:resq360/features/authentication/screens/create_account_type_screen.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -25,28 +27,32 @@ class _IntroScreenState extends State<IntroScreen> {
     super.dispose();
   }
 
-  void _skip() {
+  Future<void> _skip() async {
     log('skip');
-    // AuthLocalRepo.instance.saveIntroCompleted(isIntroCompleted: true);
-    // replaceScreen(
-    //   context,
-    //   const SplashScreen(),
-    // );
+    await AuthLocalRepo.instance.saveIntroCompleted(isIntroCompleted: true);
+    if (!mounted) return;
+
+    await replaceScreen(
+      context,
+      const CreateAccountTypeScreen(),
+    );
   }
 
   Future<void> _continue() async {
     if (_pageController == null) return;
-    if (currentIndex < 3) {
+    if (currentIndex < 2) {
       await _pageController?.nextPage(
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeIn,
       );
     } else {
-      //   AuthLocalRepo.instance.saveIntroCompleted(isIntroCompleted: true);
-      // replaceScreen(
-      //   context,
-      //   const CreateAccount(),
-      // );
+      await AuthLocalRepo.instance.saveIntroCompleted(isIntroCompleted: true);
+      if (!mounted) return;
+
+      await replaceScreen(
+        context,
+        const CreateAccountTypeScreen(),
+      );
     }
   }
 

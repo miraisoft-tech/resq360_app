@@ -2,20 +2,23 @@ import 'dart:async';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../__lib.dart';
 
-Future<void> showErrorSnackbar(String message) async {
-  await showSnackBar(AppRouter.buildContext, 'Error', message);
+Future<void> showErrorSnackbar(
+  BuildContext context,
+  String message,
+) async {
+  await showSnackBar(context, 'Error', message);
 }
 
 Future<void> showSuccessSnackbar(
+  BuildContext context,
   String message, {
   bool showTitle = true,
 }) async {
   await showSnackBar(
-    AppRouter.buildContext,
+    context,
     showTitle ? 'Success' : null,
     message,
   );
@@ -46,7 +49,7 @@ Future<void> showSnackBar(
                 ),
                 const Spacer(),
                 InkWell(
-                  onTap: () => context.pop(),
+                  onTap: () => pop(context),
                   child: Container(
                     height: 20.h,
                     width: 20.w,
@@ -91,9 +94,7 @@ Future<void> showSnackBar(
                 ),
                 if (title == null)
                   InkWell(
-                    onTap: () {
-                      context.pop();
-                    },
+                    onTap: () => pop(context),
                     child: Container(
                       height: 20.h,
                       width: 20.w,
@@ -137,8 +138,7 @@ Future<void> showSnackBar(
   }
 }
 
-Future<void> showLoadingDialog() async {
-  final context = AppRouter.buildContext;
+Future<void> showLoadingDialog(BuildContext context) async {
   await showDialog<void>(
     context: context,
     barrierColor: const Color.fromRGBO(173, 173, 173, 0.23),
