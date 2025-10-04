@@ -21,31 +21,31 @@ class _BookingsScreenState extends State<BookingsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
+    final appColors = context.appColors;
 
     return Scaffold(
-      backgroundColor: colors.whiteColor,
+      backgroundColor: appColors.whiteColor,
       appBar: AppBar(
-        backgroundColor: colors.whiteColor,
+        backgroundColor: appColors.whiteColor,
         elevation: 0,
         title: UrbText(
           'My Bookings',
           size: 18,
           weight: FontWeight.w700,
-          color: colors.black,
+          color: appColors.black,
         ),
         leading:
             Navigator.canPop(context)
                 ? IconButton(
-                  icon: Icon(Icons.arrow_back, color: colors.black),
+                  icon: Icon(Icons.arrow_back, color: appColors.black),
                   onPressed: () => pop(context),
                 )
                 : null,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: colors.primary,
-          labelColor: colors.primary,
-          unselectedLabelColor: colors.textColor.shade500,
+          indicatorColor: appColors.primary,
+          labelColor: appColors.primary,
+          unselectedLabelColor: appColors.textColor.shade500,
           indicatorSize: TabBarIndicatorSize.tab,
           tabs: const [
             Tab(text: 'Upcoming'),

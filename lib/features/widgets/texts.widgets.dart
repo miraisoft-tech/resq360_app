@@ -43,7 +43,7 @@ class GenText extends StatelessWidget {
         fontFamily: 'inter',
         fontWeight: weight ?? FontWeight.w400,
         fontSize: size.sp,
-        color: color ?? context.appColors.textColor.shade500,
+        color: color ?? context.appColors.black,
         decoration: decoration,
         height: height / size,
         fontStyle: fontStyle,

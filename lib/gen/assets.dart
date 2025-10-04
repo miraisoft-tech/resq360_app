@@ -12,6 +12,22 @@ class AppAssets {
   static const String ASSETS_ICONS_ARROW_DROPDOWN_SVG =
       'assets/icons/arrow_dropdown.svg';
 
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/attach_doc.svg)
+  static const String ASSETS_ICONS_ATTACH_DOC_SVG =
+      'assets/icons/attach_doc.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/attach_image.svg)
+  static const String ASSETS_ICONS_ATTACH_IMAGE_SVG =
+      'assets/icons/attach_image.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/attach_location.svg)
+  static const String ASSETS_ICONS_ATTACH_LOCATION_SVG =
+      'assets/icons/attach_location.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/attachment_icon.svg)
+  static const String ASSETS_ICONS_ATTACHMENT_ICON_SVG =
+      'assets/icons/attachment_icon.svg';
+
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/back_icon.svg)
   static const String ASSETS_ICONS_BACK_ICON_SVG = 'assets/icons/back_icon.svg';
 
@@ -20,6 +36,9 @@ class AppAssets {
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/call_icon.svg)
   static const String ASSETS_ICONS_CALL_ICON_SVG = 'assets/icons/call_icon.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/cancel.svg)
+  static const String ASSETS_ICONS_CANCEL_SVG = 'assets/icons/cancel.svg';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/chat_icon.svg)
   static const String ASSETS_ICONS_CHAT_ICON_SVG = 'assets/icons/chat_icon.svg';
@@ -58,11 +77,38 @@ class AppAssets {
   static const String ASSETS_ICONS_NOTIFICATION_BELL_SVG =
       'assets/icons/notification_bell.svg';
 
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/payment_card.svg)
+  static const String ASSETS_ICONS_PAYMENT_CARD_SVG =
+      'assets/icons/payment_card.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/payment_existing_card.svg)
+  static const String ASSETS_ICONS_PAYMENT_EXISTING_CARD_SVG =
+      'assets/icons/payment_existing_card.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/payment_wallet.svg)
+  static const String ASSETS_ICONS_PAYMENT_WALLET_SVG =
+      'assets/icons/payment_wallet.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/phone_icon.svg)
+  static const String ASSETS_ICONS_PHONE_ICON_SVG =
+      'assets/icons/phone_icon.svg';
+
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/receipt.svg)
   static const String ASSETS_ICONS_RECEIPT_SVG = 'assets/icons/receipt.svg';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/search.svg)
   static const String ASSETS_ICONS_SEARCH_SVG = 'assets/icons/search.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/send_icon.svg)
+  static const String ASSETS_ICONS_SEND_ICON_SVG = 'assets/icons/send_icon.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/service_arrived.svg)
+  static const String ASSETS_ICONS_SERVICE_ARRIVED_SVG =
+      'assets/icons/service_arrived.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/sevice_confirmed.svg)
+  static const String ASSETS_ICONS_SEVICE_CONFIRMED_SVG =
+      'assets/icons/sevice_confirmed.svg';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/tow_icon.svg)
   static const String ASSETS_ICONS_TOW_ICON_SVG = 'assets/icons/tow_icon.svg';
@@ -80,9 +126,20 @@ class AppAssets {
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/apple.png)
   static const String ASSETS_IMAGES_APPLE_PNG = 'assets/images/apple.png';
 
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/cancelled_booking.png)
+  static const String ASSETS_IMAGES_CANCELLED_BOOKING_PNG =
+      'assets/images/cancelled_booking.png';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/confetti.png)
+  static const String ASSETS_IMAGES_CONFETTI_PNG = 'assets/images/confetti.png';
+
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/create_account_type.png)
   static const String ASSETS_IMAGES_CREATE_ACCOUNT_TYPE_PNG =
       'assets/images/create_account_type.png';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/empty_chat.png)
+  static const String ASSETS_IMAGES_EMPTY_CHAT_PNG =
+      'assets/images/empty_chat.png';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/forgot_pass.png)
   static const String ASSETS_IMAGES_FORGOT_PASS_PNG =
@@ -117,6 +174,10 @@ class AppAssets {
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/step_2.png)
   static const String ASSETS_IMAGES_STEP_2_PNG = 'assets/images/step_2.png';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/thank_you.png)
+  static const String ASSETS_IMAGES_THANK_YOU_PNG =
+      'assets/images/thank_you.png';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/verification_step.png)
   static const String ASSETS_IMAGES_VERIFICATION_STEP_PNG =

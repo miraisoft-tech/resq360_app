@@ -63,7 +63,7 @@ class WideButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
           ),
-          side: BorderSide(color: colors.primary.shade100, width: 2),
+          //  side: BorderSide(color: colors.primary.shade100, width: 2),
         ),
         onPressed: () {
           loading ? log('Tapped while loading') : onPressed?.call();

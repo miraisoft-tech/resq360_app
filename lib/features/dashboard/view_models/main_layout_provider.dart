@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
 import 'package:resq360/features/bookings/screens/bookings_screen.dart';
+import 'package:resq360/features/chat/screens/chat_screen.dart';
 import 'package:resq360/features/dashboard/screens/dashboard.dart';
 import 'package:resq360/features/services/screens/service_categories_screen.dart';
 
@@ -51,7 +52,7 @@ class DashboardViewModel extends ChangeNotifier {
       title: 'Bookings',
     ),
     NavItem(
-      body: const HomeScreen(),
+      body: const ChatScreen(),
       selectedImgPath: AppAssets.ASSETS_NAVIGATION_CHAT_SELECTED_SVG,
       unselectedImgPath: AppAssets.ASSETS_NAVIGATION_CHAT_UNSELECTED_SVG,
       title: 'Chat',
