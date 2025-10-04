@@ -73,9 +73,21 @@ class AppAssets {
   static const String ASSETS_ICONS_NOTIFICATION_SVG =
       'assets/icons/notification.svg';
 
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/notification_b.svg)
+  static const String ASSETS_ICONS_NOTIFICATION_B_SVG =
+      'assets/icons/notification_b.svg';
+
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/notification_bell.svg)
   static const String ASSETS_ICONS_NOTIFICATION_BELL_SVG =
       'assets/icons/notification_bell.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/notification_r.svg)
+  static const String ASSETS_ICONS_NOTIFICATION_R_SVG =
+      'assets/icons/notification_r.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/notification_s.svg)
+  static const String ASSETS_ICONS_NOTIFICATION_S_SVG =
+      'assets/icons/notification_s.svg';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/payment_card.svg)
   static const String ASSETS_ICONS_PAYMENT_CARD_SVG =
@@ -123,6 +135,14 @@ class AppAssets {
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/wallet.svg)
   static const String ASSETS_ICONS_WALLET_SVG = 'assets/icons/wallet.svg';
 
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/wallet_credit.svg)
+  static const String ASSETS_ICONS_WALLET_CREDIT_SVG =
+      'assets/icons/wallet_credit.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/wallet_debit.svg)
+  static const String ASSETS_ICONS_WALLET_DEBIT_SVG =
+      'assets/icons/wallet_debit.svg';
+
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/apple.png)
   static const String ASSETS_IMAGES_APPLE_PNG = 'assets/images/apple.png';
 
@@ -140,6 +160,10 @@ class AppAssets {
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/empty_chat.png)
   static const String ASSETS_IMAGES_EMPTY_CHAT_PNG =
       'assets/images/empty_chat.png';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/empty_wallet.png)
+  static const String ASSETS_IMAGES_EMPTY_WALLET_PNG =
+      'assets/images/empty_wallet.png';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/forgot_pass.png)
   static const String ASSETS_IMAGES_FORGOT_PASS_PNG =
@@ -160,6 +184,10 @@ class AppAssets {
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/intro_3.png)
   static const String ASSETS_IMAGES_INTRO_3_PNG = 'assets/images/intro_3.png';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/notifications_empty.png)
+  static const String ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG =
+      'assets/images/notifications_empty.png';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/password_reset_success.png)
   static const String ASSETS_IMAGES_PASSWORD_RESET_SUCCESS_PNG =

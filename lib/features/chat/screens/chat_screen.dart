@@ -2,6 +2,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/chat/data/models/chat_model.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/chat/widgets/chat_tile.dart';
+import 'package:resq360/features/widgets/empty_screen_widget.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -115,33 +116,11 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child:
                   (chats.isEmpty)
-                      ? Padding(
-                        padding: EdgeInsetsGeometry.only(bottom: 100.h),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG
-                                  .imageAsset(),
-                              2.verticalSpace,
-                              GenText(
-                                'No messages yet',
-                                color: context.appColors.black,
-                                weight: FontWeight.w500,
-                                textAlign: TextAlign.center,
-                              ),
-                              8.verticalSpace,
-                              GenText(
-                                'Start a conversation with a service provider',
-                                size: 12,
-                                height: 16.5,
-                                textAlign: TextAlign.center,
-                                weight: FontWeight.w400,
-                                color: context.appColors.textColor.shade400,
-                              ),
-                            ],
-                          ),
-                        ),
+                      ? const EmptyScreenWidget(
+                        imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
+                        message: 'No messages yet',
+                        subMessage:
+                            'Start a conversation with a service provider',
                       )
                       : ListView.separated(
                         itemCount: chats.length,

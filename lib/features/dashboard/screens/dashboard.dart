@@ -1,4 +1,6 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/dashboard/screens/notification_screen.dart';
+import 'package:resq360/features/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/dashboard/widgets/ongoing_service_widget.dart';
 import 'package:resq360/features/dashboard/widgets/promo_card_widget.dart';
 import 'package:resq360/features/dashboard/widgets/recommended_card_widget.dart';
@@ -70,11 +72,15 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: AppAssets.ASSETS_ICONS_WALLET_SVG.svg,
-            onPressed: () {},
+            onPressed: () async {
+              await pushScreen(context, const WalletScreen());
+            },
           ),
           IconButton(
             icon: AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg,
-            onPressed: () {},
+            onPressed: () async {
+              await pushScreen(context, const NotificationScreen());
+            },
           ),
           10.horizontalSpace,
         ],
