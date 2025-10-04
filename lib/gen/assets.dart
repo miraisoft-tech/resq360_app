@@ -50,6 +50,10 @@ class AppAssets {
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/clock.svg)
   static const String ASSETS_ICONS_CLOCK_SVG = 'assets/icons/clock.svg';
 
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/close-circle.svg)
+  static const String ASSETS_ICONS_CLOSE_CIRCLE_SVG =
+      'assets/icons/close-circle.svg';
+
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/eye.svg)
   static const String ASSETS_ICONS_EYE_SVG = 'assets/icons/eye.svg';
 
@@ -118,6 +122,30 @@ class AppAssets {
   static const String ASSETS_ICONS_SERVICE_ARRIVED_SVG =
       'assets/icons/service_arrived.svg';
 
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/settings_admin.svg)
+  static const String ASSETS_ICONS_SETTINGS_ADMIN_SVG =
+      'assets/icons/settings_admin.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/settings_cards.svg)
+  static const String ASSETS_ICONS_SETTINGS_CARDS_SVG =
+      'assets/icons/settings_cards.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/settings_password.svg)
+  static const String ASSETS_ICONS_SETTINGS_PASSWORD_SVG =
+      'assets/icons/settings_password.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/settings_privacy_policy.svg)
+  static const String ASSETS_ICONS_SETTINGS_PRIVACY_POLICY_SVG =
+      'assets/icons/settings_privacy_policy.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/settings_ratings.svg)
+  static const String ASSETS_ICONS_SETTINGS_RATINGS_SVG =
+      'assets/icons/settings_ratings.svg';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/settings_refer.svg)
+  static const String ASSETS_ICONS_SETTINGS_REFER_SVG =
+      'assets/icons/settings_refer.svg';
+
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/icons/sevice_confirmed.svg)
   static const String ASSETS_ICONS_SEVICE_CONFIRMED_SVG =
       'assets/icons/sevice_confirmed.svg';
@@ -168,6 +196,9 @@ class AppAssets {
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/forgot_pass.png)
   static const String ASSETS_IMAGES_FORGOT_PASS_PNG =
       'assets/images/forgot_pass.png';
+
+  /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/gift.png)
+  static const String ASSETS_IMAGES_GIFT_PNG = 'assets/images/gift.png';
 
   /// ![preview](file:///Users/sgh/Desktop/resq360/assets/images/google.png)
   static const String ASSETS_IMAGES_GOOGLE_PNG = 'assets/images/google.png';

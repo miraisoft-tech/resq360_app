@@ -63,7 +63,7 @@ Future<void> showSnackBar(
                     ),
                     child: Center(
                       child: SvgPicture.asset(
-                        'AppAssets.ASSETS_ICONS_CLOSE_CIRCLE_SVG',
+                        AppAssets.ASSETS_ICONS_CLOSE_CIRCLE_SVG,
                         colorFilter: const ColorFilter.mode(
                           Colors.white,
                           BlendMode.srcIn,
