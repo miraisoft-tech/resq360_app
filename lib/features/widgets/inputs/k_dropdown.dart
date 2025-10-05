@@ -271,8 +271,8 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
             children: [
               GenText(
                 widget.displayStringForOption(item),
-                weight: FontWeight.w700,
-                height: 14.7,
+                weight: FontWeight.w500,
+                height: 15.5,
                 color: Colors.black,
                 textAlign: TextAlign.start,
                 maxLines: 1,
@@ -335,7 +335,8 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
           GenText(
             widget.label,
             height: 18.2,
-            weight: FontWeight.w500,
+            size: 12,
+            weight: FontWeight.w400,
             color:
                 _focusNode.hasFocus ? colors.black : colors.textColor.shade900,
           ),
@@ -349,11 +350,11 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
             focusNode: _focusNode,
             isExpanded: true,
             style: TextStyle(
-              fontFamily: 'sfpro',
-              fontWeight: FontWeight.w400,
-              fontSize: 12.sp,
-              color: colors.textColor.shade300,
-              height: 15.5 / 12,
+              fontFamily: 'inter',
+              fontWeight: FontWeight.w500,
+              fontSize: 14.sp,
+              color: colors.black,
+              height: 15.5 / 14,
             ),
             decoration: InputDecoration(
               filled: true,
@@ -361,6 +362,20 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
               contentPadding:
                   widget.padding ??
                   EdgeInsets.symmetric(horizontal: 0.w, vertical: 16.h),
+              suffixIcon: Transform.scale(
+                scale: 0.5,
+                child:
+                    widget.icon ??
+                    SvgPicture.asset(
+                      AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
+                      height: 24.h,
+                      width: 24.w,
+                      colorFilter: ColorFilter.mode(
+                        colors.black,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+              ),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: colors.lightGreyColor3,

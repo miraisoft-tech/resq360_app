@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
-import 'package:resq360/features/authentication/data/service/auth.local.repo.dart';
-import 'package:resq360/features/authentication/screens/create_account_type_screen.dart';
+import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -34,7 +34,7 @@ class _IntroScreenState extends State<IntroScreen> {
 
     await replaceScreen(
       context,
-      const CreateAccountTypeScreen(),
+      const SelectAccountTypeScreen(),
     );
   }
 
@@ -51,7 +51,7 @@ class _IntroScreenState extends State<IntroScreen> {
 
       await replaceScreen(
         context,
-        const CreateAccountTypeScreen(),
+        const SelectAccountTypeScreen(),
       );
     }
   }

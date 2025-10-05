@@ -25,7 +25,6 @@ class AppScaffold extends StatelessWidget {
               padding: pad(horizontal: 10),
               child: Column(
                 children: [
-                  20.verticalSpace,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/authentication/data/service/auth.local.repo.dart';
-import 'package:resq360/features/authentication/screens/login_screen.dart';
-import 'package:resq360/features/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
+import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
+import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/intro/screens/intro_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {

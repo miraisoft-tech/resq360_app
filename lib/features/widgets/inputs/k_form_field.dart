@@ -138,7 +138,7 @@ class _KFormFieldState extends ConsumerState<KFormField> {
                   ),
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16.w,
-                    vertical: 12.h,
+                    vertical: 11.h,
                   ),
                   hintText: (_focusNode.hasFocus) ? '' : widget.hintText,
                   hintStyle: TextStyle(
