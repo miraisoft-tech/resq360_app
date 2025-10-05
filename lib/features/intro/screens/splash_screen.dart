@@ -1,8 +1,8 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/intro/screens/intro_screen.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -32,7 +32,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         } else {
           await replaceScreen(
             context,
-            const LoginScreen(),
+            const SelectAccountTypeScreen(),
           );
         }
       });

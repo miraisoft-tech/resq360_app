@@ -1,7 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/authentication/screens/forgot_password_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
-import 'package:resq360/features/provider/dashboard/main_layout.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderLoginScreen extends StatefulWidget {
@@ -88,10 +87,11 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
             WideButton(
               label: 'Log in',
               onPressed: () async {
-                await replaceScreen(
-                  context,
-                  const MainLayoutPage(),
-                );
+                await showErrorSnackbar(context, 'Coming Soon!');
+                // await replaceScreen(
+                //   context,
+                //   const MainLayoutPage(),
+                // );
               },
             ),
             25.verticalSpace,
