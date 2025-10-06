@@ -80,8 +80,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       body: Column(
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
               children: [
                 NormalPinCodeField(
                   controller: _otpController1,
@@ -121,6 +120,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
                     },
                   ),
                 ),
+                50.verticalSpace,
               ],
             ),
           ),
@@ -129,7 +129,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
             label: 'Verify & Continue',
             onPressed: (_otpController1.text.length < 6 ? null : onVerify),
           ),
-          const Spacer(),
+          20.verticalSpace,
         ],
       ),
     );

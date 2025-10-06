@@ -130,12 +130,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
                                 onContinuePressed: () async {
                                   await pop(context);
 
-                                  if (context.mounted) {
-                                    await pushScreen(
-                                      context,
-                                      const StepAddressScreen(),
-                                    );
-                                  }
+                                  if (context.mounted) {}
                                 },
                               ),
                             );

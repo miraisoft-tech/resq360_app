@@ -211,6 +211,7 @@ class _ProviderCreateAccountScreenState
                 ),
               ),
             ),
+            20.verticalSpace,
           ],
         ),
       ),

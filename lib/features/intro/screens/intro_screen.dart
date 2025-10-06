@@ -85,22 +85,25 @@ class _IntroScreenState extends State<IntroScreen> {
       backgroundColor: colors.whiteColor,
       body: SafeArea(
         child: Padding(
-          padding: pad(vertical: 10, horizontal: 16),
+          padding: pad(vertical: 10),
           child: Column(
             children: [
               GestureDetector(
                 onTap: _skip,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: pad(horizontal: 10),
-                    child: GenText(
-                      'Skip',
-                      size: 16,
-                      height: 26,
-                      color: colors.primary.shade500,
-                      weight: FontWeight.w700,
-                      textAlign: TextAlign.start,
+                child: Padding(
+                  padding: pad(horizontal: 16),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: pad(horizontal: 10),
+                      child: GenText(
+                        'Skip',
+                        size: 16,
+                        height: 26,
+                        color: colors.primary.shade500,
+                        weight: FontWeight.w700,
+                        textAlign: TextAlign.start,
+                      ),
                     ),
                   ),
                 ),
@@ -156,10 +159,13 @@ class _IntroScreenState extends State<IntroScreen> {
                   ),
                 ],
               ),
-              50.verticalSpace,
-              WideButton(
-                label: currentIndex > 2 ? 'Get Started' : 'Next',
-                onPressed: _continue,
+              30.verticalSpace,
+              Padding(
+                padding: pad(horizontal: 16, vertical: 20),
+                child: WideButton(
+                  label: currentIndex > 2 ? 'Get Started' : 'Next',
+                  onPressed: _continue,
+                ),
               ),
             ],
           ),

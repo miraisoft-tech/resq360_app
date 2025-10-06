@@ -58,70 +58,74 @@ class _ProviderBusinessDetailsScreenState
       body: Form(
         key: _formKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            KFormField(
-              label: 'Business Name',
-              hintText: 'Enter Your Business Name',
-              controller: nameController,
-              keyboardType: TextInputType.name,
-              onChanged: (a) {
-                setState(() {});
-              },
-            ),
-            16.verticalSpace,
-            KFormField(
-              label: 'Business Address',
-              hintText: 'Enter Your Business Address',
-              controller: addressController,
-              keyboardType: TextInputType.name,
-              onChanged: (a) {
-                setState(() {});
-              },
-            ),
-            16.verticalSpace,
-            ValueListenableBuilder<String?>(
-              valueListenable: _selectType,
-              builder: (
-                BuildContext context,
-                String? value,
-                Widget? child,
-              ) {
-                return ObjectKDropDown(
-                  label: 'Service Category ',
-                  hintText: 'select a service category',
-                  displayStringForOption: (String? id) => id ?? '',
-                  showPrefix: false,
-                  value: value,
-                  dropdownItems: categories,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectType.value = value;
-                    });
-                  },
-                );
-              },
-            ),
-            30.verticalSpace,
-            GenText(
-              'Choose a primary service, you can add more services later in settings.',
-              size: 12,
-              height: 16.5,
-              weight: FontWeight.w400,
-              color: colors.textColor.shade500,
-            ),
-            16.verticalSpace,
-            if (_selectType.value == 'Other')
-              KFormField(
-                label: 'Specify Service',
-                hintText: 'Enter Your Service Name',
-                controller: otherController,
-                keyboardType: TextInputType.text,
-                onChanged: (a) {
-                  setState(() {});
-                },
+            Expanded(
+              child: ListView(
+                children: [
+                  KFormField(
+                    label: 'Business Name',
+                    hintText: 'Enter Your Business Name',
+                    controller: nameController,
+                    keyboardType: TextInputType.name,
+                    onChanged: (a) {
+                      setState(() {});
+                    },
+                  ),
+                  16.verticalSpace,
+                  KFormField(
+                    label: 'Business Address',
+                    hintText: 'Enter Your Business Address',
+                    controller: addressController,
+                    keyboardType: TextInputType.name,
+                    onChanged: (a) {
+                      setState(() {});
+                    },
+                  ),
+                  16.verticalSpace,
+                  ValueListenableBuilder<String?>(
+                    valueListenable: _selectType,
+                    builder: (
+                      BuildContext context,
+                      String? value,
+                      Widget? child,
+                    ) {
+                      return ObjectKDropDown(
+                        label: 'Service Category ',
+                        hintText: 'select a service category',
+                        displayStringForOption: (String? id) => id ?? '',
+                        showPrefix: false,
+                        value: value,
+                        dropdownItems: categories,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectType.value = value;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                  30.verticalSpace,
+                  GenText(
+                    'Choose a primary service, you can add more services later in settings.',
+                    size: 12,
+                    height: 16.5,
+                    weight: FontWeight.w400,
+                    color: colors.textColor.shade500,
+                  ),
+                  16.verticalSpace,
+                  if (_selectType.value == 'Other')
+                    KFormField(
+                      label: 'Specify Service',
+                      hintText: 'Enter Your Service Name',
+                      controller: otherController,
+                      keyboardType: TextInputType.text,
+                      onChanged: (a) {
+                        setState(() {});
+                      },
+                    ),
+                ],
               ),
-            const Spacer(),
+            ),
             WideButton(
               label: 'Continue',
               onPressed: () async {
@@ -167,6 +171,7 @@ class _ProviderBusinessDetailsScreenState
                 ),
               ),
             ),
+            20.verticalSpace,
           ],
         ),
       ),

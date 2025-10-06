@@ -28,7 +28,7 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
     return Padding(
       padding: EdgeInsets.only(
         top: 225.h,
-        bottom: selectedPayment != null ? 165.h : 225.h,
+        bottom: selectedPayment != null ? 170.h : 230.h,
       ),
       child: Material(
         color: Colors.transparent,

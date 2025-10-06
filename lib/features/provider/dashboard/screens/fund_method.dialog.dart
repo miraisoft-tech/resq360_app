@@ -23,7 +23,7 @@ class _FundMethodDialogState extends State<FundMethodDialog> {
     return Padding(
       padding: EdgeInsets.only(
         top: 225.h,
-        bottom: selectedPayment != null ? 275.h : 340.h,
+        bottom: selectedPayment != null ? 280.h : 345.h,
       ),
       child: Material(
         color: Colors.transparent,

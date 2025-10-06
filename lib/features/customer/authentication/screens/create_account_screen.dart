@@ -46,69 +46,153 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     return AppScaffold(
       title: 'Create Account',
       subTitle: 'Join our community of trusted users',
-      body: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            KFormField(
-              label: 'Full Name',
-              hintText: 'Enter Your Full Name',
-              controller: nameController,
-              onChanged: (a) {
-                setState(() {});
-              },
-            ),
-            16.verticalSpace,
-            KFormField(
-              label: 'Email Address',
-              hintText: 'Enter Your Email Address',
-              controller: emailController,
-              keyboardType: TextInputType.emailAddress,
-              onChanged: (a) {
-                setState(() {});
-              },
-            ),
-            16.verticalSpace,
-            KFormField(
-              label: 'Password',
-              hintText: 'Create a Password',
-              controller: passwordController,
-              type: InputType.password,
-              onChanged: (a) {
-                setState(() {});
-              },
-            ),
-            30.verticalSpace,
-            Row(
-              children: [
-                CheckBoxWidget(
-                  isChecked: _agree,
-                  onChanged: (value) {
-                    _agree = value!;
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  children: [
+                    KFormField(
+                      label: 'Full Name',
+                      hintText: 'Enter Your Full Name',
+                      controller: nameController,
+                      onChanged: (a) {
+                        setState(() {});
+                      },
+                    ),
+                    16.verticalSpace,
+                    KFormField(
+                      label: 'Email Address',
+                      hintText: 'Enter Your Email Address',
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      onChanged: (a) {
+                        setState(() {});
+                      },
+                    ),
+                    16.verticalSpace,
+                    KFormField(
+                      label: 'Password',
+                      hintText: 'Create a Password',
+                      controller: passwordController,
+                      type: InputType.password,
+                      onChanged: (a) {
+                        setState(() {});
+                      },
+                    ),
+                    30.verticalSpace,
+                    Row(
+                      children: [
+                        CheckBoxWidget(
+                          isChecked: _agree,
+                          onChanged: (value) {
+                            _agree = value!;
 
-                    setState(() {});
-                  },
+                            setState(() {});
+                          },
+                        ),
+                        6.horizontalSpace,
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: colors.textColor.shade500,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: 'I agree to the ',
+                                  style: TextStyle(
+                                    fontFamily: 'inter',
+                                    fontSize: 12.sp,
+                                    color: colors.neutral.shade500,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'Terms and Conditions',
+                                  style: TextStyle(
+                                    fontFamily: 'inter',
+                                    fontSize: 12.sp,
+                                    color: colors.primary.shade500,
+                                    fontWeight: FontWeight.w500,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    20.verticalSpace,
+                    WideButton(
+                      label: 'Create Account',
+                      onPressed:
+                          _agree
+                              ? () async {
+                                await pushScreen(
+                                  context,
+                                  ConfirmEmailScreen(
+                                    email: emailController.text,
+                                  ),
+                                );
+                              }
+                              : null,
+                    ),
+                    30.verticalSpace,
+                    Row(
+                      children: [
+                        const Expanded(child: Divider()),
+                        Padding(
+                          padding: pad(horizontal: 8),
+                          child: GenText(
+                            'or sign up with',
+                            color: colors.textColor.shade500,
+                          ),
+                        ),
+                        const Expanded(child: Divider()),
+                      ],
+                    ),
+                    20.verticalSpace,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _SocialButton(
+                          icon: AppAssets.ASSETS_IMAGES_GOOGLE_PNG,
+                          onTap: () {},
+                        ),
+                        40.horizontalSpace,
+                        _SocialButton(
+                          icon: AppAssets.ASSETS_IMAGES_APPLE_PNG,
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                6.horizontalSpace,
-                Expanded(
+              ),
+              Center(
+                child: GestureDetector(
+                  onTap: () async {
+                    await pushScreen(context, const LoginScreen());
+                  },
                   child: RichText(
                     text: TextSpan(
-                      style: TextStyle(
-                        color: colors.textColor.shade500,
-                      ),
+                      style: TextStyle(color: colors.textColor.shade500),
                       children: [
                         TextSpan(
-                          text: 'I agree to the ',
+                          text: 'Already have an account? ',
                           style: TextStyle(
                             fontFamily: 'inter',
                             fontSize: 12.sp,
-                            color: colors.neutral.shade500,
+                            color: colors.neutral.shade600,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         TextSpan(
-                          text: 'Terms and Conditions',
+                          text: 'Log in',
                           style: TextStyle(
                             fontFamily: 'inter',
                             fontSize: 12.sp,
@@ -121,87 +205,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     ),
                   ),
                 ),
-              ],
-            ),
-            20.verticalSpace,
-            WideButton(
-              label: 'Create Account',
-              onPressed:
-                  _agree
-                      ? () async {
-                        await pushScreen(
-                          context,
-                          ConfirmEmailScreen(
-                            email: emailController.text,
-                          ),
-                        );
-                      }
-                      : null,
-            ),
-            30.verticalSpace,
-            Row(
-              children: [
-                const Expanded(child: Divider()),
-                Padding(
-                  padding: pad(horizontal: 8),
-                  child: GenText(
-                    'or sign up with',
-                    color: colors.textColor.shade500,
-                  ),
-                ),
-                const Expanded(child: Divider()),
-              ],
-            ),
-            20.verticalSpace,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _SocialButton(
-                  icon: AppAssets.ASSETS_IMAGES_GOOGLE_PNG,
-                  onTap: () {},
-                ),
-                40.horizontalSpace,
-                _SocialButton(
-                  icon: AppAssets.ASSETS_IMAGES_APPLE_PNG,
-                  onTap: () {},
-                ),
-              ],
-            ),
-            const Spacer(),
-            Center(
-              child: GestureDetector(
-                onTap: () async {
-                  await pushScreen(context, const LoginScreen());
-                },
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(color: colors.textColor.shade500),
-                    children: [
-                      TextSpan(
-                        text: 'Already have an account? ',
-                        style: TextStyle(
-                          fontFamily: 'inter',
-                          fontSize: 12.sp,
-                          color: colors.neutral.shade600,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      TextSpan(
-                        text: 'Log in',
-                        style: TextStyle(
-                          fontFamily: 'inter',
-                          fontSize: 12.sp,
-                          color: colors.primary.shade500,
-                          fontWeight: FontWeight.w500,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
-            ),
-          ],
+              20.verticalSpace,
+            ],
+          ),
         ),
       ),
     );
@@ -219,9 +226,7 @@ class _SocialButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        child: icon.imageAsset(height: 40, width: 40),
-      ),
+      child: icon.imageAsset(height: 40, width: 40),
     );
   }
 }

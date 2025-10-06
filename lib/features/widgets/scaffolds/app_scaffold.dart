@@ -68,7 +68,6 @@ class AppScaffold extends StatelessWidget {
                   left: 16.w,
                   right: 16.w,
                   top: 10.h,
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
                 ),
                 child: body,
               ),

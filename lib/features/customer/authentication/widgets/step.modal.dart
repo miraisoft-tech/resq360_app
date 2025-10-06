@@ -24,7 +24,7 @@ class StepModal extends ConsumerWidget {
       width: double.infinity,
       height:
           MediaQuery.of(context).viewInsets.bottom +
-          (MediaQuery.of(context).size.height * 0.55),
+          (MediaQuery.of(context).size.height * 0.52),
       decoration: BoxDecoration(
         color: appColors.whiteColor,
         borderRadius: BorderRadius.only(
