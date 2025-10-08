@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
+import 'package:resq360/features/widgets/issue_radio_widget.dart';
 
 class ContactAdminScreen extends StatelessWidget {
   const ContactAdminScreen({super.key});
@@ -104,46 +105,6 @@ class ContactAdminScreen extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class IssueRadio extends StatelessWidget {
-  const IssueRadio({
-    required this.label,
-    required this.selected,
-    this.onTap,
-    super.key,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final appColors = context.appColors;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: pad(vertical: 8),
-        child: Row(
-          children: [
-            Icon(
-              selected
-                  ? Icons.radio_button_checked
-                  : Icons.radio_button_off_outlined,
-              color: appColors.primary.shade500,
-            ),
-            12.horizontalSpace,
-            GenText(
-              label,
-              size: 15,
-              color: appColors.textColor.shade600,
-            ),
-          ],
         ),
       ),
     );

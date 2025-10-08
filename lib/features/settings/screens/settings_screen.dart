@@ -8,6 +8,7 @@ import 'package:resq360/features/settings/screens/manage_cards_screen.dart';
 import 'package:resq360/features/settings/screens/notification_settings_screen.dart';
 import 'package:resq360/features/settings/screens/ratings_screen.dart';
 import 'package:resq360/features/settings/screens/refer_screen.dart';
+import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
 
@@ -76,7 +77,7 @@ class SettingsScreen extends ConsumerWidget {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_UPDATE_SERVICE_SVG.svg,
         title: 'Update Service',
         onTap: () async {
-          await pushScreen(context, const RatingScreen());
+          await pushScreen(context, const UpdateServiceScreen());
         },
       ),
       SettingsItem(
