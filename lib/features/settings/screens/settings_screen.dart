@@ -1,11 +1,14 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
+import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 import 'package:resq360/features/settings/screens/manage_cards_screen.dart';
+import 'package:resq360/features/settings/screens/notification_settings_screen.dart';
 import 'package:resq360/features/settings/screens/ratings_screen.dart';
 import 'package:resq360/features/settings/screens/refer_screen.dart';
+import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -70,7 +73,7 @@ class SettingsScreen extends ConsumerWidget {
         },
       ),
       SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_RATINGS_SVG.svg,
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_UPDATE_SERVICE_SVG.svg,
         title: 'Update Service',
         onTap: () async {
           await pushScreen(context, const RatingScreen());
@@ -84,10 +87,10 @@ class SettingsScreen extends ConsumerWidget {
         },
       ),
       SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_RATINGS_SVG.svg,
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
         title: 'Add Bank Details',
         onTap: () async {
-          await pushScreen(context, const RatingScreen());
+          await pushScreen(context, const AddBankDetailsScreen());
         },
       ),
       SettingsItem(
@@ -98,10 +101,10 @@ class SettingsScreen extends ConsumerWidget {
         },
       ),
       SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_RATINGS_SVG.svg,
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_NOTIFICATIONS_SVG.svg,
         title: 'Notification Settings',
         onTap: () async {
-          await pushScreen(context, const RatingScreen());
+          await pushScreen(context, const NotificationSettingsScreen());
         },
       ),
       SettingsItem(
@@ -151,20 +154,34 @@ class SettingsScreen extends ConsumerWidget {
           const _ProfileSection(),
           10.verticalSpace,
           if (isProvider)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GenText(
-                  'Account Status: ACTIVE',
-                  height: 24.5,
-                  color: appColors.success.shade700,
-                  weight: FontWeight.w500,
-                ),
-                4.horizontalSpace,
-                AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
-                  color: appColors.success.shade700,
-                ),
-              ],
+            GestureDetector(
+              onTap: () async {
+                await GeneralDialogs.showCustomDialog(
+                  context,
+                  body: AccountStatusDialog(
+                    onTap: () async {
+                      Navigator.pop(context);
+
+                      await pushScreen(context, const ContactAdminScreen());
+                    },
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GenText(
+                    'Account Status: ACTIVE',
+                    height: 24.5,
+                    color: appColors.success.shade700,
+                    weight: FontWeight.w500,
+                  ),
+                  4.horizontalSpace,
+                  AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
+                    color: appColors.success.shade700,
+                  ),
+                ],
+              ),
             ),
           20.verticalSpace,
           if (isProvider)

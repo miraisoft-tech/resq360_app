@@ -25,6 +25,10 @@ class _AddCardScreenState extends State<AddCardScreen> {
           size: 18,
           weight: FontWeight.w700,
         ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: appColors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: appColors.whiteColor,

@@ -61,7 +61,7 @@ class WideButton extends StatelessWidget {
                   : (backgroundColor ?? colors.primary.shade500),
           disabledBackgroundColor: colors.textColor.shade300,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           //  side: BorderSide(color: colors.primary.shade100, width: 2),
         ),

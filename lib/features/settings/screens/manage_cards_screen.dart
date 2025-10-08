@@ -26,6 +26,7 @@ class ManageCardsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+        forceMaterialTransparency: true,
         title: UrbText(
           'Manage Cards',
           size: 22,

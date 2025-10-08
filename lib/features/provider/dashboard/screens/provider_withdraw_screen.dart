@@ -196,7 +196,7 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
                 onPressed: () async {
                   await GeneralDialogs.showCustomDialog(
                     context,
-                    body: const WithdrawalCompletedScreen(),
+                    body: const WithdrawalCompletedModal(),
                   );
                 },
               ),
@@ -208,8 +208,8 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
   }
 }
 
-class WithdrawalCompletedScreen extends StatelessWidget {
-  const WithdrawalCompletedScreen({super.key});
+class WithdrawalCompletedModal extends StatelessWidget {
+  const WithdrawalCompletedModal({super.key});
 
   @override
   Widget build(BuildContext context) {
