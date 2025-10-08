@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/settings/data/models/payment_cards_model.dart';
-import 'package:resq360/features/customer/settings/screens/add_new_card_screen.dart';
+import 'package:resq360/features/settings/data/models/payment_cards_model.dart';
+import 'package:resq360/features/settings/screens/add_new_card_screen.dart';
 
 class ManageCardsScreen extends StatelessWidget {
   const ManageCardsScreen({super.key});

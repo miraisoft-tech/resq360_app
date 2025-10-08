@@ -1,15 +1,16 @@
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/screens/thank_you.modal.dart';
 
-class ServiceCompletedScreen extends StatefulWidget {
-  const ServiceCompletedScreen({super.key});
+class ClientServiceCompletedScreen extends StatefulWidget {
+  const ClientServiceCompletedScreen({super.key});
 
   @override
-  State<ServiceCompletedScreen> createState() => _ServiceCompletedScreenState();
+  State<ClientServiceCompletedScreen> createState() =>
+      _ClientServiceCompletedScreenState();
 }
 
-class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
+class _ClientServiceCompletedScreenState
+    extends State<ClientServiceCompletedScreen> {
   double rating = 0;
   final TextEditingController reviewController = TextEditingController();
 
@@ -21,6 +22,7 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
         backgroundColor: appColors.whiteColor,
+        forceMaterialTransparency: true,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
@@ -76,24 +78,7 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
                       ),
                       Expanded(
                         child: GenText(
-                          'The service provided meets your expectations',
-                          color: appColors.success.shade700,
-                          size: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                  4.verticalSpace,
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GenText(
-                        '• ',
-                        color: appColors.success.shade700,
-                      ),
-                      Expanded(
-                        child: GenText(
-                          'The service provider has fulfilled all obligations',
+                          'You have provided a good service and the customer is satisfied',
                           color: appColors.success.shade700,
                           size: 13,
                         ),
@@ -142,7 +127,7 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
             KFormField(
               label: 'Write a review',
               controller: reviewController,
-              hintText: 'Share your experience with this provider...',
+              hintText: 'Share your experience with this client...',
               maxLines: 10,
               minLines: 8,
               onChanged: (value) {
@@ -158,9 +143,8 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
                       ? () async {
                         await GeneralDialogs.showCustomBottomSheet(
                           context,
-                          body: ThankYouModal(
+                          body: ProviderThankYouModal(
                             onContinuePressed: () async {
-                              if (context.mounted) await pop(context);
                               if (context.mounted) await pop(context);
                               if (context.mounted) await pop(context);
                               if (context.mounted) await pop(context);
@@ -172,6 +156,72 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class ProviderThankYouModal extends ConsumerWidget {
+  const ProviderThankYouModal({
+    required this.onContinuePressed,
+
+    super.key,
+  });
+
+  final void Function() onContinuePressed;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appColors = context.appColors;
+
+    return Container(
+      width: double.infinity,
+      height:
+          MediaQuery.of(context).viewInsets.bottom +
+          (MediaQuery.of(context).size.height * 0.55),
+      decoration: BoxDecoration(
+        color: appColors.whiteColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.r),
+          topRight: Radius.circular(20.r),
+        ),
+      ),
+      padding: pad(vertical: 20, horizontal: 16),
+      child: Column(
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: onContinuePressed,
+              icon: Icon(Icons.close, color: appColors.black),
+            ),
+          ),
+          AppAssets.ASSETS_IMAGES_CONGRATS_PNG.imageAsset(
+            height: 172,
+            width: 172,
+          ),
+          10.verticalSpace,
+          GenText(
+            'Congratulations!',
+            color: appColors.black,
+            size: 22,
+            height: 32.5,
+            weight: FontWeight.w700,
+            textAlign: TextAlign.center,
+          ),
+          GenText(
+            'You earned a good review, get ready for more clients.',
+            color: appColors.neutral.shade500,
+            height: 32.5,
+            weight: FontWeight.w400,
+            textAlign: TextAlign.center,
+          ),
+          25.verticalSpace,
+          WideButton(
+            label: 'Back to Home',
+            onPressed: onContinuePressed,
+          ),
+        ],
       ),
     );
   }

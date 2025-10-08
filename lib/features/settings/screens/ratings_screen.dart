@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/settings/data/models/reviews_model.dart';
-import 'package:resq360/features/customer/settings/widgets/reviews_card.dart';
+import 'package:resq360/features/settings/data/models/reviews_model.dart';
+import 'package:resq360/features/settings/widgets/reviews_card.dart';
 
 class RatingScreen extends StatelessWidget {
   const RatingScreen({super.key});

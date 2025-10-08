@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/settings/data/models/reviews_model.dart';
+import 'package:resq360/features/settings/data/models/reviews_model.dart';
 
 class ReviewCard extends StatelessWidget {
   const ReviewCard({

@@ -189,6 +189,7 @@ class _BookingCardState extends State<BookingCard> {
               15.horizontalSpace,
               SVGButton(
                 path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
+                color: colors.primary.shade500,
                 onTap: () {},
               ),
               10.horizontalSpace,

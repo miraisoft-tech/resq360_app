@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/bookings/data/models/booking_model.dart';
-import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
+import 'package:resq360/features/provider/bookings/data/models/booking_model.dart';
+import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
+import 'package:resq360/features/provider/bookings/widgets/booking_receipt_modal.dart';
 
 class ProviderBookingsScreen extends StatefulWidget {
   const ProviderBookingsScreen({super.key});
@@ -98,6 +99,9 @@ class _BookingList extends StatelessWidget {
       itemBuilder: (_, index) {
         return BookingCard(
           data: bookings[index],
+          onTap: () async {
+            await pushScreen(context, const ProviderServiceDetailScreen());
+          },
         );
       },
     );
@@ -105,9 +109,10 @@ class _BookingList extends StatelessWidget {
 }
 
 class BookingCard extends StatefulWidget {
-  const BookingCard({required this.data, super.key});
+  const BookingCard({required this.data, required this.onTap, super.key});
   final Booking data;
 
+  final VoidCallback onTap;
   @override
   State<BookingCard> createState() => _BookingCardState();
 }
@@ -126,163 +131,166 @@ class _BookingCardState extends State<BookingCard> {
     final colors = context.appColors;
     final data = widget.data;
 
-    return Container(
-      padding: pad(vertical: 18, horizontal: 14),
-      decoration: BoxDecoration(
-        color: colors.whiteColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.lightGreyColor2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const CircleAvatar(
-                radius: 25,
-                backgroundImage: NetworkImage(
-                  'https://randomuser.me/api/portraits/men/30.jpg',
-                ),
-              ),
-              12.horizontalSpace,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        GenText(
-                          'QuickTow Emergency',
-                          height: 24.5,
-                          weight: FontWeight.w500,
-                          color: colors.black,
-                        ),
-                      ],
-                    ),
-                    GenText(
-                      'Towing Service',
-                      size: 12,
-                      height: 20.5,
-                      weight: FontWeight.w500,
-                      color: colors.neutral.shade400,
-                    ),
-                    Row(
-                      children: [
-                        AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
-                        4.horizontalSpace,
-                        GenText(
-                          '₦15,000',
-                          size: 12,
-                          height: 20.5,
-                          weight: FontWeight.w400,
-                          color: colors.black,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              SVGButton(
-                path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                onTap: () {},
-              ),
-              15.horizontalSpace,
-              SVGButton(
-                path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-                onTap: () {},
-              ),
-              10.horizontalSpace,
-            ],
-          ),
-          const ListDivider(
-            verticalSpacing: 10,
-          ),
-
-          if (expanded)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        padding: pad(vertical: 18, horizontal: 14),
+        decoration: BoxDecoration(
+          color: colors.whiteColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colors.lightGreyColor2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CALENDER_SVG.svgColor(
-                    color: colors.textColor.shade600,
+                const CircleAvatar(
+                  radius: 25,
+                  backgroundImage: NetworkImage(
+                    'https://randomuser.me/api/portraits/men/30.jpg',
                   ),
-                  label: 'Date',
-                  value: data.date ?? 'N/A',
                 ),
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
-                    color: colors.textColor.shade600,
-                  ),
-                  label: 'Time Started',
-                  value: data.start ?? 'N/A',
-                ),
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
-                    color: colors.textColor.shade600,
-                  ),
-                  label: 'Time Completed',
-                  value: data.end ?? 'N/A',
-                ),
-                8.verticalSpace,
-                GestureDetector(
-                  onTap: () async {
-                    await GeneralDialogs.showCustomBottomSheet(
-                      context,
-                      body: BookingReceiptModal(
-                        service: 'Towing Service',
-                        provider: 'QuickTow Emergency',
-                        serviceId: 'TXN-20250815-PLUMB123',
-                        status: 'Completed',
-                        invoice: '#INV-238777',
-                        dateTime:
-                            '${data.date ?? 'N/A'} - ${data.end ?? 'N/A'}',
-                        method: 'Card',
-                        onDownload: () {},
-                      ),
-                    );
-                  },
-                  child: Row(
+                12.horizontalSpace,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AppAssets.ASSETS_ICONS_RECEIPT_SVG.svg,
-                      5.horizontalSpace,
+                      Row(
+                        children: [
+                          GenText(
+                            'QuickTow Emergency',
+                            height: 24.5,
+                            weight: FontWeight.w500,
+                            color: colors.black,
+                          ),
+                        ],
+                      ),
                       GenText(
-                        'View Receipt',
+                        'Towing Service',
                         size: 12,
-                        weight: FontWeight.w400,
-                        color: colors.primary.shade500,
-                        decoration: TextDecoration.underline,
+                        height: 20.5,
+                        weight: FontWeight.w500,
+                        color: colors.neutral.shade400,
+                      ),
+                      Row(
+                        children: [
+                          AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
+                          4.horizontalSpace,
+                          GenText(
+                            '₦15,000',
+                            size: 12,
+                            height: 20.5,
+                            weight: FontWeight.w400,
+                            color: colors.black,
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-
-                const ListDivider(
-                  verticalSpacing: 15,
+                SVGButton(
+                  path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
+                  onTap: () {},
                 ),
+                15.horizontalSpace,
+                SVGButton(
+                  path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
+                  color: colors.primary.shade500,
+                  onTap: () {},
+                ),
+                10.horizontalSpace,
               ],
             ),
-          GestureDetector(
-            onTap: expandCard,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GenText(
-                  expanded ? 'View Less' : 'View More',
-                  weight: FontWeight.w500,
-                  color: colors.primary.shade500,
-                ),
-                4.horizontalSpace,
-                Transform.rotate(
-                  angle: expanded ? 3.14 : 0,
-                  child: Icon(
-                    Icons.keyboard_arrow_down,
+            const ListDivider(
+              verticalSpacing: 10,
+            ),
+
+            if (expanded)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _InfoRow(
+                    icon: AppAssets.ASSETS_ICONS_CALENDER_SVG.svgColor(
+                      color: colors.textColor.shade600,
+                    ),
+                    label: 'Date',
+                    value: data.date ?? 'N/A',
+                  ),
+                  _InfoRow(
+                    icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
+                      color: colors.textColor.shade600,
+                    ),
+                    label: 'Time Started',
+                    value: data.start ?? 'N/A',
+                  ),
+                  _InfoRow(
+                    icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
+                      color: colors.textColor.shade600,
+                    ),
+                    label: 'Time Completed',
+                    value: data.end ?? 'N/A',
+                  ),
+                  8.verticalSpace,
+                  GestureDetector(
+                    onTap: () async {
+                      await GeneralDialogs.showCustomBottomSheet(
+                        context,
+                        body: BookingReceiptModal(
+                          service: 'Towing Service',
+                          provider: 'Jane Doe',
+                          status: 'Completed',
+                          invoice: '#INV-238777',
+                          dateTime:
+                              '${data.date ?? 'N/A'} - ${data.end ?? 'N/A'}',
+                          method: 'Card',
+                          onDownload: () {},
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        AppAssets.ASSETS_ICONS_RECEIPT_SVG.svg,
+                        5.horizontalSpace,
+                        GenText(
+                          'View Receipt',
+                          size: 12,
+                          weight: FontWeight.w400,
+                          color: colors.primary.shade500,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const ListDivider(
+                    verticalSpacing: 15,
+                  ),
+                ],
+              ),
+            GestureDetector(
+              onTap: expandCard,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GenText(
+                    expanded ? 'View Less' : 'View More',
+                    weight: FontWeight.w500,
                     color: colors.primary.shade500,
                   ),
-                ),
-              ],
+                  4.horizontalSpace,
+                  Transform.rotate(
+                    angle: expanded ? 3.14 : 0,
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: colors.primary.shade500,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

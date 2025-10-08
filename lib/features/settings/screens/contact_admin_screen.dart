@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
-import 'package:resq360/features/customer/settings/data/models/admin_types.enums.dart';
+import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 
 class ContactAdminScreen extends StatelessWidget {
   const ContactAdminScreen({super.key});

@@ -1,18 +1,19 @@
 // ignore_for_file: deprecated_member_use, document_ignores
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/data/models/cancel_reason_enum.dart';
+import 'package:resq360/features/provider/bookings/data/provider_cancel_enums.dart';
 import 'package:resq360/features/widgets/dialogs/cancelled.modal.dart';
 
-class ServiceCancelledScreen extends StatefulWidget {
-  const ServiceCancelledScreen({super.key});
+class CancelSlientServiceScreen extends StatefulWidget {
+  const CancelSlientServiceScreen({super.key});
 
   @override
-  State<ServiceCancelledScreen> createState() => _ServiceCancelledScreenState();
+  State<CancelSlientServiceScreen> createState() =>
+      _CancelSlientServiceScreenState();
 }
 
-class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
-  CancelReason? selectedReason;
+class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
+  CancelReasonEnum? selectedReason;
   final TextEditingController reasonController = TextEditingController();
 
   @override
@@ -74,14 +75,51 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
                     weight: FontWeight.w600,
                     color: appColors.error.shade700,
                   ),
-                  8.verticalSpace,
+                  5.verticalSpace,
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('• '),
+                      GenText(
+                        '• ',
+                        color: appColors.error.shade600,
+                      ),
                       Expanded(
                         child: GenText(
-                          'Cancellation of service attracts a 10% administration fee',
+                          'Cancellation of service attracts a cancellation charge of ₦3,000.',
+                          color: appColors.error.shade600,
+                          size: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                  5.verticalSpace,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GenText(
+                        '• ',
+                        color: appColors.error.shade600,
+                      ),
+                      Expanded(
+                        child: GenText(
+                          'Service started cannot be cancelled',
+                          color: appColors.error.shade600,
+                          size: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                  5.verticalSpace,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GenText(
+                        '• ',
+                        color: appColors.error.shade600,
+                      ),
+                      Expanded(
+                        child: GenText(
+                          'Service provider can have a negative wallet balance',
                           color: appColors.error.shade600,
                           size: 13,
                         ),
@@ -115,14 +153,14 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
                     size: 13,
                   ),
                   14.verticalSpace,
-                  ...CancelReason.values.map((reason) {
+                  ...CancelReasonEnum.values.map((reason) {
                     return GestureDetector(
                       onTap: () => setState(() => selectedReason = reason),
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: 4.h),
                         child: Row(
                           children: [
-                            Radio<CancelReason>(
+                            Radio<CancelReasonEnum>(
                               value: reason,
                               groupValue: selectedReason,
                               onChanged:
@@ -145,7 +183,7 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
               ),
             ),
             24.verticalSpace,
-            if (selectedReason == CancelReason.other) ...[
+            if (selectedReason == CancelReasonEnum.other) ...[
               KFormField(
                 label: 'Other',
                 controller: reasonController,
@@ -201,17 +239,15 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
     );
   }
 
-  String _reasonText(CancelReason reason) {
+  String _reasonText(CancelReasonEnum reason) {
     switch (reason) {
-      case CancelReason.changeOfPlans:
-        return 'Change of plans';
-      case CancelReason.notNeeded:
-        return 'Service no longer needed';
-      case CancelReason.alternativeSource:
-        return 'Found an alternative source';
-      case CancelReason.emergency:
+      case CancelReasonEnum.unableToReachClient:
+        return 'Unable to reach client';
+      case CancelReasonEnum.vehicleEquipmentIssue:
+        return 'Vehicle/Equipment issue';
+      case CancelReasonEnum.emergencySituation:
         return 'Emergency situation';
-      case CancelReason.other:
+      case CancelReasonEnum.other:
         return 'Other';
     }
   }

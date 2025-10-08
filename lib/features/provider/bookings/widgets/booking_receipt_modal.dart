@@ -4,7 +4,6 @@ class BookingReceiptModal extends ConsumerWidget {
   const BookingReceiptModal({
     required this.service,
     required this.provider,
-    required this.serviceId,
     required this.status,
     required this.invoice,
     required this.dateTime,
@@ -15,7 +14,6 @@ class BookingReceiptModal extends ConsumerWidget {
 
   final String service;
   final String provider;
-  final String serviceId;
   final String status;
   final String invoice;
   final String dateTime;
@@ -28,7 +26,7 @@ class BookingReceiptModal extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.7,
+      height: MediaQuery.of(context).size.height * 0.6,
       padding: pad(vertical: 10, horizontal: 16),
       decoration: BoxDecoration(
         color: appColors.whiteColor,
@@ -37,7 +35,7 @@ class BookingReceiptModal extends ConsumerWidget {
           topRight: Radius.circular(20.r),
         ),
       ),
-      child: Col(
+      child: Column(
         children: [
           Center(
             child: Container(
@@ -57,7 +55,7 @@ class BookingReceiptModal extends ConsumerWidget {
                 width: 30.w,
               ),
               UrbText(
-                'Booking Receipt',
+                'Payment Receipt',
                 size: 22,
                 height: 32.5,
                 weight: FontWeight.w700,
@@ -71,28 +69,29 @@ class BookingReceiptModal extends ConsumerWidget {
             ],
           ),
           30.verticalSpace,
-          GenText(
-            'Booking Info',
-            weight: FontWeight.w500,
+          UrbText(
+            '₦15,000.00',
+            size: 18,
+            height: 28.5,
+            weight: FontWeight.w700,
             color: appColors.black,
+          ),
+          4.verticalSpace,
+          GenText(
+            'Payment Successful',
+            size: 12,
+            height: 20.5,
+            weight: FontWeight.w400,
+            color: appColors.success.shade700,
+          ),
+          const ListDivider(
+            verticalSpacing: 20,
           ),
           20.verticalSpace,
           _infoRow('Service', service),
           5.verticalSpace,
-          _infoRow('Provider', provider),
+          _infoRow('Client', provider),
           5.verticalSpace,
-          _infoRow('Service ID', serviceId),
-          5.verticalSpace,
-          _infoRow('Status', status),
-          const ListDivider(
-            verticalSpacing: 20,
-          ),
-          GenText(
-            'Payment Info',
-            weight: FontWeight.w500,
-            color: appColors.black,
-          ),
-          20.verticalSpace,
           _infoRow('Invoice No.', invoice),
           5.verticalSpace,
           _infoRow('Date & Time', dateTime, bold: true),

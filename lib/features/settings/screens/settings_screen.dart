@@ -1,11 +1,11 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/settings/data/models/settings_model.dart';
-import 'package:resq360/features/customer/settings/screens/change_password_screen.dart';
-import 'package:resq360/features/customer/settings/screens/contact_admin_screen.dart';
-import 'package:resq360/features/customer/settings/screens/manage_cards_screen.dart';
-import 'package:resq360/features/customer/settings/screens/ratings_screen.dart';
-import 'package:resq360/features/customer/settings/screens/refer_screen.dart';
-import 'package:resq360/features/customer/settings/widgets/logout.dialog.dart';
+import 'package:resq360/features/settings/data/models/settings_model.dart';
+import 'package:resq360/features/settings/screens/change_password_screen.dart';
+import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
+import 'package:resq360/features/settings/screens/manage_cards_screen.dart';
+import 'package:resq360/features/settings/screens/ratings_screen.dart';
+import 'package:resq360/features/settings/screens/refer_screen.dart';
+import 'package:resq360/features/settings/widgets/logout.dialog.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
