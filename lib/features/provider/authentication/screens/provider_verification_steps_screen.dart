@@ -1,15 +1,16 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/authentication/screens/step_face_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_step_face_screen.dart';
 
-class VerificationStepsScreen extends StatefulWidget {
-  const VerificationStepsScreen({super.key});
+class ProviderVerificationStepsScreen extends StatefulWidget {
+  const ProviderVerificationStepsScreen({super.key});
 
   @override
-  State<VerificationStepsScreen> createState() =>
-      _VerificationStepsScreenState();
+  State<ProviderVerificationStepsScreen> createState() =>
+      _ProviderVerificationStepsScreenState();
 }
 
-class _VerificationStepsScreenState extends State<VerificationStepsScreen> {
+class _ProviderVerificationStepsScreenState
+    extends State<ProviderVerificationStepsScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -67,7 +68,7 @@ class _VerificationStepsScreenState extends State<VerificationStepsScreen> {
                 onPressed: () async {
                   log('Proceed verification steps');
 
-                  await pushScreen(context, const StepFaceScreen());
+                  await pushScreen(context, const ProviderStepFaceScreen());
                 },
               ),
               20.verticalSpace,

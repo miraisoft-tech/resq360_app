@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
-import 'package:resq360/features/customer/authentication/widgets/step.modal.dart';
+import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 
 class ChangePasswordScreen extends StatelessWidget {
   const ChangePasswordScreen({super.key});

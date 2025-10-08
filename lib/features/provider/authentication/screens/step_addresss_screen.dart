@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/authentication/widgets/step.modal.dart';
-import 'package:resq360/features/provider/authentication/widgets/step_indicator.dart';
+import 'package:resq360/features/widgets/dialogs/step.modal.dart';
+import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
 class StepAddressScreen extends StatefulWidget {
   const StepAddressScreen({super.key});

@@ -3,18 +3,18 @@ import 'dart:io';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/features/provider/authentication/screens/step_addresss_screen.dart';
-import 'package:resq360/features/provider/authentication/widgets/step.modal.dart';
-import 'package:resq360/features/provider/authentication/widgets/step_indicator.dart';
+import 'package:resq360/features/widgets/dialogs/step.modal.dart';
+import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 import 'package:resq360/features/widgets/images.widgets.dart';
 
-class StepIDScreen extends StatefulWidget {
-  const StepIDScreen({super.key});
+class ProviderStepIDScreen extends StatefulWidget {
+  const ProviderStepIDScreen({super.key});
 
   @override
-  State<StepIDScreen> createState() => _StepIDScreenState();
+  State<ProviderStepIDScreen> createState() => _ProviderStepIDScreenState();
 }
 
-class _StepIDScreenState extends State<StepIDScreen> {
+class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
   final ValueNotifier<String?> _selectType = ValueNotifier(null);
 
   final List<String> idTypes = [

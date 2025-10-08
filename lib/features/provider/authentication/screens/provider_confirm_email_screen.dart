@@ -2,20 +2,22 @@ import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/authentication/screens/verification_steps_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
-class ConfirmEmailScreen extends StatefulWidget {
-  const ConfirmEmailScreen({required this.email, super.key});
+class ProviderConfirmEmailScreen extends StatefulWidget {
+  const ProviderConfirmEmailScreen({required this.email, super.key});
 
   final String email;
 
   @override
-  State<ConfirmEmailScreen> createState() => _ConfirmEmailScreenState();
+  State<ProviderConfirmEmailScreen> createState() =>
+      _ProviderConfirmEmailScreenState();
 }
 
-class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
+class _ProviderConfirmEmailScreenState
+    extends State<ProviderConfirmEmailScreen> {
   int endTime =
       DateTime.now()
           .add(const Duration(seconds: 5 * 60))
@@ -67,7 +69,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       return;
     }
 
-    await pushScreen(context, const VerificationStepsScreen());
+    await pushScreen(context, const ProviderVerificationStepsScreen());
   }
 
   @override

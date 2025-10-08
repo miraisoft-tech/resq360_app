@@ -6,14 +6,14 @@ import 'package:resq360/features/provider/authentication/screens/step_id_screen.
 import 'package:resq360/features/provider/authentication/widgets/step.modal.dart';
 import 'package:resq360/features/provider/authentication/widgets/step_indicator.dart';
 
-class StepFaceScreen extends StatefulWidget {
-  const StepFaceScreen({super.key});
+class ProviderStepFaceScreen extends StatefulWidget {
+  const ProviderStepFaceScreen({super.key});
 
   @override
-  State<StepFaceScreen> createState() => _StepFaceScreenState();
+  State<ProviderStepFaceScreen> createState() => _ProviderStepFaceScreenState();
 }
 
-class _StepFaceScreenState extends State<StepFaceScreen> {
+class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
   File? pickedImage;
 
   Future<void> pickCameraPhoto(BuildContext context) async {
@@ -34,7 +34,7 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
             await pop(context);
 
             if (context.mounted) {
-              await pushScreen(context, const StepIDScreen());
+              await pushScreen(context, const ProviderStepIDScreen());
             }
           },
         ),

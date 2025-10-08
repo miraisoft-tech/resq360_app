@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/authentication/screens/confirm_email_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_confirm_email_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderBusinessDetailsScreen extends StatefulWidget {
@@ -131,7 +132,7 @@ class _ProviderBusinessDetailsScreenState
               onPressed: () async {
                 await pushScreen(
                   context,
-                  ConfirmEmailScreen(
+                  ProviderConfirmEmailScreen(
                     email: addressController.text,
                   ),
                 );
@@ -140,8 +141,8 @@ class _ProviderBusinessDetailsScreenState
             30.verticalSpace,
             Center(
               child: GestureDetector(
-                onTap: () {
-                  log('Navigate to login');
+                onTap: () async {
+                  await pushScreen(context, const ProviderLoginScreen());
                 },
                 child: RichText(
                   text: TextSpan(
