@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/theme/static_colors.dart';
-import 'package:resq360/features/customer/dashboard/screens/fund_wallet_completed.dialog.dart';
+import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.dart';
 
 class FundWalletConfirmDialog extends StatefulWidget {
   const FundWalletConfirmDialog({required this.amount, super.key});

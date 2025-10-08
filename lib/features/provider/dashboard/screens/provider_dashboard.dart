@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
-import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
+import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_ongoing_service.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_stats_card.dart';
@@ -86,7 +86,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           IconButton(
             icon: AppAssets.ASSETS_ICONS_WALLET_SVG.svg,
             onPressed: () async {
-              await pushScreen(context, const WalletScreen());
+              await pushScreen(context, const ProviderWalletScreen());
             },
           ),
           IconButton(
