@@ -1,10 +1,10 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/screens/complete_payment_option.dialog.dart';
-import 'package:resq360/features/customer/chat/screens/payment_option.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_box_widget.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_bubble.dart';
 import 'package:resq360/features/customer/chat/widgets/chat_invoice_card_widget.dart';
+import 'package:resq360/features/widgets/chat_box_widget.dart';
+import 'package:resq360/features/widgets/chat_bubble.dart';
+import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
+import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
 class ChatDetailScreen extends StatelessWidget {
   const ChatDetailScreen({super.key});

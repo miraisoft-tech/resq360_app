@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/screens/payment_option.dialog.dart';
+import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
 class FundMethodDialog extends StatefulWidget {
   const FundMethodDialog({

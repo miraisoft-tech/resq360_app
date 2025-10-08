@@ -1,7 +1,7 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/dashboard/view_models/main_layout_provider.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 
 class MainLayoutPage extends StatefulWidget {
   const MainLayoutPage({
@@ -50,7 +50,10 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
 
           final dashboardVM = ref.watch(dashboardViewModel);
           final selectedIndex = dashboardVM.currentIndex;
-          final navItems = dashboardVM.displayNavItems;
+          final navItems =
+              dashboardVM.userType == UserType.customer
+                  ? dashboardVM.customerDisplayNavItems
+                  : dashboardVM.providerDisplayNavItems;
 
           return Scaffold(
             key: widget.key ?? mainLayoutScaffoldKey,

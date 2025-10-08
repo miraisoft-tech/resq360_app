@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_box_widget.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_bubble.dart';
+import 'package:resq360/features/widgets/chat_box_widget.dart';
+import 'package:resq360/features/widgets/chat_bubble.dart';
 
 class SupportChatScreen extends StatelessWidget {
   const SupportChatScreen({super.key});

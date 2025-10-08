@@ -68,65 +68,68 @@ class ReviewSummaryCard extends StatelessWidget {
             ),
           ],
         ),
-        20.horizontalSpace,
+
         Expanded(
-          child: Col(
-            children: [
-              LinearProgressIndicator(
-                borderRadius: BorderRadius.circular(8.r),
-                value: 1,
-                backgroundColor: colors.lightGreyColor3,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  colors.primary.shade400,
+          child: Padding(
+            padding: pad(horizontal: 20),
+            child: Col(
+              children: [
+                LinearProgressIndicator(
+                  borderRadius: BorderRadius.circular(8.r),
+                  value: 1,
+                  backgroundColor: colors.lightGreyColor3,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colors.primary.shade400,
+                  ),
+                  minHeight: 4,
+                  semanticsLabel: '5 star',
                 ),
-                minHeight: 4,
-                semanticsLabel: '5 star',
-              ),
-              8.verticalSpace,
-              LinearProgressIndicator(
-                borderRadius: BorderRadius.circular(8.r),
-                value: 0.85,
-                backgroundColor: colors.lightGreyColor3,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  colors.primary.shade400,
+                8.verticalSpace,
+                LinearProgressIndicator(
+                  borderRadius: BorderRadius.circular(8.r),
+                  value: 0.85,
+                  backgroundColor: colors.lightGreyColor3,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colors.primary.shade400,
+                  ),
+                  minHeight: 4,
+                  semanticsLabel: '5 star',
                 ),
-                minHeight: 4,
-                semanticsLabel: '5 star',
-              ),
-              8.verticalSpace,
-              LinearProgressIndicator(
-                borderRadius: BorderRadius.circular(8.r),
-                value: 0.65,
-                backgroundColor: colors.lightGreyColor3,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  colors.primary.shade400,
+                8.verticalSpace,
+                LinearProgressIndicator(
+                  borderRadius: BorderRadius.circular(8.r),
+                  value: 0.65,
+                  backgroundColor: colors.lightGreyColor3,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colors.primary.shade400,
+                  ),
+                  minHeight: 4,
+                  semanticsLabel: '5 star',
                 ),
-                minHeight: 4,
-                semanticsLabel: '5 star',
-              ),
-              8.verticalSpace,
-              LinearProgressIndicator(
-                borderRadius: BorderRadius.circular(8.r),
-                value: 0.45,
-                backgroundColor: colors.lightGreyColor3,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  colors.primary.shade400,
+                8.verticalSpace,
+                LinearProgressIndicator(
+                  borderRadius: BorderRadius.circular(8.r),
+                  value: 0.45,
+                  backgroundColor: colors.lightGreyColor3,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colors.primary.shade400,
+                  ),
+                  minHeight: 4,
+                  semanticsLabel: '5 star',
                 ),
-                minHeight: 4,
-                semanticsLabel: '5 star',
-              ),
-              8.verticalSpace,
-              LinearProgressIndicator(
-                borderRadius: BorderRadius.circular(8.r),
-                value: 0.25,
-                backgroundColor: colors.lightGreyColor3,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  colors.primary.shade400,
+                8.verticalSpace,
+                LinearProgressIndicator(
+                  borderRadius: BorderRadius.circular(8.r),
+                  value: 0.25,
+                  backgroundColor: colors.lightGreyColor3,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colors.primary.shade400,
+                  ),
+                  minHeight: 4,
+                  semanticsLabel: '5 star',
                 ),
-                minHeight: 4,
-                semanticsLabel: '5 star',
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

@@ -1,11 +1,11 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/chat/screens/payment_option.dialog.dart';
 import 'package:resq360/features/customer/dashboard/models/wallet_transaction.dart';
 import 'package:resq360/features/customer/dashboard/screens/fund_method.dialog.dart';
 import 'package:resq360/features/customer/dashboard/screens/fund_wallet_confirm.dialog.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
+import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class WalletScreen extends StatelessWidget {

@@ -1,13 +1,13 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/screens/complete_payment_option.dialog.dart';
-import 'package:resq360/features/customer/chat/screens/payment_option.dialog.dart';
-import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_box_widget.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_bubble.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_invoice_card_widget.dart';
+import 'package:resq360/features/provider/chat/screens/provider_generate_invoice.dialog.dart';
+import 'package:resq360/features/provider/chat/widgets/provider_chat_invoice_card_widget.dart';
+import 'package:resq360/features/widgets/chat_box_widget.dart';
+import 'package:resq360/features/widgets/chat_bubble.dart';
+import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
+import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
-class ChatDetailScreen extends StatelessWidget {
-  const ChatDetailScreen({super.key});
+class ProviderChatDetailScreen extends StatelessWidget {
+  const ProviderChatDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +69,7 @@ class ChatDetailScreen extends StatelessWidget {
                   top: 10.h,
                 ),
                 children: [
-                  ChatInvoiceCardWidget(
+                  ProviderChatInvoiceCardWidget(
                     onTapPay: () async {
                       await GeneralDialogs.showCustomDialog(
                         context,
@@ -100,19 +100,19 @@ class ChatDetailScreen extends StatelessWidget {
                         '''Hi Jacob! My car broke down on Gwarimpa highway. It's a 2018 Honda Civic. The engine just stopped working.''',
                     time: '2:50 pm',
                   ),
-                  30.verticalSpace,
-                  GestureDetector(
-                    onTap: () async {
-                      await pushScreen(context, const ServiceDetailScreen());
-                    },
-                    child: GenText(
-                      'View Service details',
-                      weight: FontWeight.w500,
-                      color: appColors.primary.shade500,
-                      decoration: TextDecoration.underline,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+                  // 30.verticalSpace,
+                  // GestureDetector(
+                  //   onTap: () async {
+                  //     await pushScreen(context, const ServiceDetailScreen());
+                  //   },
+                  //   child: GenText(
+                  //     'View Service details',
+                  //     weight: FontWeight.w500,
+                  //     color: appColors.primary.shade500,
+                  //     decoration: TextDecoration.underline,
+                  //     textAlign: TextAlign.center,
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -161,7 +161,7 @@ class ChatDetailScreen extends StatelessWidget {
           child: Row(
             children: [
               const GenText('Location'),
-              55.horizontalSpace,
+              50.horizontalSpace,
               AppAssets.ASSETS_ICONS_ATTACH_LOCATION_SVG.svg,
             ],
           ),
@@ -176,8 +176,20 @@ class ChatDetailScreen extends StatelessWidget {
             ],
           ),
         ),
+        PopupMenuItem<String>(
+          value: 'invoice',
+          child: Row(
+            children: [
+              const GenText('Generate Invoice'),
+              5.horizontalSpace,
+              AppAssets.ASSETS_ICONS_ATTACH_INVOICE_SVG.svg,
+            ],
+          ),
+        ),
       ],
-    ).then((String? result) {
+    ).then((String? result) async {
+      if (!context.mounted) return;
+
       if (result != null) {
         switch (result) {
           case 'media':
@@ -186,6 +198,8 @@ class ChatDetailScreen extends StatelessWidget {
             _onLocationTap();
           case 'document':
             _onDocumentTap();
+          case 'invoice':
+            await _onInvoiceTap(context);
         }
       }
     });
@@ -196,4 +210,13 @@ class ChatDetailScreen extends StatelessWidget {
   void _onLocationTap() {}
 
   void _onDocumentTap() {}
+
+  Future<void> _onInvoiceTap(
+    BuildContext context,
+  ) async {
+    await GeneralDialogs.showCustomDialog(
+      context,
+      body: const ProviderGenerateInvoiceDialog(),
+    );
+  }
 }

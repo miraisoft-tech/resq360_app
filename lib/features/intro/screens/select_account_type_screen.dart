@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
 
 class SelectAccountTypeScreen extends ConsumerStatefulWidget {
@@ -17,6 +18,9 @@ class _CreateAccountTypeScreenState
 
   Future<void> _onContinue() async {
     log('Selected index: $_selectedIndex');
+
+    ref.read(dashboardViewModel).userType =
+        _selectedIndex == 0 ? UserType.customer : UserType.provider;
 
     if (_selectedIndex == 0) {
       await pushScreen(context, const CreateAccountScreen());

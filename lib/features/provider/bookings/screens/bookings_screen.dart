@@ -2,14 +2,14 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/bookings/data/models/booking_model.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
 
-class BookingsScreen extends StatefulWidget {
-  const BookingsScreen({super.key});
+class ProviderBookingsScreen extends StatefulWidget {
+  const ProviderBookingsScreen({super.key});
 
   @override
-  State<BookingsScreen> createState() => _BookingsScreenState();
+  State<ProviderBookingsScreen> createState() => _ProviderBookingsScreenState();
 }
 
-class _BookingsScreenState extends State<BookingsScreen>
+class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 

@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_tile.dart';
+import 'package:resq360/features/widgets/chat_tile.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 

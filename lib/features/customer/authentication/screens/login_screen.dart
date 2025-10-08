@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/forgot_password_screen.dart';
-import 'package:resq360/features/customer/dashboard/main_layout.dart';
+import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class LoginScreen extends StatefulWidget {

@@ -1,18 +1,18 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
-import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_tile.dart';
+import 'package:resq360/features/provider/chat/screens/provider_chat_details_screen.dart';
+import 'package:resq360/features/widgets/chat_tile.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+class ProviderChatScreen extends StatefulWidget {
+  const ProviderChatScreen({super.key});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<ProviderChatScreen> createState() => _ProviderChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ProviderChatScreenState extends State<ProviderChatScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   String selectedFilter = 'All';
@@ -99,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             FilterSearchFormField(
               controller: _searchController,
-              hintText: 'Search for services',
+              hintText: 'Search chats...',
               onTapSuffix: () {},
               onChanged: (value) {
                 setState(() {});
@@ -130,7 +130,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             onTap: () async {
                               await pushScreen(
                                 context,
-                                const ChatDetailScreen(),
+                                const ProviderChatDetailScreen(),
                               );
                             },
                           );

@@ -39,21 +39,24 @@ class PromoCardWidget extends StatelessWidget {
                         color: colors.whiteColor,
                       ),
                       10.verticalSpace,
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: pad(horizontal: 14),
-                          backgroundColor: colors.whiteColor,
-                          foregroundColor: colors.primary.shade500,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.r),
+                      SizedBox(
+                        height: 30.h,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: pad(horizontal: 14),
+                            backgroundColor: colors.whiteColor,
+                            foregroundColor: colors.primary.shade500,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
                           ),
-                        ),
-                        onPressed: () {},
-                        child: GenText(
-                          'Call Now',
-                          height: 16.5,
-                          color: colors.primary.shade500,
-                          weight: FontWeight.w500,
+                          onPressed: () {},
+                          child: GenText(
+                            'Call Now',
+                            height: 16.5,
+                            color: colors.primary.shade500,
+                            weight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],

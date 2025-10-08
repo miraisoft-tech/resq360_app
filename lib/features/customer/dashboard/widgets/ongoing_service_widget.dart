@@ -112,7 +112,12 @@ class OngoingServiceCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
-                  child: const Text('Complete'),
+                  child: GenText(
+                    'Complete',
+                    height: 16.5,
+                    color: colors.whiteColor,
+                    weight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
