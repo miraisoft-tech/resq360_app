@@ -1,16 +1,18 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
-class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+class ProviderResetPasswordScreen extends StatefulWidget {
+  const ProviderResetPasswordScreen({super.key});
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  State<ProviderResetPasswordScreen> createState() =>
+      _ProviderResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+class _ProviderResetPasswordScreenState
+    extends State<ProviderResetPasswordScreen> {
   late TextEditingController newPasswordController;
   late TextEditingController passwordController;
 
@@ -62,7 +64,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               },
             ),
 
-            24.verticalSpace,
+            60.verticalSpace,
             WideButton(
               label: 'Reset Password',
               onPressed: () async {
@@ -80,7 +82,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         if (context.mounted) {
                           await replaceScreen(
                             context,
-                            const LoginScreen(),
+                            const ProviderLoginScreen(),
                           );
                         }
                       },

@@ -1,15 +1,17 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
-import 'package:resq360/features/provider/authentication/screens/verify_email_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_verify_email_screen.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+class ProviderForgotPasswordScreen extends StatefulWidget {
+  const ProviderForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  State<ProviderForgotPasswordScreen> createState() =>
+      _ProviderForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ProviderForgotPasswordScreenState
+    extends State<ProviderForgotPasswordScreen> {
   late TextEditingController emailController;
 
   @override
@@ -42,11 +44,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ),
       body: Padding(
         padding: pad(horizontal: 16, vertical: 10),
-        child: Column(
+        child: ListView(
           children: [
             AppAssets.ASSETS_IMAGES_FORGOT_PASS_PNG.imageAsset(
               height: 164,
               width: 164,
+              fit: BoxFit.contain,
             ),
             16.verticalSpace,
             UrbText(
@@ -80,7 +83,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               onPressed: () async {
                 await pushScreen(
                   context,
-                  VerifyEmailScreen(
+                  ProviderVerifyEmailScreen(
                     email: emailController.text,
                   ),
                 );

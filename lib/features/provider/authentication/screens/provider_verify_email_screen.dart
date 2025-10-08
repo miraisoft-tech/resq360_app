@@ -2,20 +2,21 @@ import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/screens/reset_password_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_reset_password_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
-class VerifyEmailScreen extends StatefulWidget {
-  const VerifyEmailScreen({required this.email, super.key});
+class ProviderVerifyEmailScreen extends StatefulWidget {
+  const ProviderVerifyEmailScreen({required this.email, super.key});
 
   final String email;
 
   @override
-  State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
+  State<ProviderVerifyEmailScreen> createState() =>
+      _ProviderVerifyEmailScreenState();
 }
 
-class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
+class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
   int endTime =
       DateTime.now()
           .add(const Duration(seconds: 5 * 60))
@@ -67,7 +68,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       return;
     }
 
-    await pushScreen(context, const ResetPasswordScreen());
+    await pushScreen(context, const ProviderResetPasswordScreen());
   }
 
   @override

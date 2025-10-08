@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
-import 'package:resq360/features/provider/authentication/screens/step_addresss_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_step_addresss_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 import 'package:resq360/features/widgets/images.widgets.dart';
@@ -42,7 +42,7 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
             await pop(context);
 
             if (context.mounted) {
-              await pushScreen(context, const StepAddressScreen());
+              await pushScreen(context, const ProviderStepAddressScreen());
             }
           },
         ),
@@ -71,7 +71,7 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
       body: SafeArea(
         child: Padding(
           padding: pad(horizontal: 20),
-          child: ListView(
+          child: Column(
             children: [
               30.verticalSpace,
               UrbText(
@@ -142,7 +142,7 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
                   ),
                 ),
               ),
-              50.verticalSpace,
+              const Spacer(),
               WideButton(
                 label: 'Proceed',
                 onPressed:

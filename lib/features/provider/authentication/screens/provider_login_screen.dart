@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/authentication/screens/forgot_password_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_forgot_password_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderLoginScreen extends StatefulWidget {
@@ -70,7 +70,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
             16.verticalSpace,
             GestureDetector(
               onTap: () async {
-                await pushScreen(context, const ForgotPasswordScreen());
+                await pushScreen(context, const ProviderForgotPasswordScreen());
               },
               child: Align(
                 alignment: Alignment.centerRight,

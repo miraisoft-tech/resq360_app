@@ -42,11 +42,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ),
       body: Padding(
         padding: pad(horizontal: 16, vertical: 10),
-        child: Column(
+        child: ListView(
           children: [
             AppAssets.ASSETS_IMAGES_FORGOT_PASS_PNG.imageAsset(
               height: 164,
               width: 164,
+              fit: BoxFit.contain,
             ),
             16.verticalSpace,
             UrbText(

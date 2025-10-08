@@ -61,8 +61,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 setState(() {});
               },
             ),
-
-            24.verticalSpace,
+            60.verticalSpace,
             WideButton(
               label: 'Reset Password',
               onPressed: () async {
