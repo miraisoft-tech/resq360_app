@@ -4,10 +4,10 @@ import 'package:resq360/features/customer/bookings/screens/bookings_screen.dart'
 import 'package:resq360/features/customer/chat/screens/chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/dashboard.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
-import 'package:resq360/features/settings/screens/settings_screen.dart';
 import 'package:resq360/features/provider/bookings/screens/bookings_screen.dart';
 import 'package:resq360/features/provider/chat/screens/provider_chat_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
+import 'package:resq360/features/settings/screens/settings_screen.dart';
 
 final dashboardViewModel = ChangeNotifierProvider<DashboardViewModel>(
   DashboardViewModel.new,
