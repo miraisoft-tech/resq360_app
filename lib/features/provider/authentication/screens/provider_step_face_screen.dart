@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/features/provider/authentication/screens/step_id_screen.dart';
-import 'package:resq360/features/provider/authentication/widgets/step.modal.dart';
-import 'package:resq360/features/provider/authentication/widgets/step_indicator.dart';
+import 'package:resq360/features/widgets/dialogs/step.modal.dart';
+import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
 class ProviderStepFaceScreen extends StatefulWidget {
   const ProviderStepFaceScreen({super.key});
