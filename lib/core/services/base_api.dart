@@ -1,9 +1,4 @@
 import 'package:dio/dio.dart';
-// import 'package:remis_b2c/core/utils/build_config.dart';
-// import 'package:remis_b2c/features/authentication/view_models/auth_signup.vm.dart';
-// import 'package:remis_b2c/features/authentication/view_models/auth_vm.dart';
-// import 'package:remis_b2c/main.dart';
-// import 'package:remis_b2c/navigation/router.dart';
 import 'package:resq360/core/utils/build_config.dart';
 export 'dart:io';
 export 'package:http_parser/http_parser.dart';
@@ -16,8 +11,8 @@ class BaseAPI {
 
   static String get baseUrl =>
       BuildConfig.isDev
-          ? 'https://b2c-demo-api.remis.africa/'
-          : 'https://api-fuelsubsidy.remis.africa/';
+          ? 'https://resq360-kspk.onrender.com/'
+          : 'https://resq360-kspk.onrender.com/';
 
   Dio dio({
     String? contentType,

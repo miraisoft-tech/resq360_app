@@ -265,7 +265,7 @@ class _WorkingHoursSectionState extends State<WorkingHoursSection> {
   TimeOfDay? endTime;
 
   Future<void> _selectTime(BuildContext context, bool isStartTime) async {
-    final TimeOfDay? picked = await showTimePicker(
+    final picked = await showTimePicker(
       context: context,
       initialTime:
           isStartTime

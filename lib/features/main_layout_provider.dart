@@ -4,6 +4,7 @@ import 'package:resq360/features/customer/bookings/screens/bookings_screen.dart'
 import 'package:resq360/features/customer/chat/screens/chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/dashboard.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/bookings/screens/bookings_screen.dart';
 import 'package:resq360/features/provider/chat/screens/provider_chat_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
@@ -99,5 +100,3 @@ class DashboardViewModel extends ChangeNotifier {
     ),
   ];
 }
-
-enum UserType { customer, provider }

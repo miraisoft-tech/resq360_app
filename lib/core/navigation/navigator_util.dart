@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-import '../../__lib.dart';
+import '../../../__lib.dart';
 
 Future<dynamic> pushScreen(
   BuildContext context,

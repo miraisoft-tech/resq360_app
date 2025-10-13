@@ -1,11 +1,12 @@
 import 'dart:async';
+
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/location_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/local_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
-import 'package:resq360/navigation/navigator.dart';
 
 final authProvider = ChangeNotifierProvider<AuthProvider>(
   (ref) => AuthProvider(authRemoteRepo: AuthRemoteRepo.instance, ref: ref),
