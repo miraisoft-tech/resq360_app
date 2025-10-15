@@ -1,8 +1,11 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/reset_password_screen.dart';
+import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
@@ -67,70 +70,100 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       return;
     }
 
-    await pushScreen(context, const ResetPasswordScreen());
+    context.read<CustomerAuthBloc>().add(
+      CustomerverifyEmail(emailVerificationToken: _otpController1.text),
+    );
+
+    // await pushScreen(context, const ResetPasswordScreen());
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return AppScaffold(
-      title: 'Enter Code',
-      subTitle: 'Please enter the reset code sent to your email',
-      body: Column(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                NormalPinCodeField(
-                  controller: _otpController1,
-                  onDone: (code) {},
-                  onChange: (dynamic value) {
-                    log(value);
-                    setState(() {});
-                  },
-                ),
-                25.verticalSpace,
+    return BlocListener<CustomerAuthBloc, CustomerAuthState>(
+      listener: (context, state) async {
+        if (state is CustomerAuthLoading) {
+          showLoadingDialog(context);
+        }
 
-                Center(
-                  child: CountdownTimer(
-                    endTime: endTime,
-                    controller: controller,
-                    widgetBuilder: (_, CurrentRemainingTime? time) {
-                      return Column(
-                        children: [
-                          InkWell(
-                            onTap: onResend,
-                            child: GenText(
-                              'Didn’t receive code?',
-                              size: 12,
-                              height: 20.5,
-                              color: colors.neutral.shade500,
-                              weight: FontWeight.w400,
-                            ),
-                          ),
-                          5.verticalSpace,
-                          GoToWidget(
-                            ligthText: 'Resend code in ',
-                            coloredText:
-                                '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
-                          ),
-                        ],
-                      );
+        if (state is CustomerAuthFailure) {
+          if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          print(state.error);
+          showSnackBar(context, 'Error', state.error);
+        }
+
+        if (state is CustomerEmailVerified) {
+          print('Email verified, navigating to main layout');
+          if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          await replaceScreen(
+            context,
+            const MainLayoutPage(),
+          );
+        }
+      },
+      child: AppScaffold(
+        title: 'Enter Code',
+        subTitle: 'Please enter the reset code sent to your email',
+        body: Column(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  NormalPinCodeField(
+                    controller: _otpController1,
+                    onDone: (code) {},
+                    onChange: (dynamic value) {
+                      log(value);
+                      setState(() {});
                     },
                   ),
-                ),
-              ],
-            ),
-          ),
+                  25.verticalSpace,
 
-          WideButton(
-            label: 'Verify & Continue',
-            onPressed: (_otpController1.text.length < 6 ? null : onVerify),
-          ),
-          const Spacer(),
-        ],
+                  Center(
+                    child: CountdownTimer(
+                      endTime: endTime,
+                      controller: controller,
+                      widgetBuilder: (_, CurrentRemainingTime? time) {
+                        return Column(
+                          children: [
+                            InkWell(
+                              onTap: onResend,
+                              child: GenText(
+                                'Didn’t receive code?',
+                                size: 12,
+                                height: 20.5,
+                                color: colors.neutral.shade500,
+                                weight: FontWeight.w400,
+                              ),
+                            ),
+                            5.verticalSpace,
+                            GoToWidget(
+                              ligthText: 'Resend code in ',
+                              coloredText:
+                                  '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            WideButton(
+              label: 'Verify & Continue',
+              onPressed: (_otpController1.text.length < 6 ? null : onVerify),
+            ),
+            const Spacer(),
+          ],
+        ),
       ),
     );
   }

@@ -64,6 +64,8 @@ class AuthLocalRepo {
     }
   }
 
+  
+
   Future<bool> clearAuthCredentials() async {
     try {
       await pref.deleteKey(key: DBKeys.authData);
@@ -73,6 +75,33 @@ class AuthLocalRepo {
       return false;
     }
   }
+
+  Future<bool> storeAccessToken(String token) async {
+  try {
+    return await pref.save(key: DBKeys.accessTokenKey, value: token);
+  } catch (e) {
+    log(e.toString());
+    return false;
+  }
+}
+
+Future<String?> getAccessToken() async {
+  try {
+    return await pref.getValue(key: DBKeys.accessTokenKey) as String?;
+  } catch (e) {
+    log(e.toString());
+    return null;
+  }
+}
+
+Future<bool> clearAccessToken() async {
+  try {
+    return await pref.deleteKey(key: DBKeys.accessTokenKey);
+  } catch (e) {
+    log(e.toString());
+    return false;
+  }
+}
 
   ////////////Username and Password///////////
 

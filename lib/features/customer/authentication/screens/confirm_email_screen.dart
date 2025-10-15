@@ -72,92 +72,89 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           CustomerverifyEmail(emailVerificationToken: _otpController1.text),
         );
         print('pushing to verification steps');
-    await pushScreen(context, const VerificationStepsScreen());
+    
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocProvider(
-      create: (context) => CustomerAuthBloc(),
-      child: BlocListener<CustomerAuthBloc, CustomerAuthState>(
-        listener: (context, state) {
-          if (state is CustomerAuthLoading) {
-            showLoadingDialog(context);
-          }
-
-          if (state is CustomerAuthFailure) {
-            print(state.error);
-            Navigator.of(context).pop();
-            showErrorSnackbar(context, state.error);
-          }
-
-          if (state is CustomerEmailVerified) {
-            print('Email verified');
-            // Navigate to the next screen or show success message
-            Navigator.of(context).pop(); // Dismiss loading dialog
-            pushScreen(context, const VerificationStepsScreen());
-          }
-        },
-        child: AppScaffold(
-          title: 'Verify Email',
-          subTitle: 'Please enter the 6-digit code sent to your email',
-          body: Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  children: [
-                    NormalPinCodeField(
-                      controller: _otpController1,
-                      onDone: (code) {},
-                      onChange: (dynamic value) {
-                        log(value);
-                        setState(() {});
+    return BlocListener<CustomerAuthBloc, CustomerAuthState>(
+      listener: (context, state) {
+        if (state is CustomerAuthLoading) {
+          showLoadingDialog(context);
+        }
+    
+        if (state is CustomerAuthFailure) {
+          print(state.error);
+          Navigator.of(context).pop();
+          showErrorSnackbar(context, state.error);
+        }
+    
+        if (state is CustomerEmailVerified) {
+          print('Email verified');
+          
+          Navigator.of(context).pop(); 
+          pushScreen(context, const VerificationStepsScreen());
+        }
+      },
+      child: AppScaffold(
+        title: 'Verify Email',
+        subTitle: 'Please enter the 6-digit code sent to your email',
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  NormalPinCodeField(
+                    controller: _otpController1,
+                    onDone: (code) {},
+                    onChange: (dynamic value) {
+                      log(value);
+                      setState(() {});
+                    },
+                  ),
+                  25.verticalSpace,
+    
+                  Center(
+                    child: CountdownTimer(
+                      endTime: endTime,
+                      controller: controller,
+                      widgetBuilder: (_, CurrentRemainingTime? time) {
+                        return Column(
+                          children: [
+                            InkWell(
+                              onTap: onResend,
+                              child: GenText(
+                                'Didn’t receive code?',
+                                size: 12,
+                                height: 20.5,
+                                color: colors.neutral.shade500,
+                                weight: FontWeight.w400,
+                              ),
+                            ),
+                            5.verticalSpace,
+                            GoToWidget(
+                              ligthText: 'Resend code in ',
+                              coloredText:
+                                  '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
+                            ),
+                          ],
+                        );
                       },
                     ),
-                    25.verticalSpace,
-
-                    Center(
-                      child: CountdownTimer(
-                        endTime: endTime,
-                        controller: controller,
-                        widgetBuilder: (_, CurrentRemainingTime? time) {
-                          return Column(
-                            children: [
-                              InkWell(
-                                onTap: onResend,
-                                child: GenText(
-                                  'Didn’t receive code?',
-                                  size: 12,
-                                  height: 20.5,
-                                  color: colors.neutral.shade500,
-                                  weight: FontWeight.w400,
-                                ),
-                              ),
-                              5.verticalSpace,
-                              GoToWidget(
-                                ligthText: 'Resend code in ',
-                                coloredText:
-                                    '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                    50.verticalSpace,
-                  ],
-                ),
+                  ),
+                  50.verticalSpace,
+                ],
               ),
-
-              WideButton(
-                label: 'Verify & Continue',
-                onPressed: (_otpController1.text.length < 6 ? null : onVerify),
-              ),
-              20.verticalSpace,
-            ],
-          ),
+            ),
+    
+            WideButton(
+              label: 'Verify & Continue',
+              onPressed: (_otpController1.text.length < 6 ? null : onVerify),
+            ),
+            20.verticalSpace,
+          ],
         ),
       ),
     );

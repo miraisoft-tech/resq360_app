@@ -273,7 +273,7 @@ Future<bool> verifyEmail ({required String emailVerificationToken}) async {
 
       switch (res.statusCode) {
         case 200:
-          return UserModel.fromJson(res.data ?? {});
+          return AuthResponse.fromJson(res.data ?? {});
         default:
           return ErrorResponse(
             message:

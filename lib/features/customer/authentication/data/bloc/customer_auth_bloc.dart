@@ -20,28 +20,34 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     on<CustomerLogout>(_onLogout);
   }
 
-  // Example login handler
   Future<void> _onLoginWithEmail(
-      CustomerLoginWithEmail event, Emitter<CustomerAuthState> emit) async {
+    CustomerLoginWithEmail event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
     emit(CustomerAuthLoading());
     try {
       final result = await authRemoteRepo.loginWithEmail(
         email: event.email,
         password: event.password,
       );
-       if (result.data != null) {
-      emit(CustomerAuthAuthenticated(result.data!.user));
-    } else {
-      emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
-    }
-    } catch (e) {
+      if (result.data != null) {
+        final userProfile = await authRemoteRepo.getUserProfile();
+
+        log('Fetched user profile: $userProfile'); // test line
+
+        emit(CustomerAuthAuthenticated(result.data!.user));
+      } else {
+        emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
+      }
+    } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
   }
 
-
   Future<void> _onSignupWithEmail(
-      CustomerSignupWIthEmail event, Emitter<CustomerAuthState> emit) async {
+    CustomerSignupWIthEmail event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
     emit(CustomerAuthLoading());
     try {
       final result = await authRemoteRepo.signupWithEmail(
@@ -49,71 +55,85 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         email: event.email,
         password: event.password,
       );
-       if (result.data != null) {
-      emit(CustomerAuthAuthenticated(result.data!.user));
-    } else {
-      emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
-    }
-    } catch (e) {
-       log('Signup Bloc Error: $e');
+      if (result.data != null) {
+        emit(CustomerAuthAuthenticated(result.data!.user));
+      } else {
+        emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
+      }
+    } on Exception catch (e) {
+      log('Signup Bloc Error: $e');
       emit(CustomerAuthFailure(e.toString()));
     }
   }
 
-  // Forgot password
   Future<void> _onForgotPassword(
-      CustomerForgotPassword event, Emitter<CustomerAuthState> emit) async {
+    CustomerForgotPassword event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
     emit(CustomerAuthLoading());
     try {
       // TODO: API call to request password reset
       await Future.delayed(const Duration(seconds: 1));
-      emit(CustomerAuthInitial()); // Can emit a "success message" state if needed
+      emit(
+        CustomerAuthInitial(),
+      ); // Can emit a "success message" state if needed
     } catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
   }
 
-  // Reset password
   Future<void> _onResetPassword(
-      CustomerResetPassword event, Emitter<CustomerAuthState> emit) async {
+    CustomerResetPassword event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
     emit(CustomerAuthLoading());
     try {
       // TODO: API call to reset password
       await Future.delayed(const Duration(seconds: 1));
       emit(CustomerAuthInitial()); // Or some success state
-    } catch (e) {
+    } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
   }
 
-  // Email verification
   Future<void> _onVerifyEmail(
-      CustomerverifyEmail event, Emitter<CustomerAuthState> emit) async {
+    CustomerverifyEmail event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
     emit(CustomerAuthLoading());
     try {
       final result = await authRemoteRepo.verifyEmail(
         emailVerificationToken: event.emailVerificationToken,
       );
 
-      final isVerified = result;
-      if (isVerified) {
+      if (result) {
         emit(CustomerEmailVerified());
+      } else {
+        emit(
+          const CustomerAuthFailure(
+            'Verification failed. Please check your code.',
+          ),
+        );
       }
-    } catch (e) {
+    } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
   }
 
   // Get user profile
   Future<void> _onGetUserProfile(
-      CustomergetUserProfile event, Emitter<CustomerAuthState> emit) async {
+    CustomergetUserProfile event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
     emit(CustomerAuthLoading());
     try {
-      // TODO: API call to fetch profile
-      await Future.delayed(const Duration(seconds: 1));
-      final userId = "customer_123"; // Example response
-      // emit(CustomerAuthAuthenticated(userId));
-    } catch (e) {
+      final result = await authRemoteRepo.getUserProfile();
+      if (result.data != null) {
+        emit(CustomerProfileLoaded(result.data!.user));
+      } else {
+        emit(CustomerAuthFailure(result.error ?? 'Failed to load profile'));
+      }
+    } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
   }

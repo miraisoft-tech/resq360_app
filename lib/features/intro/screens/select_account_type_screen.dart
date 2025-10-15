@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
@@ -26,6 +27,9 @@ class _CreateAccountTypeScreenState
         _selectedIndex == 0 ? UserType.customer : UserType.provider;
 
     if (_selectedIndex == 0) {
+//       final repo = AuthRemoteRepo.instance;
+// final profile = await repo.getUserProfile();
+// log('PROFILE TEST: $profile');
       await pushScreen( context,
         BlocProvider( 
           create: (context) => CustomerAuthBloc(),

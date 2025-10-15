@@ -1,5 +1,3 @@
-import 'package:resq360/core/models/api_response.dart';
-
 // class AuthResponse extends EmptyResponse {
 //   AuthResponse({
 //     this.token,
@@ -203,19 +201,23 @@ import 'package:resq360/core/models/api_response.dart';
 
 import 'dart:convert';
 
+import 'package:resq360/core/models/api_response.dart';
+
 AuthResponse userFromJson(String str) =>
     AuthResponse.fromJson(json.decode(str) as Map<String, dynamic>);
 
 String userToJson(AuthResponse data) => json.encode(data.toJson());
 
 class AuthResponse extends EmptyResponse {
-  AuthResponse({
+  AuthResponse(
+    this.accessToken, {
     required this.message,
     required this.user,
     required this.success,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
+    json['access_token'] as String?,
     message: json['message'] as String,
     user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
     success: json['success'] as bool,
@@ -223,6 +225,7 @@ class AuthResponse extends EmptyResponse {
   String message;
   UserModel user;
   bool success;
+  final String? accessToken;
 
   Map<String, dynamic> toJson() => {
     'message': message,
@@ -231,36 +234,58 @@ class AuthResponse extends EmptyResponse {
   };
 }
 
-class UserModel extends EmptyResponse {
+class UserModel {
+
   UserModel({
-    required this.id,
-    required this.email,
-    required this.fullName,
-    required this.isEmailVerified,
-    required this.createdAt,
+    this.id,
+    this.email,
+    this.fullName,
+    this.firstName,
+    this.lastName,
+    this.isEmailVerified,
+    this.createdAt,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-    id:
-        json['id'] is int
-            ? json['id'] as int
-            : int.parse(json['id'].toString()),
-    email: json['email'] as String,
-    fullName: json['fullName'] as String,
-    isEmailVerified: json['isEmailVerified'] as bool,
-    createdAt: DateTime.parse(json['createdAt'].toString()),
-  );
-  int id;
-  String email;
-  String fullName;
-  bool isEmailVerified;
-  DateTime createdAt;
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id:
+          json['id'] is String
+              ? int.tryParse(json['id'] as String)
+              : (json['id'] is int ? json['id'] as int : null),
+      email: json['email'] as String?,
+      fullName:
+          json['fullName'] != null
+              ? json['fullName'] as String
+              : '${json['firstName'] ?? ''} ${json['lastName'] ?? ''}'.trim(),
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      isEmailVerified:
+          json['isEmailVerified'] is bool
+              ? json['isEmailVerified'] as bool
+              : (json['isEmailVerified'] == null
+                  ? null
+                  : json['isEmailVerified'].toString().toLowerCase() == 'true'),
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.parse(json['createdAt'].toString())
+              : null,
+    );
+  }
+  final int? id;
+  final String? email;
+  final String? fullName;
+  final String? firstName;
+  final String? lastName;
+  final bool? isEmailVerified;
+  final DateTime? createdAt;
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'email': email,
     'fullName': fullName,
+    'firstName': firstName,
+    'lastName': lastName,
     'isEmailVerified': isEmailVerified,
-    'createdAt': createdAt.toIso8601String(),
+    'createdAt': createdAt?.toIso8601String(),
   };
 }

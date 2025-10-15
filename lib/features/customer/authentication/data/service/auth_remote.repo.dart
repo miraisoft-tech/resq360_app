@@ -3,7 +3,10 @@ import 'package:resq360/core/models/api_response.dart';
 
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+
+final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
 
 class AuthRemoteRepo extends BaseAPI {
   factory AuthRemoteRepo() {
@@ -115,19 +118,29 @@ class AuthRemoteRepo extends BaseAPI {
 
       if (res.statusCode == 200 && res.data != null) {
         final success = res.data!['success'] == true;
-
+        final token = res.data!['token'];
+        print(token.toString());
+        await authLocalDataSource.storeAccessToken(
+          token.toString(),
+        ); // store token locally
+        dio().options.headers['Authorization'] =
+            'Bearer $token'; // attach to dio
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
           return ApiResult(data: authResponse);
         } else {
           // API returned 200 but success == false
-          return ApiResult(error: res.data!['message']?.toString() ?? 'Login failed');
+          return ApiResult(
+            error: res.data!['message']?.toString() ?? 'Login failed',
+          );
         }
       }
 
       // Add a default return in case the above conditions are not met
       return ApiResult(
-        error: res.data?['message']?.toString() ?? 'An error occurred, please try again!',
+        error:
+            res.data?['message']?.toString() ??
+            'An error occurred, please try again!',
       );
     } on Exception catch (e, s) {
       log(e);
@@ -137,7 +150,7 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<AuthResponse>>signupWithEmail({
+  Future<ApiResult<AuthResponse>> signupWithEmail({
     required String fullname,
     required String email,
     required String password,
@@ -156,21 +169,24 @@ class AuthRemoteRepo extends BaseAPI {
       log(res.statusCode);
       log(res.data);
 
-       if (res.statusCode == 201 && res.data != null) {
-             final success = res.data!['success'] == true;
+      if (res.statusCode == 201 && res.data != null) {
+        final success = res.data!['success'] == true;
 
-      if (success) {
-        final authResponse = AuthResponse.fromJson(res.data!);
-        return ApiResult(data: authResponse);
-      } else {
-        // API returned 200 but success == false
-        return ApiResult(error: res.data!['message']?.toString() ?? 'Signup failed');
-      }
-
+        if (success) {
+          final authResponse = AuthResponse.fromJson(res.data!);
+          return ApiResult(data: authResponse);
+        } else {
+          return ApiResult(
+            error: res.data!['message']?.toString() ?? 'Signup failed',
+          );
+        }
       }
 
       return ApiResult(
-          error: res.data?['message']?.toString() ?? 'An error occurred, please try again!');
+        error:
+            res.data?['message']?.toString() ??
+            'An error occurred, please try again!',
+      );
     } on Exception catch (e, s) {
       log(e);
       log(s);
@@ -239,18 +255,15 @@ class AuthRemoteRepo extends BaseAPI {
 
       return false;
     }
+  }
 
-}
-
-Future<bool> verifyEmail ({required String emailVerificationToken}) async {
+  Future<bool> verifyEmail({required String emailVerificationToken}) async {
     try {
-      const url = '/auth/reset-password/user';
+      final url = '/auth/verify-email/user/$emailVerificationToken';
 
-      final data = {
-        'emailVerificationToken': emailVerificationToken,
-      };
-
-      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+      final res = await dio().get<Map<String, dynamic>>(
+        url,
+      );
 
       log(res.statusCode);
       log(res.data);
@@ -269,32 +282,43 @@ Future<bool> verifyEmail ({required String emailVerificationToken}) async {
     }
   }
 
-  Future<EmptyResponse> getUserProfile () async {
+  Future<ApiResult<AuthResponse>> getUserProfile() async {
     try {
-      const url = '/auth/reset-password/user';
+      const url = '/auth/profile/user';
 
       final res = await dio().get<Map<String, dynamic>>(url);
 
       log(res.statusCode);
       log(res.data);
 
-      switch (res.statusCode) {
-        case 200:
-          return UserModel.fromJson(res.data ?? {});
-        default:
-          return ErrorResponse(
-            message:
-                res.data?['message'].toString() ??
-                'An error occured please try again!',
+      // switch (res.statusCode) {
+      //   case 200:
+      //     return UserModel.fromJson(res.data ?? {});
+      //   default:
+      //     return ErrorResponse(
+      //       message:
+      //           res.data?['message'].toString() ??
+      //           'An error occured please try again!',
+      //     );
+      // }
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          final authResponse = AuthResponse.fromJson(res.data!);
+          return ApiResult(data: authResponse);
+        } else {
+          return ApiResult(
+            error: res.data!['message']?.toString() ?? 'Signup failed',
           );
+        }
       }
+      return ApiResult(error: 'An error occurred, please try again!');
     } on Exception catch (e, s) {
       log(e);
       log(s);
 
-      return ErrorResponse(message: '$e $s');
+      return ApiResult(error: '$e $s');
     }
   }
 }
-
-
