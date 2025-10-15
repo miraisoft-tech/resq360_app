@@ -24,3 +24,12 @@ class ErrorResponse extends EmptyResponse {
     return data;
   }
 }
+
+class ApiResult<T> {
+
+  ApiResult({this.data, this.error});
+  final T? data;
+  final String? error;
+
+  bool get isSuccess => data != null && error == null;
+}

@@ -95,4 +95,199 @@ class AuthRemoteRepo extends BaseAPI {
 
     throw Exception('Sign-Up flow failed.');
   }
+  Future<EmptyResponse> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      const url = '/auth/login/user';
+
+      final data = {
+        'email': email,
+        'password': password,
+      };
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+
+      log(res.statusCode);
+      log(res.data);
+
+      switch (res.statusCode) {
+        case 200:
+          return AuthResponse.fromJson(res.data ?? {});
+        default:
+          return ErrorResponse(
+            message:
+                res.data?['message'].toString() ??
+                'An error occured please try again!',
+          );
+      }
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return ErrorResponse(message: '$e $s');
+    }
+  }
+
+  Future<ApiResult<AuthResponse>>signupWithEmail({
+    required String fullname,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      const url = '/auth/register/user';
+
+      final data = {
+        'fullName': fullname,
+        'email': email,
+        'password': password,
+      };
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+
+      log(res.statusCode);
+      log(res.data);
+
+       if (res.statusCode == 201 && res.data != null) {
+             final success = res.data!['success'] == true;
+
+      if (success) {
+        final authResponse = AuthResponse.fromJson(res.data!);
+        return ApiResult(data: authResponse);
+      } else {
+        // API returned 200 but success == false
+        return ApiResult(error: res.data!['message']?.toString() ?? 'Signup failed');
+      }
+
+      }
+
+      return ApiResult(
+          error: res.data?['message']?.toString() ?? 'An error occurred, please try again!');
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return ApiResult(error: '$e $s');
+    }
+  }
+
+  Future<bool> forgotPassword({
+    required String email,
+  }) async {
+    try {
+      const url = '/auth/forgot-password/user';
+
+      final data = {
+        'email': email,
+      };
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+
+      log(res.statusCode);
+      log(res.data);
+
+      switch (res.statusCode) {
+        case 200:
+          return true;
+        default:
+          return false;
+      }
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      const url = '/auth/reset-password/user';
+
+      final data = {
+        'email': email,
+        'code': code,
+        'newPassword': newPassword,
+      };
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+
+      log(res.statusCode);
+      log(res.data);
+
+      switch (res.statusCode) {
+        case 200:
+          return true;
+        default:
+          return false;
+      }
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return false;
+    }
+
 }
+
+Future<bool> verifyEmail ({required String emailVerificationToken}) async {
+    try {
+      const url = '/auth/reset-password/user';
+
+      final data = {
+        'emailVerificationToken': emailVerificationToken,
+      };
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+
+      log(res.statusCode);
+      log(res.data);
+
+      switch (res.statusCode) {
+        case 200:
+          return true;
+        default:
+          return false;
+      }
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return false;
+    }
+  }
+
+  Future<EmptyResponse> getUserProfile () async {
+    try {
+      const url = '/auth/reset-password/user';
+
+      final res = await dio().get<Map<String, dynamic>>(url);
+
+      log(res.statusCode);
+      log(res.data);
+
+      switch (res.statusCode) {
+        case 200:
+          return UserModel.fromJson(res.data ?? {});
+        default:
+          return ErrorResponse(
+            message:
+                res.data?['message'].toString() ??
+                'An error occured please try again!',
+          );
+      }
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return ErrorResponse(message: '$e $s');
+    }
+  }
+}
+
+

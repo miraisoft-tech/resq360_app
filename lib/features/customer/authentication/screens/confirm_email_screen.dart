@@ -1,7 +1,9 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -66,7 +68,10 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       await showErrorSnackbar(context, 'otp field must be 6 digits');
       return;
     }
-
+    context.read<CustomerAuthBloc>().add(
+          CustomerverifyEmail(emailVerificationToken: _otpController1.text),
+        );
+        print('pushing to verification steps');
     await pushScreen(context, const VerificationStepsScreen());
   }
 
@@ -74,63 +79,86 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return AppScaffold(
-      title: 'Verify Email',
-      subTitle: 'Please enter the 6-digit code sent to your email',
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                NormalPinCodeField(
-                  controller: _otpController1,
-                  onDone: (code) {},
-                  onChange: (dynamic value) {
-                    log(value);
-                    setState(() {});
-                  },
-                ),
-                25.verticalSpace,
+    return BlocProvider(
+      create: (context) => CustomerAuthBloc(),
+      child: BlocListener<CustomerAuthBloc, CustomerAuthState>(
+        listener: (context, state) {
+          if (state is CustomerAuthLoading) {
+            showLoadingDialog(context);
+          }
 
-                Center(
-                  child: CountdownTimer(
-                    endTime: endTime,
-                    controller: controller,
-                    widgetBuilder: (_, CurrentRemainingTime? time) {
-                      return Column(
-                        children: [
-                          InkWell(
-                            onTap: onResend,
-                            child: GenText(
-                              'Didn’t receive code?',
-                              size: 12,
-                              height: 20.5,
-                              color: colors.neutral.shade500,
-                              weight: FontWeight.w400,
-                            ),
-                          ),
-                          5.verticalSpace,
-                          GoToWidget(
-                            ligthText: 'Resend code in ',
-                            coloredText:
-                                '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                50.verticalSpace,
-              ],
-            ),
-          ),
+          if (state is CustomerAuthFailure) {
+            print(state.error);
+            Navigator.of(context).pop();
+            showErrorSnackbar(context, state.error);
+          }
 
-          WideButton(
-            label: 'Verify & Continue',
-            onPressed: (_otpController1.text.length < 6 ? null : onVerify),
+          if (state is CustomerEmailVerified) {
+            print('Email verified');
+            // Navigate to the next screen or show success message
+            Navigator.of(context).pop(); // Dismiss loading dialog
+            pushScreen(context, const VerificationStepsScreen());
+          }
+        },
+        child: AppScaffold(
+          title: 'Verify Email',
+          subTitle: 'Please enter the 6-digit code sent to your email',
+          body: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  children: [
+                    NormalPinCodeField(
+                      controller: _otpController1,
+                      onDone: (code) {},
+                      onChange: (dynamic value) {
+                        log(value);
+                        setState(() {});
+                      },
+                    ),
+                    25.verticalSpace,
+
+                    Center(
+                      child: CountdownTimer(
+                        endTime: endTime,
+                        controller: controller,
+                        widgetBuilder: (_, CurrentRemainingTime? time) {
+                          return Column(
+                            children: [
+                              InkWell(
+                                onTap: onResend,
+                                child: GenText(
+                                  'Didn’t receive code?',
+                                  size: 12,
+                                  height: 20.5,
+                                  color: colors.neutral.shade500,
+                                  weight: FontWeight.w400,
+                                ),
+                              ),
+                              5.verticalSpace,
+                              GoToWidget(
+                                ligthText: 'Resend code in ',
+                                coloredText:
+                                    '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    50.verticalSpace,
+                  ],
+                ),
+              ),
+
+              WideButton(
+                label: 'Verify & Continue',
+                onPressed: (_otpController1.text.length < 6 ? null : onVerify),
+              ),
+              20.verticalSpace,
+            ],
           ),
-          20.verticalSpace,
-        ],
+        ),
       ),
     );
   }
