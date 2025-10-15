@@ -56,7 +56,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             Navigator.of(context, rootNavigator: true).pop();
           }
           print(state.error);
-          showSnackBar(context, state.error, 'error');
+          showSnackBar(context, 'Error', state.error);
         }
     
         if (state is CustomerAuthAuthenticated) {
