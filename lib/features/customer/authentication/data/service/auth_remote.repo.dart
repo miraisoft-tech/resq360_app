@@ -95,7 +95,8 @@ class AuthRemoteRepo extends BaseAPI {
 
     throw Exception('Sign-Up flow failed.');
   }
-  Future<EmptyResponse> loginWithEmail({
+
+  Future<ApiResult<AuthResponse>> loginWithEmail({
     required String email,
     required String password,
   }) async {
@@ -112,21 +113,27 @@ class AuthRemoteRepo extends BaseAPI {
       log(res.statusCode);
       log(res.data);
 
-      switch (res.statusCode) {
-        case 200:
-          return AuthResponse.fromJson(res.data ?? {});
-        default:
-          return ErrorResponse(
-            message:
-                res.data?['message'].toString() ??
-                'An error occured please try again!',
-          );
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          final authResponse = AuthResponse.fromJson(res.data!);
+          return ApiResult(data: authResponse);
+        } else {
+          // API returned 200 but success == false
+          return ApiResult(error: res.data!['message']?.toString() ?? 'Login failed');
+        }
       }
+
+      // Add a default return in case the above conditions are not met
+      return ApiResult(
+        error: res.data?['message']?.toString() ?? 'An error occurred, please try again!',
+      );
     } on Exception catch (e, s) {
       log(e);
       log(s);
 
-      return ErrorResponse(message: '$e $s');
+      return ApiResult(error: '$e $s');
     }
   }
 

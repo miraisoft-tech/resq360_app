@@ -11,7 +11,7 @@ final AuthRemoteRepo authRemoteRepo = AuthRemoteRepo();
 
 class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
   CustomerAuthBloc() : super(CustomerAuthInitial()) {
-    // on<CustomerLoginWithEmail>(_onLoginWithEmail);
+    on<CustomerLoginWithEmail>(_onLoginWithEmail);
     on<CustomerSignupWIthEmail>(_onSignupWithEmail);
     on<CustomerForgotPassword>(_onForgotPassword);
     on<CustomerResetPassword>(_onResetPassword);
@@ -21,18 +21,23 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
   }
 
   // Example login handler
-  // Future<void> _onLoginWithEmail(
-  //     CustomerLoginWithEmail event, Emitter<CustomerAuthState> emit) async {
-  //   emit(CustomerAuthLoading());
-  //   try {
-  //     // TODO: Replace with your actual API call
-  //     await Future.delayed(const Duration(seconds: 2));
-  //     const userId = "customer_123"; // Example response
-  //     emit(const CustomerAuthAuthenticated(userId));
-  //   } catch (e) {
-  //     emit(CustomerAuthFailure(e.toString()));
-  //   }
-  // }
+  Future<void> _onLoginWithEmail(
+      CustomerLoginWithEmail event, Emitter<CustomerAuthState> emit) async {
+    emit(CustomerAuthLoading());
+    try {
+      final result = await authRemoteRepo.loginWithEmail(
+        email: event.email,
+        password: event.password,
+      );
+       if (result.data != null) {
+      emit(CustomerAuthAuthenticated(result.data!.user));
+    } else {
+      emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
+    }
+    } catch (e) {
+      emit(CustomerAuthFailure(e.toString()));
+    }
+  }
 
 
   Future<void> _onSignupWithEmail(
