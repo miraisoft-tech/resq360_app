@@ -11,6 +11,7 @@ import 'package:resq360/core/theme/app_theme.providers.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/intro/screens/splash_screen.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 
 final container = ProviderContainer();
 
@@ -51,9 +52,12 @@ Future<void> main() async {
         child: MultiBlocProvider(
           providers: [
             BlocProvider(
-              create: (context) => CustomerAuthBloc(
-                
-              ),
+              create: (context) => CustomerAuthBloc(),
+              
+            ),
+            BlocProvider(
+              create: (context) => ProviderAuthBloc(),
+              
             ),
           ],
           child: const MyApp(),

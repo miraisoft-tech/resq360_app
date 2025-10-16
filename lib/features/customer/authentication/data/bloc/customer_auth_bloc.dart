@@ -72,12 +72,20 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
   ) async {
     emit(CustomerAuthLoading());
     try {
-      // TODO: API call to request password reset
-      await Future.delayed(const Duration(seconds: 1));
-      emit(
-        CustomerAuthInitial(),
-      ); // Can emit a "success message" state if needed
-    } catch (e) {
+      final result = await authRemoteRepo.forgotPassword(
+        email: event.email,
+      );
+      print(  'Forgot Password Result: $result'); // Debug line
+      if (result) {
+        emit( CustomerForgotPasswordSucess());
+      } else {
+        emit(
+          const CustomerAuthFailure(
+            'Failed to send password reset email. Please try again.',
+          ),
+        );
+      }
+      } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
   }

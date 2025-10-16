@@ -7,8 +7,8 @@ sealed class ProviderAuthEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class CustomerLoginWithEmail extends ProviderAuthEvent {
-  const CustomerLoginWithEmail({required this.email, required this.password});
+class ProviderLoginWithEmail extends ProviderAuthEvent {
+  const ProviderLoginWithEmail({required this.email, required this.password});
   final String email;
   final String password;
 
@@ -16,15 +16,25 @@ class CustomerLoginWithEmail extends ProviderAuthEvent {
   List<Object> get props => [email, password];
 }
 
-class CustomerSignupWIthEmail extends ProviderAuthEvent {
-  const CustomerSignupWIthEmail({
+class ProviderSignupWIthEmail extends ProviderAuthEvent {
+  const ProviderSignupWIthEmail({
     required this.fullname,
     required this.email,
     required this.password,
+    required this.companyName,
+    required this.phoneNumber,
+    required this.customServiceName,
+    required this.service,
+    required this.address,
   });
   final String fullname;
   final String email;
   final String password;
+  final String companyName;
+  final String phoneNumber;
+  final String customServiceName;
+  final int service;
+  final Address address;
 
   @override
   List<Object> get props => [
@@ -34,8 +44,8 @@ class CustomerSignupWIthEmail extends ProviderAuthEvent {
   ];
 }
 
-class CustomerForgotPassword extends ProviderAuthEvent {
-  const CustomerForgotPassword({
+class ProviderForgotPassword extends ProviderAuthEvent {
+  const ProviderForgotPassword({
     required this.email,
   });
 
@@ -44,8 +54,8 @@ class CustomerForgotPassword extends ProviderAuthEvent {
   List<Object> get props => [email];
 }
 
-class CustomerResetPassword extends ProviderAuthEvent {
-  const CustomerResetPassword({
+class ProviderResetPassword extends ProviderAuthEvent {
+  const ProviderResetPassword({
     required this.email,
     required this.code,
     required this.newPassword,
@@ -55,8 +65,8 @@ class CustomerResetPassword extends ProviderAuthEvent {
   final String newPassword;
 }
 
-class CustomerverifyEmail extends ProviderAuthEvent {
-  const CustomerverifyEmail({
+class ProviderverifyEmail extends ProviderAuthEvent {
+  const ProviderverifyEmail({
     required this.emailVerificationToken,
   });
 
@@ -65,11 +75,11 @@ class CustomerverifyEmail extends ProviderAuthEvent {
   List<Object> get props => [emailVerificationToken];
 }
 
-class CustomergetUserProfile extends ProviderAuthEvent {
-  const CustomergetUserProfile();
+class ProvidergetUserProfile extends ProviderAuthEvent {
+  const ProvidergetUserProfile();
 
   @override
   List<Object> get props => [];
 }
 
-class CustomerLogout extends ProviderAuthEvent {}
+class ProviderLogout extends ProviderAuthEvent {}

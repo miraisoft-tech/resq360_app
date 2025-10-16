@@ -10,29 +10,36 @@ sealed class ProviderAuthState extends Equatable {
 // initial state
 final class ProviderAuthInitial extends ProviderAuthState {}
 
-class ProviderAuthLoading extends ProviderAuthState {}
+class ProviderAuthLoadingState  extends ProviderAuthState {}
 
-class ProviderAuthAuthenticated extends ProviderAuthState {
-  const ProviderAuthAuthenticated(this.userId);
-  final String userId;
+class ProviderAuthAuthenticatedState  extends ProviderAuthState {
+  const ProviderAuthAuthenticatedState (this.user);
+  final ProviderUserModel user;
 
   @override
-  List<Object> get props => [userId];
+  List<Object> get props => [ user];
 }
 
-class ProviderAuthFailure extends ProviderAuthState {
-  const ProviderAuthFailure(this.error);
+class ProviderAuthFailureState extends ProviderAuthState {
+  const ProviderAuthFailureState (this.error);
   final String error;
 
   @override
   List<Object> get props => [error];
 }
 
-class ProviderAuthSignupSuccess extends ProviderAuthState {}
-class CustomerPasswordResetSuccess extends ProviderAuthState {}
-class CustomerEmailVerified extends ProviderAuthState {}
+class ProviderAuthSignupSuccessState  extends ProviderAuthState {
+  const ProviderAuthSignupSuccessState (this.user);
+  final ProviderUserModel user;
 
-class ProviderProfileLoaded extends ProviderAuthState {
-  const ProviderProfileLoaded(this.user);
-  final UserModel user;
+  @override
+  List<Object> get props => [ user];
+}
+class ProviderPasswordResetSuccessState  extends ProviderAuthState {}
+class ProviderEmailVerifiedState  extends ProviderAuthState {}
+class ProviderForgotPasswordSucessState  extends ProviderAuthState {}
+
+class ProviderProfileLoadedState  extends ProviderAuthState {
+  const ProviderProfileLoadedState (this.user);
+  final ProviderUserModel user;
 }

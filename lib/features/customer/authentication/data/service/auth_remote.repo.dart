@@ -3,7 +3,7 @@ import 'package:resq360/core/models/api_response.dart';
 
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
@@ -211,7 +211,7 @@ class AuthRemoteRepo extends BaseAPI {
       log(res.data);
 
       switch (res.statusCode) {
-        case 200:
+        case 201:
           return true;
         default:
           return false;
@@ -225,17 +225,15 @@ class AuthRemoteRepo extends BaseAPI {
   }
 
   Future<bool> resetPassword({
-    required String email,
-    required String code,
-    required String newPassword,
+   required String token,
+    required String password,
   }) async {
     try {
       const url = '/auth/reset-password/user';
 
       final data = {
-        'email': email,
-        'code': code,
-        'newPassword': newPassword,
+        'token': token,
+        'password': password,
       };
 
       final res = await dio().post<Map<String, dynamic>>(url, data: data);

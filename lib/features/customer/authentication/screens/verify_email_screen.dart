@@ -85,21 +85,20 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       listener: (context, state) async {
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
-        }
-
-        if (state is CustomerAuthFailure) {
+        }else {
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
+        }
+
+        if (state is CustomerAuthFailure) {
+          
           print(state.error);
           showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerEmailVerified) {
           print('Email verified, navigating to main layout');
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
           await replaceScreen(
             context,
             const MainLayoutPage(),

@@ -5,7 +5,7 @@ import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/location_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/local_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 
 final authProvider = ChangeNotifierProvider<AuthProvider>(

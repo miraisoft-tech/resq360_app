@@ -23,7 +23,7 @@ class BaseAPI {
       BaseOptions(
         baseUrl: customBaseUrl ?? baseUrl,
         sendTimeout: const Duration(seconds: 30),
-        connectTimeout: const Duration(seconds: 30),
+        connectTimeout: const Duration(seconds: 60),
         receiveTimeout: const Duration(seconds: 30),
         contentType: contentType ?? Headers.jsonContentType,
         validateStatus: (int? s) => s! < 500,

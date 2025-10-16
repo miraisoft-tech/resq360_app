@@ -1,4 +1,7 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_business_details_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -13,10 +16,11 @@ class ProviderCreateAccountScreen extends StatefulWidget {
 
 class _ProviderCreateAccountScreenState
     extends State<ProviderCreateAccountScreen> {
+      
   late TextEditingController nameController;
   late TextEditingController emailController;
-  late TextEditingController phoneController;
   late TextEditingController passwordController;
+  late TextEditingController phoneNumberController;
 
   final _formKey = GlobalKey<FormState>();
   bool _agree = false;
@@ -27,8 +31,8 @@ class _ProviderCreateAccountScreenState
 
     nameController = TextEditingController();
     emailController = TextEditingController();
-    phoneController = TextEditingController();
     passwordController = TextEditingController();
+    phoneNumberController = TextEditingController();
   }
 
   @override
@@ -37,7 +41,7 @@ class _ProviderCreateAccountScreenState
 
     emailController.dispose();
     nameController.dispose();
-    phoneController.dispose();
+    phoneNumberController.dispose();
     passwordController.dispose();
   }
 
@@ -75,7 +79,7 @@ class _ProviderCreateAccountScreenState
             KFormField(
               label: 'Phone Number',
               hintText: 'Enter Your Phone Number',
-              controller: phoneController,
+              controller: phoneNumberController,
               keyboardType: TextInputType.phone,
               onChanged: (a) {
                 setState(() {});
@@ -141,10 +145,17 @@ class _ProviderCreateAccountScreenState
               onPressed:
                   _agree
                       ? () async {
-                        await pushScreen(
-                          context,
-                          const ProviderBusinessDetailsScreen(),
-                        );
+                        if (_formKey.currentState!.validate()) {
+                          await pushScreen(
+                            context,
+                            ProviderBusinessDetailsScreen(
+                              name: nameController.text,
+                              email: emailController.text,
+                              phone: passwordController.text,
+                              password: phoneNumberController.text,
+                            ),
+                          );
+                        }
                       }
                       : null,
             ),
