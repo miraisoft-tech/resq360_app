@@ -219,7 +219,7 @@ class AuthResponse extends EmptyResponse {
   factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
     json['access_token'] as String?,
     message: json['message'] as String,
-    user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
+    user: UserModel.fromJson(json['data']['user'] as Map<String, dynamic>),
     success: json['success'] as bool,
   );
   String message;
@@ -244,6 +244,7 @@ class UserModel {
     this.lastName,
     this.isEmailVerified,
     this.createdAt,
+    this.phoneNumber,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -265,6 +266,8 @@ class UserModel {
               : (json['isEmailVerified'] == null
                   ? null
                   : json['isEmailVerified'].toString().toLowerCase() == 'true'),
+      phoneNumber: json['phoneNumber'] as String? ?? '',
+
       createdAt:
           json['createdAt'] != null
               ? DateTime.parse(json['createdAt'].toString())
@@ -277,6 +280,7 @@ class UserModel {
   final String? firstName;
   final String? lastName;
   final bool? isEmailVerified;
+  final String? phoneNumber;
   final DateTime? createdAt;
 
   Map<String, dynamic> toJson() => {

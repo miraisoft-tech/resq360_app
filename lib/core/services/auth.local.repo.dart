@@ -88,7 +88,7 @@ class AuthLocalRepo {
 Future<String?> getAccessToken() async {
   try {
     return await pref.getValue(key: DBKeys.accessTokenKey) as String?;
-  } catch (e) {
+  } on Exception catch (e) {
     log(e.toString());
     return null;
   }

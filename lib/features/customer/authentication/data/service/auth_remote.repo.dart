@@ -105,7 +105,6 @@ class AuthRemoteRepo extends BaseAPI {
   }) async {
     try {
       const url = '/auth/login/user';
-
       final data = {
         'email': email,
         'password': password,
@@ -116,37 +115,47 @@ class AuthRemoteRepo extends BaseAPI {
       log(res.statusCode);
       log(res.data);
 
-      if (res.statusCode == 200 && res.data != null) {
-        final success = res.data!['success'] == true;
-        final token = res.data!['token'];
-        print(token.toString());
-        await authLocalDataSource.storeAccessToken(
-          token.toString(),
-        ); // store token locally
-        dio().options.headers['Authorization'] =
-            'Bearer $token'; // attach to dio
-        if (success) {
-          final authResponse = AuthResponse.fromJson(res.data!);
-          return ApiResult(data: authResponse);
-        } else {
-          // API returned 200 but success == false
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final body = res.data!;
+        final success = body['success'] == true;
+
+        if (!success) {
           return ApiResult(
-            error: res.data!['message']?.toString() ?? 'Login failed',
+            error: body['message']?.toString() ?? 'Login failed',
           );
         }
+
+        // Extract correct token path
+        final token = body['data']?['access_token'];
+        if (token == null) {
+          return ApiResult(error: 'No token returned from server');
+        }
+
+        // Save and attach token
+        await authLocalDataSource.storeAccessToken(token.toString());
+        print('Token has finally been saved');
+        print(token.toString());
+
+        // Try to fetch profile safely
+        try {
+          final userProfile = await getUserProfile(token: token.toString());
+          log('Fetched user profile: ${userProfile.data}');
+        } catch (e) {
+          log('Failed to fetch profile: $e');
+        }
+
+        // Create AuthResponse
+        final authResponse = AuthResponse.fromJson(res.data!);
+        return ApiResult(data: authResponse);
+      } else {
+        return ApiResult(error: 'Login failed with status ${res.statusCode}');
       }
-
-      // Add a default return in case the above conditions are not met
-      return ApiResult(
-        error:
-            res.data?['message']?.toString() ??
-            'An error occurred, please try again!',
-      );
-    } on Exception catch (e, s) {
-      log(e);
-      log(s);
-
-      return ApiResult(error: '$e $s');
+    } on Exception catch (e) {
+      log('Login DioException: $e');
+      return ApiResult(error: '$e');
+    } catch (e) {
+      log('Login Error: $e');
+      return ApiResult(error: e.toString());
     }
   }
 
@@ -225,7 +234,7 @@ class AuthRemoteRepo extends BaseAPI {
   }
 
   Future<bool> resetPassword({
-   required String token,
+    required String token,
     required String password,
   }) async {
     try {
@@ -280,9 +289,9 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<AuthResponse>> getUserProfile() async {
+  Future<ApiResult<AuthResponse>> getUserProfile({String? token}) async {
     try {
-      const url = '/auth/profile/user';
+      const url = '/auth/profile/user/';
 
       final res = await dio().get<Map<String, dynamic>>(url);
 

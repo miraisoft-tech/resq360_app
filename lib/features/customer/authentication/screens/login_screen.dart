@@ -46,21 +46,21 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-          print(state.error);
-          showSnackBar(context, 'Error', state.error);
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+          log(state.error);
+          await showSnackBar(context, 'Error', state.error);
         }
 
-        if (state is CustomerAuthAuthenticated) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
+        if (state is CustomerAuthLoginSuccess) {
+           if (Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
           await replaceScreen(
             context,
             const MainLayoutPage(),
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
               WideButton(
                 label: 'Log in',
                 onPressed: () async {
-                  print("Login pressed");
+                  log("Login pressed");
                   if (_formKey.currentState!.validate()) {
                     context.read<CustomerAuthBloc>().add(
                       CustomerLoginWithEmail(

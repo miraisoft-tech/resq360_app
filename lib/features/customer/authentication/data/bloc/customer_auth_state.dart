@@ -40,6 +40,15 @@ class CustomerAuthSignupSuccess extends CustomerAuthState {
   @override
   List<Object> get props => [userId];
 }
+
+class CustomerAuthLoginSuccess extends CustomerAuthState {
+  const CustomerAuthLoginSuccess(this.user);
+  final UserModel user;
+
+  @override
+  List<Object> get props => [user];
+}
+
 class CustomerPasswordResetSuccess extends CustomerAuthState {}
 class CustomerEmailVerified extends CustomerAuthState {}
 class CustomerPasswordResetFailure extends CustomerAuthState {

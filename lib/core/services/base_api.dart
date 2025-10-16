@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:resq360/core/utils/build_config.dart';
+import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 export 'dart:io';
 export 'package:http_parser/http_parser.dart';
 
@@ -24,7 +25,7 @@ class BaseAPI {
         baseUrl: customBaseUrl ?? baseUrl,
         sendTimeout: const Duration(seconds: 30),
         connectTimeout: const Duration(seconds: 60),
-        receiveTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 60),
         contentType: contentType ?? Headers.jsonContentType,
         validateStatus: (int? s) => s! < 500,
       ),
@@ -32,7 +33,13 @@ class BaseAPI {
 
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (res, handler) {
+        onRequest: (res, handler) async {
+          
+            final token = await authLocalDataSource.getAccessToken();
+            if (token != null){
+              res.headers['Authorization'] = 'Bearer $token';
+            }
+
           // final token = container.read(authProvider).authInfo?.token;
 
           // if (BuildConfig.isDev) {

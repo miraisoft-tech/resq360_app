@@ -31,13 +31,9 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         password: event.password,
       );
       if (result.data != null) {
-        final userProfile = await authRemoteRepo.getUserProfile();
-
-        log('Fetched user profile: $userProfile'); // test line
-
-        emit(CustomerAuthAuthenticated(result.data!.user));
+        emit(CustomerAuthLoginSuccess(result.data!.user));
       } else {
-        emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
+        emit(CustomerAuthFailure(result.error ?? 'Login failed'));
       }
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
@@ -75,9 +71,9 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
       final result = await authRemoteRepo.forgotPassword(
         email: event.email,
       );
-      print(  'Forgot Password Result: $result'); // Debug line
+      print('Forgot Password Result: $result'); // Debug line
       if (result) {
-        emit( CustomerForgotPasswordSucess());
+        emit(CustomerForgotPasswordSucess());
       } else {
         emit(
           const CustomerAuthFailure(
@@ -85,7 +81,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
           ),
         );
       }
-      } on Exception catch (e) {
+    } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
   }
