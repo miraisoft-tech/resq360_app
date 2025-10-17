@@ -47,7 +47,9 @@ class ProviderAuthLoginSuccessState  extends ProviderAuthState {
 class ProviderPasswordResetSuccessState  extends ProviderAuthState {}
 class ProviderEmailVerifiedState  extends ProviderAuthState {}
 class ProviderForgotPasswordSucessState  extends ProviderAuthState {}
-
+class ProviderResetPasswordSuccesStste extends ProviderAuthState {
+  
+}
 class ProviderProfileLoadedState  extends ProviderAuthState {
   const ProviderProfileLoadedState (this.user);
   final ProviderUserModel user;

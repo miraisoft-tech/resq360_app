@@ -56,13 +56,11 @@ class ProviderForgotPassword extends ProviderAuthEvent {
 
 class ProviderResetPassword extends ProviderAuthEvent {
   const ProviderResetPassword({
-    required this.email,
-    required this.code,
-    required this.newPassword,
+    required this.token,
+    required this.password,
   });
-  final String email;
-  final String code;
-  final String newPassword;
+  final String token;
+  final String password;
 }
 
 class ProviderverifyEmail extends ProviderAuthEvent {

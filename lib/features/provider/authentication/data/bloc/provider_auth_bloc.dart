@@ -104,8 +104,19 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      // TODO: API call to reset password
-      // success state
+      final result = await providerAuthRemoteRepo.resetPassword(
+        token: event.token,
+        password: event.password,
+      );
+      if (result) {
+        emit(ProviderResetPasswordSuccesStste());
+      } else {
+        emit(
+          const ProviderAuthFailureState(
+            'Failed to send password reset email. Please try again.',
+          ),
+        );
+      }
     } on Exception catch (e) {
       emit(ProviderAuthFailureState(e.toString()));
     }

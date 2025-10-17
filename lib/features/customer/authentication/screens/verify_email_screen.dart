@@ -8,6 +8,7 @@ import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/reset_password_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -98,14 +99,18 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         if (state is CustomerAuthFailure) {
           
           log(state.error);
-          showSnackBar(context, 'Error', state.error);
+          // showSnackBar(context, 'Error', state.error);
+           await replaceScreen(
+            context,
+            const ResetPasswordScreen(),
+          );
         }
 
         if (state is CustomerEmailVerified) {
           log('Email verified, navigating to main layout');
           await replaceScreen(
             context,
-            const VerificationStepsScreen(),
+            const ResetPasswordScreen(),
           );
         }
       },
