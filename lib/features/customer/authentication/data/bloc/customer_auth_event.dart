@@ -73,3 +73,11 @@ class CustomergetUserProfile extends CustomerAuthEvent {
 }
 
 class CustomerLogout extends CustomerAuthEvent {}
+
+// KYC
+class CustomerSubmitKyc extends CustomerAuthEvent {
+  const CustomerSubmitKyc({required this.filePath});
+  final String filePath;
+  @override
+  List<Object> get props => [filePath];
+}

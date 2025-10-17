@@ -1,8 +1,12 @@
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/confirm_email_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
+import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -47,6 +51,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
+        if (!mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
         }
@@ -55,7 +60,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          print(state.error);
+          log(state.error);
           showSnackBar(context, 'Error', state.error);
         }
     
@@ -65,8 +70,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           }
           await pushScreen(
             context,
-            ConfirmEmailScreen(
-              email: emailController.text,
+            VerifyEmailScreen(email: emailController.text,
             ),
           );
         }
@@ -89,6 +93,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         onChanged: (a) {
                           setState(() {});
                         },
+                        validator: (value) => Validators.validateNotEmpty(value, 'Full Name'),
                       ),
                       16.verticalSpace,
                       KFormField(
@@ -99,6 +104,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         onChanged: (a) {
                           setState(() {});
                         },
+                        validator: Validators.validateEmail,
                       ),
                       16.verticalSpace,
                       KFormField(
@@ -109,6 +115,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         onChanged: (a) {
                           setState(() {});
                         },
+                        validator: Validators.validatePassword,
                       ),
                       30.verticalSpace,
                       Row(
@@ -160,7 +167,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         onPressed:
                             _agree
                                 ? () async {
-                                  print('pressing create account');
+                                  log('pressing create account');
                                   if (_formKey.currentState!.validate()) {
                                     context.read<CustomerAuthBloc>().add(
                                       CustomerSignupWIthEmail(

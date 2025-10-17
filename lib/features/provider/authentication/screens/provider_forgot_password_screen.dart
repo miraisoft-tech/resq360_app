@@ -1,3 +1,6 @@
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
@@ -36,20 +39,23 @@ class _ProviderForgotPasswordScreenState
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async{
+        if (!mounted) return;
           if (state is ProviderAuthLoadingState) {
           showLoadingDialog(context);
-        } else {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-        }
+        } 
 
         if (state is ProviderAuthFailureState) {
+             if (Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
           showSnackBar(context, 'Error', state.error);
         }
 
         if (state is ProviderForgotPasswordSucessState) {
           // showSuccessSnackbar(context, 'Password reset email sent successfully!');
+             if (Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
           await pushScreen(
             context,
             VerifyEmailScreen(

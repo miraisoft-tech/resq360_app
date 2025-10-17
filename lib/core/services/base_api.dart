@@ -34,11 +34,13 @@ class BaseAPI {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (res, handler) async {
-          
-            final token = await authLocalDataSource.getAccessToken();
-            if (token != null){
-              res.headers['Authorization'] = 'Bearer $token';
-            }
+          final token = await authLocalDataSource.getAccessToken();
+          if (token != null) {
+            res.headers['Authorization'] = 'Bearer $token';
+            log('Using token: $token');
+          } else {
+            log('No token found for ${res.uri}');
+          }
 
           // final token = container.read(authProvider).authInfo?.token;
 

@@ -79,7 +79,7 @@ class AuthLocalRepo {
   Future<bool> storeAccessToken(String token) async {
   try {
     return await pref.save(key: DBKeys.accessTokenKey, value: token);
-  } catch (e) {
+  } on Exception catch (e) {
     log(e.toString());
     return false;
   }
@@ -97,7 +97,7 @@ Future<String?> getAccessToken() async {
 Future<bool> clearAccessToken() async {
   try {
     return await pref.deleteKey(key: DBKeys.accessTokenKey);
-  } catch (e) {
+  } on Exception catch (e) {
     log(e.toString());
     return false;
   }

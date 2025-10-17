@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_forgot_password_screen.dart';
@@ -57,6 +58,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
               onChanged: (a) {
                 setState(() {});
               },
+              validator: Validators.validateEmail,
             ),
             16.verticalSpace,
             KFormField(
@@ -67,6 +69,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
               onChanged: (a) {
                 setState(() {});
               },
+              validator: Validators.validatePassword,
             ),
             16.verticalSpace,
             GestureDetector(

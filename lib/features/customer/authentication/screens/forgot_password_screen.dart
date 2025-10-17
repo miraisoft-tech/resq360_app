@@ -1,7 +1,10 @@
-import 'dart:math';
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
@@ -36,6 +39,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
+        if (!mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
         } else {
@@ -102,6 +106,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
+                validator: Validators.validateEmail,
               ),
               70.verticalSpace,
               WideButton(

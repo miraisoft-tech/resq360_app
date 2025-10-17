@@ -1,5 +1,10 @@
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/forgot_password_screen.dart';
@@ -45,8 +50,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
+        if (!mounted) return;
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+           showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
@@ -54,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(context, rootNavigator: true).pop();
       }
           log(state.error);
-          await showSnackBar(context, 'Error', state.error);
+           showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerAuthLoginSuccess) {
@@ -83,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
+                 validator: Validators.validateEmail,
               ),
               16.verticalSpace,
               KFormField(
@@ -93,6 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
+                 validator: Validators.validatePassword,
               ),
               16.verticalSpace,
               GestureDetector(
@@ -114,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
               WideButton(
                 label: 'Log in',
                 onPressed: () async {
-                  log("Login pressed");
+                  log('Login pressed');
                   if (_formKey.currentState!.validate()) {
                     context.read<CustomerAuthBloc>().add(
                       CustomerLoginWithEmail(

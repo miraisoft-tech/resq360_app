@@ -4,8 +4,6 @@ import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 
 import 'package:resq360/core/services/base_api.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart'
-    hide AuthResponse;
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -85,7 +83,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       if (res.statusCode == 200 && res.data != null) {
         final success = res.data!['success'] == true;
         final token = res.data!['token'];
-        print(token.toString());
+        log(token.toString());
         await authLocalDataSource.storeAccessToken(
           token.toString(),
         ); // store token locally

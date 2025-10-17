@@ -1,7 +1,5 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
-import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_business_details_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -64,6 +62,8 @@ class _ProviderCreateAccountScreenState
               onChanged: (a) {
                 setState(() {});
               },
+              validator: (value) =>
+                  Validators.validateNotEmpty(value, 'full name'),
             ),
             16.verticalSpace,
             KFormField(
@@ -74,6 +74,8 @@ class _ProviderCreateAccountScreenState
               onChanged: (a) {
                 setState(() {});
               },
+              validator: (value) =>
+                  Validators.validateNotEmpty(value, 'email address'),
             ),
             16.verticalSpace,
             KFormField(
@@ -84,6 +86,8 @@ class _ProviderCreateAccountScreenState
               onChanged: (a) {
                 setState(() {});
               },
+              validator: (value) =>
+                  Validators.validateNotEmpty(value, 'phone number'),
             ),
             16.verticalSpace,
             KFormField(
@@ -94,6 +98,7 @@ class _ProviderCreateAccountScreenState
               onChanged: (a) {
                 setState(() {});
               },
+              validator: Validators.validatePassword,
             ),
             30.verticalSpace,
             Row(

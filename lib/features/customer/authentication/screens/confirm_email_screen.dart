@@ -1,10 +1,13 @@
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -70,10 +73,9 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       return;
     }
     context.read<CustomerAuthBloc>().add(
-          CustomerverifyEmail(emailVerificationToken: _otpController1.text),
-        );
-        print('pushing to verification steps');
-    
+      CustomerverifyEmail(emailVerificationToken: _otpController1.text),
+    );
+    log('pushing to verification steps');
   }
 
   @override
@@ -81,24 +83,24 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
     final colors = context.appColors;
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
-      listener: (context, state) {
+      listener: (context, state) async {
+        if (!mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
         }
-    
+
         if (state is CustomerAuthFailure) {
-          print(state.error);
+          log(state.error);
           Navigator.of(context).pop();
           showErrorSnackbar(context, state.error);
         }
-    
+
         if (state is CustomerEmailVerified) {
-          print('Email verified');
-          
-          Navigator.of(context).pop(); 
+          log('Email verified');
+
+          Navigator.of(context).pop();
           // pushScreen(context, const VerificationStepsScreen());
           pushScreen(context, const MainLayoutPage());
-
         }
       },
       child: AppScaffold(
@@ -118,7 +120,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
                     },
                   ),
                   25.verticalSpace,
-    
+
                   Center(
                     child: CountdownTimer(
                       endTime: endTime,
@@ -151,7 +153,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
                 ],
               ),
             ),
-    
+
             WideButton(
               label: 'Verify & Continue',
               onPressed: (_otpController1.text.length < 6 ? null : onVerify),

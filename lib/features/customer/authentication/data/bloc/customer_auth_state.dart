@@ -29,10 +29,18 @@ class CustomerAuthFailure extends CustomerAuthState {
   @override
   List<Object> get props => [error];
 }
+class CustomerKycSubmissionFailure extends CustomerAuthState {
+  const CustomerKycSubmissionFailure(this.error);
+  final String error;
+
+  @override
+  List<Object> get props => [error];
+}
+
+
+
+//  success state
 final class CustomerAuthUnauthenticated extends CustomerAuthState {}
-
-// signup success state
-
 class CustomerAuthSignupSuccess extends CustomerAuthState {
   const CustomerAuthSignupSuccess(this.userId);
   final String userId;
@@ -65,3 +73,12 @@ class CustomerProfileLoaded extends CustomerAuthState {
 }
 
  class CustomerForgotPasswordSucess extends CustomerAuthState {}
+
+
+class CustomerKycSubmitted extends CustomerAuthState {
+  const CustomerKycSubmitted(this.kycResponse);
+  final KycResponse kycResponse;
+
+  @override
+  List<Object> get props => [kycResponse];
+}

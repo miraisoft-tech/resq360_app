@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:developer';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,7 +11,7 @@ import 'package:resq360/features/customer/authentication/data/bloc/customer_auth
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 
-final container = ProviderContainer();
+// final container = ProviderContainer();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,7 +86,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         WidgetsBinding.instance.addObserver(observer);
         ref.onDispose(() => WidgetsBinding.instance.removeObserver(observer));
       }),
-      (_, __) {},
+      (_, _) {},
     );
 
     final themeMode = ref.watch(themeModeProvider);

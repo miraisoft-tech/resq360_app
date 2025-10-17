@@ -210,17 +210,28 @@ String userToJson(AuthResponse data) => json.encode(data.toJson());
 
 class AuthResponse extends EmptyResponse {
   AuthResponse(
-    this.accessToken, {
+    this.accessToken,
+     {
     required this.message,
     required this.user,
     required this.success,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
-    json['access_token'] as String?,
-    message: json['message'] as String,
-    user: UserModel.fromJson(json['data']['user'] as Map<String, dynamic>),
-    success: json['success'] as bool,
+   json['access_token'] as String?,
+  message: json['message'] as String? ?? '', 
+  user:  (() {
+    // Handle multiple possible response structures
+    final data = json['data'];
+    if (data != null && data['user'] != null) {
+      return UserModel.fromJson(data['user'] as Map<String, dynamic>);
+    } else if (json['user'] != null) {
+      return UserModel.fromJson(json['user'] as Map<String, dynamic>);
+    } else {
+      return UserModel(); // fallback
+    }
+  })(),
+  success: json['success'] as bool? ?? false, 
   );
   String message;
   UserModel user;

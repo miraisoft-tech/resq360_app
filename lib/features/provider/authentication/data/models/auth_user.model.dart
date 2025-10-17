@@ -1,5 +1,6 @@
-import 'package:resq360/core/models/api_response.dart';
 import 'dart:convert';
+
+import 'package:resq360/core/models/api_response.dart';
 
 AuthResponse userFromJson(String str) =>
     AuthResponse.fromJson(json.decode(str) as Map<String, dynamic>);

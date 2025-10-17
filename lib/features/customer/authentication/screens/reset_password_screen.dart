@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -50,6 +51,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               onChanged: (a) {
                 setState(() {});
               },
+              validator: Validators.validatePassword,
             ),
             16.verticalSpace,
             KFormField(
@@ -60,6 +62,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               onChanged: (a) {
                 setState(() {});
               },
+              validator:
+                  (value) =>
+                      Validators.validateNotEmpty(value, 'confirm password'),
             ),
             60.verticalSpace,
             WideButton(

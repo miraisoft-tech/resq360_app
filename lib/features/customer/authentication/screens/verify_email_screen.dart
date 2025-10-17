@@ -1,11 +1,14 @@
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/reset_password_screen.dart';
-import 'package:resq360/features/main_layout.dart';
+import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
@@ -83,6 +86,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
+        if (!mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
         }else {
@@ -93,15 +97,15 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
         if (state is CustomerAuthFailure) {
           
-          print(state.error);
+          log(state.error);
           showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerEmailVerified) {
-          print('Email verified, navigating to main layout');
+          log('Email verified, navigating to main layout');
           await replaceScreen(
             context,
-            const MainLayoutPage(),
+            const VerificationStepsScreen(),
           );
         }
       },

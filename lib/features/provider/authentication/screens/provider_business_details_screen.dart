@@ -1,6 +1,10 @@
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
+import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_confirm_email_screen.dart';
@@ -73,13 +77,13 @@ class _ProviderBusinessDetailsScreenState
   }
   bool isProcessing = false;
 Future<void> _handleSignup(BuildContext context) async {
-  print('Signup button pressed');
+  log('Signup button pressed');
    if (isProcessing) return;
   setState(() => isProcessing = true);
-  print('isProcessing set to true');
+  log('isProcessing set to true');
   if (!_formKey.currentState!.validate()) {
     setState(() => isProcessing = false); // reset if form is invalid
-    print('Form is not valid');
+    log('Form is not valid');
     return;
   }
 
@@ -120,7 +124,7 @@ Future<void> _handleSignup(BuildContext context) async {
         address: address,
       ),
     );
-  } catch (e, s) {
+  } on Exception catch (e, s) {
     log('Signup failed: $e\n$s');
 
     if (!context.mounted) return;
@@ -137,14 +141,15 @@ Future<void> _handleSignup(BuildContext context) async {
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
+        if (!mounted) return;
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+           showLoadingDialog(context);
         }
         if (state is ProviderAuthFailureState) {
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          await showSnackBar(context, 'Error', state.error);
+           showSnackBar(context, 'Error', state.error);
         }
 
         if (state is ProviderAuthSignupSuccessState) {
@@ -153,7 +158,7 @@ Future<void> _handleSignup(BuildContext context) async {
           }
           // showSuccessSnackBar(context, 'Registration successful');
           // navigate to confirm email screen
-          await pushScreen(
+           pushScreen(
             context,
             ProviderConfirmEmailScreen(email: widget.email),
           );
@@ -177,6 +182,8 @@ Future<void> _handleSignup(BuildContext context) async {
                       onChanged: (a) {
                         setState(() {});
                       },
+                      validator: (value) =>
+                          Validators.validateNotEmpty(value, 'business name'),
                     ),
                     16.verticalSpace,
                     KFormField(
@@ -187,6 +194,8 @@ Future<void> _handleSignup(BuildContext context) async {
                       onChanged: (a) {
                         setState(() {});
                       },
+                      validator: (value) =>
+                          Validators.validateNotEmpty(value, 'business address'),
                     ),
                     16.verticalSpace,
                     ValueListenableBuilder<String?>(
@@ -229,6 +238,8 @@ Future<void> _handleSignup(BuildContext context) async {
                         onChanged: (a) {
                           setState(() {});
                         },
+                        validator: (value) =>
+                            Validators.validateNotEmpty(value, 'service name'),
                       ),
                   ],
                 ),

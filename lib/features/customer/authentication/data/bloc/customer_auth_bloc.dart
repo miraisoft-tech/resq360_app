@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 
 part 'customer_auth_event.dart';
@@ -18,6 +19,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     on<CustomerverifyEmail>(_onVerifyEmail);
     on<CustomergetUserProfile>(_onGetUserProfile);
     on<CustomerLogout>(_onLogout);
+    on<CustomerSubmitKyc>(_onSubmitKyc);
   }
 
   Future<void> _onLoginWithEmail(
@@ -71,7 +73,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
       final result = await authRemoteRepo.forgotPassword(
         email: event.email,
       );
-      print('Forgot Password Result: $result'); // Debug line
+      log('Forgot Password Result: $result'); // Debug line
       if (result) {
         emit(CustomerForgotPasswordSucess());
       } else {
@@ -93,7 +95,6 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     emit(CustomerAuthLoading());
     try {
       // TODO: API call to reset password
-      await Future.delayed(const Duration(seconds: 1));
       emit(CustomerAuthInitial()); // Or some success state
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
@@ -146,5 +147,25 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
   void _onLogout(CustomerLogout event, Emitter<CustomerAuthState> emit) {
     // Clear user session if needed
     emit(CustomerAuthInitial());
+  }
+
+// KYC Submission
+  Future<void> _onSubmitKyc(
+    CustomerSubmitKyc event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
+    emit(CustomerAuthLoading());
+    try {
+      final result = await authRemoteRepo.uploadAndSubmitFaceId(
+        filePath: event.filePath,
+      );
+      if (result.data != null) {
+        emit(CustomerKycSubmitted(result.data!));
+      } else {
+        emit(CustomerKycSubmissionFailure(result.error ?? 'KYC submission failed'));
+      }
+    } on Exception catch (e) {
+      emit(CustomerKycSubmissionFailure(e.toString()));
+    }
   }
 }

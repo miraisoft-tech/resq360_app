@@ -82,7 +82,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       final result = await providerAuthRemoteRepo.forgotPassword(
         email: event.email,
       );
-      print('Forgot Password Result: $result'); // Debug line
+      log('Forgot Password Result: $result'); // Debug line
       if (result) {
         emit(ProviderForgotPasswordSucessState());
       } else {
