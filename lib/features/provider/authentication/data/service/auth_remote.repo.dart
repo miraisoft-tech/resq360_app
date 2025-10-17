@@ -5,7 +5,7 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+// import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
 
@@ -68,7 +68,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     required String password,
   }) async {
     try {
-      const url = '/auth/register/provider';
+      const url = '/auth/login/provider';
 
       final data = {
         'email': email,
@@ -87,12 +87,11 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         await authLocalDataSource.storeAccessToken(
           token.toString(),
         ); // store token locally
-        dio().options.headers['Authorization'] =
-            'Bearer $token'; // attach to dio
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
           return ApiResult(data: authResponse);
         } else {
+            log('Login failed with response: ${res.data}');
           // API returned 200 but success == false
           return ApiResult(
             error: res.data!['message']?.toString() ?? 'Login failed',

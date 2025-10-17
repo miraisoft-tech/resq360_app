@@ -35,6 +35,15 @@ class ProviderAuthSignupSuccessState  extends ProviderAuthState {
   @override
   List<Object> get props => [ user];
 }
+
+class ProviderAuthLoginSuccessState  extends ProviderAuthState {
+  const ProviderAuthLoginSuccessState (this.user);
+  final ProviderUserModel user;
+
+  @override
+  List<Object> get props => [ user];
+}
+
 class ProviderPasswordResetSuccessState  extends ProviderAuthState {}
 class ProviderEmailVerifiedState  extends ProviderAuthState {}
 class ProviderForgotPasswordSucessState  extends ProviderAuthState {}

@@ -33,12 +33,13 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         password: event.password,
       );
       if (result.data != null) {
-        final userProfile = await providerAuthRemoteRepo.getUserProfile();
+        // final userProfile = await providerAuthRemoteRepo.getUserProfile();
 
-        log('Fetched user profile: $userProfile'); // test line
+        // log('Fetched user profile: $userProfile'); // test line
 
         emit(ProviderAuthAuthenticatedState(result.data!.user));
       } else {
+        log('bloc error ${result.error}');
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
       }
     } on Exception catch (e) {
