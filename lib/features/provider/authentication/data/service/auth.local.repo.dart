@@ -1,8 +1,8 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/db_keys.local.repo.dart';
 import 'package:resq360/core/services/shared_preferences.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/local_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 
 class AuthLocalRepo {
   factory AuthLocalRepo() {

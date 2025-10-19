@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/dashboard/models/wallet_transaction.dart';
+import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_withdraw_screen.dart';

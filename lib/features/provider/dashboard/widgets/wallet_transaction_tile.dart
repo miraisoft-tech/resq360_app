@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/dashboard/models/wallet_transaction.dart';
+import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 
 class WalletTransactionTile extends StatelessWidget {
   const WalletTransactionTile({

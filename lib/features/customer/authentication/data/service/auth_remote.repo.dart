@@ -3,9 +3,11 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/kyc_response.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/upload_response.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/upload_response.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
@@ -155,7 +157,7 @@ class AuthRemoteRepo extends BaseAPI {
     } on Exception catch (e) {
       log('Login DioException: $e');
       return ApiResult(error: '$e');
-    } 
+    }
   }
 
   Future<ApiResult<AuthResponse>> signupWithEmail({
@@ -172,7 +174,10 @@ class AuthRemoteRepo extends BaseAPI {
         'password': password,
       };
 
-      await authLocalDataSource.storeLocalCredentials(email: email, password: password);
+      await authLocalDataSource.storeLocalCredentials(
+        email: email,
+        password: password,
+      );
       log('credentials stored locally $email / ****');
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
@@ -274,7 +279,10 @@ class AuthRemoteRepo extends BaseAPI {
 
       final userCred = await authLocalDataSource.getLocalCredentials();
       if (userCred != null) {
-        await loginWithEmail(email: userCred.userName!, password: userCred.password!);
+        await loginWithEmail(
+          email: userCred.userName!,
+          password: userCred.password!,
+        );
       } else {
         log('No local credentials found during email verification.');
       }
@@ -325,112 +333,251 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-// KYC
+  Future<ApiResult<AuthResponse>> updateUserInfo({
+    required String fullName,
+    required String phoneNumber,
+    required String profileImageUrl,
+    required String profileImageId,
+  }) async {
+    try {
+      const url = '/user';
 
-Future<ApiResult<UploadResponse>> uploadSingle({
-  required String filePath,
-}) async {
-  try {
-    const url = '/upload/single';
+      final res = await dio().put<Map<String, dynamic>>(url);
 
-    final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath),
-    });
+      log(res.statusCode);
+      log(res.data);
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
 
-    final res = await dio().post<Map<String, dynamic>>(url, data: formData);
-
-    log('${res.statusCode}');
-    log('${res.data}');
-
-    if (res.statusCode == 200 && res.data != null) {
-      final success = res.data!['success'] == true;
-
-      if (success) {
-        final dataList = res.data!['data'] as List<dynamic>;
-    final uploads = dataList
-        .map((item) => UploadResponse.fromJson(item as Map<String, dynamic>))
-        .toList();
-    log('suceeded in Uploading files: ${uploads.first.id} / ${uploads.first.url}');
-    // returns the first one
-    return ApiResult(data: uploads.first);
-      } else {
-        return ApiResult(
-          error: res.data!['message']?.toString() ?? 'Upload failed',
-        );
+        if (success) {
+          final authResponse = AuthResponse.fromJson(res.data!);
+          return ApiResult(data: authResponse);
+        } else {
+          return ApiResult(
+            error: res.data!['message']?.toString() ?? 'Update failed',
+          );
+        }
       }
+      return ApiResult(error: 'An error occurred, please try again!');
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return ApiResult(error: '$e $s');
     }
 
-    return ApiResult(
-      error: res.data?['message']?.toString() ?? 'Upload failed',
-    );
-  } on Exception catch (e, s) {
-    log('$e');
-    log('$s');
-    return ApiResult(error: '$e $s');
   }
-}
 
-Future<ApiResult<KycResponse>> submitFaceId({
-  required String selfieImageUrl,
-  required String selfieImageId,
-}) async {
-  try {
-    const url = '/kyc/submit/face-id';
+  // KYC
 
-    final data = {
-      'selfieImageUrl': selfieImageUrl,
-      'selfieImageId': selfieImageId,
-    };
+  Future<ApiResult<UploadResponse>> uploadSingle({
+    required String filePath,
+  }) async {
+    try {
+      const url = '/upload/single';
 
-    log('data.........$selfieImageId / $selfieImageUrl...........');
-    log('........Submitting Face ID with data: $data..........');
-log('...............URL: $url....................');
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+      });
 
-    final res = await dio().post<Map<String, dynamic>>(url, data: data);
+      final res = await dio().post<Map<String, dynamic>>(url, data: formData);
 
-    log('${res.statusCode}');
-    log('${res.data}');
+      log('${res.statusCode}');
+      log('${res.data}');
+
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          final dataList = res.data!['data'] as List<dynamic>;
+          final uploads =
+              dataList
+                  .map(
+                    (item) =>
+                        UploadResponse.fromJson(item as Map<String, dynamic>),
+                  )
+                  .toList();
+          log(
+            'suceeded in Uploading files: ${uploads.first.id} / ${uploads.first.url}',
+          );
+          // returns the first one
+          return ApiResult(data: uploads.first);
+        } else {
+          return ApiResult(
+            error: res.data!['message']?.toString() ?? 'Upload failed',
+          );
+        }
+      }
+
+      return ApiResult(
+        error: res.data?['message']?.toString() ?? 'Upload failed',
+      );
+    } on Exception catch (e, s) {
+      log('$e');
+      log('$s');
+      return ApiResult(error: '$e $s');
+    }
+  }
+
+  Future<ApiResult<KycResponse>> submitFaceId({
+    required String selfieImageUrl,
+    required String selfieImageId,
+  }) async {
+    try {
+      const url = '/kyc/submit/face-id';
+
+      final data = {
+        'selfieImageUrl': selfieImageUrl,
+        'selfieImageId': selfieImageId,
+      };
+
+      log('data.........$selfieImageId / $selfieImageUrl...........');
+      log('........Submitting Face ID with data: $data..........');
+      log('...............URL: $url....................');
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+
+      log('${res.statusCode}');
+      log('${res.data}');
+
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          final kycResponse = KycResponse.fromJson(
+            res.data!['data'] as Map<String, dynamic>,
+          );
+          return ApiResult(data: kycResponse);
+        } else {
+          return ApiResult(
+            error:
+                res.data!['message']?.toString() ?? 'Face ID submission failed',
+          );
+        }
+      }
+
+      return ApiResult(
+        error:
+            res.data?['message']?.toString() ??
+            'An error occurred, please try again!',
+      );
+    } on DioException catch (e, s) {
+      log('$e');
+      log('$s');
+      return ApiResult(error: '$e $s');
+    }
+  }
+
+  Future<ApiResult<KycResponse>> uploadAndSubmitFaceId({
+    required String filePath,
+  }) async {
+    final uploadResult = await uploadSingle(filePath: filePath);
+
+    if (uploadResult.data == null) {
+      return ApiResult(error: uploadResult.error);
+    }
+
+    final upload = uploadResult.data!;
+    final submitResult = await submitFaceId(
+      selfieImageUrl: upload.url,
+      selfieImageId: upload.id,
+    );
+
+    return submitResult;
+  }
+
+  Future<ApiResult<IdentityResponse>> submitIdentity({
+    required String documentType,
+    required String documentUrl,
+  }) async {
+    const url = 'kyc/submit/identity';
+    try {
+      final data = {
+        'documentType': documentType,
+        'documentUrl': documentUrl,
+      };
+
+      final res = await dio().post<Map<String, dynamic>>(
+        url,
+        data: data,
+      );
+      log('${res.statusCode}');
+      log('${res.data}');
+
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          final identityResponse = IdentityResponse.fromJson(res.data!);
+          return ApiResult(data: identityResponse);
+        } else {
+          return ApiResult(
+            error:
+                res.data!['message']?.toString() ??
+                'Identity submission failed',
+          );
+        }
+      }
+      return ApiResult(error: 'Submission failed');
+    } on Exception catch (e) {
+      log('$e');
+      return ApiResult(error: '$e');
+    }
+  }
+
+  Future<bool> submitKycAddress ({required String state, required String city, required String address}) async{
     
+    const url = 'kyc/submit/address';
+    try {
+      final data = {
+        'state': state,
+        'city': city,
+        'address': address,
+      };
 
-    if (res.statusCode == 200 && res.data != null) {
-      final success = res.data!['success'] == true;
+      final res = await dio().post<Map<String, dynamic>>(
+        url,
+        data: data,
+      );
+      log('${res.statusCode}');
+      log('${res.data}');
 
-      if (success) {
-        final kycResponse = KycResponse.fromJson(res.data!['data'] as Map<String, dynamic>);
-        return ApiResult(data: kycResponse);
-      } else {
-        return ApiResult(
-          error: res.data!['message']?.toString() ?? 'Face ID submission failed',
-        );
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          return true;
+        } else {
+          return false;
+        }
       }
+      return false;
+    } on Exception catch (e) {
+      log('$e');
+      return false;
+    } 
+  }
+  
+  Future<ApiResult<UserKycInfo>> getUserKycInfo() async{
+    const url = '/kyc/my-kyc';
+
+    try {
+      final res = await dio().get<Map<String, dynamic>>(url);
+       
+       log(res.data);
+       if (res.statusCode == 200) {
+        final userKycInfo = UserKycInfo.fromJson(res.data!);
+         return ApiResult(data: userKycInfo);
+       } else {
+        final error = res.data?['message'];
+        log(error);
+         return ApiResult(error: res.data!['message']?.toString() ?? "failed to get user's Kyc");
+       }
+    } on Exception catch (e) {
+      log(e);
+      return ApiResult(error: e.toString());
     }
-
-    return ApiResult(
-      error: res.data?['message']?.toString() ??
-          'An error occurred, please try again!',
-    );
-  } on DioException catch (e, s) {
-    log('$e');
-    log('$s');
-    return ApiResult(error: '$e $s');
   }
-}
-
-Future<ApiResult<KycResponse>> uploadAndSubmitFaceId( {required String filePath}) async {
-  final uploadResult = await uploadSingle(filePath: filePath);
-
-  if (uploadResult.data == null) {
-    return ApiResult(error: uploadResult.error);
-  }
-
-  final upload = uploadResult.data!;
-  final submitResult = await submitFaceId(
-    selfieImageUrl: upload.url,
-    selfieImageId: upload.id,
-  );
-
-  return submitResult;
-}
 
 
 }

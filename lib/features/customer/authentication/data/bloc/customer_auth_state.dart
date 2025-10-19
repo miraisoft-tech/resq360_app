@@ -82,3 +82,19 @@ class CustomerKycSubmitted extends CustomerAuthState {
   @override
   List<Object> get props => [kycResponse];
 }
+
+class CustumerIdentitySubmitted extends CustomerAuthState {
+  const CustumerIdentitySubmitted({required this.data});
+
+  final IdentityResponse data;
+}
+
+class CustomerKycAddressSubmitted extends CustomerAuthState {}
+class CustomerUserKycInfoLoaded extends CustomerAuthState {
+  const CustomerUserKycInfoLoaded(this.userKycInfo);
+  final UserKycInfo userKycInfo;
+
+  @override
+  List<Object> get props => [userKycInfo];
+  
+}

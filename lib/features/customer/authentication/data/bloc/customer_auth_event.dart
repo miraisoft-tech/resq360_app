@@ -81,3 +81,22 @@ class CustomerSubmitKyc extends CustomerAuthEvent {
   @override
   List<Object> get props => [filePath];
 }
+
+class CustomerSubmitIdentity extends CustomerAuthEvent{ 
+  const CustomerSubmitIdentity ({
+    required this.filePath,
+    required this.documentType,
+  });
+  final String filePath;
+  final String documentType;
+}
+
+class CustomerSubmitKycAddress extends CustomerAuthEvent {
+  const CustomerSubmitKycAddress({required this.state, required this.city, required this.address});
+
+  final String state;
+  final String city;
+  final String address;
+}
+
+class CustomerGetUserKycInfo extends CustomerAuthEvent {}

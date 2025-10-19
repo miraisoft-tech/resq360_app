@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/utils/build_config.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/kyc_response.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 
 part 'customer_auth_event.dart';
@@ -20,6 +22,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     on<CustomergetUserProfile>(_onGetUserProfile);
     on<CustomerLogout>(_onLogout);
     on<CustomerSubmitKyc>(_onSubmitKyc);
+    on<CustomerGetUserKycInfo>(_onGetUserKycInfo);
   }
 
   Future<void> _onLoginWithEmail(
@@ -168,4 +171,23 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
       emit(CustomerKycSubmissionFailure(e.toString()));
     }
   }
+
+  Future<void> _onGetUserKycInfo (
+    CustomerGetUserKycInfo event,
+    Emitter<CustomerAuthState> emit
+  ) async {
+    emit(CustomerAuthLoading());
+    try{
+      final result = await authRemoteRepo.getUserKycInfo();
+      if (result.data != null){
+        emit(CustomerUserKycInfoLoaded(result.data!));
+      } else {
+        emit(CustomerAuthFailure(result.error ?? 'Failed to load KYC info'));
+      }
+    } on Exception catch (e) {
+      log( 'CustomerGetUserKycInfo Bloc Get User KYC Info Error: $e');
+      emit(CustomerAuthFailure(e.toString()));
+    }
+  }
+
 }

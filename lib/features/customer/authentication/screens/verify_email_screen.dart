@@ -59,7 +59,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     //   await pop(context);
 
     //   await showSuccessSnackbar('Verification mail resent successfully!');
-    //   controller.endTime =
+    //   contr5oller.endTime =
     //       DateTime.now()
     //           .add(const Duration(seconds: 5 * 60))
     //           .millisecondsSinceEpoch;
