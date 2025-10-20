@@ -1,5 +1,6 @@
 part of 'customer_payment_bloc.dart';
 
+
 sealed class CustomerPaymentEvent extends Equatable {
   const CustomerPaymentEvent();
 
