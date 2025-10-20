@@ -10,6 +10,9 @@ final ServiceRepo serviceRepo = ServiceRepo();
 class CustomerServicesBloc extends Bloc<CustomerServicesEvent, CustomerServicesState> {
   CustomerServicesBloc() : super(CustomerServicesInitial()) {
     on<CustomerServicesEvent>((event, emit) {
+      on<CustomerCreateService>(_onCreateCustomerService);
+      on<CustomerFetchServices>(_onFetchCustomerServices);
+      on<CustomerFetchCategory>(_onFetchCustomerCategory);
       
     });
   }
