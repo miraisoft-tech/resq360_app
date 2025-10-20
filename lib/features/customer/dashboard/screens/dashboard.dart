@@ -1,4 +1,6 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
@@ -28,46 +30,98 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: colors.whiteColor,
         forceMaterialTransparency: true,
         automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            const CircleAvatar(
-              radius: 19,
-              backgroundImage: AssetImage(
-                AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-              ),
-            ),
-            10.horizontalSpace,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GenText(
-                  'Hello, Jane 👋',
-                  size: 12,
-                  height: 20,
-                  weight: FontWeight.w400,
-                  color: colors.neutral.shade500,
-                ),
-
-                Row(
-                  children: [
-                    AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
-                    4.horizontalSpace,
-                    GenText(
-                      'No. 2 Olympia Street',
-                      height: 24,
-                      color: colors.black,
-                      weight: FontWeight.w500,
+        title: BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
+          builder: (context, state) {
+            if (state is CustomerAuthLoginSuccess) {
+              final user = state.user;
+              return Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 19,
+                    backgroundImage: NetworkImage(
+                      // user.profilePictureUrl ??
+                          AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
                     ),
-                    Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 14,
-                      color: colors.textColor.shade500,
+                  ),
+                  10.horizontalSpace,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GenText(
+                        'Hello, ${user.fullName} 👋',
+                        size: 12,
+                        height: 20,
+                        weight: FontWeight.w400,
+                        color: colors.neutral.shade500,
+                      ),
+
+                      Row(
+                        children: [
+                          AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
+                          4.horizontalSpace,
+                          GenText(
+                            // user.address ??
+                             'No. 2 Olympia Street',
+                            height: 24,
+                            color: colors.black,
+                            weight: FontWeight.w500,
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 14,
+                            color: colors.textColor.shade500,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            } else {
+            return
+             Row(
+              children: [
+                const CircleAvatar(
+                  radius: 19,
+                  backgroundImage: AssetImage(
+                    AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+                  ),
+                ),
+                10.horizontalSpace,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GenText(
+                      'Hello, Jane 👋',
+                      size: 12,
+                      height: 20,
+                      weight: FontWeight.w400,
+                      color: colors.neutral.shade500,
+                    ),
+
+                    Row(
+                      children: [
+                        AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
+                        4.horizontalSpace,
+                        GenText(
+                          'No. 2 Olympia Street',
+                          height: 24,
+                          color: colors.black,
+                          weight: FontWeight.w500,
+                        ),
+                        Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 14,
+                          color: colors.textColor.shade500,
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
-            ),
-          ],
+            );
+          }
+          }
         ),
         actions: [
           IconButton(

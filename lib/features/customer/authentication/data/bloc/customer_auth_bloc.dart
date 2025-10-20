@@ -23,6 +23,9 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     on<CustomerLogout>(_onLogout);
     on<CustomerSubmitKyc>(_onSubmitKyc);
     on<CustomerGetUserKycInfo>(_onGetUserKycInfo);
+    on<CustomerSubmitKycAddress>(_onSubmitKycAddress);
+    on<CustomerSubmitId>(_onSubmitKycId);
+    
   }
 
   Future<void> _onLoginWithEmail(
@@ -97,8 +100,18 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
   ) async {
     emit(CustomerAuthLoading());
     try {
-      // TODO: API call to reset password
-      emit(CustomerAuthInitial()); // Or some success state
+      final result = await authRemoteRepo.resetPassword(
+        password: event.password,
+      );
+      if (result) {
+        emit(CustomerPasswordResetSuccess());
+      } else {
+        emit(
+          const CustomerAuthFailure(
+            'Password reset failed. Please check your code and try again.',
+          ),
+        );
+      }
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
@@ -190,4 +203,44 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     }
   }
 
+  Future<void> _onSubmitKycAddress(
+    CustomerSubmitKycAddress event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
+    emit(CustomerAuthLoading());
+    try {
+      final result = await authRemoteRepo.submitKycAddress(
+        address: event.address,
+        city: event.city,
+        state: event.state,
+      );
+      if (result) {
+        emit(CustomerKycAddressSubmitted());
+      } else {
+        emit(CustomerKycSubmissionFailure('$result KYC address submission failed'));
+      }
+    } on Exception catch (e) {
+      emit(CustomerKycSubmissionFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onSubmitKycId(
+    CustomerSubmitId event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
+    emit(CustomerAuthLoading());
+    try {
+      final result = await authRemoteRepo.uploadAndSubmitIdentity(
+        documentType: event.documentType,
+        filePath: event.filePath,
+      );
+      if (result.data != null) {
+        emit( CustumerIdentitySubmitted(data: result.data!));
+      } else {
+        emit(CustomerKycSubmissionFailure(result.error ?? 'KYC ID submission failed'));
+      }
+    } on Exception catch (e) {
+      emit(CustomerKycSubmissionFailure(e.toString()));
+    }
+  }
 }

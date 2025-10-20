@@ -1,16 +1,16 @@
 class KycResponse {
 
   KycResponse({
-    required this.status,
+    required this.success,
     required this.message,
   });
 
   factory KycResponse.fromJson(Map<String, dynamic> json) {
     return KycResponse(
-      status: json['status']?.toString() ?? '',
+      success: json['success'] as bool? ?? false,
       message: json['message']?.toString() ?? '',
     );
   }
-  final String status;
+  final bool success;
   final String message;
 }

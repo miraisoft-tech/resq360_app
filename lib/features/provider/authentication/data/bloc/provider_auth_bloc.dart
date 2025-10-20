@@ -105,7 +105,6 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     emit(ProviderAuthLoadingState());
     try {
       final result = await providerAuthRemoteRepo.resetPassword(
-        token: event.token,
         password: event.password,
       );
       if (result) {

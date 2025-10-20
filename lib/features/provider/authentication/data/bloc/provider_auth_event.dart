@@ -56,10 +56,8 @@ class ProviderForgotPassword extends ProviderAuthEvent {
 
 class ProviderResetPassword extends ProviderAuthEvent {
   const ProviderResetPassword({
-    required this.token,
     required this.password,
   });
-  final String token;
   final String password;
 }
 

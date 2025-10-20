@@ -204,12 +204,16 @@ class ProviderAuthRemoteRepo extends BaseAPI {
   }
 
   Future<bool> resetPassword({
-    required String token,
     required String password,
   }) async {
     try {
       const url = '/auth/reset-password/provider';
-
+        final token = await authLocalDataSource.getAccessToken();
+          if (token != null) {
+            log('Reset Password Token: $token');
+          } else {
+            log('No token found for password reset.');
+          }
       final data = {
         'token': token,
         'password': password,

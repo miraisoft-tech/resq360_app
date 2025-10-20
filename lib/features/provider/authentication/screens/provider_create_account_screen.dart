@@ -74,8 +74,8 @@ class _ProviderCreateAccountScreenState
               onChanged: (a) {
                 setState(() {});
               },
-              validator: (value) =>
-                  Validators.validateNotEmpty(value, 'email address'),
+              validator: 
+                  Validators.validateEmail
             ),
             16.verticalSpace,
             KFormField(

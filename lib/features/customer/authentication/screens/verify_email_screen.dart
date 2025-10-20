@@ -99,18 +99,15 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         if (state is CustomerAuthFailure) {
           
           log(state.error);
-          // showSnackBar(context, 'Error', state.error);
-           await replaceScreen(
-            context,
-            const ResetPasswordScreen(),
-          );
+          showSnackBar(context, 'Error', state.error);
+           
         }
 
         if (state is CustomerEmailVerified) {
           log('Email verified, navigating to main layout');
           await replaceScreen(
             context,
-            const ResetPasswordScreen(),
+            const VerificationStepsScreen(),
           );
         }
       },

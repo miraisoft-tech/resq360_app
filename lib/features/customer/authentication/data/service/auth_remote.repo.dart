@@ -143,7 +143,7 @@ class AuthRemoteRepo extends BaseAPI {
         // Try to fetch profile safely
         try {
           final userProfile = await getUserProfile(token: token.toString());
-          log('Fetched user profile: ${userProfile.data}');
+          log('Fetched user profile: $userProfile.data.toString()'); // test line
         } on Exception catch (e) {
           log('Failed to fetch profile: $e');
         }
@@ -239,28 +239,33 @@ class AuthRemoteRepo extends BaseAPI {
   }
 
   Future<bool> resetPassword({
-    required String token,
     required String password,
   }) async {
     try {
       const url = '/auth/reset-password/user';
+      final token = await authLocalDataSource.getAccessToken();
 
-      final data = {
-        'token': token,
-        'password': password,
-      };
+      if (token != null) {
+        log('Reset Password Token: $token');
+        final data = {
+          'token': token,
+          'password': password,
+        };
 
-      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+        final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
-      log(res.statusCode);
-      log(res.data);
+        log(res.statusCode);
+        log(res.data);
 
-      switch (res.statusCode) {
-        case 200:
-          return true;
-        default:
-          return false;
+        switch (res.statusCode) {
+          case 200:
+            return true;
+          default:
+            return false;
+        }
       }
+
+      return false;
     } on Exception catch (e, s) {
       log(e);
       log(s);
@@ -317,6 +322,7 @@ class AuthRemoteRepo extends BaseAPI {
 
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
+          log('User profile fetched: ${authResponse.user.fullName}');
           return ApiResult(data: authResponse);
         } else {
           return ApiResult(
@@ -365,7 +371,6 @@ class AuthRemoteRepo extends BaseAPI {
 
       return ApiResult(error: '$e $s');
     }
-
   }
 
   // KYC
@@ -431,40 +436,36 @@ class AuthRemoteRepo extends BaseAPI {
         'selfieImageId': selfieImageId,
       };
 
-      log('data.........$selfieImageId / $selfieImageUrl...........');
       log('........Submitting Face ID with data: $data..........');
-      log('...............URL: $url....................');
-
-      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+      final res = await dio().post(url, data: data);
+      log('Raw data type1: ${res.data.runtimeType}');
 
       log('${res.statusCode}');
       log('${res.data}');
+      log('Raw data type2: ${res.data.runtimeType}');
 
       if (res.statusCode == 200 && res.data != null) {
-        final success = res.data!['success'] == true;
+        if (res.data is Map<String, dynamic>) {
+          final body = res.data as Map<String, dynamic>;
+          final success = body['success'] == true;
 
-        if (success) {
-          final kycResponse = KycResponse.fromJson(
-            res.data!['data'] as Map<String, dynamic>,
-          );
-          return ApiResult(data: kycResponse);
+          if (success) {
+            final response = KycResponse.fromJson(body);
+            return ApiResult(data: response);
+          } else {
+            return ApiResult(
+              error: body['message']?.toString() ?? 'Face ID submission failed',
+            );
+          }
         } else {
-          return ApiResult(
-            error:
-                res.data!['message']?.toString() ?? 'Face ID submission failed',
-          );
+          return ApiResult(error: 'Invalid response format');
         }
+      } else {
+        return ApiResult(error: 'Unexpected server response');
       }
-
-      return ApiResult(
-        error:
-            res.data?['message']?.toString() ??
-            'An error occurred, please try again!',
-      );
-    } on DioException catch (e, s) {
-      log('$e');
-      log('$s');
-      return ApiResult(error: '$e $s');
+    } catch (e, s) {
+      log('submitFaceId error: $e\n$s');
+      return ApiResult(error: e.toString());
     }
   }
 
@@ -490,44 +491,70 @@ class AuthRemoteRepo extends BaseAPI {
     required String documentType,
     required String documentUrl,
   }) async {
-    const url = 'kyc/submit/identity';
+    const url = '/kyc/submit/identity'; // ensure leading slash
+
     try {
       final data = {
         'documentType': documentType,
         'documentUrl': documentUrl,
       };
 
-      final res = await dio().post<Map<String, dynamic>>(
-        url,
-        data: data,
-      );
+      log('Submitting identity with data: $data');
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+
       log('${res.statusCode}');
       log('${res.data}');
 
       if (res.statusCode == 200 && res.data != null) {
-        final success = res.data!['success'] == true;
+        final body = res.data!;
+        final success = body['success'] == true;
 
         if (success) {
-          final identityResponse = IdentityResponse.fromJson(res.data!);
+          final identityResponse = IdentityResponse.fromJson(body);
           return ApiResult(data: identityResponse);
         } else {
           return ApiResult(
-            error:
-                res.data!['message']?.toString() ??
-                'Identity submission failed',
+            error: body['message']?.toString() ?? 'Identity submission failed',
           );
         }
       }
-      return ApiResult(error: 'Submission failed');
-    } on Exception catch (e) {
-      log('$e');
-      return ApiResult(error: '$e');
+
+      return ApiResult(error: 'Unexpected server response');
+    } on Exception catch (e, s) {
+      log('submitIdentity error: $e\n$s');
+      return ApiResult(error: e.toString());
     }
   }
 
-  Future<bool> submitKycAddress ({required String state, required String city, required String address}) async{
-    
-    const url = 'kyc/submit/address';
+  Future<ApiResult<IdentityResponse>> uploadAndSubmitIdentity({
+    required String documentType,
+    required String filePath,
+  }) async {
+    // Upload the document file
+    final uploadResult = await uploadSingle(filePath: filePath);
+
+    if (uploadResult.data == null) {
+      return ApiResult(error: uploadResult.error);
+    }
+
+    final upload = uploadResult.data!;
+
+    // Submit the identity data
+    final submitResult = await submitIdentity(
+      documentType: documentType,
+      documentUrl: upload.url,
+    );
+
+    return submitResult;
+  }
+
+  Future<bool> submitKycAddress({
+    required String state,
+    required String city,
+    required String address,
+  }) async {
+    const url = '/kyc/submit/address-information';
     try {
       final data = {
         'state': state,
@@ -555,29 +582,29 @@ class AuthRemoteRepo extends BaseAPI {
     } on Exception catch (e) {
       log('$e');
       return false;
-    } 
+    }
   }
-  
-  Future<ApiResult<UserKycInfo>> getUserKycInfo() async{
+
+  Future<ApiResult<UserKycInfo>> getUserKycInfo() async {
     const url = '/kyc/my-kyc';
 
     try {
       final res = await dio().get<Map<String, dynamic>>(url);
-       
-       log(res.data);
-       if (res.statusCode == 200) {
+
+      log(res.data);
+      if (res.statusCode == 200) {
         final userKycInfo = UserKycInfo.fromJson(res.data!);
-         return ApiResult(data: userKycInfo);
-       } else {
+        return ApiResult(data: userKycInfo);
+      } else {
         final error = res.data?['message'];
         log(error);
-         return ApiResult(error: res.data!['message']?.toString() ?? "failed to get user's Kyc");
-       }
+        return ApiResult(
+          error: res.data!['message']?.toString() ?? "failed to get user's Kyc",
+        );
+      }
     } on Exception catch (e) {
       log(e);
       return ApiResult(error: e.toString());
     }
   }
-
-
 }

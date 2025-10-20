@@ -1,4 +1,4 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
 // in BlocListeners that do not need to be awaited.
 // ignore_for_file: unawaited_futures
 
@@ -26,12 +26,11 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
     pickedImage = await AppFilePicker.pickImage();
 
     if (pickedImage != null) {
-      setState(() {});
+      // Dispatch e[vent to Bloc
+      context.read<CustomerAuthBloc>().add(
+        CustomerSubmitKyc(filePath: pickedImage!.path),
+      );
     }
-    // Dispatch event to Bloc
-    context.read<CustomerAuthBloc>().add(
-      CustomerSubmitKyc(filePath: pickedImage!.path),
-    );
 
     // if (context.mounted) {
     //   await GeneralDialogs.showCustomBottomSheet(
@@ -57,37 +56,37 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
     final colors = context.appColors;
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
-      listener: (context, state) async{
-        if(context.mounted) return;
+      listener: (context, state) async {
         if (state is CustomerAuthLoading) {
-        // Optional: show loading overlay
-         showLoadingDialog(context);
-      }  
-      
-      
-      if (state is CustomerKycSubmissionFailure) {
-        showSnackBar(context, 'Error', state.error);
-      }
+          // Optional: show loading overlay
+          showLoadingDialog(context);
+        }
 
+        if (state is CustomerKycSubmissionFailure) {
+          pop(context);
+          if (!context.mounted) return;
+          showSnackBar(context, 'Error', state.error);
+        }
 
-      if (state is CustomerKycSubmitted) {
-        await GeneralDialogs.showCustomBottomSheet(
-          context,
-          body: StepModal(
-            title: 'Facial Verification Successful!',
-            description: 'Let’s confirm your identification',
-            icon: AppAssets.ASSETS_IMAGES_STEP_1_PNG,
-            onContinuePressed: () async {
-              await pop(context);
+        if (state is CustomerKycSubmitted) {
+          pop(context);
+          if (!context.mounted) return;
+          await GeneralDialogs.showCustomBottomSheet(
+            context,
+            body: StepModal(
+              title: 'Facial Verification Successful!',
+              description: 'Let’s confirm your identification',
+              icon: AppAssets.ASSETS_IMAGES_STEP_1_PNG,
+              onContinuePressed: () async {
+                await pop(context);
 
-              if (context.mounted) {
-                await pushScreen(context, const StepIDScreen());
-              }
-            },
-          ),
-        );
-      }
-     
+                if (context.mounted) {
+                  await pushScreen(context, const StepIDScreen());
+                }
+              },
+            ),
+          );
+        }
       },
       child: Scaffold(
         backgroundColor: colors.whiteColor,

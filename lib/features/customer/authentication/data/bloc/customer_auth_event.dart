@@ -46,13 +46,11 @@ class CustomerForgotPassword extends CustomerAuthEvent {
 
 class CustomerResetPassword extends CustomerAuthEvent {
   const CustomerResetPassword({
-    required this.email,
     required this.code,
-    required this.newPassword,
+    required this.password,
   });
-  final String email;
   final String code;
-  final String newPassword;
+  final String password;
 }
 
 class CustomerverifyEmail extends CustomerAuthEvent {
@@ -98,5 +96,11 @@ class CustomerSubmitKycAddress extends CustomerAuthEvent {
   final String city;
   final String address;
 }
-
+class CustomerSubmitId extends CustomerAuthEvent {
+  const CustomerSubmitId( {required this.documentType, required this.filePath});
+  final String documentType;
+  final String filePath;
+  @override
+  List<Object> get props => [filePath];
+}
 class CustomerGetUserKycInfo extends CustomerAuthEvent {}

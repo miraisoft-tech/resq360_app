@@ -61,21 +61,30 @@ mixin LocationMixin on BaseViewModel {
     onLocationUpdated();
   }
 
-  Future<Placemark> _getAddressFromCoords() async {
-    if (currentPosition == null) {
-      throw Exception('Current position is null');
-    }
+  Future<Placemark?> _getAddressFromCoords() async {
+  if (currentPosition == null) {
+    throw Exception('Current position is null');
+  }
+  log('Lat: ${currentPosition!.latitude}, Lng: ${currentPosition!.longitude}');
 
+  try {
     final placemarks = await placemarkFromCoordinates(
       currentPosition!.latitude,
       currentPosition!.longitude,
-    );
+    ).timeout(const Duration(seconds: 5)); // prevent long hangs
 
     final place = placemarks.first;
-    log('Address: ${place.street}, ${place.locality}, ${place.administrativeArea}, ${place.country}, ${place.postalCode}');
+    log('Address: ${place.street}, ${place.locality}, ${place.country}');
     notifyListeners();
     return place;
+  } on TimeoutException catch (_) {
+    log('Reverse geocoding timed out');
+    return null;
+  } on Exception catch (e) {
+    log('Geocoding failed: $e');
+    return null;
   }
+}
 
   @protected
   void onLocationUpdated() {}

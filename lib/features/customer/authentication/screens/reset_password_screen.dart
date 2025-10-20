@@ -115,7 +115,23 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               WideButton(
                 label: 'Reset Password',
                 onPressed: () async {
-                  
+                  if (_formKey.currentState!.validate()) {
+                    if (newPasswordController.text !=
+                        passwordController.text) {
+                      showSnackBar(
+                        context,
+                        'Error',
+                        'Passwords do not match',
+                      );
+                      return;
+                    }
+
+                    context.read<ProviderAuthBloc>().add(
+                          ProviderResetPassword(
+                            password: newPasswordController.text, 
+                          ),
+                        );
+                  }
                 },
               ),
             ],
