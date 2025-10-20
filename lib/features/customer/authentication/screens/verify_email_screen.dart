@@ -1,4 +1,4 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
 // in BlocListeners that do not need to be awaited.
 // ignore_for_file: unawaited_futures
 
@@ -90,21 +90,21 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         if (!mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
-        }else {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
         }
 
         if (state is CustomerAuthFailure) {
-          
+           if (Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
           log(state.error);
           showSnackBar(context, 'Error', state.error);
-           
         }
 
         if (state is CustomerEmailVerified) {
-          log('Email verified, navigating to main layout');
+          log('Email verified, navigating to kyc');
+          if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           await replaceScreen(
             context,
             const VerificationStepsScreen(),

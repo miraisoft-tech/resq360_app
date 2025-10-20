@@ -152,7 +152,7 @@ class AuthRemoteRepo extends BaseAPI {
         final authResponse = AuthResponse.fromJson(res.data!);
         return ApiResult(data: authResponse);
       } else {
-        return ApiResult(error: 'Login failed with status ${res.statusCode}');
+        return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
       }
     } on Exception catch (e) {
       log('Login DioException: $e');
