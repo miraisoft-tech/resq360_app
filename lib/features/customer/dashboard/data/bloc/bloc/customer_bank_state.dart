@@ -9,3 +9,14 @@ sealed class CustomerBankState extends Equatable {
 
 final class CustomerBankInitial extends CustomerBankState {}
 final class CustomerBankLoading extends CustomerBankState{}
+final class CustomerbankAccountAdded extends CustomerBankState{}
+final class CustomerBankAccountsFetched extends CustomerBankState{}
+final class CustomerBankVerifiedAndRegisteredWithPaystack extends CustomerBankState{}
+final class CustomerDefaultBankAccountSetSuccesful extends CustomerBankState{}
+final class CustomerBankAccountUpdated extends CustomerBankState{}
+final class CustomerBankAccountDeleted extends CustomerBankState{}
+
+
+// failure
+
+final class CustomerBankFailure extends CustomerBankState{}

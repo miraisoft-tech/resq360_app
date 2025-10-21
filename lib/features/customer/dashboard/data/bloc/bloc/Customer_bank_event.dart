@@ -1,13 +1,13 @@
 part of 'customer_bank_bloc.dart';
 
-sealed class BankBlocEvent extends Equatable {
-  const BankBlocEvent();
+sealed class ConsumerBankEvent extends Equatable {
+  const ConsumerBankEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class BankAddAccount extends BankBlocEvent {
+class BankAddAccount extends ConsumerBankEvent {
   const BankAddAccount({
     required this.accountName,
     required this.accountNumber,
@@ -40,9 +40,9 @@ class BankAddAccount extends BankBlocEvent {
       ];
 }
 
-class BankFetchAccounts extends BankBlocEvent {}
+class BankFetchAccounts extends ConsumerBankEvent {}
 
-class BankSetDefaultAccount extends BankBlocEvent {
+class BankSetDefaultAccount extends ConsumerBankEvent {
   const BankSetDefaultAccount({required this.bankAccountId});
   final String bankAccountId;
 
@@ -50,7 +50,7 @@ class BankSetDefaultAccount extends BankBlocEvent {
   List<Object> get props => [bankAccountId];
 }
 
-class BankVerifyAndRegisterAccount extends BankBlocEvent {
+class BankVerifyAndRegisterAccount extends ConsumerBankEvent {
   const BankVerifyAndRegisterAccount({required this.bankAccountId});
   final String bankAccountId;
 
@@ -58,7 +58,7 @@ class BankVerifyAndRegisterAccount extends BankBlocEvent {
   List<Object> get props => [bankAccountId];
 }
 
-class UpdateBankAccount extends BankBlocEvent {
+class UpdateBankAccount extends ConsumerBankEvent {
   const UpdateBankAccount({required this.bankDetails});
   final BankDetails bankDetails;
 
@@ -66,7 +66,7 @@ class UpdateBankAccount extends BankBlocEvent {
   List<Object> get props => [bankDetails];
 }
 
-class DeleteBankAccount extends BankBlocEvent {
+class DeleteBankAccount extends ConsumerBankEvent {
   const DeleteBankAccount({required this.bankAccountId});
   final String bankAccountId;
 
