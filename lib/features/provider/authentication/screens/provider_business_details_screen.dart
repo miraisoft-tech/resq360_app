@@ -1,10 +1,13 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
 // in BlocListeners that do not need to be awaited.
 // ignore_for_file: unawaited_futures
+import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
 import 'package:resq360/core/utils/validators.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_confirm_email_screen.dart';
@@ -45,18 +48,20 @@ class _ProviderBusinessDetailsScreenState
   late TextEditingController latitudeController;
 
   final _formKey = GlobalKey<FormState>();
-  final ValueNotifier<String?> _selectType = ValueNotifier(null);
+  final ValueNotifier<Service?> _selectType = ValueNotifier(null);
 
-  final List<String> categories = [
-    'Towing',
-    'Cleaning',
-    'Mechanic',
-    'Electrician',
-    'Other',
-  ];
+  // final List<String> categories = [
+  //   'Towing',
+  //   'Cleaning',
+  //   'Mechanic',
+  //   'Electrician',
+  //   'Other',
+  // ];
   @override
   void initState() {
     super.initState();
+
+    context.read<CustomerServicesBloc>().add(CustomerFetchServices());
 
     nameController = TextEditingController();
     addressController = TextEditingController();
@@ -75,65 +80,72 @@ class _ProviderBusinessDetailsScreenState
     nameController.dispose();
     otherController.dispose();
   }
+
   bool isProcessing = false;
-Future<void> _handleSignup(BuildContext context) async {
-  log('Signup button pressed');
-   if (isProcessing) return;
-  setState(() => isProcessing = true);
-  log('isProcessing set to true');
-  if (!_formKey.currentState!.validate()) {
-    setState(() => isProcessing = false); // reset if form is invalid
-    log('Form is not valid');
-    return;
+  Future<void> _handleSignup(BuildContext context) async {
+    if (isProcessing) return;
+    setState(() => isProcessing = true);
+
+    if (!_formKey.currentState!.validate()) {
+      setState(() => isProcessing = false);
+      return;
+    }
+
+    try {
+      final locationData = await LocationHelper.getCurrentLocation();
+
+      if (!context.mounted) return;
+
+      final address = Address(
+        state: locationData['state'] as String,
+        city: locationData['city'] as String,
+        zipCode: locationData['zipCode'] as String,
+        address: locationData['address'] as String,
+        longitude: locationData['longitude'] as double,
+        latitude: locationData['latitude'] as double,
+      );
+
+      final servicesState = context.read<CustomerServicesBloc>().state;
+      if (servicesState is! CustomerServicesLoaded) {
+        showSnackBar(context, 'Error', 'Please wait for services to load');
+        setState(() => isProcessing = false);
+        return;
+      }
+
+      final categories = servicesState.services;
+
+      final selectedService = _selectType.value;
+
+      if (selectedService == null) {
+        showSnackBar(context, 'Error', 'Please select a service category');
+        setState(() => isProcessing = false);
+        return;
+      }
+
+      context.read<ProviderAuthBloc>().add(
+        ProviderSignupWIthEmail(
+          fullname: widget.name,
+          email: widget.email,
+          password: widget.password,
+          companyName: nameController.text,
+          phoneNumber: widget.phone,
+          customServiceName:
+              selectedService.name == 'Other'
+                  ? otherController.text
+                  : selectedService.name,
+          service: selectedService.id,
+          address: address,
+        ),
+      );
+    } on Exception catch (e, s) {
+      log('Signup failed: $e\n$s');
+      if (context.mounted) {
+        showSnackBar(context, 'Error', e.toString());
+      }
+    } finally {
+      if (mounted) setState(() => isProcessing = false);
+    }
   }
-
-  try {
-    // Get user’s current location and address
-    final locationData = await LocationHelper.getCurrentLocation();
-
-    // If widget was disposed during async call, stop
-    if (!context.mounted) return;
-
-    final address = Address(
-      state: locationData['state'] as String,
-      city: locationData['city'] as String,
-      zipCode: locationData['zipCode'] as String,
-      address: locationData['address'] as String,
-      longitude: locationData['longitude'] as double,
-      latitude: locationData['latitude'] as double,
-    );
-
-    // Trigger signup event
-    context.read<ProviderAuthBloc>().add(
-      ProviderSignupWIthEmail(
-        fullname: widget.name,
-        email: widget.email,
-        password: widget.password,
-        companyName: nameController.text,
-        phoneNumber: widget.phone,
-        customServiceName:
-            _selectType.value == 'Other'
-                ? otherController.text
-                : _selectType.value ?? '',
-        service: categories.indexOf(
-                  _selectType.value == 'Other'
-                      ? otherController.text
-                      : _selectType.value ?? '',
-                ) +
-                1,
-        address: address,
-      ),
-    );
-  } on Exception catch (e, s) {
-    log('Signup failed: $e\n$s');
-
-    if (!context.mounted) return;
-    await showSnackBar(context, 'Error', e.toString());
-  }finally {
-    setState(() => isProcessing = false); // reset after dispatch
-  }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -143,13 +155,13 @@ Future<void> _handleSignup(BuildContext context) async {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is ProviderAuthLoadingState) {
-           showLoadingDialog(context);
+          showLoadingDialog(context);
         }
         if (state is ProviderAuthFailureState) {
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-           showSnackBar(context, 'Error', state.error);
+          showSnackBar(context, 'Error', state.error);
         }
 
         if (state is ProviderAuthSignupSuccessState) {
@@ -158,9 +170,9 @@ Future<void> _handleSignup(BuildContext context) async {
           }
           // showSuccessSnackBar(context, 'Registration successful');
           // navigate to confirm email screen
-           pushScreen(
+          pushScreen(
             context,
-            ProviderConfirmEmailScreen(email: widget.email),
+            ProviderConfirmEmailScreen(email: widget.email, purpose: VerificationPurpose.registration),
           );
         }
       },
@@ -182,8 +194,11 @@ Future<void> _handleSignup(BuildContext context) async {
                       onChanged: (a) {
                         setState(() {});
                       },
-                      validator: (value) =>
-                          Validators.validateNotEmpty(value, 'business name'),
+                      validator:
+                          (value) => Validators.validateNotEmpty(
+                            value,
+                            'business name',
+                          ),
                     ),
                     16.verticalSpace,
                     KFormField(
@@ -194,30 +209,80 @@ Future<void> _handleSignup(BuildContext context) async {
                       onChanged: (a) {
                         setState(() {});
                       },
-                      validator: (value) =>
-                          Validators.validateNotEmpty(value, 'business address'),
+                      validator:
+                          (value) => Validators.validateNotEmpty(
+                            value,
+                            'business address',
+                          ),
                     ),
                     16.verticalSpace,
-                    ValueListenableBuilder<String?>(
-                      valueListenable: _selectType,
-                      builder: (
-                        BuildContext context,
-                        String? value,
-                        Widget? child,
-                      ) {
-                        return ObjectKDropDown(
-                          label: 'Service Category ',
-                          hintText: 'select a service category',
-                          displayStringForOption: (String? id) => id ?? '',
-                          showPrefix: false,
-                          value: value,
-                          dropdownItems: categories,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectType.value = value;
-                            });
-                          },
-                        );
+                    BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+                      builder: (context, state) {
+                        if (state is CustomerServicesLoading) {
+                          isProcessing = true;
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (state is CustomerServicesError) {
+                          isProcessing = false;
+                          return Column(
+                            children: [
+                              Center(
+                                child: Text(
+                                  state.error,
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ),
+                              WideButton(
+                                label: 'retry',
+                                onPressed: () {
+                                  context.read<CustomerServicesBloc>().add(
+                                    CustomerFetchServices(),
+                                  );
+                                },
+                              ),
+                            ],
+                          );
+                        }
+
+                        if (state is CustomerServicesLoaded) {
+                          isProcessing = false;
+
+                          final categories = state.services;
+
+                          return ValueListenableBuilder<Service?>(
+                            valueListenable: _selectType,
+                            builder: (
+                              BuildContext context,
+                              Service? value,
+                              Widget? child,
+                            ) {
+                              return ObjectKDropDown<Service>(
+                                label: 'Service Category',
+                                hintText: 'Select a service category',
+                                displayStringForOption:
+                                    (Service service) => service.name,
+                                showPrefix: false,
+                                value:
+                                    value != null
+                                        ? categories.firstWhere(
+                                          (service) => service.id == value.id,
+                                          orElse: () => categories.first,
+                                        )
+                                        : null,
+                                dropdownItems: categories,
+                                onChanged: (service) {
+                                  setState(() {
+                                    _selectType.value = service;
+                                  });
+                                },
+                              );
+                            },
+                          );
+                        }
+                        return const SizedBox.shrink();
                       },
                     ),
                     30.verticalSpace,
@@ -238,8 +303,11 @@ Future<void> _handleSignup(BuildContext context) async {
                         onChanged: (a) {
                           setState(() {});
                         },
-                        validator: (value) =>
-                            Validators.validateNotEmpty(value, 'service name'),
+                        validator:
+                            (value) => Validators.validateNotEmpty(
+                              value,
+                              'service name',
+                            ),
                       ),
                   ],
                 ),

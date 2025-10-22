@@ -23,7 +23,16 @@ class ServiceCategoryWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          icon,
+          Container(
+          height: 70,
+          width: 80,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: icon,
+        ),
           6.verticalSpace,
           GenText(
             label,

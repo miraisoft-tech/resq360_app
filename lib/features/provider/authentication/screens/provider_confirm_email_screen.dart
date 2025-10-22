@@ -1,4 +1,4 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
 // in BlocListeners that do not need to be awaited.
 // ignore_for_file: unawaited_futures
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,13 +8,25 @@ import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_reset_password_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
+enum VerificationPurpose {
+  registration,
+  passwordReset,
+}
+
 class ProviderConfirmEmailScreen extends StatefulWidget {
-  const ProviderConfirmEmailScreen({required this.email, super.key});
+  const ProviderConfirmEmailScreen({
+    required this.email,
+    required this.purpose,
+    super.key,
+  });
 
   final String email;
+  final VerificationPurpose purpose;
 
   @override
   State<ProviderConfirmEmailScreen> createState() =>
@@ -74,11 +86,10 @@ class _ProviderConfirmEmailScreenState
       return;
     }
     context.read<ProviderAuthBloc>().add(
-          ProviderverifyEmail(
-           emailVerificationToken: _otpController1.text,
-          ),
-        );
-    
+      ProviderverifyEmail(
+        emailVerificationToken: _otpController1.text,
+      ),
+    );
   }
 
   @override
@@ -86,9 +97,9 @@ class _ProviderConfirmEmailScreenState
     final colors = context.appColors;
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
-      listener: (context, state)async {
-         if (!context.mounted) return;
-           if (state is ProviderAuthLoadingState) {
+      listener: (context, state) async {
+        if (!context.mounted) return;
+        if (state is ProviderAuthLoadingState) {
           showLoadingDialog(context);
         }
 
@@ -101,16 +112,25 @@ class _ProviderConfirmEmailScreenState
         }
 
         if (state is ProviderEmailVerifiedState) {
-           if (!context.mounted) return;
+          if (!context.mounted) return;
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
           log('Email verified, navigating to main layout');
-        //  await pushScreen(context, const ProviderVerificationStepsScreen());
-          await replaceScreen(
-            context,
-            const MainLayoutPage(),
-          );
+          // Navigate based on purpose
+          if (widget.purpose == VerificationPurpose.registration) {
+            await replaceScreen(
+              context,
+              const ProviderVerificationStepsScreen(),
+            );
+          } else if (widget.purpose == VerificationPurpose.passwordReset) {
+            await replaceScreen(context, const ProviderResetPasswordScreen());
+          }
+          //  await pushScreen(context, const ProviderVerificationStepsScreen());
+          // await replaceScreen(
+          //   context,
+          //   const MainLayoutPage(),
+          // );
         }
       },
       child: AppScaffold(

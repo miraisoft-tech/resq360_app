@@ -164,20 +164,28 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
                   onPressed:
                       isFormValid
                           ? () async {
-                            await GeneralDialogs.showCustomBottomSheet(
-                              context,
-                              body: StepModal(
-                                title: 'Verification Complete!',
-                                description:
-                                    'Welcome to ResQ360, David! You can start receiving service requests, managing your bookings and growing your business.',
-                                icon: AppAssets.ASSETS_LOGO_LOGO_PNG,
-                                buttonText: 'Go to Dashboard',
-                                onContinuePressed: () async {
-                                  await pop(context);
-                                },
-                              ),
-                            );
-                          }
+                            // await GeneralDialogs.showCustomBottomSheet(
+                            //   context,
+                            //   body: StepModal(
+                            //     title: 'Verification Complete!',
+                            //     description:
+                            //         'Welcome to ResQ360, David! You can start receiving service requests, managing your bookings and growing your business.',
+                            //     icon: AppAssets.ASSETS_LOGO_LOGO_PNG,
+                            //     buttonText: 'Go to Dashboard',
+                            //     onContinuePressed: () async {
+                            //       await pop(context);
+                            //     },
+                            //   ),
+                            // );
+                             context.read<ProviderAuthBloc>().add(
+                                    ProviderSubmitKycAddress(
+                                      address: _streetCtrl.text,
+                                      city: _cityCtrl.text,
+                                      state: _selectState.value!,
+                                    ),
+                                  );
+                            }
+                          
                           : null,
                 ),
                 20.verticalSpace,

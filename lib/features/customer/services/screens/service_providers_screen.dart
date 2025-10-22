@@ -1,10 +1,14 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 
 class ServiceProvidersScreen extends StatefulWidget {
-  const ServiceProvidersScreen({super.key});
+  const ServiceProvidersScreen({required this.serviceProviderId, super.key});
 
+  final int serviceProviderId;
   @override
   State<ServiceProvidersScreen> createState() => _ServiceProvidersScreenState();
 }
@@ -12,6 +16,7 @@ class ServiceProvidersScreen extends StatefulWidget {
 class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _sortByProximity = false;
 
   final TextEditingController _searchController = TextEditingController();
 
@@ -53,8 +58,55 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
 
   @override
   void initState() {
-    _tabController = TabController(length: 3, vsync: this);
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+
+    // Initial fetch (All providers)
+    context.read<CustomerServicesBloc>().add(
+      CustomerFetchProviders(
+        categoryId: widget.serviceProviderId,
+        nearYou: _sortByProximity,
+      ),
+    );
+
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _fetchProviders();
+      }
+    });
+  }
+
+  void _fetchProviders() {
+    String? activityStatus;
+
+    switch (_tabController.index) {
+      case 1:
+        activityStatus = 'online';
+
+      case 2:
+        activityStatus = 'offline';
+
+      default:
+        activityStatus = null;
+    }
+
+    context.read<CustomerServicesBloc>().add(
+      CustomerFetchProviders(
+        categoryId: widget.serviceProviderId,
+        activityStatus: activityStatus,
+        nearYou: _sortByProximity,
+        search: _searchController.text.isNotEmpty
+                ? _searchController.text
+                : null,
+      ),
+    );
+  }
+
+  void _toggleProximity() {
+    setState(() {
+      _sortByProximity = !_sortByProximity;
+    });
+    _fetchProviders();
   }
 
   @override
@@ -88,7 +140,8 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
               hintText: 'Search for services',
               onTapSuffix: () {},
               onChanged: (value) {
-                setState(() {});
+               Future.delayed(const Duration(milliseconds: 500), _fetchProviders);
+
               },
               prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
             ),
@@ -130,6 +183,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                   ),
                   onPressed: () {
                     log('Ping Providers pressed');
+                    _toggleProximity();
                   },
                   icon: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG.svg,
                   label: GenText(
@@ -162,19 +216,56 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
           ),
           20.verticalSpace,
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _ProviderList(providers: providers),
-                _ProviderList(
-                  providers:
-                      providers.where((p) => p['status'] == 'Online').toList(),
-                ),
-                _ProviderList(
-                  providers:
-                      providers.where((p) => p['status'] == 'Offline').toList(),
-                ),
-              ],
+            child: BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+              builder: (context, state) {
+                if (state is CustomerServicesLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is CustomerServicesError) {
+                  return Center(
+                    child: Text(
+                      state.error,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+
+                if (state is CustomerProvidersLoaded) {
+                  final providers = state.providers;
+                  if (providers.isNotEmpty) {
+                    return TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _ProviderList(
+                          providers: providers,
+                        ),
+                        _ProviderList(
+                          providers:
+                              providers
+                                  .where((p) => p.activityStatus == 'Online')
+                                  .toList(),
+                        ),
+                        _ProviderList(
+                          providers:
+                              providers
+                                  .where((p) => p.activityStatus == 'Offline')
+                                  .toList(),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Center(
+                      child: GenText(
+                        'No service providers found.',
+                        size: 16,
+                        color: colors.textColor.shade500,
+                      ),
+                    );
+                  }
+                }
+                return const SizedBox.shrink();
+              },
             ),
           ),
         ],
@@ -184,8 +275,12 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
 }
 
 class _ProviderList extends StatelessWidget {
-  const _ProviderList({required this.providers});
-  final List<Map<String, dynamic>> providers;
+  const _ProviderList({
+    required this.providers,
+    // required this.providerId
+  });
+  final List<ServiceProvider> providers;
+  // final int  providerId;
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +294,12 @@ class _ProviderList extends StatelessWidget {
           child: _ProviderCard(
             provider: provider,
             onTap: () async {
-              await pushScreen(context, const ServiceProviderDetailsScreen());
+              await pushScreen(
+                context,
+                ServiceProviderDetailsScreen(
+                  providerId: provider.id!,
+                ),
+              );
             },
           ),
         );
@@ -210,14 +310,14 @@ class _ProviderList extends StatelessWidget {
 
 class _ProviderCard extends StatelessWidget {
   const _ProviderCard({required this.provider, this.onTap});
-  final Map<String, dynamic> provider;
+  final ServiceProvider provider;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    final isOnline = provider['status'] == 'Online';
+    final isOnline = provider.activityStatus?.toLowerCase() == 'online';
 
     return GestureDetector(
       onTap: onTap,
@@ -236,7 +336,7 @@ class _ProviderCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 26,
-                    backgroundImage: NetworkImage(provider['image'] as String),
+                    // backgroundImage: NetworkImage(provider.),
                   ),
                   12.horizontalSpace,
                   Expanded(
@@ -244,14 +344,14 @@ class _ProviderCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         UrbText(
-                          provider['name'] as String,
+                          provider.companyName ?? '',
                           height: 24.5,
                           weight: FontWeight.w600,
                           color: colors.black,
                         ),
                         2.verticalSpace,
                         GenText(
-                          provider['service'] as String,
+                          provider.serviceName ?? '',
                           size: 13,
                           color: colors.textColor.shade500,
                         ),
@@ -296,7 +396,7 @@ class _ProviderCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: GenText(
-                      provider['status'] as String,
+                      provider.activityStatus ?? '',
                       size: 12,
                       weight: FontWeight.w600,
                       color:
@@ -309,7 +409,7 @@ class _ProviderCard extends StatelessWidget {
               ),
               12.verticalSpace,
               GenText(
-                provider['description'] as String,
+                provider.description ?? '',
                 size: 13,
                 height: 20,
                 color: colors.textColor.shade500,

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
@@ -19,6 +20,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+   @override
+  void initState() {
+    context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+    super.initState();
+  }
+  
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -197,35 +204,44 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           20.verticalSpace,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ServiceCategoryWidget(
-                icon: Icon(
-                  Icons.local_shipping_outlined,
-                  size: 28,
-                  color: colors.primary.shade500,
-                ),
-                label: 'Towing',
-              ),
-              ServiceCategoryWidget(
-                icon: Icon(
-                  Icons.medical_services_outlined,
-                  size: 28,
-                  color: colors.primary.shade500,
-                ),
-                label: 'Ambulance',
-              ),
-              ServiceCategoryWidget(
-                icon: Icon(
-                  Icons.plumbing_outlined,
-                  size: 28,
-                  color: colors.primary.shade500,
-                ),
-                label: 'Plumbing',
-              ),
-            ],
-          ),
+//          BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+//   builder: (context, state) {
+//     if (state is CustomerServicesLoading) {
+//       return const Center(child: CircularProgressIndicator());
+//     }
+
+//     if (state is CustomerServicesLoaded) {
+//       final categories = state.services;
+
+//       return SizedBox(
+//         height: 80,
+//         child: ListView.separated(
+//           scrollDirection: Axis.horizontal,
+//           itemCount: categories.length,
+//           separatorBuilder: (_, _) => 12.horizontalSpace,
+//           itemBuilder: (context, index) {
+//             final category = categories[index];
+//             return ServiceCategoryWidget(
+//               icon: Image.network(
+//                 category.image,
+//                 height: 28,
+//                 width: 28,
+//                 errorBuilder: (_, _, _) => const Icon(Icons.broken_image),
+//               ),
+//               label: category.name,
+//             );
+//           },
+//         ),
+//       );
+//     }
+
+//     if (state is CustomerServicesError) {
+//       return Center(child: Text(state.error));
+//     }
+
+//     return const SizedBox.shrink();
+//   },
+// ),
           30.verticalSpace,
           Row(
             children: [
@@ -239,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Spacer(),
               GestureDetector(
                 onTap: () async {
-                  await pushScreen(context, const ServiceProvidersScreen());
+                  // await pushScreen(context, const ServiceProvidersScreen());
                 },
                 child: UrbText(
                   'View All',
