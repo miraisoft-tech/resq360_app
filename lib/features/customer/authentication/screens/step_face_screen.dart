@@ -25,6 +25,7 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
   Future<void> pickCameraPhoto(BuildContext context) async {
     pickedImage = await AppFilePicker.pickImage();
 
+     if (!context.mounted) return;
     if (pickedImage != null) {
       // Dispatch e[vent to Bloc
       context.read<CustomerAuthBloc>().add(

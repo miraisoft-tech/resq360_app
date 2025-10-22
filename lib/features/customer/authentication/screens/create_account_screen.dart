@@ -71,6 +71,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           await pushScreen(
             context,
             VerifyEmailScreen(email: emailController.text,
+            purpose: VerificationPurpose.registration
             ),
           );
         }

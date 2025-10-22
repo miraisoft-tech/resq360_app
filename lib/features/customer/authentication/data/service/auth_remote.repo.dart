@@ -437,7 +437,7 @@ class AuthRemoteRepo extends BaseAPI {
       };
 
       log('........Submitting Face ID with data: $data..........');
-      final res = await dio().post(url, data: data);
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
       log('Raw data type1: ${res.data.runtimeType}');
 
       log('${res.statusCode}');
@@ -463,7 +463,7 @@ class AuthRemoteRepo extends BaseAPI {
       } else {
         return ApiResult(error: 'Unexpected server response');
       }
-    } catch (e, s) {
+    } on Exception catch (e, s) {
       log('submitFaceId error: $e\n$s');
       return ApiResult(error: e.toString());
     }

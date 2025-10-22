@@ -118,8 +118,8 @@ messages: json['messages'] == null
         'lastMessageAt': lastMessageAt?.toIso8601String(),
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
-        'participants': participants == null ? [] : List<dynamic>.from(participants!.map((x) => x.toJson())),
-        'messages': messages == null ? [] : List<dynamic>.from(messages!.map((x) => x.toJson())),
+        'participants': participants == null ? <dynamic>[] : List<dynamic>.from(participants!.map((x) => x.toJson())),
+        'messages': messages == null ? <dynamic>[] : List<dynamic>.from(messages!.map((x) => x.toJson())),
     };
 }
 

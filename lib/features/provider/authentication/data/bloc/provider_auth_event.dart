@@ -79,3 +79,35 @@ class ProvidergetUserProfile extends ProviderAuthEvent {
 }
 
 class ProviderLogout extends ProviderAuthEvent {}
+
+class ProviderSubmitKyc extends ProviderAuthEvent {
+  const ProviderSubmitKyc({required this.filePath});
+  final String filePath;
+  @override
+  List<Object> get props => [filePath];
+}
+
+class ProviderSubmitIdentity extends ProviderAuthEvent{ 
+  const ProviderSubmitIdentity ({
+    required this.filePath,
+    required this.documentType,
+  });
+  final String filePath;
+  final String documentType;
+}
+
+class ProviderSubmitKycAddress extends ProviderAuthEvent {
+  const ProviderSubmitKycAddress({required this.state, required this.city, required this.address});
+
+  final String state;
+  final String city;
+  final String address;
+}
+class ProviderSubmitId extends ProviderAuthEvent {
+  const ProviderSubmitId( {required this.documentType, required this.filePath});
+  final String documentType;
+  final String filePath;
+  @override
+  List<Object> get props => [filePath];
+}
+class ProviderGetProividerKycInfo extends ProviderAuthEvent {}

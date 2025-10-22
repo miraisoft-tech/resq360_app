@@ -75,7 +75,7 @@ class BankRepo extends BaseAPI {
         log('Bank account verified and registered successfully');
       }
     } on Exception catch (e) {
-      throw Exception('Error verifying and registering bank account: ${e.toString()}');
+      throw Exception('Error verifying and registering bank account: $e');
     }
   }
 
@@ -138,7 +138,7 @@ Future<void> updateBankAccount({
         throw Exception('Failed to delete bank account');
       }
     } on Exception catch (e) {
-      throw Exception('Error deleting bank account: ${e.toString()}');
+      throw Exception('Error deleting bank account: $e');
     }
   }
 }

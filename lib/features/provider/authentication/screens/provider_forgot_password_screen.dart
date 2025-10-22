@@ -60,6 +60,7 @@ class _ProviderForgotPasswordScreenState
             context,
             VerifyEmailScreen(
               email: emailController.text,
+              purpose: VerificationPurpose.passwordReset,
             ),
           );
         }

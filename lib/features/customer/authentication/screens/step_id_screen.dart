@@ -33,6 +33,8 @@ class _StepIDScreenState extends State<StepIDScreen> {
   Future<void> pickCameraPhoto(BuildContext context) async {
     pickedImage = await AppFilePicker.pickImage();
 
+     if (!context.mounted) return;
+
     if (pickedImage != null) {
      // Dispatch e[vent to Bloc
     context.read<CustomerAuthBloc>().add(

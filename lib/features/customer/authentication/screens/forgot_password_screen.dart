@@ -36,29 +36,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-void safePopDialog(BuildContext context) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
-  });
-}
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
-        } else {
-          safePopDialog(context); // safely dismiss loading
-        }
+        } 
 
         if (state is CustomerAuthFailure) {
+           if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerForgotPasswordSucess) {
-          // showSuccessSnackbar(context, 'Password reset email sent successfully!');
+           if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
@@ -66,6 +62,7 @@ void safePopDialog(BuildContext context) {
             context,
             VerifyEmailScreen(
               email: emailController.text,
+              purpose: VerificationPurpose.passwordReset,
             ),
           );
         }

@@ -60,5 +60,3 @@ final class CustomerServiceCategoryUpdateError extends CustomerServicesState {
   @override
   List<Object> get props => [error];
 }
-
-

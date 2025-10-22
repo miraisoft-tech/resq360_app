@@ -20,6 +20,8 @@ class ProviderAuthAuthenticatedState  extends ProviderAuthState {
   List<Object> get props => [ user];
 }
 
+
+// failure stateFAILURE
 class ProviderAuthFailureState extends ProviderAuthState {
   const ProviderAuthFailureState (this.error);
   final String error;
@@ -27,6 +29,15 @@ class ProviderAuthFailureState extends ProviderAuthState {
   @override
   List<Object> get props => [error];
 }
+
+class ProviderKycSubmissionFailure extends ProviderAuthState {
+  const ProviderKycSubmissionFailure(this.error);
+  final String error;
+
+  @override
+  List<Object> get props => [error];
+}
+
 
 class ProviderAuthSignupSuccessState  extends ProviderAuthState {
   const ProviderAuthSignupSuccessState (this.user);
@@ -53,4 +64,28 @@ class ProviderResetPasswordSuccesStste extends ProviderAuthState {
 class ProviderProfileLoadedState  extends ProviderAuthState {
   const ProviderProfileLoadedState (this.user);
   final ProviderUserModel user;
+}
+
+class ProviderKycSubmitted extends ProviderAuthState {
+  const ProviderKycSubmitted(this.kycResponse);
+  final KycResponse kycResponse;
+
+  @override
+  List<Object> get props => [kycResponse];
+}
+
+class ProviderIdentitySubmitted extends ProviderAuthState {
+  const ProviderIdentitySubmitted({required this.data});
+
+  final IdentityResponse data;
+}
+
+class ProviderKycAddressSubmitted extends ProviderAuthState {}
+class ProviderKycInfoLoaded extends ProviderAuthState {
+  const ProviderKycInfoLoaded(this.userKycInfo);
+  final UserKycInfo userKycInfo;
+
+  @override
+  List<Object> get props => [userKycInfo];
+  
 }

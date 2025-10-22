@@ -2,6 +2,10 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/data/service/auth_remote.repo.dart';
 
@@ -19,6 +23,10 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       on<ProviderResetPassword>(_onResetPassword);
       on<ProviderverifyEmail>(_onVerifyEmail);
       on<ProvidergetUserProfile>(_onGetUserProfile);
+      on<ProviderSubmitKyc>(_onSubmitKyc);
+      on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
+      on<ProviderSubmitId>(_onSubmitKycId);
+      on<ProviderGetProividerKycInfo>(_onGetProviderKycInfo);
       on<ProviderLogout>(_onLogout);
   }
 
@@ -169,5 +177,84 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   void _onLogout(ProviderLogout event, Emitter<ProviderAuthState> emit) {
     // Clear user session if needed
     emit(ProviderAuthInitial());
+    
+  }
+
+   Future<void> _onSubmitKyc(
+    ProviderSubmitKyc event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    emit(ProviderAuthLoadingState());
+    try {
+      final result = await authRemoteRepo.uploadAndSubmitFaceId(
+        filePath: event.filePath,
+      );
+      if (result.data != null) {
+        emit(ProviderKycSubmitted(result.data!));
+      } else {
+        emit(ProviderKycSubmissionFailure(result.error ?? 'KYC submission failed'));
+      }
+    } on Exception catch (e) {
+      emit(ProviderKycSubmissionFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onGetProviderKycInfo (
+    ProviderGetProividerKycInfo event,
+    Emitter<ProviderAuthState> emit
+  ) async {
+    emit(ProviderAuthLoadingState());
+    try{
+      final result = await authRemoteRepo.getUserKycInfo();
+      if (result.data != null){
+        emit(ProviderKycInfoLoaded(result.data!));
+      } else {
+        emit(ProviderAuthFailureState(result.error ?? 'Failed to load KYC info'));
+      }
+    } on Exception catch (e) {
+      log( 'ProviderGetUserKycInfo Bloc Get provider KYC Info Error: $e');
+      emit(ProviderAuthFailureState(e.toString()));
+    }
+  }
+
+  Future<void> _onSubmitKycAddress(
+    ProviderSubmitKycAddress event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    emit(ProviderAuthLoadingState());
+    try {
+      final result = await authRemoteRepo.submitKycAddress(
+        address: event.address,
+        city: event.city,
+        state: event.state,
+      );
+      if (result) {
+        emit(ProviderKycAddressSubmitted());
+      } else {
+        emit(ProviderKycSubmissionFailure('$result KYC address submission failed'));
+      }
+    } on Exception catch (e) {
+      emit(ProviderKycSubmissionFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onSubmitKycId(
+    ProviderSubmitId event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    emit(ProviderAuthLoadingState());
+    try {
+      final result = await authRemoteRepo.uploadAndSubmitIdentity(
+        documentType: event.documentType,
+        filePath: event.filePath,
+      );
+      if (result.data != null) {
+        emit( ProviderIdentitySubmitted(data: result.data!));
+      } else {
+        emit(ProviderKycSubmissionFailure(result.error ?? 'KYC ID submission failed'));
+      }
+    } on Exception catch (e) {
+      emit(ProviderKycSubmissionFailure(e.toString()));
+    }
   }
 }

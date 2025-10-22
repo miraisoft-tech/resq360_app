@@ -13,10 +13,20 @@ import 'package:resq360/features/customer/authentication/screens/verification_st
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
+enum VerificationPurpose {
+  registration,
+  passwordReset,
+}
+
 class VerifyEmailScreen extends StatefulWidget {
-  const VerifyEmailScreen({required this.email, super.key});
+  const VerifyEmailScreen({
+    required this.email,
+    required this.purpose,
+    super.key,
+  });
 
   final String email;
+  final VerificationPurpose purpose;
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -87,30 +97,37 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-        if (!mounted) return;
-        if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
-        }
+  if (!context.mounted) return;
 
-        if (state is CustomerAuthFailure) {
-           if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-          log(state.error);
-          showSnackBar(context, 'Error', state.error);
-        }
+  if (state is CustomerAuthLoading) {
+    showLoadingDialog(context);
+  }
 
-        if (state is CustomerEmailVerified) {
-          log('Email verified, navigating to kyc');
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-          await replaceScreen(
-            context,
-            const VerificationStepsScreen(),
-          );
-        }
-      },
+  if (state is CustomerAuthFailure) {
+    if (Navigator.of(context, rootNavigator: true).canPop()) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+    log(state.error);
+    showSnackBar(context, 'Error', state.error);
+  }
+
+  if (state is CustomerEmailVerified) {
+    log('Email verified, navigating to next step');
+
+    // popping from root navigator, not local context
+    if (Navigator.of(context, rootNavigator: true).canPop()) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+
+    // Navigate based on purpose
+    if (widget.purpose == VerificationPurpose.registration) {
+      await replaceScreen(context, const VerificationStepsScreen());
+    } else if (widget.purpose == VerificationPurpose.passwordReset) {
+      await replaceScreen(context, const ResetPasswordScreen());
+    }
+  }
+},
+
       child: AppScaffold(
         title: 'Enter Code',
         subTitle: 'Please enter the reset code sent to your email',

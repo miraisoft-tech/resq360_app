@@ -144,5 +144,3 @@ class PaymentAuthorization {
   final String? bank;
   final String? brand;
 }
-
-

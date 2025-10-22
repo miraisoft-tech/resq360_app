@@ -87,19 +87,24 @@ class _ProviderConfirmEmailScreenState
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state)async {
+         if (!context.mounted) return;
            if (state is ProviderAuthLoadingState) {
           showLoadingDialog(context);
-        }else {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
         }
 
         if (state is ProviderAuthFailureState) {
-          showSnackBar(context, 'Error', state.error);
+          if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+
+          await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is ProviderEmailVerifiedState) {
+           if (!context.mounted) return;
+          if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           log('Email verified, navigating to main layout');
         //  await pushScreen(context, const ProviderVerificationStepsScreen());
           await replaceScreen(
