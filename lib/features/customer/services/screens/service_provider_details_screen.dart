@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
@@ -317,7 +318,8 @@ class _ServiceProviderDetailsScreenState
                   padding: pad(horizontal: 16, vertical: 10),
                   child: WideButton(
                     label: 'Book Now',
-                    onPressed: () {
+                    onPressed: () async {
+                      // await pushScreen(context, const ChatDetailScreen());
                       log('Book Now pressed');
                     },
                   ),

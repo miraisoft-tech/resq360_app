@@ -2,6 +2,38 @@ import 'dart:convert';
 
 import 'package:resq360/core/models/api_response.dart';
 
+// class CreateNewChat {
+
+//     CreateNewChat({
+//         this.title,
+//         this.type,
+//         this.participants,
+//     });
+
+//     factory CreateNewChat.fromRawJson(String str) => CreateNewChat.fromJson(json.decode(str)as Map<String, dynamic>);
+
+//     factory CreateNewChat.fromJson(Map<String, dynamic> json) => CreateNewChat(
+//         title: json['title'] as String?,
+//         type: json['type'] as String?,
+//         participants: json['participants'] == null
+//             ? []
+//             : (json['participants'] as List<dynamic>)
+//                 .map((x) => Participant.fromJson(x as Map<String, dynamic>))
+//                 .toList(),
+//     );
+//     final String? title;
+//     final String? type;
+//     final List<Participant>? participants;
+
+//     String toRawJson() => json.encode(toJson());
+
+//     Map<String, dynamic> toJson() => {
+//         'title': title,
+//         'type': type,
+//         'participants': participants == null ? [] : List<dynamic>.from(participants!.map((x) => x.toJson())),
+//     };
+// }
+
 class Chat extends EmptyResponse {
   Chat({
     required this.name,
@@ -22,6 +54,8 @@ class Chat extends EmptyResponse {
   final String status;
 }
 
+
+// CREATE CHAT
 class CreateChatRequest {
 
   CreateChatRequest({
@@ -40,6 +74,7 @@ class CreateChatRequest {
       };
 }
 
+// CHAT PARTICIPANT 
 class ChatParticipant {
 
   ChatParticipant({
@@ -55,8 +90,49 @@ class ChatParticipant {
       };
 }
 
+class ChatMessagesResponse {
 
+  ChatMessagesResponse({
+    List<MessageResponse>? messages,
+    this.total,
+    this.page,
+    this.limit,
+    this.totalPages,
+  }) : messages = messages ?? [];
 
+  factory ChatMessagesResponse.fromRawJson(String str) =>
+      ChatMessagesResponse.fromJson(json.decode(str) as Map<String, dynamic> );
+
+  factory ChatMessagesResponse.fromJson(Map<String, dynamic> json) =>
+      ChatMessagesResponse(
+        messages: json['messages'] == null
+            ? []
+            : List<MessageResponse>.from((json['messages']as List<dynamic>).map((x) => MessageResponse.fromJson(x as Map<String,dynamic>))),
+       
+       
+        total: json['total'] as int,
+        page: json['page'] as int,
+        limit: json['limit'] as int, 
+        totalPages: json['totalPages'] as int,
+      );
+  final List<MessageResponse> messages;
+  final int? total;
+  final int? page;
+  final int? limit;
+  final int? totalPages;
+
+  String toRawJson() => json.encode(toJson());
+
+  Map<String, dynamic> toJson() => {
+        'messages': List<dynamic>.from(messages.map((x) => x.toJson())),
+        'total': total,
+        'page': page,
+        'limit': limit,
+        'totalPages': totalPages,
+      };
+}
+
+// CHAT RESPONSE
 ChatResponse chatResponseFromJson(String str) => ChatResponse.fromJson(json.decode(str) as Map<String, dynamic>);
 
 String chatResponseToJson(ChatResponse data) => json.encode(data.toJson());
@@ -93,9 +169,9 @@ class ChatResponse {
       ),
 messages: json['messages'] == null
     ? []
-    : List<Message>.from(
+    : List<MessageResponse>.from(
         (json['messages'] as List<dynamic>)
-            .map((x) => Message.fromJson(x as Map<String, dynamic>)),
+            .map((x) => MessageResponse.fromJson(x as Map<String, dynamic>)),
       ),
     );
     final int? id;
@@ -107,7 +183,7 @@ messages: json['messages'] == null
     final DateTime? createdAt;
     final DateTime? updatedAt;
     final List<Participant>? participants;
-    final List<Message>? messages;
+    final List<MessageResponse>? messages;
 
     Map<String, dynamic> toJson() => {
         'id': id,
@@ -123,9 +199,10 @@ messages: json['messages'] == null
     };
 }
 
-class Message {
+// MESSAGES
+class MessageResponse {
 
-    Message({
+    MessageResponse({
         this.id,
         this.chatId,
         this.senderType,
@@ -146,7 +223,7 @@ class Message {
         this.metadata,
     });
 
-    factory Message.fromJson(Map<String, dynamic> json) => Message(
+    factory MessageResponse.fromJson(Map<String, dynamic> json) => MessageResponse(
         id: json['id'] as int,
         chatId: json['chatId'] as int,
         senderType: json['senderType'] as String,
@@ -207,6 +284,7 @@ class Message {
     };
 }
 
+// METADATA
 class Metadata {
     Metadata();
 
@@ -217,6 +295,7 @@ class Metadata {
     };
 }
 
+// PARTICIPANT
 class Participant {
 
     Participant({
@@ -263,4 +342,38 @@ class Participant {
         'leftAt': leftAt?.toIso8601String(),
         'lastReadAt': lastReadAt?.toIso8601String(),
     };
+}
+
+// CREATE MESSAGE REQUEST
+class SendMessageRequest {
+  SendMessageRequest({
+    required this.chatId,
+    required this.messageType,
+    required this.content,
+    this.fileName,
+    this.fileUrl,
+    this.fileSize,
+    this.mimeType,
+    this.metadata,
+  });
+
+  final int chatId;
+  final String messageType; // e.g. "TEXT", "IMAGE", "FILE"
+  final String content;
+  final String? fileName;
+  final String? fileUrl;
+  final int? fileSize;
+  final String? mimeType;
+  final Map<String, dynamic>? metadata;
+
+  Map<String, dynamic> toJson() => {
+        'chatId': chatId,
+        'messageType': messageType,
+        'content': content,
+        if (fileName != null) 'fileName': fileName,
+        if (fileUrl != null) 'fileUrl': fileUrl,
+        if (fileSize != null) 'fileSize': fileSize,
+        if (mimeType != null) 'mimeType': mimeType,
+        if (metadata != null) 'metadata': metadata,
+      };
 }

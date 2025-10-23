@@ -3,9 +3,11 @@
 // ignore_for_file: unawaited_futures
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/verification_enum.dart';
 import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_verify_email_screen.dart';
 
 class ProviderForgotPasswordScreen extends StatefulWidget {
   const ProviderForgotPasswordScreen({super.key});
@@ -58,7 +60,7 @@ class _ProviderForgotPasswordScreenState
       }
           await pushScreen(
             context,
-            VerifyEmailScreen(
+            ProviderVerifyEmailScreen(
               email: emailController.text,
               purpose: VerificationPurpose.passwordReset,
             ),

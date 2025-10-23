@@ -8,6 +8,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/theme/app_theme.providers.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
@@ -60,6 +61,10 @@ Future<void> main() async {
             ),
              BlocProvider(
               create: (context) => CustomerServicesBloc(),
+              
+            ),
+            BlocProvider(
+              create: (context) => CustomerChatBloc(),
               
             ),
           ],

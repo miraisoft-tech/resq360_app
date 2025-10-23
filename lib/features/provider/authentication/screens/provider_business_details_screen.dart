@@ -112,8 +112,6 @@ class _ProviderBusinessDetailsScreenState
         return;
       }
 
-      final categories = servicesState.services;
-
       final selectedService = _selectType.value;
 
       if (selectedService == null) {
@@ -227,12 +225,13 @@ class _ProviderBusinessDetailsScreenState
 
                         if (state is CustomerServicesError) {
                           isProcessing = false;
+                          log('Error loading services: ${state.error}');
                           return Column(
                             children: [
-                              Center(
+                              const Center(
                                 child: Text(
-                                  state.error,
-                                  style: const TextStyle(color: Colors.red),
+                                  'fetching services failed',
+                                  style: TextStyle(color: Colors.red),
                                 ),
                               ),
                               WideButton(
@@ -294,7 +293,7 @@ class _ProviderBusinessDetailsScreenState
                       color: colors.textColor.shade500,
                     ),
                     16.verticalSpace,
-                    if (_selectType.value == 'Other')
+                    if (_selectType.value!.name == 'Other')
                       KFormField(
                         label: 'Specify Service',
                         hintText: 'Enter Your Service Name',

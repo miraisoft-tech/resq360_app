@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/core/services/shared_preferences.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 
 class ServiceRepo extends BaseAPI {
@@ -152,4 +153,101 @@ class ServiceRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+
+  // Delete a service
+  Future<ApiResult<void>> deleteService(int serviceCategoryId) async {
+    final url = '/services/$serviceCategoryId/remove';
+    try {
+      final res = await dio().delete<Map<String, dynamic>>(url);
+      log('DELETE $url => ${res.statusCode}');
+
+      if (res.statusCode == 200) {
+        return ApiResult(data: null);
+      } else {
+        return ApiResult(error: res.data?['message']?.toString() ?? 'Failed to delete service');
+      }
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  // service booking 
+  Future<ApiResult<ServiceBookingsResponse>> bookService({
+    required String status,
+    int? limit,
+    int? page,
+    String? notes,
+  }) async {
+    const url = '/services/bookings?limit=10&page=1';
+    try {
+      
+
+      final res = await dio().post<Map<String, dynamic>>(url,);
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 201 && res.data != null) {
+        return ApiResult(data: ServiceBookingsResponse.fromJson(res.data!));
+      } else {
+        return ApiResult(error: res.data?['message']?.toString() ?? 'Failed to book service');
+      }
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  // start service booking
+  Future<ApiResult<void>> startServiceBooking(int serviceRequestId) async {
+    final url = '/services/bookings/$ServiceBookingsResponse/start';
+    try {
+      final res = await dio().post<Map<String, dynamic>>(url);
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 200) {
+        return ApiResult();
+      } else {
+        return ApiResult(error: res.data?['message']?.toString() ?? 'Failed to start service booking');
+      }
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  // cancel service booking
+  Future<ApiResult<void>> cancelServiceBooking(int serviceRequestId) async {
+    final url = '/services/bookings/$serviceRequestId/cancel';
+    try {
+      final res = await dio().post<Map<String, dynamic>>(url);
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 200) {
+        return ApiResult();
+      } else {
+        return ApiResult(error: res.data?['message']?.toString() ?? 'Failed to cancel service booking');
+      }
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  // complete service booking
+  Future<ApiResult<void>> completeServiceBooking(int serviceRequestId,  {required String ratings, required String review }) async {
+    final url = '/services/bookings/$serviceRequestId/complete';
+    try {
+      final formData = FormData.fromMap({
+        'ratings': ratings,
+        'review': review,
+      });
+      final res = await dio().post<Map<String, dynamic>>(url, data: formData);
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 200) {
+        return ApiResult();
+      } else {
+        return ApiResult(error: res.data?['message']?.toString() ?? 'Failed to complete service booking');
+      }
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
 }

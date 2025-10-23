@@ -8,15 +8,13 @@ import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/verification_enum.dart';
 import 'package:resq360/features/customer/authentication/screens/reset_password_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
-enum VerificationPurpose {
-  registration,
-  passwordReset,
-}
+
 
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({

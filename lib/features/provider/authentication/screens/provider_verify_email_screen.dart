@@ -1,15 +1,27 @@
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/verification_enum.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_reset_password_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderVerifyEmailScreen extends StatefulWidget {
-  const ProviderVerifyEmailScreen({required this.email, super.key});
+  const ProviderVerifyEmailScreen({
+    required this.email,
+    required this.purpose, super.key,
+  });
 
   final String email;
+  final VerificationPurpose purpose;
 
   @override
   State<ProviderVerifyEmailScreen> createState() =>
@@ -75,63 +87,96 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return AppScaffold(
-      title: 'Enter Code',
-      subTitle: 'Please enter the reset code sent to your email',
-      body: Column(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                NormalPinCodeField(
-                  controller: _otpController1,
-                  onDone: (code) {},
-                  onChange: (dynamic value) {
-                    log(value);
-                    setState(() {});
-                  },
-                ),
-                25.verticalSpace,
+    return BlocListener<ProviderAuthBloc, ProviderAuthState>(
+      listener: (context, state)  async{
+       if (!context.mounted) return;
 
-                Center(
-                  child: CountdownTimer(
-                    endTime: endTime,
-                    controller: controller,
-                    widgetBuilder: (_, CurrentRemainingTime? time) {
-                      return Column(
-                        children: [
-                          InkWell(
-                            onTap: onResend,
-                            child: GenText(
-                              'Didn’t receive code?',
-                              size: 12,
-                              height: 20.5,
-                              color: colors.neutral.shade500,
-                              weight: FontWeight.w400,
-                            ),
-                          ),
-                          5.verticalSpace,
-                          GoToWidget(
-                            ligthText: 'Resend code in ',
-                            coloredText:
-                                '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
-                          ),
-                        ],
-                      );
+  if (state is ProviderAuthLoadingState) {
+    showLoadingDialog(context);
+  }
+
+  if (state is ProviderAuthFailureState) {
+    if (Navigator.of(context, rootNavigator: true).canPop()) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+    log(state.error);
+    showSnackBar(context, 'Error', state.error);
+  }
+
+  if (state is ProviderEmailVerifiedState) {
+    log('provider Email verified, navigating to next step');
+
+    // popping from root navigator, not local context
+    if (Navigator.of(context, rootNavigator: true).canPop()) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+
+    // Navigate based on purpose
+    if (widget.purpose == VerificationPurpose.registration) {
+      await replaceScreen(context, const ProviderVerificationStepsScreen());
+    } else if (widget.purpose == VerificationPurpose.passwordReset) {
+      await replaceScreen(context, const ProviderResetPasswordScreen());
+    }
+  }
+      },
+      child: AppScaffold(
+        title: 'Enter Code',
+        subTitle: 'Please enter the reset code sent to your email',
+        body: Column(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  NormalPinCodeField(
+                    controller: _otpController1,
+                    onDone: (code) {},
+                    onChange: (dynamic value) {
+                      log(value);
+                      setState(() {});
                     },
                   ),
-                ),
-              ],
-            ),
-          ),
+                  25.verticalSpace,
 
-          WideButton(
-            label: 'Verify & Continue',
-            onPressed: (_otpController1.text.length < 6 ? null : onVerify),
-          ),
-          const Spacer(),
-        ],
+                  Center(
+                    child: CountdownTimer(
+                      endTime: endTime,
+                      controller: controller,
+                      widgetBuilder: (_, CurrentRemainingTime? time) {
+                        return Column(
+                          children: [
+                            InkWell(
+                              onTap: onResend,
+                              child: GenText(
+                                'Didn’t receive code?',
+                                size: 12,
+                                height: 20.5,
+                                color: colors.neutral.shade500,
+                                weight: FontWeight.w400,
+                              ),
+                            ),
+                            5.verticalSpace,
+                            GoToWidget(
+                              ligthText: 'Resend code in ',
+                              coloredText:
+                                  '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            WideButton(
+              label: 'Verify & Continue',
+              onPressed: (_otpController1.text.length < 6 ? null : onVerify),
+            ),
+            const Spacer(),
+          ],
+        ),
       ),
     );
   }
