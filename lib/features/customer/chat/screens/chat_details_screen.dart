@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
 import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
 import 'package:resq360/features/customer/chat/widgets/chat_invoice_card_widget.dart';
@@ -37,7 +38,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _fetchMessages() {
     context.read<CustomerChatBloc>().add(
-      GetChatMessagesEvent(chatId: widget.chat.id.toString()),
+      GetChatMessagesEvent(chatId: widget.chat.id!),
     );
   }
 
@@ -206,20 +207,34 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 },
               ),
             ),
-            ChatBoxWidget(
-              onAttachment: () => _showAttachmentMenu(context),
-              onSend: (text) {
-                context.read<CustomerChatBloc>().add(
-                  SendMessageEvent(
-                    messageRequest: SendMessageRequest(
-                      chatId: widget.chat.id!,
-                      messageType: 'TEXT',
-                      content: text,
-                    ),
-                  ),
-                );
-              },
-            ),
+           ChatBoxWidget(
+  onSend: (text) {
+    context.read<CustomerChatBloc>().add(
+      SendMessageEvent(
+        messageRequest: SendMessageRequest(
+          chatId: widget.chat.id!,
+          messageType: 'TEXT',
+          content: text,
+        ),
+      ),
+    );
+  },
+  onAttachment: (file, fileName, mimeType) {
+    context.read<CustomerChatBloc>().add(
+      SendMessageEvent(
+        messageRequest: SendMessageRequest(
+          chatId: widget.chat.id!,
+          messageType: 'FILE',
+          fileName: fileName,
+          mimeType: mimeType, content: '',
+          // You'll likely upload the file first to get fileUrl:
+          // fileUrl: uploadedFileUrl,
+          // fileSize: file.lengthSync(),
+        ),
+      ),
+    );
+  },
+),
           ],
         ),
       ),

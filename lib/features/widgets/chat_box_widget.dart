@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:resq360/__lib.dart';
 
 
@@ -9,7 +12,7 @@ class ChatBoxWidget extends StatefulWidget {
   });
 
   final void Function(String message) onSend; // now sends the message text
-  final VoidCallback onAttachment;
+  final void Function(File file, String fileName, String mimeType) onAttachment;
 
   @override
   State<ChatBoxWidget> createState() => _ChatBoxWidgetState();
@@ -25,6 +28,18 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
       _controller.clear(); // clear after sending
     }
   }
+
+    Future<void> _pickAttachment() async {
+    final result = await FilePicker.platform.pickFiles();
+
+    if (result != null && result.files.isNotEmpty) {
+      final file = File(result.files.single.path!);
+      final fileName = result.files.single.name;
+      final mimeType = result.files.single.extension ?? 'unknown';
+      widget.onAttachment(file, fileName, mimeType);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +57,7 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
         children: [
           SVGButton(
             path: AppAssets.ASSETS_ICONS_ATTACHMENT_ICON_SVG,
-            onTap: widget.onAttachment,
+            onTap: _pickAttachment,
           ),
           6.horizontalSpace,
           Expanded(

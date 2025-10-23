@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
 
 import 'package:resq360/core/models/api_response.dart';
@@ -36,24 +39,24 @@ class ChatRepo extends BaseAPI {
   }
 
   /// Get all chats for the current user
-  Future<ApiResult<List<ChatResponse>>> getChats({
+  Future<ApiResult<ChatListResponse>> getChats({
     int? pageNumber,
     int? limit,
   }) async {
+    log('Fetching chats');
     const url = '/chat';
     try {
       final response = await dio().get<Map<String, dynamic>>(url);
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> list = response.data!['data'] as List<dynamic>;
-        final chats = list
-            .map((e) => ChatResponse.fromJson(e as Map<String, dynamic>))
-            .toList();
-        return ApiResult(data: chats);
+        log(response.statusCode.toString());
+        final data = ChatListResponse.fromJson(response.data!['data'] as Map<String, dynamic>);
+        return ApiResult(data: data);
       } else {
         return ApiResult(error: 'Failed to load chats');
       }
     } on Exception catch (e) {
+      log('failed to fetch chat $e');
       return ApiResult(error: e.toString());
     }
   }
@@ -77,7 +80,7 @@ class ChatRepo extends BaseAPI {
 
  
 /// Get all messages for a specific chat
-Future<ApiResult<ChatMessagesResponse>> getChatMessages(String chatId,{  int page = 1,
+Future<ApiResult<ChatMessagesResponse>> getChatMessages(int chatId,{  int page = 1,
   int limit = 20,} ) async {
   final url = '/chat/$chatId/messages';
 
@@ -85,7 +88,7 @@ Future<ApiResult<ChatMessagesResponse>> getChatMessages(String chatId,{  int pag
     final response = await dio().get<Map<String, dynamic>>(url);
 
     if (response.statusCode == 200 && response.data != null) {
-      final messages = ChatMessagesResponse.fromJson(response.data!);
+      final messages = ChatMessagesResponse.fromJson( response.data!['data'] as Map<String, dynamic>);
       return ApiResult(data: messages);
     } else {
       return ApiResult(error: 'Failed to fetch chat messages');
@@ -108,7 +111,7 @@ Future<ApiResult<ChatMessagesResponse>> getChatMessages(String chatId,{  int pag
     );
 
     if (response.statusCode == 201 && response.data != null) {
-      final messageData = response.data!['data'] as Map<String, dynamic>;
+      final messageData = response.data!;
       final message = MessageResponse.fromJson(messageData);
       return ApiResult(data: message);
     } else {
@@ -121,7 +124,7 @@ Future<ApiResult<ChatMessagesResponse>> getChatMessages(String chatId,{  int pag
 
 
   /// Mark a message as read
-  Future<ApiResult<bool>> markMessageAsRead(String messageId) async {
+  Future<ApiResult<bool>> markMessageAsRead(int messageId) async {
     final url = '/chat/messages/$messageId/read';
     try {
       final response = await dio().post<Map<String, dynamic>>(url);
@@ -136,7 +139,7 @@ Future<ApiResult<ChatMessagesResponse>> getChatMessages(String chatId,{  int pag
   }
 
   /// Leave a chat
-  Future<ApiResult<bool>> leaveChat(String chatId) async {
+  Future<ApiResult<bool>> leaveChat(int chatId) async {
     final url = '/chat/$chatId/leave';
     try {
       final response = await dio().post<Map<String, dynamic>>(url);

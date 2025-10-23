@@ -491,7 +491,7 @@ class AuthRemoteRepo extends BaseAPI {
     required String documentType,
     required String documentUrl,
   }) async {
-    const url = '/kyc/submit/identity'; // ensure leading slash
+    const url = '/kyc/submit/identity';
 
     try {
       final data = {

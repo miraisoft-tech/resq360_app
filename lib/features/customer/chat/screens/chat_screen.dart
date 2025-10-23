@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/widgets/chat_tile.dart';
@@ -68,7 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   }
 
                   if (state is CustomerChatListLoadedState) {
-                    final chats = _applyFilter(state.chats);
+                    final chats = _applyFilter(state.chats.chats);
                     if (chats.isEmpty) {
                       return const EmptyScreenWidget(
                         imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
@@ -134,19 +135,19 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  List<ChatResponse> _applyFilter(List<ChatResponse> chats) {
-    switch (selectedFilter) {
-      case 'Unread':
-        // later use lastReadAt to compute unread
-        return chats;
-      case 'Appeal':
-        return chats
-            .where((c) => c.title?.toLowerCase().contains('appeal') ?? false)
-            .toList();
-      default:
-        return chats;
-    }
+List<ChatResponse> _applyFilter(List<ChatResponse> chats) {
+  switch (selectedFilter) {
+    case 'Unread':
+      // later use lastReadAt to compute unread
+      return chats;
+    case 'Appeal':
+      return chats
+          .where((c) => c.title?.toLowerCase().contains('appeal') ?? false)
+          .toList();
+    default:
+      return chats;
   }
+}
 
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
