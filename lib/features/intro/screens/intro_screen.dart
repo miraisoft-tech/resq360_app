@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class IntroScreen extends StatefulWidget {

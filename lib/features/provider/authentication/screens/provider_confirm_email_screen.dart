@@ -1,8 +1,13 @@
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// in BlocListeners that do not need to be awaited.
+// ignore_for_file: unawaited_futures
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
+import 'package:resq360/features/main_layout.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
@@ -68,71 +73,104 @@ class _ProviderConfirmEmailScreenState
       await showErrorSnackbar(context, 'otp field must be 6 digits');
       return;
     }
-
-    await pushScreen(context, const ProviderVerificationStepsScreen());
+    context.read<ProviderAuthBloc>().add(
+          ProviderverifyEmail(
+           emailVerificationToken: _otpController1.text,
+          ),
+        );
+    
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return AppScaffold(
-      title: 'Verify Email',
-      subTitle: 'Please enter the 6-digit code sent to your email',
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                NormalPinCodeField(
-                  controller: _otpController1,
-                  onDone: (code) {},
-                  onChange: (dynamic value) {
-                    log(value);
-                    setState(() {});
-                  },
-                ),
-                25.verticalSpace,
+    return BlocListener<ProviderAuthBloc, ProviderAuthState>(
+      listener: (context, state)async {
+         if (!context.mounted) return;
+           if (state is ProviderAuthLoadingState) {
+          showLoadingDialog(context);
+        }
 
-                Center(
-                  child: CountdownTimer(
-                    endTime: endTime,
-                    controller: controller,
-                    widgetBuilder: (_, CurrentRemainingTime? time) {
-                      return Column(
-                        children: [
-                          InkWell(
-                            onTap: onResend,
-                            child: GenText(
-                              'Didn’t receive code?',
-                              size: 12,
-                              height: 20.5,
-                              color: colors.neutral.shade500,
-                              weight: FontWeight.w400,
-                            ),
-                          ),
-                          5.verticalSpace,
-                          GoToWidget(
-                            ligthText: 'Resend code in ',
-                            coloredText:
-                                '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
-                          ),
-                        ],
-                      );
+        if (state is ProviderAuthFailureState) {
+          if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+
+          await showSnackBar(context, 'Error', state.error);
+        }
+
+        if (state is ProviderEmailVerifiedState) {
+           if (!context.mounted) return;
+          if (Navigator.canPop(context)) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          log('Email verified, navigating to main layout');
+        //  await pushScreen(context, const ProviderVerificationStepsScreen());
+          await replaceScreen(
+            context,
+            const MainLayoutPage(),
+          );
+        }
+      },
+      child: AppScaffold(
+        title: 'Verify Email',
+        subTitle: 'Please enter the 6-digit code sent to your email',
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  NormalPinCodeField(
+                    controller: _otpController1,
+                    onDone: (code) {},
+                    onChange: (dynamic value) {
+                      log(value);
+                      setState(() {});
                     },
                   ),
-                ),
-                50.verticalSpace,
-              ],
-            ),
-          ),
+                  25.verticalSpace,
 
-          WideButton(
-            label: 'Verify & Continue',
-            onPressed: (_otpController1.text.length < 6 ? null : onVerify),
-          ),
-          20.verticalSpace,
-        ],
+                  Center(
+                    child: CountdownTimer(
+                      endTime: endTime,
+                      controller: controller,
+                      widgetBuilder: (_, CurrentRemainingTime? time) {
+                        return Column(
+                          children: [
+                            InkWell(
+                              onTap: onResend,
+                              child: GenText(
+                                'Didn’t receive code?',
+                                size: 12,
+                                height: 20.5,
+                                color: colors.neutral.shade500,
+                                weight: FontWeight.w400,
+                              ),
+                            ),
+                            5.verticalSpace,
+                            GoToWidget(
+                              ligthText: 'Resend code in ',
+                              coloredText:
+                                  '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  50.verticalSpace,
+                ],
+              ),
+            ),
+
+            WideButton(
+              label: 'Verify & Continue',
+              onPressed: (_otpController1.text.length < 6 ? null : onVerify),
+            ),
+            20.verticalSpace,
+          ],
+        ),
       ),
     );
   }

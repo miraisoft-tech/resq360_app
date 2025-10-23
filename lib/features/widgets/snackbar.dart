@@ -142,6 +142,7 @@ Future<void> showLoadingDialog(BuildContext context) async {
   await showDialog<void>(
     context: context,
     barrierColor: const Color.fromRGBO(173, 173, 173, 0.23),
+    barrierDismissible: false,
     builder: (BuildContext context) {
       return const Center(child: LoadingDialogWidget());
     },

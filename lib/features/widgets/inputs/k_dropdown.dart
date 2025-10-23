@@ -181,7 +181,7 @@ class _CustomDropdownButtonState extends ConsumerState<KDropDown> {
             ),
             iconStyleData: IconStyleData(
               icon: SvgPicture.asset(
-                'AppAssets.ASSETS_ICONS_ARROW_DOWN_SVG',
+                 AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
                 height: 24.h,
                 width: 24.w,
                 colorFilter: ColorFilter.mode(appTheme.black, BlendMode.srcIn),
@@ -428,7 +428,7 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
             ),
             iconStyleData: IconStyleData(
               icon: SvgPicture.asset(
-                'AppAssets.ASSETS_ICONS_ARROW_DOWN_SVG',
+                AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
                 height: 24.h,
                 width: 24.w,
                 colorFilter: ColorFilter.mode(colors.black, BlendMode.srcIn),

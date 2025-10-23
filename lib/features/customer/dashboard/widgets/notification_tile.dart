@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/dashboard/models/notification_model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/notification_model.dart';
 
 class NotificationTile extends StatelessWidget {
   const NotificationTile({required this.notification, super.key});

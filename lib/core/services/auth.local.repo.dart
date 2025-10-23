@@ -1,8 +1,8 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/db_keys.local.repo.dart';
 import 'package:resq360/core/services/shared_preferences.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/local_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 
 class AuthLocalRepo {
   factory AuthLocalRepo() {
@@ -64,6 +64,8 @@ class AuthLocalRepo {
     }
   }
 
+  
+
   Future<bool> clearAuthCredentials() async {
     try {
       await pref.deleteKey(key: DBKeys.authData);
@@ -73,6 +75,33 @@ class AuthLocalRepo {
       return false;
     }
   }
+
+  Future<bool> storeAccessToken(String token) async {
+  try {
+    return await pref.save(key: DBKeys.accessTokenKey, value: token);
+  } on Exception catch (e) {
+    log(e.toString());
+    return false;
+  }
+}
+
+Future<String?> getAccessToken() async {
+  try {
+    return await pref.getValue(key: DBKeys.accessTokenKey) as String?;
+  } on Exception catch (e) {
+    log(e.toString());
+    return null;
+  }
+}
+
+Future<bool> clearAccessToken() async {
+  try {
+    return await pref.deleteKey(key: DBKeys.accessTokenKey);
+  } on Exception catch (e) {
+    log(e.toString());
+    return false;
+  }
+}
 
   ////////////Username and Password///////////
 
