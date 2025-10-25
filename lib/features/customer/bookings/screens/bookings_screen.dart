@@ -1,6 +1,8 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/bookings/data/models/booking_model.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -16,8 +18,37 @@ class _BookingsScreenState extends State<BookingsScreen>
   @override
   void initState() {
     super.initState();
+    // Fetch initial tab (Upcoming)
+  _fetchBookingsForTab(0);
     _tabController = TabController(length: 3, vsync: this);
+  
+   // Listen for tab changes
+  _tabController.addListener(() {
+    if (_tabController.indexIsChanging) return;
+    _fetchBookingsForTab(_tabController.index);
+  });
   }
+
+  void _fetchBookingsForTab(int index) {
+  final bloc = context.read<CustomerServicesBloc>();
+  String status;
+
+  switch (index) {
+    case 0:
+      status = 'upcoming';
+      break;
+    case 1:
+      status = 'completed';
+      break;
+    case 2:
+      status = 'cancelled';
+      break;
+    default:
+      status = 'upcoming';
+  }
+
+  bloc.add( CustomerFetchBookings(status: status));
+}
 
   @override
   Widget build(BuildContext context) {

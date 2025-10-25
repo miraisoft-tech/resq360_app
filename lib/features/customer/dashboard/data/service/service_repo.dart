@@ -162,7 +162,7 @@ class ServiceRepo extends BaseAPI {
       log('DELETE $url => ${res.statusCode}');
 
       if (res.statusCode == 200) {
-        return ApiResult(data: null);
+        return ApiResult();
       } else {
         return ApiResult(error: res.data?['message']?.toString() ?? 'Failed to delete service');
       }
@@ -176,7 +176,6 @@ class ServiceRepo extends BaseAPI {
     required String status,
     int? limit,
     int? page,
-    String? notes,
   }) async {
     const url = '/services/bookings?limit=10&page=1';
     try {

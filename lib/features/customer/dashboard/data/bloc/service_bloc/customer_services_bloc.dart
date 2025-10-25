@@ -17,7 +17,8 @@ class CustomerServicesBloc
     on<CustomerFetchProviders>(_onFetchProviders);
     on<CustomerFetchServiceInfo>(_onFetchServiceInfo);
     on<CustomerCreateService>(_onCreateCustomerService);
-    on<CustomerBookService>(_onGetServiceBookings);
+    // on<CustomerFetchBookings>(_onFetchBookings);
+    on<CustomerFetchBookings>(_onGetServiceBookings);
     on<CustomerStartServiceBooking>(_onStartBooking);
     on<CustomerCancelServiceBooking>(_onCancelBooking);
     on<CustomerCompleteServiceBooking>(_onCompleteBooking);
@@ -118,14 +119,31 @@ class CustomerServicesBloc
     }
   }
 
+//   Future<void> _onFetchBookings(
+//   CustomerFetchBookings event,
+//   Emitter<CustomerServicesState> emit,
+// ) async {
+//   emit(CustomerServicesLoading());
+//   final result = await serviceRepo.bookService(status: event.status);
+
+//   if (result.data != null) {
+//     emit(CustomerBookingsLoaded(
+//       bookings: [result.data!],
+//       status: event.status,
+//     ));
+//   } else {
+//     emit(CustomerServicesError(result.error ?? 'Failed to fetch bookings'));
+//   }
+// }
+
 Future<void> _onGetServiceBookings(
-  CustomerBookService event,
+  CustomerFetchBookings event,
   Emitter<CustomerServicesState> emit,
 ) async {
   emit(CustomerServicesLoading());
   try {
     final result = await serviceRepo.getServiceBookings(
-      notes: event.notes, status: 'ASSIGNED', // TODO: chang to dynamic status
+       status: event.status,
     );
 
     if (result.data != null) {
@@ -139,6 +157,7 @@ Future<void> _onGetServiceBookings(
     emit(CustomerServicesError(error: e.toString()));
   }
 }
+
 
 Future<void> _onStartBooking(
   CustomerStartServiceBooking event,

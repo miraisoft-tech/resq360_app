@@ -38,12 +38,19 @@ class CustomerCreateService extends CustomerServicesEvent {
   final String imagePath;
 }
 
-class CustomerBookService extends CustomerServicesEvent {
-
-  const CustomerBookService({required this.serviceRequestId, this.notes});
-  final int serviceRequestId;
-  final String? notes;
+class CustomerFetchBookings extends CustomerServicesEvent {
+  const CustomerFetchBookings({required this.status});
+  final String status;
 }
+
+
+// class CustomerBookService extends CustomerServicesEvent {
+
+//   const CustomerBookService( {required this.status,required this.serviceRequestId, this.notes});
+//   final int serviceRequestId;
+//   final String? notes;
+//   final String? status;
+// }
 
 class CustomerStartServiceBooking extends CustomerServicesEvent {
   const CustomerStartServiceBooking(this.serviceRequestId);
