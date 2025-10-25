@@ -9,7 +9,7 @@ sealed class CustomerChatEvent extends Equatable {
 }
 
 class CreateChatEvent extends CustomerChatEvent {
-  const CreateChatEvent(this.chatRequest);
+  const CreateChatEvent({ required this.chatRequest});
   final CreateChatRequest chatRequest;
 
   @override

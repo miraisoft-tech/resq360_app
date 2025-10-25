@@ -7,12 +7,15 @@ sealed class CustomerServicesEvent extends Equatable {
   List<Object> get props => [];
 }
 
-
-
 class CustomerFetchServices extends CustomerServicesEvent {}
 
 class CustomerFetchProviders extends CustomerServicesEvent {
-  const CustomerFetchProviders({required this.categoryId, required this.nearYou, this.activityStatus, this.search});
+  const CustomerFetchProviders({
+    required this.categoryId,
+    required this.nearYou,
+    this.activityStatus,
+    this.search,
+  });
   final int categoryId;
   final String? activityStatus;
   final bool nearYou;
@@ -33,4 +36,32 @@ class CustomerCreateService extends CustomerServicesEvent {
   final String name;
   final String description;
   final String imagePath;
+}
+
+class CustomerBookService extends CustomerServicesEvent {
+
+  const CustomerBookService({required this.serviceRequestId, this.notes});
+  final int serviceRequestId;
+  final String? notes;
+}
+
+class CustomerStartServiceBooking extends CustomerServicesEvent {
+  const CustomerStartServiceBooking(this.serviceRequestId);
+  final int serviceRequestId;
+}
+
+class CustomerCancelServiceBooking extends CustomerServicesEvent {
+  const CustomerCancelServiceBooking(this.serviceRequestId);
+  final int serviceRequestId;
+}
+
+class CustomerCompleteServiceBooking extends CustomerServicesEvent {
+  const CustomerCompleteServiceBooking({
+    required this.serviceRequestId,
+    required this.ratings,
+    required this.review,
+  });
+  final int serviceRequestId;
+  final String ratings;
+  final String review;
 }

@@ -19,15 +19,15 @@ class ServiceBookingsResponse {
         data:
             json['data'] == null
                 ? []
-                : List<Datum>.from(
+                : List<Bookings>.from(
                   (json['data'] as List).map(
-                    (x) => Datum.fromJson(x as Map<String, dynamic>),
+                    (x) => Bookings.fromJson(x as Map<String, dynamic>),
                   ),
                 ),
       );
   final String? message;
   final bool? success;
-  final List<Datum>? data;
+  final List<Bookings>? data;
 
   String toRawJson() => json.encode(toJson());
 
@@ -38,8 +38,8 @@ class ServiceBookingsResponse {
   };
 }
 
-class Datum {
-  Datum({
+class Bookings {
+  Bookings({
     this.id,
     this.requestId,
     this.title,
@@ -64,10 +64,10 @@ class Datum {
     this.updatedAt,
   });
 
-  factory Datum.fromRawJson(String str) =>
-      Datum.fromJson(json.decode(str) as Map<String, dynamic>);
+  factory Bookings.fromRawJson(String str) =>
+      Bookings.fromJson(json.decode(str) as Map<String, dynamic>);
 
-  factory Datum.fromJson(Map<String, dynamic> json) => Datum(
+  factory Bookings.fromJson(Map<String, dynamic> json) => Bookings(
     id: json['id'] as int?,
     requestId: json['requestId'] as String?,
     title: json['title'] as String?,

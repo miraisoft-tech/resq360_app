@@ -172,7 +172,7 @@ class ServiceRepo extends BaseAPI {
   }
 
   // service booking 
-  Future<ApiResult<ServiceBookingsResponse>> bookService({
+  Future<ApiResult<ServiceBookingsResponse>> getServiceBookings({
     required String status,
     int? limit,
     int? page,
@@ -182,7 +182,7 @@ class ServiceRepo extends BaseAPI {
     try {
       
 
-      final res = await dio().post<Map<String, dynamic>>(url,);
+      final res = await dio().get<Map<String, dynamic>>(url,);
       log('POST $url => ${res.statusCode}');
 
       if (res.statusCode == 201 && res.data != null) {
