@@ -3,6 +3,7 @@ import 'package:resq360/core/services/db_keys.local.repo.dart';
 import 'package:resq360/core/services/shared_preferences.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 
 class AuthLocalRepo {
   factory AuthLocalRepo() {
@@ -181,6 +182,36 @@ Future<bool> clearAccessToken() async {
       final result =
           await pref.getBool(key: DBKeys.backgroundLocationRequested) as bool?;
       return result ?? false;
+    } on Exception catch (e) {
+      log(e);
+      return false;
+    }
+  }
+
+    ////====USER TYPE====////
+
+  Future<bool> saveUserType(UserType userType) async {
+    try {
+      final value = userType == UserType.customer ? 'user' : 'provider';
+      return await pref.save(key: DBKeys.userTypeKey, value: value);
+    } on Exception catch (e) {
+      log(e);
+      return false;
+    }
+  }
+
+  Future<String?> getUserType() async {
+    try {
+      return await pref.getValue(key: DBKeys.userTypeKey) as String?;
+    } on Exception catch (e) {
+      log(e);
+      return null;
+    }
+  }
+
+  Future<bool> clearUserType() async {
+    try {
+      return await pref.deleteKey(key: DBKeys.userTypeKey);
     } on Exception catch (e) {
       log(e);
       return false;

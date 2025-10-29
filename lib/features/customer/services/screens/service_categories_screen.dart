@@ -90,9 +90,27 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
 
             if (state is CustomerServicesError) {
               return Center(
-                child: Text(
-                  state.error,
-                  style: const TextStyle(color: Colors.red),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      state.error,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: WideButton(
+                        label: 'Retry',
+                        onPressed: () {
+                          context.read<CustomerServicesBloc>().add(
+                            CustomerFetchServices(),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
@@ -117,7 +135,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     Expanded(
                       child: GridView.builder(
                         itemCount: services.length,
-                        
+
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 3,
@@ -141,7 +159,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                               icon: Image.network(
                                 service.image,
                                 fit: BoxFit.cover,
-                                
+
                                 errorBuilder: (context, error, stackTrace) {
                                   return const Icon(
                                     Icons.image_not_supported,

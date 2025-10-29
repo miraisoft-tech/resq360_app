@@ -39,3 +39,13 @@ extension NumberRounding on num {
     return num.parse(toStringAsFixed(precision));
   }
 }
+
+extension DateFormatting on DateTime {
+  String get formatDate => '$day/$month/$year';
+  String get formatTime => '$hour:${minute.toString().padLeft(2, '0')}';
+}
+
+// extension StringExtension on String {
+//   String get capitalize =>
+//       isEmpty ? this : '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
+// }

@@ -8,10 +8,9 @@ import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/main_layout.dart';
+import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
-
 class ConfirmEmailScreen extends StatefulWidget {
   const ConfirmEmailScreen({required this.email, super.key});
 
@@ -99,8 +98,8 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           log('Email verified');
 
           Navigator.of(context).pop();
-          // pushScreen(context, const VerificationStepsScreen());
-          pushScreen(context, const MainLayoutPage());
+          pushScreen(context, const VerificationStepsScreen());
+          // pushScreen(context, const MainLayoutPage());
         }
       },
       child: AppScaffold(

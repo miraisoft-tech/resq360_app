@@ -55,6 +55,7 @@ class ServiceRepo extends BaseAPI {
 
       if (response.statusCode == 200 && response.data != null) {
         final json = response.data!;
+        log(response.data!.toString());
         final servicesData = (json['data'] as List)
             .map((item) => Service.fromJson(item as Map<String, dynamic>))
             .toList();
@@ -62,6 +63,7 @@ class ServiceRepo extends BaseAPI {
           log(servicesData.map((s) => s.image).join(', '));
         return ApiResult(data: servicesData);
       } else {
+        log(response.data!.toString());
         return ApiResult(error: 'Failed to fetch services');
       }
     } on Exception catch (e) {
@@ -177,14 +179,15 @@ class ServiceRepo extends BaseAPI {
     int? limit,
     int? page,
   }) async {
-    const url = '/services/bookings?limit=10&page=1';
+    final url = '/services/bookings?status=$status&limit=10&page=1';
     try {
       
 
       final res = await dio().get<Map<String, dynamic>>(url,);
       log('POST $url => ${res.statusCode}');
 
-      if (res.statusCode == 201 && res.data != null) {
+      if (res.statusCode == 200 && res.data != null) {
+        log('Bookings API response: ${res.data}');
         return ApiResult(data: ServiceBookingsResponse.fromJson(res.data!));
       } else {
         return ApiResult(error: res.data?['message']?.toString() ?? 'Failed to book service');

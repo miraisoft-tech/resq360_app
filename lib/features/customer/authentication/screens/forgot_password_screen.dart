@@ -56,9 +56,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
            if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
           await pushScreen(
             context,
             VerifyEmailScreen(

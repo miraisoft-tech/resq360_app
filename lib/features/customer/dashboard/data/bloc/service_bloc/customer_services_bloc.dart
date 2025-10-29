@@ -147,7 +147,7 @@ Future<void> _onGetServiceBookings(
     );
 
     if (result.data != null) {
-      emit(CustomerBookingsLoaded( result.data!.data!));
+      emit(CustomerBookingsLoaded( result.data!.data ?? []));
     } else {
       emit(CustomerServicesError(
         error: result.error ?? 'Failed to book service',
@@ -167,7 +167,7 @@ Future<void> _onStartBooking(
   try {
     final result = await serviceRepo.startServiceBooking(event.serviceRequestId);
 
-    if (!result.isSuccess) {
+    if (result.error != null) {
       emit(CustomerServicesError(
         error: result.error ?? 'Failed to start booking',
       ));

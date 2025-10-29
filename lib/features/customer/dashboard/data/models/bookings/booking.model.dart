@@ -12,19 +12,24 @@ class ServiceBookingsResponse {
         json.decode(str) as Map<String, dynamic>,
       );
 
-  factory ServiceBookingsResponse.fromJson(Map<String, dynamic> json) =>
-      ServiceBookingsResponse(
+
+  factory ServiceBookingsResponse.fromJson(Map<String, dynamic> json) {
+     final nestedData = json['data'];
+    final deeperData = nestedData is Map<String, dynamic> ? nestedData['data'] : null;
+    final services = deeperData is Map<String, dynamic> ? deeperData['services'] : null;
+      return ServiceBookingsResponse(
         message: json['message'] == null ? null : json['message'] as String,
         success: json['success'] == null ? null : json['success'] as bool,
         data:
-            json['data'] == null
-                ? []
-                : List<Bookings>.from(
-                  (json['data'] as List).map(
-                    (x) => Bookings.fromJson(x as Map<String, dynamic>),
-                  ),
-                ),
+            services != null
+          ? List<Bookings>.from(
+              (services as List).map(
+                (x) => Bookings.fromJson(x as Map<String, dynamic>),
+              ),
+            )
+          : [],
       );
+  }
   final String? message;
   final bool? success;
   final List<Bookings>? data;

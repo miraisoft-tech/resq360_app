@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
@@ -21,6 +22,14 @@ class _CreateAccountTypeScreenState
 
   Future<void> _onContinue() async {
     log('Selected index: $_selectedIndex');
+
+  final selectedType =
+      _selectedIndex == 0 ? UserType.customer : UserType.provider;
+
+  // Save user type locally using AuthLocalRepo
+  await AuthLocalRepo.instance.saveUserType(selectedType);
+
+  log('saved the type $selectedType');
 
     ref.read(dashboardViewModel).userType =
         _selectedIndex == 0 ? UserType.customer : UserType.provider;

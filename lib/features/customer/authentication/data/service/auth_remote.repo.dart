@@ -108,10 +108,17 @@ class AuthRemoteRepo extends BaseAPI {
     required String password,
   }) async {
     try {
-      const url = '/auth/login/user';
+      const url = '/auth/login';
+
+      // Fetch the saved user type from AuthLocalRepo
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
+      final userType = savedUserType ?? 'user'; 
+      
+      
       final data = {
         'email': email,
         'password': password,
+        'userType': userType,
       };
 
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
@@ -143,7 +150,9 @@ class AuthRemoteRepo extends BaseAPI {
         // Try to fetch profile safely
         try {
           final userProfile = await getUserProfile(token: token.toString());
-          log('Fetched user profile: $userProfile.data.toString()'); // test line
+          log(
+            'Fetched user profile: $userProfile.data.toString()',
+          ); // test line
         } on Exception catch (e) {
           log('Failed to fetch profile: $e');
         }
@@ -167,7 +176,7 @@ class AuthRemoteRepo extends BaseAPI {
   }) async {
     try {
       const url = '/auth/register/user';
-
+  
       final data = {
         'fullName': fullname,
         'email': email,
