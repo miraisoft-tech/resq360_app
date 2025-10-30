@@ -8,7 +8,7 @@ import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widg
 import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
-import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
+// import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
 
@@ -20,12 +20,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-   @override
+  @override
   void initState() {
     context.read<CustomerServicesBloc>().add(CustomerFetchServices());
     super.initState();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -45,10 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const CircleAvatar(
                     radius: 19,
-                    backgroundImage:  AssetImage(
-                    AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                  ),
-                  // TODO : replace with network image
+                    backgroundImage: AssetImage(
+                      AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+                    ),
+                    // TODO : replace with network image
                     // NetworkImage(
                     //   // user.profilePictureUrl ??
                     //       AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           4.horizontalSpace,
                           GenText(
                             // user.address ??
-                             'No. 2 Olympia Street',
+                            'No. 2 Olympia Street',
                             height: 24,
                             color: colors.black,
                             weight: FontWeight.w500,
@@ -89,50 +89,49 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               );
             } else {
-            return
-             Row(
-              children: [
-                const CircleAvatar(
-                  radius: 19,
-                  backgroundImage: AssetImage(
-                    AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+              return Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 19,
+                    backgroundImage: AssetImage(
+                      AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+                    ),
                   ),
-                ),
-                10.horizontalSpace,
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GenText(
-                      'Hello, Jane 👋',
-                      size: 12,
-                      height: 20,
-                      weight: FontWeight.w400,
-                      color: colors.neutral.shade500,
-                    ),
+                  10.horizontalSpace,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GenText(
+                        'Hello, Jane 👋',
+                        size: 12,
+                        height: 20,
+                        weight: FontWeight.w400,
+                        color: colors.neutral.shade500,
+                      ),
 
-                    Row(
-                      children: [
-                        AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
-                        4.horizontalSpace,
-                        GenText(
-                          'No. 2 Olympia Street',
-                          height: 24,
-                          color: colors.black,
-                          weight: FontWeight.w500,
-                        ),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 14,
-                          color: colors.textColor.shade500,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            );
-          }
-          }
+                      Row(
+                        children: [
+                          AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
+                          4.horizontalSpace,
+                          GenText(
+                            'No. 2 Olympia Street',
+                            height: 24,
+                            color: colors.black,
+                            weight: FontWeight.w500,
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 14,
+                            color: colors.textColor.shade500,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }
+          },
         ),
         actions: [
           IconButton(
@@ -204,44 +203,45 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           20.verticalSpace,
-//          BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
-//   builder: (context, state) {
-//     if (state is CustomerServicesLoading) {
-//       return const Center(child: CircularProgressIndicator());
-//     }
+          BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+            builder: (context, state) {
+              if (state is CustomerServicesLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-//     if (state is CustomerServicesLoaded) {
-//       final categories = state.services;
+              if (state is CustomerServicesLoaded) {
+                final categories = state.services;
 
-//       return SizedBox(
-//         height: 80,
-//         child: ListView.separated(
-//           scrollDirection: Axis.horizontal,
-//           itemCount: categories.length,
-//           separatorBuilder: (_, _) => 12.horizontalSpace,
-//           itemBuilder: (context, index) {
-//             final category = categories[index];
-//             return ServiceCategoryWidget(
-//               icon: Image.network(
-//                 category.image,
-//                 height: 28,
-//                 width: 28,
-//                 errorBuilder: (_, _, _) => const Icon(Icons.broken_image),
-//               ),
-//               label: category.name,
-//             );
-//           },
-//         ),
-//       );
-//     }
+                return SizedBox(
+                  height: 80,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, _) => 12.horizontalSpace,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return ServiceCategoryWidget(
+                        icon: Image.network(
+                          category.image,
+                          height: 28,
+                          width: 28,
+                          errorBuilder:
+                              (_, _, _) => const Icon(Icons.broken_image),
+                        ),
+                        label: category.name,
+                      );
+                    },
+                  ),
+                );
+              }
 
-//     if (state is CustomerServicesError) {
-//       return Center(child: Text(state.error));
-//     }
+              if (state is CustomerServicesError) {
+                return Center(child: Text(state.error));
+              }
 
-//     return const SizedBox.shrink();
-//   },
-// ),
+              return const SizedBox.shrink();
+            },
+          ),
           30.verticalSpace,
           Row(
             children: [

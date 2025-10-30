@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
@@ -7,9 +9,10 @@ part 'customer_bank_state.dart';
 
 class CustomerBankBloc extends Bloc<ConsumerBankEvent, CustomerBankState> {
   CustomerBankBloc() : super(CustomerBankInitial()) {
-    on<ConsumerBankEvent>((event, emit) {
-
-    });
+    on<BankAddAccount>(_onAddBankAccount);
+on<BankFetchAccounts>(_onFetchBankAccounts);
+on<BankSetDefaultAccount>(_onSetDefaultBankAccount);
+on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
   }
   Future<void> _onAddBankAccount(
     BankAddAccount event,
@@ -25,6 +28,7 @@ class CustomerBankBloc extends Bloc<ConsumerBankEvent, CustomerBankState> {
       //   emit(CustomerBankFailure());
       // }
     } on Exception catch (e) {
+        log('Error adding bank account: $e');
       emit(CustomerBankFailure());
     }
   }
@@ -43,6 +47,8 @@ class CustomerBankBloc extends Bloc<ConsumerBankEvent, CustomerBankState> {
       //   emit(CustomerBankFailure());
       // }
     } on Exception catch (e) {
+        log('Error fetching bank account: $e');
+
       emit(CustomerBankFailure());
     }
   }
@@ -61,6 +67,8 @@ class CustomerBankBloc extends Bloc<ConsumerBankEvent, CustomerBankState> {
       //   emit(CustomerBankFailure());
       // }
     } on Exception catch (e) {
+        log('Error setting default account: $e');
+
       emit(CustomerBankFailure());
     }
   }
@@ -78,6 +86,7 @@ class CustomerBankBloc extends Bloc<ConsumerBankEvent, CustomerBankState> {
       //   emit(CustomerBankFailure());
       // }
     } on Exception catch (e) {
+        log('Error verifying bank account: $e');
       emit(CustomerBankFailure());
     }
   }

@@ -8,9 +8,7 @@ import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/verification_enum.dart';
 import 'package:resq360/features/customer/authentication/screens/reset_password_screen.dart';
-import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
@@ -19,18 +17,20 @@ import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({
     required this.email,
-    required this.purpose,
+    // required this.purpose,
     super.key,
   });
 
   final String email;
-  final VerificationPurpose purpose;
+  // final VerificationPurpose purpose;
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
+    bool _dialogVisible = false;
+  bool _navigatedAway = false;
   int endTime =
       DateTime.now()
           .add(const Duration(seconds: 5 * 60))
@@ -49,7 +49,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   @override
   void dispose() {
     _otpController1 = TextEditingController();
-
+    controller.dispose();
     super.dispose();
   }
 
@@ -83,7 +83,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     }
 
     context.read<CustomerAuthBloc>().add(
-      CustomerverifyEmail(emailVerificationToken: _otpController1.text),
+      CustomerVerifyForgotPasswordOtp(token: _otpController1.text),
     );
 
     // await pushScreen(context, const ResetPasswordScreen());
@@ -95,36 +95,60 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-  if (!context.mounted) return;
+         // always bail if widget no longer mounted
+        if (!mounted) return;
 
-  if (state is CustomerAuthLoading) {
-    showLoadingDialog(context);
-  }
+        // Run UI-changing code after current frame to avoid navigator locked
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!mounted) return;
 
-  if (state is CustomerAuthFailure) {
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
-    log(state.error);
-    showSnackBar(context, 'Error', state.error);
-  }
+          // Loading -> show dialog (only if not already shown)
+          if (state is CustomerAuthLoading) {
+            if (!_dialogVisible) {
+              _dialogVisible = true;
+              // showLoadingDialog should be async and return when shown
+              await showLoadingDialog(context);
+            }
+            return;
+          }
 
-  if (state is CustomerEmailVerified) {
-    log('Email verified, navigating to next step');
+          // Failure -> hide dialog (if shown) and show snackbar
+          if (state is CustomerAuthFailure) {
+            if (_dialogVisible && Navigator.of(context, rootNavigator: true).canPop()) {
+              Navigator.of(context, rootNavigator: true).pop(); // close loading
+            }
+            _dialogVisible = false;
 
-    // popping from root navigator, not local context
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
+            // Avoid duplicate snackbars / nav operations
+            showSnackBar(context, 'Error', state.error);
+            return;
+          }
 
-    // Navigate based on purpose
-    if (widget.purpose == VerificationPurpose.registration) {
-      await replaceScreen(context, const VerificationStepsScreen());
-    } else if (widget.purpose == VerificationPurpose.passwordReset) {
-      await replaceScreen(context, const ResetPasswordScreen());
-    }
-  }
-},
+          // Success (password reset success / email verified)
+          if (state is CustomerForgotPasswordOtpSent) {
+            // Close loading if it's open
+            if (_dialogVisible && Navigator.of(context, rootNavigator: true).canPop()) {
+              Navigator.of(context, rootNavigator: true).pop();
+            }
+            _dialogVisible = false;
+
+            // Prevent double navigation if multiple success events fire
+            if (_navigatedAway) return;
+            _navigatedAway = true;
+
+            // Navigate depending on purpose
+            // if (widget.purpose == VerificationPurpose.registration) {
+            //   await replaceScreen(context, const VerificationStepsScreen());
+            // } else if
+            //  (widget.purpose == VerificationPurpose.passwordReset) {
+            //   await replaceScreen(context, const ResetPasswordScreen());
+            // }
+            await replaceScreen(context, const ResetPasswordScreen());
+            return;
+          }
+
+        });
+      },
 
       child: AppScaffold(
         title: 'Enter Code',

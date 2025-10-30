@@ -75,4 +75,3 @@ class LoadMoreMessagesEvent extends CustomerChatEvent {
   @override
   List<Object?> get props => [chatId, lastMessageId];
 }
-

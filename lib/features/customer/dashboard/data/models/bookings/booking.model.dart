@@ -39,7 +39,7 @@ class ServiceBookingsResponse {
   Map<String, dynamic> toJson() => {
     'message': message,
     'success': success,
-    'data': data == null ? [] : data!.map((x) => x.toJson()).toList(),
+    'data': data == null ? <dynamic>[] : data!.map((x) => x.toJson()).toList(),
   };
 }
 

@@ -335,7 +335,7 @@ class _ProviderCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 26,
                     // backgroundImage: NetworkImage(provider.),
                   ),

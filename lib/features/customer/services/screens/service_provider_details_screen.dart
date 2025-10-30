@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';

@@ -117,7 +117,9 @@ class ProviderChatDetailScreen extends StatelessWidget {
               ),
             ),
             ChatBoxWidget(
-              onAttachment:  (file, fileName, mimeType) {},
+              onAttachment:  (file, fileName, mimeType) async {
+                await _showAttachmentMenu(context);
+              },
               // () => _showAttachmentMenu(context),
               onSend: (text) {},
             ),

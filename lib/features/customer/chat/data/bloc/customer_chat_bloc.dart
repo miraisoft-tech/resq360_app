@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 
 part 'customer_chat_event.dart';

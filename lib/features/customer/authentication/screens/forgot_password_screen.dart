@@ -1,12 +1,13 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
 // in BlocListeners that do not need to be awaited.
 // ignore_for_file: unawaited_futures
+
+import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/verification_enum.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
 
@@ -43,24 +44,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         if (!mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
-        } 
+        }
 
         if (state is CustomerAuthFailure) {
-           if (Navigator.canPop(context)) {
+          if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          showSnackBar(context, 'Error', state.error);
+          // 🔥 defer snackbar to next frame to avoid Navigator lock
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+             unawaited(showSnackBar(context, 'Error', state.error));
+            }
+          });
         }
 
         if (state is CustomerForgotPasswordSucess) {
-           if (Navigator.canPop(context)) {
+          if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
           await pushScreen(
             context,
             VerifyEmailScreen(
               email: emailController.text,
-              purpose: VerificationPurpose.passwordReset,
+              // purpose: VerificationPurpose.passwordReset,
             ),
           );
         }

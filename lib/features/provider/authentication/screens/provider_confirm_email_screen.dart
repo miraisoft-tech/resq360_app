@@ -6,27 +6,19 @@ import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_reset_password_screen.dart';
-import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
-enum VerificationPurpose {
-  registration,
-  passwordReset,
-}
 
 class ProviderConfirmEmailScreen extends StatefulWidget {
   const ProviderConfirmEmailScreen({
     required this.email,
-    required this.purpose,
     super.key,
   });
 
   final String email;
-  final VerificationPurpose purpose;
 
   @override
   State<ProviderConfirmEmailScreen> createState() =>
@@ -117,20 +109,9 @@ class _ProviderConfirmEmailScreenState
             Navigator.of(context, rootNavigator: true).pop();
           }
           log('Email verified, navigating to main layout');
-          // Navigate based on purpose
-          if (widget.purpose == VerificationPurpose.registration) {
-            await replaceScreen(
-              context,
-              const ProviderVerificationStepsScreen(),
-            );
-          } else if (widget.purpose == VerificationPurpose.passwordReset) {
             await replaceScreen(context, const ProviderResetPasswordScreen());
-          }
-          //  await pushScreen(context, const ProviderVerificationStepsScreen());
-          // await replaceScreen(
-          //   context,
-          //   const MainLayoutPage(),
-          // );
+          
+          
         }
       },
       child: AppScaffold(

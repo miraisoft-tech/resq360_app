@@ -65,8 +65,6 @@ class AuthLocalRepo {
     }
   }
 
-  
-
   Future<bool> clearAuthCredentials() async {
     try {
       await pref.deleteKey(key: DBKeys.authData);
@@ -78,31 +76,31 @@ class AuthLocalRepo {
   }
 
   Future<bool> storeAccessToken(String token) async {
-  try {
-    return await pref.save(key: DBKeys.accessTokenKey, value: token);
-  } on Exception catch (e) {
-    log(e.toString());
-    return false;
+    try {
+      return await pref.save(key: DBKeys.accessTokenKey, value: token);
+    } on Exception catch (e) {
+      log(e.toString());
+      return false;
+    }
   }
-}
 
-Future<String?> getAccessToken() async {
-  try {
-    return await pref.getValue(key: DBKeys.accessTokenKey) as String?;
-  } on Exception catch (e) {
-    log(e.toString());
-    return null;
+  Future<String?> getAccessToken() async {
+    try {
+      return await pref.getValue(key: DBKeys.accessTokenKey) as String?;
+    } on Exception catch (e) {
+      log(e.toString());
+      return null;
+    }
   }
-}
 
-Future<bool> clearAccessToken() async {
-  try {
-    return await pref.deleteKey(key: DBKeys.accessTokenKey);
-  } on Exception catch (e) {
-    log(e.toString());
-    return false;
+  Future<bool> clearAccessToken() async {
+    try {
+      return await pref.deleteKey(key: DBKeys.accessTokenKey);
+    } on Exception catch (e) {
+      log(e.toString());
+      return false;
+    }
   }
-}
 
   ////////////Username and Password///////////
 
@@ -133,6 +131,30 @@ Future<bool> clearAccessToken() async {
       return (userName != null && password != null)
           ? LocalUser(userName: userName, password: password)
           : null;
+    } on Exception catch (e) {
+      log(e);
+      return null;
+    }
+  }
+
+  ////////////OTP///////////
+  Future<bool> storeForgotPasswordOtp({
+    required String otp,
+  }) async {
+    try {
+      final resultOtp = await pref.save(key: DBKeys.otp, value: otp);
+      return resultOtp;
+    } on Exception catch (e) {
+      log(e);
+      return false;
+    }
+  }
+
+  Future<String?> getForgotPaswwordOtp() async {
+    try {
+      final otp = await pref.getValue(key: DBKeys.otp) as String?;
+
+      return (otp != null) ? otp : null;
     } on Exception catch (e) {
       log(e);
       return null;
@@ -188,7 +210,7 @@ Future<bool> clearAccessToken() async {
     }
   }
 
-    ////====USER TYPE====////
+  ////====USER TYPE====////
 
   Future<bool> saveUserType(UserType userType) async {
     try {

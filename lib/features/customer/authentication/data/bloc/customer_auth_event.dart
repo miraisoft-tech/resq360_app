@@ -46,10 +46,8 @@ class CustomerForgotPassword extends CustomerAuthEvent {
 
 class CustomerResetPassword extends CustomerAuthEvent {
   const CustomerResetPassword({
-    required this.code,
     required this.password,
   });
-  final String code;
   final String password;
 }
 
@@ -62,6 +60,17 @@ class CustomerverifyEmail extends CustomerAuthEvent {
   @override
   List<Object> get props => [emailVerificationToken];
 }
+
+class CustomerVerifyForgotPasswordOtp extends CustomerAuthEvent {
+  const CustomerVerifyForgotPasswordOtp({
+    required this.token,
+  });
+
+  final String token;
+  @override
+  List<Object> get props => [token];
+}
+
 
 class CustomergetUserProfile extends CustomerAuthEvent {
   const CustomergetUserProfile();

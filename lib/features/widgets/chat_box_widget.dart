@@ -106,5 +106,3 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
     );
   }
 }
-
-

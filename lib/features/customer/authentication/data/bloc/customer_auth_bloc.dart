@@ -17,6 +17,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     on<CustomerLoginWithEmail>(_onLoginWithEmail);
     on<CustomerSignupWIthEmail>(_onSignupWithEmail);
     on<CustomerForgotPassword>(_onForgotPassword);
+    on<CustomerVerifyForgotPasswordOtp>(_onVerifyForgotPasswordOtp);
     on<CustomerResetPassword>(_onResetPassword);
     on<CustomerverifyEmail>(_onVerifyEmail);
     on<CustomergetUserProfile>(_onGetUserProfile);
@@ -109,6 +110,30 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         emit(
           const CustomerAuthFailure(
             'Password reset failed. Please check your code and try again.',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(CustomerAuthFailure(e.toString()));
+    }
+  }
+  
+ Future<void> _onVerifyForgotPasswordOtp(
+    CustomerVerifyForgotPasswordOtp event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
+    emit(CustomerAuthLoading());
+    try {
+      final result = await authRemoteRepo.forgotPasswordVerifyEmail(
+          token: event.token,
+      );
+
+      if (result) {
+        emit(CustomerForgotPasswordOtpSent());
+      } else {
+        emit(
+          const CustomerAuthFailure(
+            'Verification failed. Please check your code.',
           ),
         );
       }

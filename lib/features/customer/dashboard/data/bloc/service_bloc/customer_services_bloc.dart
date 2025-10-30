@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:resq360/features/customer/bookings/data/models/booking_model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/service_repo.dart';
@@ -89,7 +88,7 @@ class CustomerServicesBloc
           ),
         );
       }
-    } catch (e) {
+    } on Exception catch (e) {
       emit(CustomerServicesError(error: e.toString()));
     }
   }
@@ -114,7 +113,7 @@ class CustomerServicesBloc
           ),
         );
       }
-    } catch (e) {
+    } on Exception catch (e) {
       emit(CustomerServicesError(error: e.toString()));
     }
   }
@@ -174,7 +173,7 @@ Future<void> _onStartBooking(
     } else {
       emit(ServiceBookingStarted());
     }
-  } catch (e) {
+  } on Exception catch (e) {
     emit(CustomerServicesError(error: e.toString()));
   }
 }
@@ -194,7 +193,7 @@ Future<void> _onCancelBooking(
     } else {
       emit(ServiceBookingCancelled());
     }
-  } catch (e) {
+  } on Exception catch (e) {
     emit(CustomerServicesError(error: e.toString()));
   }
 }
@@ -218,7 +217,7 @@ Future<void> _onCompleteBooking(
     } else {
       emit(ServiceBookingCompleted());
     }
-  } catch (e) {
+  } on Exception catch (e) {
     emit(CustomerServicesError(error: e.toString()));
   }
 }

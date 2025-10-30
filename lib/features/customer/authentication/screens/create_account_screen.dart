@@ -5,9 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/verification_enum.dart';
+import 'package:resq360/features/customer/authentication/screens/confirm_email_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
-import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -71,8 +70,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           }
           await pushScreen(
             context,
-            VerifyEmailScreen(email: emailController.text,
-            purpose: VerificationPurpose.registration
+            ConfirmEmailScreen(email: emailController.text,
             ),
           );
         }

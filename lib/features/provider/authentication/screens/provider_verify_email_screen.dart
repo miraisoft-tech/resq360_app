@@ -7,21 +7,18 @@ import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/verification_enum.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_reset_password_screen.dart';
-import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderVerifyEmailScreen extends StatefulWidget {
   const ProviderVerifyEmailScreen({
-    required this.email,
-    required this.purpose, super.key,
+    required this.email, super.key,
   });
 
   final String email;
-  final VerificationPurpose purpose;
+  // final VerificationPurpose purpose;
 
   @override
   State<ProviderVerifyEmailScreen> createState() =>
@@ -80,7 +77,11 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
       return;
     }
 
-    await pushScreen(context, const ProviderResetPasswordScreen());
+
+    context.read<ProviderAuthBloc>().add(
+      ProviderVerifyForgotPasswordOtp(token: _otpController1.text),
+    );
+
   }
 
   @override
@@ -103,20 +104,15 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
     showSnackBar(context, 'Error', state.error);
   }
 
-  if (state is ProviderEmailVerifiedState) {
-    log('provider Email verified, navigating to next step');
+  if (state is ProviderForgotPasswordOtpSent) {
+    log('provider otp sent, navigating to next step');
 
     // popping from root navigator, not local context
     if (Navigator.of(context, rootNavigator: true).canPop()) {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
-    // Navigate based on purpose
-    if (widget.purpose == VerificationPurpose.registration) {
-      await replaceScreen(context, const ProviderVerificationStepsScreen());
-    } else if (widget.purpose == VerificationPurpose.passwordReset) {
-      await replaceScreen(context, const ProviderResetPasswordScreen());
-    }
+    await replaceScreen(context, const ProviderResetPasswordScreen());
   }
       },
       child: AppScaffold(

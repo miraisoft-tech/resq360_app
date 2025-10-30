@@ -11,16 +11,16 @@ class ChatListResponse {
     required this.totalPages,
   });
 
-  factory ChatListResponse.fromJson(Map<String, dynamic> json) =>
-      ChatListResponse(
-        chats: (json['chats'] as List<dynamic>)
-            .map((e) => ChatResponse.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        total: json['total'] as int ?? 0, 
-        page: json['page'] as int?? 0,
-        limit: json['limit'] as int?? 0,
-        totalPages: json['totalPages'] as int ?? 0,
-      );
+factory ChatListResponse.fromJson(Map<String, dynamic> json) =>
+    ChatListResponse(
+      chats: (json['chats'] as List<dynamic>)
+          .map((e) => ChatResponse.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      total: (json['total'] as int?) ?? 0,
+      page: (json['page'] as int?) ?? 0,
+      limit: (json['limit'] as int?) ?? 0,
+      totalPages: (json['totalPages'] as int?) ?? 0,
+    );
   final List<ChatResponse> chats;
   final int total;
   final int page;

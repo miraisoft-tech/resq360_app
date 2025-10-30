@@ -1,10 +1,11 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
+// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
 // in BlocListeners that do not need to be awaited.
 // ignore_for_file: unawaited_futures
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/verification_enum.dart';
-import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
+import 'package:resq360/core/helpers/navigation_helper.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_verify_email_screen.dart';
@@ -40,31 +41,34 @@ class _ProviderForgotPasswordScreenState
     final colors = context.appColors;
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
-      listener: (context, state) async{
-        if (!mounted) return;
-          if (state is ProviderAuthLoadingState) {
+      listener: (context, state) async {
+        if (state is ProviderAuthLoadingState) {
           showLoadingDialog(context);
-        } 
+        }
 
         if (state is ProviderAuthFailureState) {
-             if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-          showSnackBar(context, 'Error', state.error);
+          final navigator = Navigator.of(context, rootNavigator: true);
+          if (navigator.canPop()) {
+            navigator.pop();
+            await Future<void>.delayed(const Duration(milliseconds: 400));
+          }
+
+          // use addPostFrameCallback to safely use context after async work
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              unawaited(showSnackBar(context, 'Error', state.error));
+            }
+          });
         }
 
         if (state is ProviderForgotPasswordSucessState) {
-          // showSuccessSnackbar(context, 'Password reset email sent successfully!');
-             if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-          await pushScreen(
-            context,
-            ProviderVerifyEmailScreen(
-              email: emailController.text,
-              purpose: VerificationPurpose.passwordReset,
-            ),
-          );
+          // navigation is safe because it immediately replaces the route
+          if (context.mounted) {
+            await NavigationHelper.popAndNavigate(
+              context,
+              ProviderVerifyEmailScreen(email: emailController.text),
+            );
+          }
         }
       },
       child: Scaffold(
@@ -116,7 +120,6 @@ class _ProviderForgotPasswordScreenState
               WideButton(
                 label: 'Send Reset Code',
                 onPressed: () async {
-
                   if (emailController.text.isEmpty) {
                     showErrorSnackbar(context, 'Please enter a valid email.');
                     return;

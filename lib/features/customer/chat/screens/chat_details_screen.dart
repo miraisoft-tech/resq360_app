@@ -4,13 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
-import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
-import 'package:resq360/features/customer/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
-import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
-import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   const ChatDetailScreen({required this.chat, super.key});
@@ -249,74 +244,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _showAttachmentMenu(BuildContext context) async {
-    final button = context.findRenderObject()! as RenderBox;
-    final overlay =
-        Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
-    final position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset(0, 800.h), ancestor: overlay),
-        button.localToGlobal(
-          button.size.bottomRight(Offset.zero),
-          ancestor: overlay,
-        ),
-      ),
-      Offset.zero & overlay.size,
-    );
 
-    await showMenu<String>(
-      context: context,
-      position: position,
-      color: Colors.white,
-      items: [
-        PopupMenuItem<String>(
-          value: 'media',
-          child: Row(
-            children: [
-              const GenText('Media'),
-              70.horizontalSpace,
-              AppAssets.ASSETS_ICONS_ATTACH_IMAGE_SVG.svg,
-            ],
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'location',
-          child: Row(
-            children: [
-              const GenText('Location'),
-              55.horizontalSpace,
-              AppAssets.ASSETS_ICONS_ATTACH_LOCATION_SVG.svg,
-            ],
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'document',
-          child: Row(
-            children: [
-              const GenText('Document'),
-              45.horizontalSpace,
-              AppAssets.ASSETS_ICONS_ATTACH_DOC_SVG.svg,
-            ],
-          ),
-        ),
-      ],
-    ).then((String? result) {
-      if (result != null) {
-        switch (result) {
-          case 'media':
-            _onMediaTap();
-          case 'location':
-            _onLocationTap();
-          case 'document':
-            _onDocumentTap();
-        }
-      }
-    });
-  }
+  // void _onMediaTap() {}
 
-  void _onMediaTap() {}
+  // void _onLocationTap() {}
 
-  void _onLocationTap() {}
-
-  void _onDocumentTap() {}
+  // void _onDocumentTap() {}
 }

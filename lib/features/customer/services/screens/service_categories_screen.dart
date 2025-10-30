@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/models/nav_item.model.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
@@ -146,8 +145,8 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                         itemBuilder: (context, index) {
                           final service = services[index];
                           return GestureDetector(
-                            onTap: () {
-                              pushScreen(
+                            onTap: () async {
+                              await pushScreen(
                                 context,
                                 ServiceProvidersScreen(
                                   serviceProviderId: service.id,

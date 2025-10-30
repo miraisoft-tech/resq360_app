@@ -153,13 +153,13 @@ class MyApp extends ConsumerStatefulWidget {
 
 class AppBlocObserver extends BlocObserver {
   @override
-  void onTransition(Bloc bloc, Transition transition) {
+  void onTransition(Bloc<dynamic, dynamic> bloc, Transition<dynamic, dynamic> transition) {
     log(transition.toString());
     super.onTransition(bloc, transition);
   }
 
   @override
-  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+  void onError(BlocBase<dynamic>  bloc, Object error, StackTrace stackTrace) {
     log('$error\n$stackTrace');
     super.onError(bloc, error, stackTrace);
   }

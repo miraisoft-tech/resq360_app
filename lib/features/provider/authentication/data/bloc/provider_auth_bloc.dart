@@ -20,6 +20,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       on<ProviderLoginWithEmail>(_onLoginWithEmail);
       on<ProviderSignupWIthEmail>(_onSignupWithEmail);
       on<ProviderForgotPassword>(_onForgotPassword);
+    on<ProviderVerifyForgotPasswordOtp>(_onVerifyForgotPasswordOtp);
       on<ProviderResetPassword>(_onResetPassword);
       on<ProviderverifyEmail>(_onVerifyEmail);
       on<ProvidergetUserProfile>(_onGetUserProfile);
@@ -45,7 +46,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
 
         // log('Fetched user profile: $userProfile'); // test line
 
-        emit(ProviderAuthAuthenticatedState(result.data!.user));
+        emit(ProviderAuthLoginSuccessState(result.data!.user));
       } else {
         log('bloc error ${result.error}');
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
@@ -129,6 +130,30 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
+   Future<void> _onVerifyForgotPasswordOtp(
+    ProviderVerifyForgotPasswordOtp event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    emit(ProviderAuthLoadingState());
+    try {
+      final result = await providerAuthRemoteRepo.forgotPasswordVerifyEmail(
+          token: event.token,
+      );
+
+      if (result) {
+        emit(ProviderForgotPasswordOtpSent());
+      } else {
+        emit(
+          const ProviderAuthFailureState(
+            'Verification failed. Please check your code.',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(ProviderAuthFailureState(e.toString()));
+    }
+  }
+  
   Future<void> _onVerifyEmail(
     ProviderverifyEmail event,
     Emitter<ProviderAuthState> emit,

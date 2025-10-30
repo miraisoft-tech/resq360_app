@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/bookings/data/models/booking_model.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';

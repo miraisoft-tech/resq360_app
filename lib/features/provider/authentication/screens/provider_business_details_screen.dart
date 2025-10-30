@@ -1,7 +1,6 @@
 // Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
 // in BlocListeners that do not need to be awaited.
 // ignore_for_file: unawaited_futures
-import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
@@ -170,7 +169,9 @@ class _ProviderBusinessDetailsScreenState
           // navigate to confirm email screen
           pushScreen(
             context,
-            ProviderConfirmEmailScreen(email: widget.email, purpose: VerificationPurpose.registration),
+            ProviderConfirmEmailScreen(
+              email: widget.email,
+            ),
           );
         }
       },
@@ -285,29 +286,28 @@ class _ProviderBusinessDetailsScreenState
                       },
                     ),
                     30.verticalSpace,
-                    GenText(
+                    const GenText(
                       'Choose a primary service, you can add more services later in settings.',
                       size: 12,
                       height: 16.5,
                       weight: FontWeight.w400,
-                      color: colors.textColor.shade500,
+                      // color: colors.textColor.shade500,
                     ),
                     16.verticalSpace,
-                    if (_selectType.value!.name == 'Other')
+                    if (_selectType.value?.name == 'Other') ...[
+                      16.verticalSpace,
                       KFormField(
                         label: 'Specify Service',
                         hintText: 'Enter Your Service Name',
                         controller: otherController,
                         keyboardType: TextInputType.text,
-                        onChanged: (a) {
-                          setState(() {});
-                        },
                         validator:
                             (value) => Validators.validateNotEmpty(
                               value,
                               'service name',
                             ),
                       ),
+                    ],
                   ],
                 ),
               ),

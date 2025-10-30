@@ -15,14 +15,17 @@ class AuthResponse extends EmptyResponse {
     required this.success,
   });
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
-    json['access_token'] as String?, 
-    message: json['message'] as String? ?? '',
-    user: ProviderUserModel.fromJson(
-      (json['provider'] ?? json['user']) as Map<String, dynamic>,
-    ),
-    success: json['success'] as bool? ?? false,
-  );
+  factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>?;
+    return AuthResponse(
+      data?['access_token'] as String?,
+      message: json['message'] as String? ?? '',
+      user: ProviderUserModel.fromJson(
+        (data?['provider'] ?? data?['user']) as Map<String, dynamic>,
+      ),
+      success: json['success'] as bool? ?? false,
+    );
+  }
   String message;
   ProviderUserModel user;
   bool success;
@@ -34,6 +37,7 @@ class AuthResponse extends EmptyResponse {
     'success': success,
   };
 }
+
 // To parse this JSON data, do
 //
 //     final user = userFromJson(jsonString);
@@ -72,15 +76,15 @@ class ProviderUserModel {
   final String? createdAt;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        'fullName': fullName,
-        'companyName': companyName,
-        'phoneNumber': phoneNumber,
-        'isEmailVerified': isEmailVerified,
-        'isApproved': isApproved,
-        'createdAt': createdAt,
-      };
+    'id': id,
+    'email': email,
+    'fullName': fullName,
+    'companyName': companyName,
+    'phoneNumber': phoneNumber,
+    'isEmailVerified': isEmailVerified,
+    'isApproved': isApproved,
+    'createdAt': createdAt,
+  };
 }
 
 class Address {

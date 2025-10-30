@@ -1,18 +1,8 @@
-import 'participant.dart';
 import 'message_response.dart';
+import 'participant.dart';
 
 /// Represents a single chat conversation with participants and messages
 class ChatResponse {
-  final int? id;
-  final String? title;
-  final String? type;
-  final bool? isActive;
-  final String? lastMessage;
-  final DateTime? lastMessageAt;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  final List<Participant>? participants;
-  final List<MessageResponse>? messages;
 
   ChatResponse({
     this.id,
@@ -53,6 +43,16 @@ class ChatResponse {
                 .map((x) => MessageResponse.fromJson(x as Map<String, dynamic>))
                 .toList(),
       );
+  final int? id;
+  final String? title;
+  final String? type;
+  final bool? isActive;
+  final String? lastMessage;
+  final DateTime? lastMessageAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final List<Participant>? participants;
+  final List<MessageResponse>? messages;
 
   Map<String, dynamic> toJson() => {
         'id': id,

@@ -61,6 +61,16 @@ class ProviderResetPassword extends ProviderAuthEvent {
   final String password;
 }
 
+class ProviderVerifyForgotPasswordOtp extends ProviderAuthEvent {
+  const ProviderVerifyForgotPasswordOtp({
+    required this.token,
+  });
+
+  final String token;
+  @override
+  List<Object> get props => [token];
+}
+
 class ProviderverifyEmail extends ProviderAuthEvent {
   const ProviderverifyEmail({
     required this.emailVerificationToken,

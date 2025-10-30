@@ -34,7 +34,7 @@ class NotificationResponse {
   Map<String, dynamic> toJson() => {
     'notifications':
         notifications == null
-            ? []
+            ? <dynamic>[]
             : List<dynamic>.from(notifications!.map((x) => x.toJson())),
     'pagination': pagination?.toJson(),
   };
@@ -127,7 +127,7 @@ class Notification {
     'category': category,
     'priority': priority,
     'status': status,
-    'tags': tags == null ? [] : List<dynamic>.from(tags!.map((x) => x)),
+    'tags': tags == null ? <dynamic>[] : List<dynamic>.from(tags!.map((x) => x)),
     'readAt': readAt?.toIso8601String(),
     'createdAt': createdAt?.toIso8601String(),
     'updatedAt': updatedAt?.toIso8601String(),

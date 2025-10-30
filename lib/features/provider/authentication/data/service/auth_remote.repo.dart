@@ -68,22 +68,30 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     required String password,
   }) async {
     try {
-      const url = '/auth/login/provider';
+      const url = '/auth/login';
+
+      // Fetch the saved user type from AuthLocalRepo
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
 
       final data = {
         'email': email,
         'password': password,
+        'userType': userType,
       };
-
+      await authLocalDataSource.storeLocalCredentials(
+        email: email,
+        password: password,
+      );
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
-
+      log(url);
       log(res.statusCode);
       log(res.data);
 
-      if (res.statusCode == 200 && res.data != null) {
+      if (res.statusCode == 201 && res.data != null) {
         final success = res.data!['success'] == true;
-        final token = res.data!['token'];
-        log(token.toString());
+        final token = res.data!['data']?['access_token'];
+        log('Token: $token');
         await authLocalDataSource.storeAccessToken(
           token.toString(),
         ); // store token locally
@@ -91,7 +99,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
           final authResponse = AuthResponse.fromJson(res.data!);
           return ApiResult(data: authResponse);
         } else {
-            log('Login failed with response: ${res.data}');
+          log('Login failed with response: ${res.data}');
           // API returned 200 but success == false
           return ApiResult(
             error: res.data!['message']?.toString() ?? 'Login failed',
@@ -137,6 +145,11 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         'address': address.toJson(),
       };
 
+      await authLocalDataSource.storeLocalCredentials(
+        email: email,
+        password: password,
+      );
+
       final res = await dio().post<Map<String, dynamic>>(
         url,
         data: data,
@@ -178,12 +191,44 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     required String email,
   }) async {
     try {
-      const url = '/auth/forgot-password/provider';
+      const url = '/auth/forgot-password';
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+      final data = {'email': email, 'userType': userType};
 
-      final data = {
-        'email': email,
-      };
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
+      log(res.statusCode);
+      log(res.data);
+
+      switch (res.statusCode) {
+        case 201:
+          return true;
+        default:
+          return false;
+      }
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return false;
+    }
+  }
+
+  Future<bool> forgotPasswordVerifyEmail({
+    required String token,
+  }) async {
+    try {
+      // Fetch the saved user type from AuthLocalRepo
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+
+      // store otp locally
+      final otp = await authLocalDataSource.storeForgotPasswordOtp(otp: token);
+      log('otp: $otp');
+
+      const url = '/auth/forgot-password/verify';
+      final data = {'token': token, 'userType': userType};
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
       log(res.statusCode);
@@ -207,16 +252,19 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     required String password,
   }) async {
     try {
-      const url = '/auth/reset-password/provider';
-        final token = await authLocalDataSource.getAccessToken();
-          if (token != null) {
-            log('Reset Password Token: $token');
-          } else {
-            log('No token found for password reset.');
-          }
+      const url = '/auth/reset-password';
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+      final token = await authLocalDataSource.getForgotPaswwordOtp();
+      if (token != null) {
+        log('Reset Password Token: $token');
+      } else {
+        log('No token found for password reset.');
+      }
       final data = {
         'token': token,
         'password': password,
+        'userType': userType,
       };
 
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
@@ -225,7 +273,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       log(res.data);
 
       switch (res.statusCode) {
-        case 200:
+        case 201:
           return true;
         default:
           return false;
@@ -240,11 +288,25 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
   Future<bool> verifyEmail({required String emailVerificationToken}) async {
     try {
-      final url = '/auth/verify-email/provider/$emailVerificationToken';
+      // Fetch the saved user type from AuthLocalRepo
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+
+      final url = '/auth/verify-email/$emailVerificationToken?type=$userType';
 
       final res = await dio().get<Map<String, dynamic>>(
         url,
       );
+
+      final userCred = await authLocalDataSource.getLocalCredentials();
+      if (userCred != null) {
+        await loginWithEmail(
+          email: userCred.userName!,
+          password: userCred.password!,
+        );
+      } else {
+        log('No local credentials found during email verification.');
+      }
 
       log(res.statusCode);
       log(res.data);

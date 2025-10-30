@@ -111,16 +111,18 @@ class AuthRemoteRepo extends BaseAPI {
       const url = '/auth/login';
 
       // Fetch the saved user type from AuthLocalRepo
-      final savedUserType = await AuthLocalRepo.instance.getUserType();
-      final userType = savedUserType ?? 'user'; 
-      
-      
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+
       final data = {
         'email': email,
         'password': password,
         'userType': userType,
       };
-
+      await authLocalDataSource.storeLocalCredentials(
+        email: email,
+        password: password,
+      );
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
       log(res.statusCode);
@@ -147,9 +149,10 @@ class AuthRemoteRepo extends BaseAPI {
         log('Token has finally been saved');
         log(token.toString());
 
-        // Try to fetch profile safely
         try {
-          final userProfile = await getUserProfile(token: token.toString());
+          // final userProfile = await getUserProfile(token: token.toString());
+          final userProfile = await getUserProfile();
+
           log(
             'Fetched user profile: $userProfile.data.toString()',
           ); // test line
@@ -176,7 +179,7 @@ class AuthRemoteRepo extends BaseAPI {
   }) async {
     try {
       const url = '/auth/register/user';
-  
+
       final data = {
         'fullName': fullname,
         'email': email,
@@ -205,6 +208,18 @@ class AuthRemoteRepo extends BaseAPI {
         }
       }
 
+      // Try to fetch profile safely
+      try {
+        // final userProfile = await getUserProfile(token: token.toString());
+        final userProfile = await getUserProfile();
+
+        log(
+          'Fetched user profile: ${userProfile.data?.user.email}',
+        ); // test line
+      } on Exception catch (e) {
+        log('Failed to fetch profile: $e');
+      }
+
       return ApiResult(
         error:
             res.data?['message']?.toString() ??
@@ -222,12 +237,43 @@ class AuthRemoteRepo extends BaseAPI {
     required String email,
   }) async {
     try {
-      const url = '/auth/forgot-password/user';
+      // Fetch the saved user type from AuthLocalRepo
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
 
-      final data = {
-        'email': email,
-      };
+      const url = '/auth/forgot-password';
 
+      final data = {'email': email, 'userType': userType};
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+
+      log(res.statusCode);
+      log(res.data);
+
+      switch (res.statusCode) {
+        case 201:
+          return true;
+        default:
+          return false;
+      }
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return false;
+    }
+  }
+
+  Future<bool> forgotPasswordVerifyEmail({
+    required String token,
+  }) async {
+    try {
+      // Fetch the saved user type from AuthLocalRepo
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+
+      const url = '/auth/forgot-password/verify';
+      final data = {'token': token, 'userType': userType};
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
       log(res.statusCode);
@@ -251,14 +297,18 @@ class AuthRemoteRepo extends BaseAPI {
     required String password,
   }) async {
     try {
-      const url = '/auth/reset-password/user';
-      final token = await authLocalDataSource.getAccessToken();
+      const url = '/auth/reset-password';
+      // Fetch the saved user type from AuthLocalRepo
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+      final token = await authLocalDataSource.getForgotPaswwordOtp();
 
       if (token != null) {
         log('Reset Password Token: $token');
         final data = {
           'token': token,
           'password': password,
+          'userType': userType,
         };
 
         final res = await dio().post<Map<String, dynamic>>(url, data: data);
@@ -285,7 +335,11 @@ class AuthRemoteRepo extends BaseAPI {
 
   Future<bool> verifyEmail({required String emailVerificationToken}) async {
     try {
-      final url = '/auth/verify-email/user/$emailVerificationToken';
+      // Fetch the saved user type from AuthLocalRepo
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+
+      final url = '/auth/verify-email/$emailVerificationToken?type=$userType';
 
       final res = await dio().get<Map<String, dynamic>>(
         url,
@@ -318,9 +372,39 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<AuthResponse>> getUserProfile({String? token}) async {
+  Future<ApiResult<AuthResponse>> getUserProfile() async {
     try {
-      const url = '/auth/profile/user/';
+      const url = '/auth/profile/user';
+
+      final res = await dio().get<Map<String, dynamic>>(url);
+
+      log(res.statusCode);
+      log(res.data);
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          final authResponse = AuthResponse.fromJson(res.data!);
+          log('User profile fetched: ${authResponse.user.fullName}');
+          return ApiResult(data: authResponse);
+        } else {
+          return ApiResult(
+            error: res.data!['message']?.toString() ?? 'Signup failed',
+          );
+        }
+      }
+      return ApiResult(error: 'An error occurred, please try again!');
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+
+      return ApiResult(error: '$e $s');
+    }
+  }
+
+  Future<ApiResult<AuthResponse>> getProviderProfile() async {
+    try {
+      const url = '/auth/profile/provider';
 
       final res = await dio().get<Map<String, dynamic>>(url);
 
@@ -455,7 +539,7 @@ class AuthRemoteRepo extends BaseAPI {
 
       if (res.statusCode == 200 && res.data != null) {
         if (res.data is Map<String, dynamic>) {
-          final body = res.data as Map<String, dynamic>;
+          final body = res.data!;
           final success = body['success'] == true;
 
           if (success) {

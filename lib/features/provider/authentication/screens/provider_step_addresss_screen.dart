@@ -4,8 +4,8 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
@@ -73,7 +73,7 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
 
                 if (context.mounted) {
                   // Navigate to login
-                  await pushAndReplaceScreen(const LoginScreen(), context: context);
+                  await pushAndReplaceScreen(const ProviderHomeScreen(), context: context);
                 }
               },
             ),
@@ -164,19 +164,6 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
                   onPressed:
                       isFormValid
                           ? () async {
-                            // await GeneralDialogs.showCustomBottomSheet(
-                            //   context,
-                            //   body: StepModal(
-                            //     title: 'Verification Complete!',
-                            //     description:
-                            //         'Welcome to ResQ360, David! You can start receiving service requests, managing your bookings and growing your business.',
-                            //     icon: AppAssets.ASSETS_LOGO_LOGO_PNG,
-                            //     buttonText: 'Go to Dashboard',
-                            //     onContinuePressed: () async {
-                            //       await pop(context);
-                            //     },
-                            //   ),
-                            // );
                              context.read<ProviderAuthBloc>().add(
                                     ProviderSubmitKycAddress(
                                       address: _streetCtrl.text,
