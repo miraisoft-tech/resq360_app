@@ -148,7 +148,7 @@ class AuthRemoteRepo extends BaseAPI {
         await authLocalDataSource.storeAccessToken(token.toString());
         log('Token has finally been saved');
         log(token.toString());
-
+          
         try {
           // final userProfile = await getUserProfile(token: token.toString());
           final userProfile = await getUserProfile();
@@ -162,6 +162,8 @@ class AuthRemoteRepo extends BaseAPI {
 
         // Create AuthResponse
         final authResponse = AuthResponse.fromJson(res.data!);
+        await AuthLocalRepo.instance.storeUserDetails(authResponse: authResponse);
+
         return ApiResult(data: authResponse);
       } else {
         return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
@@ -200,6 +202,8 @@ class AuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
+          await AuthLocalRepo.instance.storeUserDetails(authResponse: authResponse);
+
           return ApiResult(data: authResponse);
         } else {
           return ApiResult(

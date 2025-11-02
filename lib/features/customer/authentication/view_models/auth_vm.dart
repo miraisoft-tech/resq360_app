@@ -7,6 +7,7 @@ import 'package:resq360/core/services/location_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 final authProvider = ChangeNotifierProvider<AuthProvider>(
   (ref) => AuthProvider(authRemoteRepo: AuthRemoteRepo.instance, ref: ref),
@@ -44,12 +45,15 @@ class AuthProvider extends BaseViewModel with LocationMixin {
 
   Future<void> init() async {
     final authData = await AuthLocalRepo.instance.getAuthCredentials();
-
+    if (authData != null) {
+      log('Restored AuthResponse from local storage');
+      authInfo = authData;
+    } else {
+      log('No saved AuthResponse found — user not logged in');
+    }
     await initLocalRepo();
 
-    if (authData != null) {
-      //  await afterLogIn(authData);
-    }
+    notifyListeners();
   }
 
   Future<void> initLocalRepo() async {
@@ -83,5 +87,34 @@ class AuthProvider extends BaseViewModel with LocationMixin {
     notifyListeners();
 
     return result;
+  }
+
+  Future<void> logout() async {
+    try {
+      setBusy(isBusy: true);
+
+      // Clear all local data related to auth
+      await AuthLocalRepo.instance.clearAuthCredentials();
+      await AuthLocalRepo.instance.clearAccessToken();
+      await AuthLocalRepo.instance.clearLocalCred();
+      await AuthLocalRepo.instance.clearUserType();
+
+      authInfo = null;
+      localCred = null;
+      useBiometics = false;
+
+      setBusy(isBusy: false);
+      notifyListeners();
+
+      if (context.mounted) {
+        await replaceScreen(context, const SelectAccountTypeScreen());
+      }
+
+      log('Logout successful');
+    } on Exception catch (e, s) {
+      log('Logout failed: $e');
+      log(s);
+      setBusy(isBusy: false);
+    }
   }
 }

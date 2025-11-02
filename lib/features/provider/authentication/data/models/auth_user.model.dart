@@ -11,29 +11,30 @@ class AuthResponse extends EmptyResponse {
   AuthResponse(
     this.accessToken, {
     required this.message,
-    required this.user,
+     this.user,
     required this.success,
   });
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>?;
-    return AuthResponse(
-      data?['access_token'] as String?,
-      message: json['message'] as String? ?? '',
-      user: ProviderUserModel.fromJson(
-        (data?['provider'] ?? data?['user']) as Map<String, dynamic>,
-      ),
-      success: json['success'] as bool? ?? false,
-    );
-  }
+factory AuthResponse.fromJson(Map<String, dynamic> json) {
+  final data = json['data'] as Map<String, dynamic>?;
+
+  final userJson = (data?['provider'] ?? data?['user']) as Map<String, dynamic>?;
+
+  return AuthResponse(
+    data?['access_token'] as String?,
+    message: json['message'] as String? ?? '',
+    user: userJson != null ? ProviderUserModel.fromJson(userJson) : null,
+    success: json['success'] as bool? ?? false,
+  );
+}
   String message;
-  ProviderUserModel user;
+  ProviderUserModel? user;
   bool success;
   final String? accessToken;
 
   Map<String, dynamic> toJson() => {
     'message': message,
-    'user': user.toJson(),
+    'user': user?.toJson(),
     'success': success,
   };
 }

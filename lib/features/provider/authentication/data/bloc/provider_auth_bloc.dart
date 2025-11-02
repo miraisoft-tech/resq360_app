@@ -46,7 +46,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
 
         // log('Fetched user profile: $userProfile'); // test line
 
-        emit(ProviderAuthLoginSuccessState(result.data!.user));
+        emit(ProviderAuthLoginSuccessState(result.data!.user!));
       } else {
         log('bloc error ${result.error}');
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
@@ -73,7 +73,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         address: event.address,
       );
       if (result.data != null) {
-        emit(ProviderAuthSignupSuccessState(result.data!.user));
+        emit(ProviderAuthSignupSuccessState(result.data!.user!));
       } else {
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
       }
@@ -187,7 +187,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     try {
       final result = await providerAuthRemoteRepo.getUserProfile();
       if (result.data != null) {
-        emit(ProviderProfileLoadedState(result.data!.user));
+        emit(ProviderProfileLoadedState(result.data!.user!));
       } else {
         emit(
           ProviderAuthFailureState(result.error ?? 'Failed to load profile'),
