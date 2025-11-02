@@ -42,7 +42,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       });
     } on Exception catch (e, t) {
       log('e $e, $t');
-
       if (mounted) {
         await replaceScreen(
           context,
