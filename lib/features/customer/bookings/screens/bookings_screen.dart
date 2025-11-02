@@ -127,9 +127,27 @@ class _BookingList extends StatelessWidget {
 
         if (state is CustomerServicesError) {
           return Center(
-            child: GenText(
-              state.error,
-              color: context.appColors.error,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  state.error,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: WideButton(
+                    label: 'Retry',
+                    onPressed: () {
+                      context.read<CustomerServicesBloc>().add(
+                        CustomerFetchBookings(status: _mapTypeToStatus()),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           );
         }

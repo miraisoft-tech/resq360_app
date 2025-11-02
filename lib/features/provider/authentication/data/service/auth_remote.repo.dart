@@ -94,7 +94,18 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         log('Token: $token');
         await authLocalDataSource.storeAccessToken(
           token.toString(),
-        ); // store token locally
+        );
+         try {
+          // final userProfile = await getUserProfile(token: token.toString());
+          final userProfile = await getUserProfile();
+
+          log(
+            'Fetched user profile: $userProfile.data.toString()',
+          ); // test line
+        } on Exception catch (e) {
+          log('Failed to fetch profile: $e');
+        }
+
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
           return ApiResult(data: authResponse);
