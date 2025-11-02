@@ -181,7 +181,7 @@ class _CustomDropdownButtonState extends ConsumerState<KDropDown> {
             ),
             iconStyleData: IconStyleData(
               icon: SvgPicture.asset(
-                 AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
+                AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
                 height: 24.h,
                 width: 24.w,
                 colorFilter: ColorFilter.mode(appTheme.black, BlendMode.srcIn),
@@ -251,7 +251,6 @@ class ObjectKDropDown<T> extends ConsumerStatefulWidget {
   final String? hintUrl;
   final Key? dropdownKey;
   final bool showPrefix;
-  // Function to get the display string from the generic type
   final String Function(T) displayStringForOption;
 
   @override
@@ -282,7 +281,6 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
         ),
       );
 
-      // Add a divider item unless it's the last item
       if (i != items.length - 1) {
         menuItems.add(
           DropdownMenuItem<T>(
@@ -302,10 +300,8 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
     final itemsHeights = <double>[];
 
     for (var i = 0; i < widget.dropdownItems.length; i++) {
-      // Add height for the item itself
       itemsHeights.add(50);
 
-      // Add height for the divider if it's not the last item
       if (i != widget.dropdownItems.length - 1) {
         itemsHeights.add(10);
       }
@@ -362,20 +358,6 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
               contentPadding:
                   widget.padding ??
                   EdgeInsets.symmetric(horizontal: 0.w, vertical: 16.h),
-              suffixIcon: Transform.scale(
-                scale: 0.5,
-                child:
-                    widget.icon ??
-                    SvgPicture.asset(
-                      AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
-                      height: 24.h,
-                      width: 24.w,
-                      colorFilter: ColorFilter.mode(
-                        colors.black,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-              ),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: colors.lightGreyColor3,
@@ -427,12 +409,17 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
               padding: EdgeInsets.only(right: 8),
             ),
             iconStyleData: IconStyleData(
-              icon: SvgPicture.asset(
-                AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
-                height: 24.h,
-                width: 24.w,
-                colorFilter: ColorFilter.mode(colors.black, BlendMode.srcIn),
-              ),
+              icon:
+                  widget.icon ??
+                  SvgPicture.asset(
+                    AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
+                    height: 24.h,
+                    width: 24.w,
+                    colorFilter: ColorFilter.mode(
+                      colors.black,
+                      BlendMode.srcIn,
+                    ),
+                  ),
             ),
             dropdownStyleData: DropdownStyleData(
               decoration: BoxDecoration(

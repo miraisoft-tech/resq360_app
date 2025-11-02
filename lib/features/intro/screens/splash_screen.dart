@@ -1,10 +1,11 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
-import 'package:resq360/features/customer/dashboard/screens/dashboard.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/intro/screens/intro_screen.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
-import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
+import 'package:resq360/features/main_layout.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -31,37 +32,50 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       if (!mounted) return;
 
-      //Intro not completed
-      if (!isIntroCompleted) {
-        log('🧭 Redirecting to IntroScreen...');
-        await replaceScreen(context, const IntroScreen());
-        return;
-      }
-
-      // // Logged in
-      // if (isLoggedIn) {
-      //   if (userType == 'user') {
-      //     log('🏠 Redirecting to Customer Dashboard...');
-      //     await replaceScreen(context, const HomeScreen());
-      //   } else if (userType == 'provider') {
-      //     log('🧰 Redirecting to Provider Dashboard...');
-      //     await replaceScreen(context, const ProviderHomeScreen());
-      //   } else {
-      //     log('❓ User type missing — redirecting to Account Type Selection');
-      //     await replaceScreen(context, const SelectAccountTypeScreen());
-      //   }
-      //   return;
-      // }
-
-      // Not logged in at all
-      log('🚪 User not logged in — redirecting to Account Type Selection');
-      await replaceScreen(context, const SelectAccountTypeScreen());
+        if (!isIntroCompleted) {
+          await replaceScreen(
+            context,
+            const IntroScreen(),
+          );
+        } else if (isIntroCompleted &&
+            (ref.read(authProvider).authInfo != null)) {
+          await _navigateToNext();
+        } else {
+          await replaceScreen(
+            context,
+            const SelectAccountTypeScreen(),
+          );
+        }
+      });
     } on Exception catch (e, t) {
       log('Splash error: $e');
       log(t);
       if (mounted) {
-        await replaceScreen(context, const IntroScreen());
+        await replaceScreen(
+          context,
+          const IntroScreen(),
+        );
       }
+    }
+  }
+
+  Future<void> _navigateToNext() async {
+    final userType = await AuthLocalRepo.instance.getUserType();
+
+    if (userType == null && mounted) {
+      await replaceScreen(
+        context,
+        const SelectAccountTypeScreen(),
+      );
+      return;
+    } else if (mounted) {
+      ref.read(dashboardViewModel).userType =
+          userType == 'user' ? UserType.customer : UserType.provider;
+
+      await replaceScreen(
+        context,
+        const MainLayoutPage(),
+      );
     }
   }
 
