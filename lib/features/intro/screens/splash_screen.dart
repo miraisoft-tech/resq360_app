@@ -17,20 +17,13 @@ class SplashScreen extends ConsumerStatefulWidget {
 class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _goToNext() async {
     try {
-      // Initialize auth provider and local repo
       await ref.read(authProvider).init();
 
-      final authRepo = AuthLocalRepo.instance;
-      final isIntroCompleted = await authRepo.getIsIntroCompleted();
-      final userType = await authRepo.getUserType();
-      final isLoggedIn = ref.read(authProvider).authInfo != null;
-      log('📄 Intro completed: $isIntroCompleted');
-      log('👤 User type: $userType');
-      log('🔐 Is logged in: $isLoggedIn');
+      final isIntroCompleted =
+          await AuthLocalRepo.instance.getIsIntroCompleted();
 
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (!mounted) return;
+      Future.delayed(const Duration(seconds: 2), () async {
+        if (!mounted) return;
 
         if (!isIntroCompleted) {
           await replaceScreen(
@@ -48,8 +41,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
       });
     } on Exception catch (e, t) {
-      log('Splash error: $e');
-      log(t);
+      log('e $e, $t');
+
       if (mounted) {
         await replaceScreen(
           context,
@@ -82,6 +75,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _goToNext();
     });
@@ -93,7 +87,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     return Scaffold(
       backgroundColor: colors.whiteColor,
-      body: Center(
+      body: Container(
         child: AppAssets.ASSETS_LOGO_SPLASH_2_PNG.imageAsset(
           height: double.infinity,
           width: double.infinity,
