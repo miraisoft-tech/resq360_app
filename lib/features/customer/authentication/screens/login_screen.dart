@@ -1,7 +1,3 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
@@ -52,21 +48,21 @@ class _LoginScreenState extends State<LoginScreen> {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is CustomerAuthLoading) {
-           showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           log(state.error);
-           showSnackBar(context, 'Error', state.error);
+          await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerAuthLoginSuccess) {
-           if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           await replaceScreen(
             context,
             const MainLayoutPage(),
@@ -89,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
-                 validator: Validators.validateEmail,
+                validator: Validators.validateEmail,
               ),
               16.verticalSpace,
               KFormField(
@@ -100,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
-                 validator: Validators.validatePassword,
+                validator: Validators.validatePassword,
               ),
               16.verticalSpace,
               GestureDetector(

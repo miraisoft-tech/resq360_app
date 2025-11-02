@@ -1,9 +1,4 @@
 import 'dart:io';
-
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
@@ -33,31 +28,13 @@ class _StepIDScreenState extends State<StepIDScreen> {
   Future<void> pickCameraPhoto(BuildContext context) async {
     pickedImage = await AppFilePicker.pickImage();
 
-     if (!context.mounted) return;
+    if (!context.mounted) return;
 
     if (pickedImage != null) {
-     // Dispatch e[vent to Bloc
-    context.read<CustomerAuthBloc>().add(
-      CustomerSubmitKyc(filePath: pickedImage!.path),
-    );
+      context.read<CustomerAuthBloc>().add(
+        CustomerSubmitKyc(filePath: pickedImage!.path),
+      );
     }
-    // if (context.mounted) {
-    //   await GeneralDialogs.showCustomBottomSheet(
-    //     context,
-    //     body: StepModal(
-    //       title: 'You’re Almost Done!',
-    //       description: 'Just one more step to complete your verification',
-    //       icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
-    //       onContinuePressed: () async {
-    //         await pop(context);
-
-    //         if (context.mounted) {
-    //           await pushScreen(context, const StepAddressScreen());
-    //         }
-    //       },
-    //     ),
-    //   );
-    // }
   }
 
   @override
@@ -66,38 +43,37 @@ class _StepIDScreenState extends State<StepIDScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-         
         if (state is CustomerAuthLoading) {
-         showLoadingDialog(context);
-      }  
-      
-      
-      if (state is CustomerKycSubmissionFailure) {
-        if(!context.mounted) return;
-        showSnackBar(context, 'Error', state.error);
-      }
+          await showLoadingDialog(context);
+        }
 
+        if (state is CustomerKycSubmissionFailure) {
+          if (!context.mounted) return;
+          await showSnackBar(context, 'Error', state.error);
+        }
 
-      if (state is CustomerKycSubmitted) {
-        if(!context.mounted) return;
-       if (context.mounted) {
-      await GeneralDialogs.showCustomBottomSheet(
-        context,
-        body: StepModal(
-          title: 'You’re Almost Done!',
-          description: 'Just one more step to complete your verification',
-          icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
-          onContinuePressed: () async {
-            await pop(context);
+        if (state is CustomerKycSubmitted) {
+          if (!context.mounted) return;
+          await pop(context);
 
-            if (context.mounted) {
-              await pushScreen(context, const StepAddressScreen());
-            }
-          },
-        ),
-      );
-    }
-      }
+          if (context.mounted) {
+            await GeneralDialogs.showCustomBottomSheet(
+              context,
+              body: StepModal(
+                title: 'You’re Almost Done!',
+                description: 'Just one more step to complete your verification',
+                icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
+                onContinuePressed: () async {
+                  await pop(context);
+
+                  if (context.mounted) {
+                    await pushScreen(context, const StepAddressScreen());
+                  }
+                },
+              ),
+            );
+          }
+        }
       },
       child: Scaffold(
         backgroundColor: colors.whiteColor,
@@ -193,14 +169,13 @@ class _StepIDScreenState extends State<StepIDScreen> {
                   onPressed:
                       (_selectType.value != null && (pickedImage != null))
                           ? () {
-                              log('Proceed to next step');
-                              // Dispatch event to Bloc
-                              context.read<CustomerAuthBloc>().add(
-                                    CustomerSubmitId(
-                                      documentType: _selectType.value!,
-                                      filePath: pickedImage!.path,
-                                    ),
-                                  );
+                            log('Proceed to next step');
+                            context.read<CustomerAuthBloc>().add(
+                              CustomerSubmitId(
+                                documentType: _selectType.value!,
+                                filePath: pickedImage!.path,
+                              ),
+                            );
                           }
                           : null,
                 ),

@@ -1,7 +1,3 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
@@ -11,6 +7,7 @@ import 'package:resq360/features/customer/authentication/data/bloc/customer_auth
 import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
+
 class ConfirmEmailScreen extends StatefulWidget {
   const ConfirmEmailScreen({required this.email, super.key});
 
@@ -85,21 +82,20 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
           log(state.error);
           Navigator.of(context).pop();
-          showErrorSnackbar(context, state.error);
+          await showErrorSnackbar(context, state.error);
         }
 
         if (state is CustomerEmailVerified) {
           log('Email verified');
 
-          Navigator.of(context).pop();
-          pushScreen(context, const VerificationStepsScreen());
-          // pushScreen(context, const MainLayoutPage());
+          await pop(context);
+          await replaceScreen(context, const VerificationStepsScreen());
         }
       },
       child: AppScaffold(

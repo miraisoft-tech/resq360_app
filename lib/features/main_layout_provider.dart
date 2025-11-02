@@ -17,7 +17,6 @@ final dashboardViewModel = ChangeNotifierProvider<DashboardViewModel>(
 class DashboardViewModel extends ChangeNotifier {
   DashboardViewModel(this.ref);
   Ref ref;
-  //
 
   UserType userType = UserType.customer;
 
@@ -26,7 +25,6 @@ class DashboardViewModel extends ChangeNotifier {
   final PageController _pageController = PageController();
   PageController get pageController => _pageController;
 
-  // For tab switching
   int tabIndex = 0;
 
   void onChanged(int newIndex, {int newTabIndex = 0}) {

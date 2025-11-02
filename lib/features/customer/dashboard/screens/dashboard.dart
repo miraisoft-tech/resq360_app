@@ -48,11 +48,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundImage: AssetImage(
                       AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
                     ),
-                    // TODO : replace with network image
-                    // NetworkImage(
-                    //   // user.profilePictureUrl ??
-                    //       AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                    // ),
                   ),
                   10.horizontalSpace,
                   Column(

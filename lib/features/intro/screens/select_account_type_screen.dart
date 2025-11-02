@@ -20,37 +20,35 @@ class _CreateAccountTypeScreenState
     extends ConsumerState<SelectAccountTypeScreen> {
   int _selectedIndex = 0;
 
-Future<void> _onContinue() async {
-  log('Selected index: $_selectedIndex');
+  Future<void> _onContinue() async {
+    log('Selected index: $_selectedIndex');
 
-  final selectedType =
-      _selectedIndex == 0 ? UserType.customer : UserType.provider;
+    final selectedType =
+        _selectedIndex == 0 ? UserType.customer : UserType.provider;
 
-  // Save user type locally using AuthLocalRepo
-  await AuthLocalRepo.instance.saveUserType(selectedType);
+    await AuthLocalRepo.instance.saveUserType(selectedType);
 
-  if (!mounted) return; 
+    if (!mounted) return;
 
-  log('saved the type $selectedType');
+    log('saved the type $selectedType');
 
-  ref.read(dashboardViewModel).userType = selectedType;
+    ref.read(dashboardViewModel).userType = selectedType;
 
-  if (_selectedIndex == 0) {
-    await pushScreen(
-      context,
-      BlocProvider(
-        create: (context) => CustomerAuthBloc(),
-        child: const CreateAccountScreen(),
-      ),
-    );
-  } else {
-    await pushScreen(
-      context,
-      const ProviderCreateAccountScreen(),
-    );
+    if (_selectedIndex == 0) {
+      await pushScreen(
+        context,
+        BlocProvider(
+          create: (context) => CustomerAuthBloc(),
+          child: const CreateAccountScreen(),
+        ),
+      );
+    } else {
+      await pushScreen(
+        context,
+        const ProviderCreateAccountScreen(),
+      );
+    }
   }
-}
-
 
   @override
   void initState() {

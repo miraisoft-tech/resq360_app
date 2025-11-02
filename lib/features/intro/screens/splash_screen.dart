@@ -1,8 +1,11 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/intro/screens/intro_screen.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
+import 'package:resq360/features/main_layout.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -29,6 +32,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           );
         } else if (isIntroCompleted &&
             (ref.read(authProvider).authInfo != null)) {
+          await _navigateToNext();
         } else {
           await replaceScreen(
             context,
@@ -45,6 +49,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           const IntroScreen(),
         );
       }
+    }
+  }
+
+  Future<void> _navigateToNext() async {
+    final userType = await AuthLocalRepo.instance.getUserType();
+
+    if (userType == null && mounted) {
+      await replaceScreen(
+        context,
+        const SelectAccountTypeScreen(),
+      );
+      return;
+    } else if (mounted) {
+      ref.read(dashboardViewModel).userType =
+          userType == 'user' ? UserType.customer : UserType.provider;
+
+      await replaceScreen(
+        context,
+        const MainLayoutPage(),
+      );
     }
   }
 

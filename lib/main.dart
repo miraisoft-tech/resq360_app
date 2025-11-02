@@ -13,22 +13,17 @@ import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/custo
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 
-// final container = ProviderContainer();
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   LocaleSettings.useDeviceLocale();
 
   FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
 
-  // Hide error UI in release builds
   if (!BuildConfig.isDev) {
     ErrorWidget.builder = (FlutterErrorDetails details) => Container();
   }
 
-  // Enforce portrait mode
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -53,19 +48,15 @@ Future<void> main() async {
           providers: [
             BlocProvider(
               create: (context) => CustomerAuthBloc(),
-              
             ),
             BlocProvider(
               create: (context) => ProviderAuthBloc(),
-              
             ),
-             BlocProvider(
+            BlocProvider(
               create: (context) => CustomerServicesBloc(),
-              
             ),
             BlocProvider(
               create: (context) => CustomerChatBloc(),
-              
             ),
           ],
           child: const MyApp(),
@@ -73,6 +64,30 @@ Future<void> main() async {
       ),
     ),
   );
+}
+
+class MyApp extends ConsumerStatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class AppBlocObserver extends BlocObserver {
+  @override
+  void onTransition(
+    Bloc<dynamic, dynamic> bloc,
+    Transition<dynamic, dynamic> transition,
+  ) {
+    log(transition.toString());
+    super.onTransition(bloc, transition);
+  }
+
+  @override
+  void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
+    log('$error\n$stackTrace');
+    super.onError(bloc, error, stackTrace);
+  }
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
@@ -89,7 +104,6 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen for system brightness change
     ref.listen<void>(
       Provider<void>((ref) {
         final observer = BrightnessObserver(ref);
@@ -115,52 +129,23 @@ class _MyAppState extends ConsumerState<MyApp> {
           supportedLocales: AppLocaleUtils.supportedLocales,
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
           home: const SplashScreen(),
-          
-          // home: BlocListener<CustomerAuthBloc, CustomerAuthState>(
-          //   listener: (context, state) {
-          //     if (state is CustomerAuthAuthenticated) {
-          //       Navigator.pushReplacementNamed(context, '/home');
-          //     } else if (state is CustomerAuthUnauthenticated) {
-          //       Navigator.pushReplacementNamed(context, '/login');
-          //     }
-          //   },
-          //   child: const SplashScreen(),
-          // ),
-          builder: (context, child) => Overlay(
-            initialEntries: [
-              OverlayEntry(
-                builder: (context) => Builder(
-                  builder: (context) => MediaQuery(
-                    data: MediaQuery.of(context),
-                    child: child!,
+          builder:
+              (context, child) => Overlay(
+                initialEntries: [
+                  OverlayEntry(
+                    builder:
+                        (context) => Builder(
+                          builder:
+                              (context) => MediaQuery(
+                                data: MediaQuery.of(context),
+                                child: child!,
+                              ),
+                        ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
         ),
       ),
     );
-  }
-}
-
-class MyApp extends ConsumerStatefulWidget {
-  const MyApp({super.key});
-
-  @override
-  ConsumerState<MyApp> createState() => _MyAppState();
-}
-
-class AppBlocObserver extends BlocObserver {
-  @override
-  void onTransition(Bloc<dynamic, dynamic> bloc, Transition<dynamic, dynamic> transition) {
-    log(transition.toString());
-    super.onTransition(bloc, transition);
-  }
-
-  @override
-  void onError(BlocBase<dynamic>  bloc, Object error, StackTrace stackTrace) {
-    log('$error\n$stackTrace');
-    super.onError(bloc, error, stackTrace);
   }
 }
