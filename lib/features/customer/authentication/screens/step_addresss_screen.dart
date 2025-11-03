@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
+import 'package:resq360/features/customer/dashboard/screens/dashboard.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
@@ -89,7 +89,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
 
                 if (context.mounted) {
                   await pushAndReplaceScreen(
-                    const LoginScreen(),
+                    const HomeScreen(),
                     context: context,
                   );
                 }

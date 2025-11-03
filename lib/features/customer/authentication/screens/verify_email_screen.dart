@@ -1,6 +1,4 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
+import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
@@ -8,253 +6,165 @@ import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/confirm_email_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/reset_password_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
-
-
 class VerifyEmailScreen extends StatefulWidget {
   const VerifyEmailScreen({
     required this.email,
-    // required this.purpose,
     super.key,
   });
 
   final String email;
-  // final VerificationPurpose purpose;
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
-    bool _dialogVisible = false;
-  bool _navigatedAway = false;
-  int endTime =
-      DateTime.now()
-          .add(const Duration(seconds: 5 * 60))
-          .millisecondsSinceEpoch;
+  late final TextEditingController _otpController1;
+  late final CountdownTimerController controller;
 
-  late TextEditingController _otpController1;
-  late CountdownTimerController controller;
+  int endTime =
+      DateTime.now().add(const Duration(minutes: 5)).millisecondsSinceEpoch;
+
   @override
   void initState() {
     super.initState();
     controller = CountdownTimerController(endTime: endTime, onEnd: () {});
-
     _otpController1 = TextEditingController();
   }
 
   @override
   void dispose() {
-    _otpController1 = TextEditingController();
+    _otpController1.dispose();
     controller.dispose();
     super.dispose();
   }
 
   Future<void> onResend() async {
-    // showLoadingDialog();
-
-    // final result = await AuthRemoteRepo.instance.resendVerifyEmail(
-    //   email: widget.email,
-    // );
-
-    // if (result is ErrorResponse && mounted) {
-    //   await pop(context);
-    //   await showErrorSnackbar(result.errorMessage);
-    // } else if (result is AuthResponse && mounted) {
-    //   await pop(context);
-
-    //   await showSuccessSnackbar('Verification mail resent successfully!');
-    //   contr5oller.endTime =
-    //       DateTime.now()
-    //           .add(const Duration(seconds: 5 * 60))
-    //           .millisecondsSinceEpoch;
-    //   controller.start();
-    //   setState(() {});
-    // }
+    context.read<CustomerAuthBloc>().add(
+      CustomerResendVerificationOtp(email: widget.email),
+    );
   }
 
   Future<void> onVerify() async {
     if (_otpController1.text.length < 6) {
-      await showErrorSnackbar(context, 'otp field must be 6 digits');
+      await showErrorSnackbar(context, 'OTP field must be 6 digits');
       return;
     }
 
     context.read<CustomerAuthBloc>().add(
       CustomerVerifyForgotPasswordOtp(token: _otpController1.text),
     );
-
-    // await pushScreen(context, const ResetPasswordScreen());
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<CustomerAuthBloc, CustomerAuthState>(
+    return BlocConsumer<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-         // always bail if widget no longer mounted
         if (!mounted) return;
 
-        // Run UI-changing code after current frame to avoid navigator locked
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          if (!mounted) return;
-
-          // Loading -> show dialog (only if not already shown)
-          if (state is CustomerAuthLoading) {
-            if (!_dialogVisible) {
-              _dialogVisible = true;
-              // showLoadingDialog should be async and return when shown
-              await showLoadingDialog(context);
-            }
-            return;
+        // Dismiss any existing loading dialog first
+        if (state is! CustomerAuthLoading) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop(); // Dismiss loading
           }
+        }
 
-          // Failure -> hide dialog (if shown) and show snackbar
-          if (state is CustomerAuthFailure) {
-            if (_dialogVisible && Navigator.of(context, rootNavigator: true).canPop()) {
-              Navigator.of(context, rootNavigator: true).pop(); // close loading
-            }
-            _dialogVisible = false;
+        // Show loading only when entering loading state
+        if (state is CustomerAuthLoading) {
+          await showLoadingDialog(context);
+          return;
+        }
 
-            // Avoid duplicate snackbars / nav operations
-            showSnackBar(context, 'Error', state.error);
-            return;
+        if (state is CustomerAuthFailure) {
+          await showErrorSnackbar(context, state.error);
+        }
+
+        if (state is CustomerVerificationResent) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
           }
+          await showSuccessSnackbar(context, state.message);
 
-          // Success (password reset success / email verified)
-          if (state is CustomerForgotPasswordOtpSent) {
-            // Close loading if it's open
-            if (_dialogVisible && Navigator.of(context, rootNavigator: true).canPop()) {
-              Navigator.of(context, rootNavigator: true).pop();
-            }
-            _dialogVisible = false;
+          // Restart countdown timer
+          controller
+            ..endTime =
+                DateTime.now()
+                    .add(const Duration(seconds: 5 * 60))
+                    .millisecondsSinceEpoch
+            ..start();
 
-            // Prevent double navigation if multiple success events fire
-            if (_navigatedAway) return;
-            _navigatedAway = true;
+          setState(() {});
+        }
 
-            // Navigate depending on purpose
-            // if (widget.purpose == VerificationPurpose.registration) {
-            //   await replaceScreen(context, const VerificationStepsScreen());
-            // } else if
-            //  (widget.purpose == VerificationPurpose.passwordReset) {
-            //   await replaceScreen(context, const ResetPasswordScreen());
-            // }
-            await replaceScreen(context, const ResetPasswordScreen());
-            return;
-          }
-
-        });
+        if (state is CustomerForgotPasswordOtpSent && context.mounted) {
+          await replaceScreen(context, const ResetPasswordScreen());
+        }
       },
-
-      child: AppScaffold(
-        title: 'Enter Code',
-        subTitle: 'Please enter the reset code sent to your email',
-        body: Column(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  NormalPinCodeField(
-                    controller: _otpController1,
-                    onDone: (code) {},
-                    onChange: (dynamic value) {
-                      log(value);
-                      setState(() {});
-                    },
-                  ),
-                  25.verticalSpace,
-
-                  Center(
-                    child: CountdownTimer(
-                      endTime: endTime,
-                      controller: controller,
-                      widgetBuilder: (_, CurrentRemainingTime? time) {
-                        return Column(
-                          children: [
-                            InkWell(
-                              onTap: onResend,
-                              child: GenText(
+      listenWhen: (previous, current) => current is! CustomerAuthInitial,
+      buildWhen: (previous, current) => false, 
+      builder: (context, state) {
+        return AppScaffold(
+          title: 'Enter Code',
+          subTitle: 'Please enter the reset code sent to your email',
+          body: Column(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    NormalPinCodeField(
+                      controller: _otpController1,
+                      onDone: (code) {},
+                      onChange: (value) => setState(() {}),
+                    ),
+                    25.verticalSpace,
+                    Center(
+                      child: CountdownTimer(
+                        endTime: endTime,
+                        controller: controller,
+                        widgetBuilder: (_, CurrentRemainingTime? time) {
+                          return Column(
+                            children: [
+                              GenText(
                                 'Didn’t receive code?',
                                 size: 12,
                                 height: 20.5,
                                 color: colors.neutral.shade500,
                                 weight: FontWeight.w400,
                               ),
-                            ),
-                            5.verticalSpace,
-                            GoToWidget(
-                              ligthText: 'Resend code in ',
-                              coloredText:
-                                  '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
-                            ),
-                          ],
-                        );
-                      },
+                              5.verticalSpace,
+                              InkWell(
+                                onTap:  controller.isRunning ? null : onResend,
+                                child: GoToWidget(
+                                  ligthText: 'Resend code in ',
+                                  coloredText:
+                                      '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-
-            WideButton(
-              label: 'Verify & Continue',
-              onPressed: (_otpController1.text.length < 6 ? null : onVerify),
-            ),
-            const Spacer(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class GoToWidget extends ConsumerWidget {
-  const GoToWidget({
-    required this.ligthText,
-    required this.coloredText,
-    this.onTap,
-    this.size = 14,
-    this.height = 17.71,
-    super.key,
-  });
-
-  final String ligthText;
-  final String coloredText;
-  final void Function()? onTap;
-  final double size;
-  final double height;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colors = context.appColors;
-
-    return Text.rich(
-      TextSpan(
-        style: TextStyle(
-          fontSize: size.sp,
-          height: height.toFigmaHeight(size.sp),
-          decorationColor: colors.primary.shade500,
-        ),
-
-        children: [
-          circularSTDTextSpan(
-            ligthText,
-            color: colors.primary.shade500,
-            decoration: TextDecoration.underline,
+              WideButton(
+                label: 'Verify & Continue',
+                onPressed: _otpController1.text.length < 6 ? null : onVerify,
+              ),
+              const Spacer(),
+            ],
           ),
-          circularSTDTextSpan(
-            coloredText,
-            color: colors.primary.shade500,
-            weight: FontWeight.w700,
-            onTap: onTap,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

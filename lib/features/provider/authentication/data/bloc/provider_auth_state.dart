@@ -59,8 +59,10 @@ class ProviderForgotPasswordOtpSent extends ProviderAuthState{}
 class ProviderPasswordResetSuccessState  extends ProviderAuthState {}
 class ProviderEmailVerifiedState  extends ProviderAuthState {}
 class ProviderForgotPasswordSucessState  extends ProviderAuthState {}
-class ProviderResetPasswordSuccesStste extends ProviderAuthState {
-  
+class ProviderResetPasswordSuccesState extends ProviderAuthState {}
+class ProviderVerificationResent extends ProviderAuthState {
+  const ProviderVerificationResent(this.message);
+  final String message;
 }
 class ProviderProfileLoadedState  extends ProviderAuthState {
   const ProviderProfileLoadedState (this.user);

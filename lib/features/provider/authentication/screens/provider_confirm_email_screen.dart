@@ -11,7 +11,6 @@ import 'package:resq360/features/provider/authentication/screens/provider_reset_
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
-
 class ProviderConfirmEmailScreen extends StatefulWidget {
   const ProviderConfirmEmailScreen({
     required this.email,
@@ -50,26 +49,9 @@ class _ProviderConfirmEmailScreenState
   }
 
   Future<void> onResend() async {
-    // showLoadingDialog();
-
-    // final result = await AuthRemoteRepo.instance.resendVerifyEmail(
-    //   email: widget.email,
-    // );
-
-    // if (result is ErrorResponse && mounted) {
-    //   await pop(context);
-    //   await showErrorSnackbar(result.errorMessage);
-    // } else if (result is AuthResponse && mounted) {
-    //   await pop(context);
-
-    //   await showSuccessSnackbar('Verification mail resent successfully!');
-    //   controller.endTime =
-    //       DateTime.now()
-    //           .add(const Duration(seconds: 5 * 60))
-    //           .millisecondsSinceEpoch;
-    //   controller.start();
-    //   setState(() {});
-    // }
+    context.read<ProviderAuthBloc>().add(
+      ProviderResendVerificationOtp(email: widget.email),
+    );
   }
 
   Future<void> onVerify() async {
@@ -102,6 +84,22 @@ class _ProviderConfirmEmailScreenState
 
           await showSnackBar(context, 'Error', state.error);
         }
+        if (state is ProviderVerificationResent) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          await showSuccessSnackbar(context, state.message);
+
+          // Restart countdown timer
+          controller
+            ..endTime =
+                DateTime.now()
+                    .add(const Duration(seconds: 5 * 60))
+                    .millisecondsSinceEpoch
+            ..start();
+
+          setState(() {});
+        }
 
         if (state is ProviderEmailVerifiedState) {
           if (!context.mounted) return;
@@ -109,9 +107,7 @@ class _ProviderConfirmEmailScreenState
             Navigator.of(context, rootNavigator: true).pop();
           }
           log('Email verified, navigating to main layout');
-            await replaceScreen(context, const ProviderResetPasswordScreen());
-          
-          
+          await replaceScreen(context, const ProviderResetPasswordScreen());
         }
       },
       child: AppScaffold(

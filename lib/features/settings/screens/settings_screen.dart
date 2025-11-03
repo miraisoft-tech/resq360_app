@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
@@ -292,43 +293,52 @@ class _ProfileSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.bottomRight,
+    return FutureBuilder(
+      future: AuthLocalRepo.instance.getAuthCredentials(),
+      builder: (context, asyncSnapshot) {
+        final user = asyncSnapshot.data?.user;
+        final name = user?.fullName ?? 'User';
+        // final email = user?.email ?? '';
+
+        return Column(
           children: [
-            CircleAvatar(
-              radius: 45.r,
-              backgroundImage: const NetworkImage(
-                'https://randomuser.me/api/portraits/men/30.jpg',
-              ),
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CircleAvatar(
+                  radius: 45.r,
+                  backgroundImage: const NetworkImage(
+                    'https://randomuser.me/api/portraits/men/30.jpg',
+                  ),
+                ),
+                Positioned(
+                  bottom: 2,
+                  right: 2,
+                  child: Container(
+                    padding: pad(vertical: 4, horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: appColors.primary.shade500,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.camera_alt,
+                      color: appColors.whiteColor,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Positioned(
-              bottom: 2,
-              right: 2,
-              child: Container(
-                padding: pad(vertical: 4, horizontal: 4),
-                decoration: BoxDecoration(
-                  color: appColors.primary.shade500,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.camera_alt,
-                  color: appColors.whiteColor,
-                  size: 16,
-                ),
-              ),
+            15.verticalSpace,
+            UrbText(
+              name,
+              size: 16,
+              weight: FontWeight.w700,
+              color: appColors.black,
             ),
           ],
-        ),
-        15.verticalSpace,
-        UrbText(
-          'Jane Doe',
-          size: 16,
-          weight: FontWeight.w700,
-          color: appColors.black,
-        ),
-      ],
+        );
+      },
     );
   }
 }

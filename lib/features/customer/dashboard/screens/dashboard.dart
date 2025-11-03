@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
@@ -41,92 +43,17 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, state) {
             if (state is CustomerAuthLoginSuccess) {
               final user = state.user;
-              return Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 19,
-                    backgroundImage: AssetImage(
-                      AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                    ),
-                  ),
-                  10.horizontalSpace,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GenText(
-                        'Hello, ${user.fullName} 👋',
-                        size: 12,
-                        height: 20,
-                        weight: FontWeight.w400,
-                        color: colors.neutral.shade500,
-                      ),
-
-                      Row(
-                        children: [
-                          AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
-                          4.horizontalSpace,
-                          GenText(
-                            // user.address ??
-                            'No. 2 Olympia Street',
-                            height: 24,
-                            color: colors.black,
-                            weight: FontWeight.w500,
-                          ),
-                          Icon(
-                            Icons.keyboard_arrow_down,
-                            size: 14,
-                            color: colors.textColor.shade500,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            } else {
-              return Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 19,
-                    backgroundImage: AssetImage(
-                      AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                    ),
-                  ),
-                  10.horizontalSpace,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GenText(
-                        'Hello, Jane 👋',
-                        size: 12,
-                        height: 20,
-                        weight: FontWeight.w400,
-                        color: colors.neutral.shade500,
-                      ),
-
-                      Row(
-                        children: [
-                          AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
-                          4.horizontalSpace,
-                          GenText(
-                            'No. 2 Olympia Street',
-                            height: 24,
-                            color: colors.black,
-                            weight: FontWeight.w500,
-                          ),
-                          Icon(
-                            Icons.keyboard_arrow_down,
-                            size: 14,
-                            color: colors.textColor.shade500,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              );
+                return _buildHeader(context, user.fullName!);
             }
-          },
+              
+              return FutureBuilder<AuthResponse?>(
+                future: AuthLocalRepo.instance.getAuthCredentials(),
+                builder: (context, snapshot) {
+                  final userName = snapshot.data?.user.firstName ?? 'user';
+                  return _buildHeader(context, userName);
+                },
+              );
+            },
         ),
         actions: [
           IconButton(
@@ -269,4 +196,49 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+Widget _buildHeader(BuildContext context, String name) {
+  final colors = context.appColors;
+
+  return Row(
+    children: [
+      const CircleAvatar(
+        radius: 19,
+        backgroundImage: AssetImage(
+          AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+        ),
+      ),
+      10.horizontalSpace,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GenText(
+            'Hello, $name 👋',
+            size: 12,
+            height: 20,
+            weight: FontWeight.w400,
+            color: colors.neutral.shade500,
+          ),
+          Row(
+            children: [
+              AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
+              4.horizontalSpace,
+              GenText(
+                'No. 2 Olympia Street',
+                height: 24,
+                color: colors.black,
+                weight: FontWeight.w500,
+              ),
+              Icon(
+                Icons.keyboard_arrow_down,
+                size: 14,
+                color: colors.textColor.shade500,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
 }

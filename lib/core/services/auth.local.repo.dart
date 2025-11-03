@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/auth_base_response.dart.dart';
 import 'package:resq360/core/services/db_keys.local.repo.dart';
 import 'package:resq360/core/services/shared_preferences.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
@@ -42,7 +43,7 @@ class AuthLocalRepo {
 
   ////====AUTH DETAILS====////
 
-  Future<bool> storeUserDetails({required AuthResponse authResponse}) async {
+  Future<bool> storeUserDetails({required BaseAuthResponse authResponse}) async {
     try {
       return await pref.saveMap(
         key: DBKeys.authData,

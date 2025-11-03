@@ -41,26 +41,9 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
   }
 
   Future<void> onResend() async {
-    // showLoadingDialog();
-
-    // final result = await AuthRemoteRepo.instance.resendVerifyEmail(
-    //   email: widget.email,
-    // );
-
-    // if (result is ErrorResponse && mounted) {
-    //   await pop(context);
-    //   await showErrorSnackbar(result.errorMessage);
-    // } else if (result is AuthResponse && mounted) {
-    //   await pop(context);
-
-    //   await showSuccessSnackbar('Verification mail resent successfully!');
-    //   controller.endTime =
-    //       DateTime.now()
-    //           .add(const Duration(seconds: 5 * 60))
-    //           .millisecondsSinceEpoch;
-    //   controller.start();
-    //   setState(() {});
-    // }
+ context.read<CustomerAuthBloc>().add(
+    CustomerResendVerificationOtp(email: widget.email),
+  );
   }
 
   Future<void> onVerify() async {
@@ -90,6 +73,22 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           Navigator.of(context).pop();
           await showErrorSnackbar(context, state.error);
         }
+
+         if (state is CustomerVerificationResent) {
+      if (Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+      await showSuccessSnackbar(context, state.message);
+
+      // Restart countdown timer
+      controller
+        ..endTime = DateTime.now()
+            .add(const Duration(seconds: 5 * 60))
+            .millisecondsSinceEpoch
+        ..start();
+
+      setState(() {});
+    }
 
         if (state is CustomerEmailVerified) {
           log('Email verified');

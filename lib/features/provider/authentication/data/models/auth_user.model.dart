@@ -1,18 +1,18 @@
 import 'dart:convert';
 
 import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/models/auth_base_response.dart.dart';
 
 AuthResponse userFromJson(String str) =>
     AuthResponse.fromJson(json.decode(str) as Map<String, dynamic>);
 
 String userToJson(AuthResponse data) => json.encode(data.toJson());
 
-class AuthResponse extends EmptyResponse {
+class AuthResponse extends EmptyResponse  implements BaseAuthResponse{
   AuthResponse(
     this.accessToken, {
     required this.message,
-     this.user,
-    required this.success,
+     required this.success, this.user,
   });
 
 factory AuthResponse.fromJson(Map<String, dynamic> json) {
@@ -30,8 +30,10 @@ factory AuthResponse.fromJson(Map<String, dynamic> json) {
   String message;
   ProviderUserModel? user;
   bool success;
+  @override
   final String? accessToken;
 
+  @override
   Map<String, dynamic> toJson() => {
     'message': message,
     'user': user?.toJson(),

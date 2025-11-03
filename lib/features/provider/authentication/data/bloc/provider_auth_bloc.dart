@@ -23,6 +23,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     on<ProviderVerifyForgotPasswordOtp>(_onVerifyForgotPasswordOtp);
       on<ProviderResetPassword>(_onResetPassword);
       on<ProviderverifyEmail>(_onVerifyEmail);
+    on<ProviderResendVerificationOtp>(_onResendVerificationOtp);
       on<ProvidergetUserProfile>(_onGetUserProfile);
       on<ProviderSubmitKyc>(_onSubmitKyc);
       on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
@@ -117,7 +118,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         password: event.password,
       );
       if (result) {
-        emit(ProviderResetPasswordSuccesStste());
+        emit(ProviderResetPasswordSuccesState());
       } else {
         emit(
           const ProviderAuthFailureState(
@@ -177,6 +178,25 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       emit(ProviderAuthFailureState(e.toString()));
     }
   }
+
+  Future<void> _onResendVerificationOtp(
+  ProviderResendVerificationOtp event,
+  Emitter<ProviderAuthState> emit,
+) async {
+  emit(ProviderAuthLoadingState());
+  try {
+    final result = await providerAuthRemoteRepo.resendVerificationOtp(event.email);
+
+    if (result.error != null) {
+      emit(ProviderAuthFailureState(result.error!));
+    } else {
+      final message = result.data?['message'] ?? 'Verification OTP resent successfully';
+      emit(ProviderVerificationResent(message.toString()));
+    }
+  } on Exception catch (e) {
+    emit(ProviderAuthFailureState('Failed to resend verification OTP: $e'));
+  }
+}
 
   // Get user profile
   Future<void> _onGetUserProfile(

@@ -43,8 +43,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
+        if (state is! CustomerAuthLoading) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        }
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
+          return; 
         }
 
         if (state is CustomerAuthFailure) {

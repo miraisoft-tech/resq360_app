@@ -14,7 +14,8 @@ import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderVerifyEmailScreen extends StatefulWidget {
   const ProviderVerifyEmailScreen({
-    required this.email, super.key,
+    required this.email,
+    super.key,
   });
 
   final String email;
@@ -49,26 +50,9 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
   }
 
   Future<void> onResend() async {
-    // showLoadingDialog();
-
-    // final result = await AuthRemoteRepo.instance.resendVerifyEmail(
-    //   email: widget.email,
-    // );
-
-    // if (result is ErrorResponse && mounted) {
-    //   await pop(context);
-    //   await showErrorSnackbar(result.errorMessage);
-    // } else if (result is AuthResponse && mounted) {
-    //   await pop(context);
-
-    //   await showSuccessSnackbar('Verification mail resent successfully!');
-    //   controller.endTime =
-    //       DateTime.now()
-    //           .add(const Duration(seconds: 5 * 60))
-    //           .millisecondsSinceEpoch;
-    //   controller.start();
-    //   setState(() {});
-    // }
+    context.read<ProviderAuthBloc>().add(
+      ProviderResendVerificationOtp(email: widget.email),
+    );
   }
 
   Future<void> onVerify() async {
@@ -77,11 +61,9 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
       return;
     }
 
-
     context.read<ProviderAuthBloc>().add(
       ProviderVerifyForgotPasswordOtp(token: _otpController1.text),
     );
-
   }
 
   @override
@@ -89,31 +71,46 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
     final colors = context.appColors;
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
-      listener: (context, state)  async{
-       if (!context.mounted) return;
+      listener: (context, state) async {
+        if (!context.mounted) return;
 
-  if (state is ProviderAuthLoadingState) {
-    showLoadingDialog(context);
-  }
+        if (state is ProviderAuthLoadingState) {
+          showLoadingDialog(context);
+        }
 
-  if (state is ProviderAuthFailureState) {
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
-    log(state.error);
-    showSnackBar(context, 'Error', state.error);
-  }
+        if (state is ProviderAuthFailureState) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          log(state.error);
+          showSnackBar(context, 'Error', state.error);
+        }
+        if (state is ProviderVerificationResent) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          await showSuccessSnackbar(context, state.message);
 
-  if (state is ProviderForgotPasswordOtpSent) {
-    log('provider otp sent, navigating to next step');
+          // Restart countdown timer
+          controller
+            ..endTime =
+                DateTime.now()
+                    .add(const Duration(seconds: 5 * 60))
+                    .millisecondsSinceEpoch
+            ..start();
 
-    // popping from root navigator, not local context
-    if (Navigator.of(context, rootNavigator: true).canPop()) {
-      Navigator.of(context, rootNavigator: true).pop();
-    }
+          setState(() {});
+        }
+        if (state is ProviderForgotPasswordOtpSent) {
+          log('provider otp sent, navigating to next step');
 
-    await replaceScreen(context, const ProviderResetPasswordScreen());
-  }
+          // popping from root navigator, not local context
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+
+          await replaceScreen(context, const ProviderResetPasswordScreen());
+        }
       },
       child: AppScaffold(
         title: 'Enter Code',

@@ -95,19 +95,23 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         await authLocalDataSource.storeAccessToken(
           token.toString(),
         );
-         try {
+        try {
           // final userProfile = await getUserProfile(token: token.toString());
           final userProfile = await getUserProfile();
 
           log(
             'Fetched user profile: $userProfile.data.toString()',
-          ); // test line
+          );
         } on Exception catch (e) {
           log('Failed to fetch profile: $e');
         }
 
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
+          await AuthLocalRepo.instance.storeUserDetails(
+            authResponse: authResponse,
+          );
+
           return ApiResult(data: authResponse);
         } else {
           log('Login failed with response: ${res.data}');
@@ -177,6 +181,9 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
+          await AuthLocalRepo.instance.storeUserDetails(
+            authResponse: authResponse,
+          );
           return ApiResult(data: authResponse);
         } else {
           return ApiResult(
@@ -335,6 +342,29 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       return false;
     }
   }
+
+  
+  Future<ApiResult<dynamic>> resendVerificationOtp(String email) async {
+    try {
+      const url = '/auth/resend-verification-otp';
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+      final res = await dio().post<Map<String, dynamic>>(
+        url,
+        data: {'email': email, 'userType': userType},
+      );
+
+      if (res.statusCode == 200 && res.data?['success'] == true) {
+        return ApiResult(data: res.data);
+      } else {
+        return ApiResult(error: res.data?['message'] as String);
+      }
+    } on Exception catch (e) {
+      log('Resend verification OTP error: $e');
+      return ApiResult(error: e.toString());
+    }
+  }
+  
 
   Future<ApiResult<AuthResponse>> getUserProfile() async {
     try {

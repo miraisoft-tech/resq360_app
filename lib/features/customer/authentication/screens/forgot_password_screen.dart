@@ -2,8 +2,6 @@
 // in BlocListeners that do not need to be awaited.
 // ignore_for_file: unawaited_futures
 
-import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
@@ -45,20 +43,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
         }
+        // if (state is CustomerAuthFailure) {
+        //   log('delayed');
+        //   Future.delayed(Duration.zero, () {
+        //     Navigator.pop(context);
+        //   });
+        //   log(state.error);
+        //   await showSnackBar(context, 'Error', state.error);
+        // }
 
-        if (state is CustomerAuthFailure) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-          // 🔥 defer snackbar to next frame to avoid Navigator lock
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-             unawaited(showSnackBar(context, 'Error', state.error));
-            }
-          });
-        }
-
-        if (state is CustomerForgotPasswordSucess) {
+        if (state is CustomerForgotPasswordOtpSent) {
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }

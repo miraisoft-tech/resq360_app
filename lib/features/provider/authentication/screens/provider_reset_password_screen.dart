@@ -54,7 +54,7 @@ class _ProviderResetPasswordScreenState
           showSnackBar(context, 'Error', state.error);
         }
 
-        if (state is ProviderPasswordResetSuccessState) {
+        if (state is ProviderResetPasswordSuccesState) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }

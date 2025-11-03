@@ -71,6 +71,12 @@ class CustomerVerifyForgotPasswordOtp extends CustomerAuthEvent {
   List<Object> get props => [token];
 }
 
+class CustomerResendVerificationOtp extends CustomerAuthEvent {
+  const CustomerResendVerificationOtp({required this.email});
+  final String email;
+}
+
+
 
 class CustomergetUserProfile extends CustomerAuthEvent {
   const CustomergetUserProfile();

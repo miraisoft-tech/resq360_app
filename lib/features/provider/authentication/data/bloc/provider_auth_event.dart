@@ -81,6 +81,11 @@ class ProviderverifyEmail extends ProviderAuthEvent {
   List<Object> get props => [emailVerificationToken];
 }
 
+class ProviderResendVerificationOtp extends ProviderAuthEvent {
+  const ProviderResendVerificationOtp({required this.email});
+  final String email;
+}
+
 class ProvidergetUserProfile extends ProviderAuthEvent {
   const ProvidergetUserProfile();
 

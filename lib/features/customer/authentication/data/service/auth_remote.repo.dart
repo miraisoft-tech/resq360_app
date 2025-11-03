@@ -148,21 +148,23 @@ class AuthRemoteRepo extends BaseAPI {
         await authLocalDataSource.storeAccessToken(token.toString());
         log('Token has finally been saved');
         log(token.toString());
-          
+
         try {
           // final userProfile = await getUserProfile(token: token.toString());
           final userProfile = await getUserProfile();
 
           log(
             'Fetched user profile: $userProfile.data.toString()',
-          ); // test line
+          ); 
         } on Exception catch (e) {
           log('Failed to fetch profile: $e');
         }
 
         // Create AuthResponse
         final authResponse = AuthResponse.fromJson(res.data!);
-        await AuthLocalRepo.instance.storeUserDetails(authResponse: authResponse);
+        await AuthLocalRepo.instance.storeUserDetails(
+          authResponse: authResponse,
+        );
 
         return ApiResult(data: authResponse);
       } else {
@@ -202,7 +204,9 @@ class AuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
-          await AuthLocalRepo.instance.storeUserDetails(authResponse: authResponse);
+          await AuthLocalRepo.instance.storeUserDetails(
+            authResponse: authResponse,
+          );
 
           return ApiResult(data: authResponse);
         } else {
@@ -373,6 +377,27 @@ class AuthRemoteRepo extends BaseAPI {
       log(s);
 
       return false;
+    }
+  }
+
+  Future<ApiResult<dynamic>> resendVerificationOtp(String email) async {
+    try {
+      const url = '/auth/resend-verification-otp';
+      final savedUserType = await authLocalDataSource.getUserType();
+      final userType = savedUserType ?? 'user';
+      final res = await dio().post<Map<String, dynamic>>(
+        url,
+        data: {'email': email, 'userType': userType},
+      );
+
+      if (res.statusCode == 200 && res.data?['success'] == true) {
+        return ApiResult(data: res.data);
+      } else {
+        return ApiResult(error: res.data?['message'] as String);
+      }
+    } on Exception catch (e) {
+      log('Resend verification OTP error: $e');
+      return ApiResult(error: e.toString());
     }
   }
 
