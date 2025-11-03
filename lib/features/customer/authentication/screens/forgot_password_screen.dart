@@ -43,14 +43,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
         }
-        // if (state is CustomerAuthFailure) {
-        //   log('delayed');
-        //   Future.delayed(Duration.zero, () {
-        //     Navigator.pop(context);
-        //   });
-        //   log(state.error);
-        //   await showSnackBar(context, 'Error', state.error);
-        // }
+        if (state is CustomerAuthFailure) {
+          log('delayed');
+          Future.delayed(Duration.zero, () {
+            Navigator.pop(context);
+          });
+          log(state.error);
+          await showSnackBar(context, 'Error', state.error);
+        }
 
         if (state is CustomerForgotPasswordOtpSent) {
           if (Navigator.canPop(context)) {
