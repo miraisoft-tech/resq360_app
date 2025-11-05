@@ -74,13 +74,24 @@ class AppLocalPref {
   }
 
   Future<dynamic> getValue({required String key}) async {
-    if (_prefs == null) {
-      await initPref();
-    }
-    final value = _prefs?.getString(key) ?? '';
-    log('READ $key== $value');
-    return value.isEmpty ? null : jsonDecode(value);
+  if (_prefs == null) {
+    await initPref();
   }
+
+  final value = _prefs?.getString(key) ?? '';
+  log('READ $key== $value');
+
+  if (value.isEmpty) return null;
+
+  try {
+    // Try to decode (works for JSON strings or maps)
+    return jsonDecode(value);
+  } on Exception catch (_) {
+    // If it's not valid JSON, just return the raw string
+    return value;
+  }
+}
+
 
   //
   Future<dynamic> getBoolNotifications({required String key}) async {

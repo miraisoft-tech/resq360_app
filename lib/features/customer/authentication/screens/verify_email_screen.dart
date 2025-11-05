@@ -46,7 +46,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   Future<void> onResend() async {
     context.read<CustomerAuthBloc>().add(
-      CustomerResendVerificationOtp(email: widget.email),
+      CustomerForgotPassword(
+        email: widget.email.trim(),
+      ),
     );
   }
 
@@ -83,14 +85,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         }
 
         if (state is CustomerAuthFailure) {
-          await showErrorSnackbar(context, state.error);
+          await pop(context);
+          Future.delayed(const Duration(seconds: 2), () async{
+             await showSnackBar(context, 'Error', state.error);
+          });
         }
 
-        if (state is CustomerVerificationResent) {
+        if (state is CustomerForgotPasswordOtpSent) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          await showSuccessSnackbar(context, state.message);
+          await showSuccessSnackbar(context, 'Otp resent ');
 
           // Restart countdown timer
           controller
@@ -108,7 +113,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         }
       },
       listenWhen: (previous, current) => current is! CustomerAuthInitial,
-      buildWhen: (previous, current) => false, 
+      buildWhen: (previous, current) => false,
       builder: (context, state) {
         return AppScaffold(
           title: 'Enter Code',
@@ -141,7 +146,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                               ),
                               5.verticalSpace,
                               InkWell(
-                                onTap:  controller.isRunning ? null : onResend,
+                                onTap: controller.isRunning ? null : onResend,
                                 child: GoToWidget(
                                   ligthText: 'Resend code in ',
                                   coloredText:

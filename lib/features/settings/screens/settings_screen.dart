@@ -14,15 +14,14 @@ import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context,) {
     final appColors = context.appColors;
 
-    final isProvider =
-        ref.read(dashboardViewModel).userType == UserType.provider;
+   final isProvider = dashboardViewModel.userType == UserType.provider;
 
     final customerSettingsOptions = [
       SettingsItem(

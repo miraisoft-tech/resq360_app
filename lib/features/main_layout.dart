@@ -5,9 +5,7 @@ import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 
 class MainLayoutPage extends StatefulWidget {
-  const MainLayoutPage({
-    super.key,
-  });
+  const MainLayoutPage({super.key});
 
   @override
   State<MainLayoutPage> createState() => _MainLayoutPageState();
@@ -16,48 +14,42 @@ class MainLayoutPage extends StatefulWidget {
 GlobalKey<ScaffoldState> mainLayoutScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainLayoutPageState extends State<MainLayoutPage> {
-  int _selectedIndex = 0;
-  DateTime currentBackPressTime = DateTime.now();
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  final DashboardViewModel dashboardVM = DashboardViewModel();
 
-  Future<bool> onWillPop(BuildContext context) async {
-    if (_selectedIndex == 0) {
+  DateTime currentBackPressTime = DateTime.now();
+
+  Future<bool> onWillPop() async {
+    if (dashboardVM.currentIndex == 0) {
       final now = DateTime.now();
-      final timeDiff = now.difference(currentBackPressTime).inSeconds;
-      if (timeDiff > 2) {
+      final diff = now.difference(currentBackPressTime).inSeconds;
+      if (diff > 2) {
         currentBackPressTime = now;
-        return Future.value(false);
+        return false;
       }
-      currentBackPressTime = now;
-      return Future.value(true);
+      return true;
     } else {
-      _onItemTapped(0);
-      setState(() {});
+      dashboardVM.onChanged(0);
       return false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      onPopInvokedWithResult: (bool res, value) => onWillPop(context),
-      child: Consumer(
-        builder: (context, ref, child) {
-          final appColors = context.appColors;
+    final appColors = context.appColors;
 
-          final dashboardVM = ref.watch(dashboardViewModel);
+    final navItems = dashboardVM.userType == UserType.customer
+        ? dashboardVM.customerDisplayNavItems
+        : dashboardVM.providerDisplayNavItems;
+
+    return PopScope(
+      onPopInvokedWithResult: (bool res, dynamic value) async => onWillPop(),
+      child: AnimatedBuilder(
+        animation: dashboardVM,
+        builder: (context, _) {
           final selectedIndex = dashboardVM.currentIndex;
-          final navItems =
-              dashboardVM.userType == UserType.customer
-                  ? dashboardVM.customerDisplayNavItems
-                  : dashboardVM.providerDisplayNavItems;
 
           return Scaffold(
-            key: widget.key ?? mainLayoutScaffoldKey,
+            key: mainLayoutScaffoldKey,
             body: Stack(
               fit: StackFit.expand,
               children: [
@@ -67,7 +59,7 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                   left: 0,
                   bottom: 40.h,
                   child: AnimatedContainer(
-                    duration: const Duration(seconds: 2),
+                    duration: const Duration(milliseconds: 300),
                     child: navItems[selectedIndex].body,
                   ),
                 ),
@@ -77,13 +69,10 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                   right: 0,
                   child: Container(
                     padding: pad(horizontal: 8),
-                    width: double.infinity,
                     height: (75 + 10).h,
                     decoration: BoxDecoration(
                       color: appColors.whiteColor,
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(6),
-                      ),
+                      borderRadius: const BorderRadius.all(Radius.circular(6)),
                       boxShadow: const [
                         BoxShadow(
                           color: Color.fromRGBO(0, 0, 0, 0.1),
@@ -93,74 +82,65 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                       ],
                     ),
                     child: Row(
-                      children: List.generate(
-                        navItems.length,
-                        (index) {
-                          final item = navItems[index];
-
-                          final isSelected = selectedIndex == index;
-                          return Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                await HapticFeedback.lightImpact();
-                                dashboardVM.onChanged(index);
-                              },
-                              child: Column(
-                                children: <Widget>[
-                                  15.verticalSpace,
-                                  badges.Badge(
-                                    position: badges.BadgePosition.topEnd(),
-                                    showBadge: false,
-                                    ignorePointer: true,
-                                    badgeContent: GenText(
-                                      '0',
-                                      size: 12,
-                                      height: 12,
-                                      weight: FontWeight.w600,
-                                      textAlign: TextAlign.center,
-                                      color: appColors.whiteColor,
-                                    ),
-                                    badgeStyle: badges.BadgeStyle(
-                                      shape: badges.BadgeShape.square,
-                                      badgeColor: const Color(0xffCE2C60),
-                                      padding: pad(
-                                        horizontal: 5,
-                                        vertical: 3,
-                                      ),
-                                      borderRadius: BorderRadius.circular(3),
-                                      elevation: 0,
-                                    ),
-                                    child: SvgPicture.asset(
-                                      isSelected
-                                          ? item.selectedImgPath
-                                          : item.unselectedImgPath,
-
-                                      colorFilter: ColorFilter.mode(
-                                        isSelected
-                                            ? appColors.primary.shade500
-                                            : appColors.neutral.shade300,
-                                        BlendMode.srcIn,
-                                      ),
-                                    ),
-                                  ),
-                                  4.verticalSpace,
-                                  GenText(
-                                    item.title,
+                      children: List.generate(navItems.length, (index) {
+                        final item = navItems[index];
+                        final isSelected = selectedIndex == index;
+                        return Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              await HapticFeedback.lightImpact();
+                              dashboardVM.onChanged(index);
+                            },
+                            child: Column(
+                              children: <Widget>[
+                                15.verticalSpace,
+                                badges.Badge(
+                                  position: badges.BadgePosition.topEnd(),
+                                  showBadge: false,
+                                  ignorePointer: true,
+                                  badgeContent: GenText(
+                                    '0',
                                     size: 12,
-                                    height: 15.1,
-                                    weight: FontWeight.w500,
-                                    color:
-                                        isSelected
-                                            ? appColors.primary.shade500
-                                            : appColors.neutral.shade300,
+                                    height: 12,
+                                    weight: FontWeight.w600,
                                     textAlign: TextAlign.center,
+                                    color: appColors.whiteColor,
                                   ),
-                                ],
-                              ),
+                                  badgeStyle: badges.BadgeStyle(
+                                    shape: badges.BadgeShape.square,
+                                    badgeColor: const Color(0xffCE2C60),
+                                    padding: pad(horizontal: 5, vertical: 3),
+                                    borderRadius: BorderRadius.circular(3),
+                                    elevation: 0,
+                                  ),
+                                  child: SvgPicture.asset(
+                                    isSelected
+                                        ? item.selectedImgPath
+                                        : item.unselectedImgPath,
+                                    colorFilter: ColorFilter.mode(
+                                      isSelected
+                                          ? appColors.primary.shade500
+                                          : appColors.neutral.shade300,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
+                                4.verticalSpace,
+                                GenText(
+                                  item.title,
+                                  size: 12,
+                                  height: 15.1,
+                                  weight: FontWeight.w500,
+                                  color: isSelected
+                                      ? appColors.primary.shade500
+                                      : appColors.neutral.shade300,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      }),
                     ),
                   ),
                 ),

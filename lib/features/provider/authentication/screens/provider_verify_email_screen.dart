@@ -79,12 +79,13 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
         }
 
         if (state is ProviderAuthFailureState) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
+          await pop(context);
+          Future.delayed(const Duration(seconds: 2), () async {
+            await showSnackBar(context, 'Error', state.error);
+          });
           log(state.error);
-          showSnackBar(context, 'Error', state.error);
         }
+
         if (state is ProviderVerificationResent) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
@@ -103,8 +104,6 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
         }
         if (state is ProviderForgotPasswordOtpSent) {
           log('provider otp sent, navigating to next step');
-
-          // popping from root navigator, not local context
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }

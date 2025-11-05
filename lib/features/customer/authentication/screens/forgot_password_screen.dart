@@ -1,7 +1,3 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
@@ -40,16 +36,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
-        if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
+        if (state is! CustomerAuthLoading) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
         }
+        if (state is CustomerAuthLoading) {
+          await showLoadingDialog(context);
+        } else {
+          pop(context);
+        }
+
         if (state is CustomerAuthFailure) {
-          log('delayed');
-          Future.delayed(Duration.zero, () {
-            Navigator.pop(context);
+          await pop(context);
+          Future.delayed(const Duration(seconds: 2), () async{
+             await showSnackBar(context, 'Error', state.error);
           });
           log(state.error);
-          await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerForgotPasswordOtpSent) {
@@ -60,7 +63,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             context,
             VerifyEmailScreen(
               email: emailController.text,
-              // purpose: VerificationPurpose.passwordReset,
             ),
           );
         }

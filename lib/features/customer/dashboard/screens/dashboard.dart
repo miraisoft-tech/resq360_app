@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return FutureBuilder<AuthResponse?>(
                 future: AuthLocalRepo.instance.getAuthCredentials(),
                 builder: (context, snapshot) {
-                  final userName = snapshot.data?.user.firstName ?? 'user';
+                  final userName = snapshot.data?.user.fullName ?? 'user';
                   return _buildHeader(context, userName);
                 },
               );

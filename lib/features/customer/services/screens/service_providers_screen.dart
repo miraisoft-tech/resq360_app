@@ -297,7 +297,7 @@ class _ProviderList extends StatelessWidget {
               await pushScreen(
                 context,
                 ServiceProviderDetailsScreen(
-                  providerId: provider.id!, providerName: provider.companyName!,
+                  providerId: provider.id!, providerName: provider.companyName!, provider: provider,
                   
                 ),
               );

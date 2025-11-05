@@ -1,5 +1,6 @@
-class Service {
+import 'package:flutter/material.dart';
 
+class Service {
   Service({
     required this.id,
     required this.name,
@@ -11,29 +12,32 @@ class Service {
     required this.requests,
   });
 
-factory Service.fromJson(Map<String, dynamic> json) {
-  return Service(
-    id: json['id'] is int ? json['id'] as int : int.tryParse(json['id'].toString()) ?? 0,
-    name: json['name']?.toString() ?? '',
-    image: json['image']?.toString() ?? '',
-    description: json['description']?.toString() ?? '',
-    createdAt: json['createdAt']?.toString() ?? '',
-    status: json['status']?.toString() ?? '',
-    providers: json['providers'] is int ? json['providers'] as int : 0,
-    requests: json['requests'] is int ? json['requests'] as int : 0,
-  );
-}
+  factory Service.fromJson(Map<String, dynamic> json) {
+    return Service(
+      id:
+          json['id'] is int
+              ? json['id'] as int
+              : int.tryParse(json['id'].toString()) ?? 0,
+      name: json['name']?.toString() ?? '',
+      image: json['image']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      createdAt: json['createdAt']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      providers: json['providers'] is int ? json['providers'] as int : 0,
+      requests: json['requests'] is int ? json['requests'] as int : 0,
+    );
+  }
 
-Map<String, dynamic> toJson() => {
-  'id': id,
-  'name': name,
-  'image': image,
-  'description': description,
-  'createdAt': createdAt,
-  'status': status,
-  'providers': providers,
-  'requests': requests,
-};
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'image': image,
+    'description': description,
+    'createdAt': createdAt,
+    'status': status,
+    'providers': providers,
+    'requests': requests,
+  };
 
   final int id;
   final String name;
@@ -46,42 +50,52 @@ Map<String, dynamic> toJson() => {
 }
 
 class ServiceProvider {
-
   ServiceProvider({
     this.companyName,
-        this.id,
-        this.activityStatus,
-        this.openingHours,
-        this.closingHours,
-        this.workingDays,
-        this.description,
-        this.providerServiceId,
-        this.serviceName,
-        this.distance,
+    this.id,
+    this.activityStatus,
+    this.openingHours,
+    this.closingHours,
+    this.workingDays,
+    this.description,
+    this.providerServiceId,
+    this.serviceName,
+    this.distance,
   });
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
     return ServiceProvider(
       companyName: json['companyName'] as String?,
-        id: json['id'] as int?,
-        activityStatus: json['activityStatus'] as String?,
-        openingHours: json['openingHours'] == null ? null : DateTime.parse(json['openingHours'] as String),
-        closingHours: json['closingHours'] == null ? null : DateTime.parse(json['closingHours'] as String),
-        workingDays: json['workingDays'] == null ? <String>[] : List<String>.from((json['workingDays'] as List).map((x) => x.toString())),
-        description: json['description'] as String?,
-        providerServiceId: json['providerServiceId']  as int?,
-        serviceName: json['serviceName'] as String?,
-        distance: json['distance'] as int?,
+      id: json['id'] as int?,
+      activityStatus: json['activityStatus'] as String?,
+      openingHours: json['openingHours']?.toString(),
+      closingHours: json['closingHours']?.toString(),
+      workingDays:
+          json['workingDays'] == null
+              ? <String>[]
+              : List<String>.from(
+                (json['workingDays'] as List).map((x) => x.toString()),
+              ),
+      description: json['description'] as String?,
+      providerServiceId: json['providerServiceId'] as int?,
+      serviceName: json['serviceName'] as String?,
+      distance: json['distance'] as double?,
     );
   }
-   final String? companyName;
-    final int? id;
-    final String? activityStatus;
-    final DateTime? openingHours;
-    final DateTime? closingHours;
-    final List<String>? workingDays;
-    final String? description;
-    final int? providerServiceId;
-    final String? serviceName;
-    final int? distance;
+  // TimeOfDay? _parseTime(String? value) {
+  //   if (value == null || !RegExp(r'^\d{2}:\d{2}$').hasMatch(value)) return null;
+  //   final parts = value.split(':');
+  //   return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  // }
+
+  final String? companyName;
+  final int? id;
+  final String? activityStatus;
+  final String? openingHours;
+  final String? closingHours;
+  final List<String>? workingDays;
+  final String? description;
+  final int? providerServiceId;
+  final String? serviceName;
+  final double? distance;
 }

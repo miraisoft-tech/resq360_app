@@ -6,18 +6,23 @@ import 'package:resq360/features/intro/screens/intro_screen.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/main_layout_provider.dart';
+import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
 
-class SplashScreen extends ConsumerStatefulWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends ConsumerState<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> {
   Future<void> _goToNext() async {
     try {
-      await ref.read(authProvider).init();
+      // initialize both singletons (safe): they read local storage and populate authInfo if present
+      await Future.wait([
+        CustomerAuthProvider.instance.init(),
+        ProviderAuthProvider.instance.init(),
+      ]);
 
       final isIntroCompleted =
           await AuthLocalRepo.instance.getIsIntroCompleted();
@@ -26,27 +31,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         if (!mounted) return;
 
         if (!isIntroCompleted) {
-          await replaceScreen(
-            context,
-            const IntroScreen(),
-          );
-        } else if (isIntroCompleted &&
-            (ref.read(authProvider).authInfo != null)) {
+          await replaceScreen(context, const IntroScreen());
+          return;
+        }
+
+        // If intro done: determine if there's a restored auth for either role.
+        final hasCustomerAuth = CustomerAuthProvider.instance.authInfo != null;
+        final hasProviderAuth = ProviderAuthProvider.instance.authInfo != null;
+
+        if (hasCustomerAuth || hasProviderAuth) {
           await _navigateToNext();
         } else {
-          await replaceScreen(
-            context,
-            const SelectAccountTypeScreen(),
-          );
+          await replaceScreen(context, const SelectAccountTypeScreen());
         }
       });
     } on Exception catch (e, t) {
       log('e $e, $t');
       if (mounted) {
-        await replaceScreen(
-          context,
-          const IntroScreen(),
-        );
+        await replaceScreen(context, const IntroScreen());
       }
     }
   }
@@ -61,7 +63,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       );
       return;
     } else if (mounted) {
-      ref.read(dashboardViewModel).userType =
+      dashboardViewModel.userType =
           userType == 'user' ? UserType.customer : UserType.provider;
 
       await replaceScreen(
@@ -86,11 +88,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     return Scaffold(
       backgroundColor: colors.whiteColor,
-      body: Container(
-        child: AppAssets.ASSETS_LOGO_SPLASH_2_PNG.imageAsset(
-          height: double.infinity,
-          width: double.infinity,
-        ),
+      body: AppAssets.ASSETS_LOGO_SPLASH_2_PNG.imageAsset(
+        height: double.infinity,
+        width: double.infinity,
       ),
     );
   }

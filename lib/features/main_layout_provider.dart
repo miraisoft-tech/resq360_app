@@ -10,13 +10,14 @@ import 'package:resq360/features/provider/chat/screens/provider_chat_screen.dart
 import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
 
-final dashboardViewModel = ChangeNotifierProvider<DashboardViewModel>(
-  DashboardViewModel.new,
-);
+// final dashboardViewModel = ChangeNotifierProvider<DashboardViewModel>(
+//   DashboardViewModel.new,
+// );
+final dashboardViewModel = DashboardViewModel();
 
 class DashboardViewModel extends ChangeNotifier {
-  DashboardViewModel(this.ref);
-  Ref ref;
+  DashboardViewModel();
+
 
   UserType userType = UserType.customer;
 

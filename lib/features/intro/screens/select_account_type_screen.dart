@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
@@ -7,17 +9,16 @@ import 'package:resq360/features/customer/authentication/view_models/auth_vm.dar
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
+import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
 
-class SelectAccountTypeScreen extends ConsumerStatefulWidget {
+class SelectAccountTypeScreen extends StatefulWidget {
   const SelectAccountTypeScreen({super.key});
 
   @override
-  ConsumerState<SelectAccountTypeScreen> createState() =>
-      _CreateAccountTypeScreenState();
+  State<SelectAccountTypeScreen> createState() => _SelectAccountTypeScreenState();
 }
 
-class _CreateAccountTypeScreenState
-    extends ConsumerState<SelectAccountTypeScreen> {
+class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
   int _selectedIndex = 0;
 
   Future<void> _onContinue() async {
@@ -32,30 +33,26 @@ class _CreateAccountTypeScreenState
 
     log('saved the type $selectedType');
 
-    ref.read(dashboardViewModel).userType = selectedType;
+    dashboardViewModel.userType = selectedType;
 
     if (_selectedIndex == 0) {
       await pushScreen(
         context,
         BlocProvider(
-          create: (context) => CustomerAuthBloc(),
+          create: (_) => CustomerAuthBloc(),
           child: const CreateAccountScreen(),
         ),
       );
     } else {
-      await pushScreen(
-        context,
-        const ProviderCreateAccountScreen(),
-      );
+      await pushScreen(context, const ProviderCreateAccountScreen());
     }
   }
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
-
-    ref.read(authProvider);
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,11 +93,7 @@ class _CreateAccountTypeScreenState
                 subTitle: 'Looking for services',
                 isSelected: _selectedIndex == 0,
                 icon: AppAssets.ASSETS_ICONS_CLIENT_ICON_SVG.svg,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = 0;
-                  });
-                },
+                onTap: () => setState(() => _selectedIndex = 0),
               ),
               20.verticalSpace,
               _AccountTypeCard(
@@ -108,17 +101,10 @@ class _CreateAccountTypeScreenState
                 subTitle: 'Offering my services',
                 isSelected: _selectedIndex == 1,
                 icon: AppAssets.ASSETS_ICONS_VENDOR_ICON_SVG.svg,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = 1;
-                  });
-                },
+                onTap: () => setState(() => _selectedIndex = 1),
               ),
               const Spacer(),
-              WideButton(
-                label: 'Continue',
-                onPressed: _onContinue,
-              ),
+              WideButton(label: 'Continue', onPressed: _onContinue),
               20.verticalSpace,
             ],
           ),
@@ -127,6 +113,7 @@ class _CreateAccountTypeScreenState
     );
   }
 }
+
 
 class _AccountTypeCard extends StatelessWidget {
   const _AccountTypeCard({
