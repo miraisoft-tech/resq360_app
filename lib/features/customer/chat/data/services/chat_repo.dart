@@ -4,7 +4,6 @@ import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 
-
 class ChatRepo extends BaseAPI {
   factory ChatRepo() => _instance;
   ChatRepo._internal();
@@ -23,13 +22,18 @@ class ChatRepo extends BaseAPI {
       log('Creating chat with payload: ${chatRequest.toJson()}');
       log('Response: ${response.data}');
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 201 && response.data != null) {
         final json = response.data!;
-        final chatData = ChatResponse.fromJson(json);
-        return ApiResult(data: chatData);
-      } else {
-        return ApiResult(error: 'Failed to create chat');
+        if (json['data'] != null) {
+          final chatData = ChatResponse.fromJson(
+            json['data'] as Map<String, dynamic>,
+          );
+          return ApiResult(data: chatData);
+        } else {
+          return ApiResult(error: 'Invalid response format');
+        }
       }
+      return ApiResult(error: 'Faild to create chat');
     } on Exception catch (e) {
       log('creating chat failed $e');
       return ApiResult(error: e.toString());

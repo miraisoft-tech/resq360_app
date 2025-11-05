@@ -11,8 +11,7 @@ import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 class CustomerAuthProvider extends BaseViewModel with LocationMixin {
   // Singleton setup
   CustomerAuthProvider._internal({required this.authRemoteRepo});
-  static final CustomerAuthProvider instance =
-      CustomerAuthProvider._internal(authRemoteRepo: AuthRemoteRepo.instance);
+  static final CustomerAuthProvider instance = CustomerAuthProvider._internal(authRemoteRepo: AuthRemoteRepo.instance);
 
   final AuthRemoteRepo authRemoteRepo;
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
@@ -19,19 +20,22 @@ class ChatDetailScreen extends StatefulWidget {
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Timer? _pollingTimer;
   final ScrollController _scrollController = ScrollController();
-
+  bool _isFetching = false;
   @override
   void initState() {
     super.initState();
     _fetchMessages();
 
-    // 🔁 Poll every 5 seconds
+    // 🔁 Poll every 5 seconds safely
     _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _fetchMessages();
+      if (!_isFetching) _fetchMessages();
     });
   }
 
   void _fetchMessages() {
+    if (_isFetching) return; // 👈 guard
+    _isFetching = true;
+
     context.read<CustomerChatBloc>().add(
       GetChatMessagesEvent(chatId: widget.chat.id!),
     );
@@ -67,20 +71,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               radius: 25,
             ),
             8.horizontalSpace,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GenText(
-                  widget.chat.title ?? 'QuickTow Emergency',
-                  weight: FontWeight.w500,
-                  color: appColors.black,
-                ),
-                GenText(
-                  'Online',
-                  size: 13,
-                  color: appColors.success.shade600,
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GenText(
+                    widget.chat.title ?? 'QuickTow Emergency',
+                    weight: FontWeight.w500,
+                    color: appColors.black,
+                  ),
+                  GenText(
+                    'Online',
+                    size: 13,
+                    color: appColors.success.shade600,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -99,7 +105,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: BlocBuilder<CustomerChatBloc, CustomerChatState>(
                 builder: (context, state) {
                   if (state is CustomerChatLoadingState) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.amber,
+                      ),
+                    );
                   }
 
                   if (state is CustomerChatErrorState) {
@@ -130,11 +140,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       itemCount: messages.length,
                       itemBuilder: (BuildContext context, int index) {
                         final message = messages[index];
+                        final auth = CustomerAuthProvider.instance.authInfo;
+                        final currentUserId = auth?.user.id;
+
+                        // Determine if message was sent by current logged-in user
+                        final isSentByCurrentUser =
+                            message.senderType?.toUpperCase() == 'USER' &&
+                            message.senderId == currentUserId;
                         return Column(
                           children: [
                             ChatBubble(
                               type:
-                                  message.messageType == 'USER'
+                                  isSentByCurrentUser
                                       ? MessageType.sent
                                       : MessageType.received,
                               message: message.content!,
@@ -202,34 +219,35 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 },
               ),
             ),
-           ChatBoxWidget(
-  onSend: (text) {
-    context.read<CustomerChatBloc>().add(
-      SendMessageEvent(
-        messageRequest: SendMessageRequest(
-          chatId: widget.chat.id!,
-          messageType: 'TEXT',
-          content: text,
-        ),
-      ),
-    );
-  },
-  onAttachment: (file, fileName, mimeType) {
-    context.read<CustomerChatBloc>().add(
-      SendMessageEvent(
-        messageRequest: SendMessageRequest(
-          chatId: widget.chat.id!,
-          messageType: 'FILE',
-          fileName: fileName,
-          mimeType: mimeType, content: '',
-          // You'll likely upload the file first to get fileUrl:
-          // fileUrl: uploadedFileUrl,
-          // fileSize: file.lengthSync(),
-        ),
-      ),
-    );
-  },
-),
+            ChatBoxWidget(
+              onSend: (text) {
+                context.read<CustomerChatBloc>().add(
+                  SendMessageEvent(
+                    messageRequest: SendMessageRequest(
+                      chatId: widget.chat.id!,
+                      messageType: 'TEXT',
+                      content: text,
+                    ),
+                  ),
+                );
+              },
+              onAttachment: (file, fileName, mimeType) {
+                context.read<CustomerChatBloc>().add(
+                  SendMessageEvent(
+                    messageRequest: SendMessageRequest(
+                      chatId: widget.chat.id!,
+                      messageType: 'FILE',
+                      fileName: fileName,
+                      mimeType: mimeType,
+                      content: '',
+                      // You'll likely upload the file first to get fileUrl:
+                      // fileUrl: uploadedFileUrl,
+                      // fileSize: file.lengthSync(),
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -243,7 +261,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (dt == null) return '';
     return '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
   }
-
 
   // void _onMediaTap() {}
 

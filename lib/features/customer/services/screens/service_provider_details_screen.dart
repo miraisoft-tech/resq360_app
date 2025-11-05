@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
+import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
@@ -51,9 +56,6 @@ class _ServiceProviderDetailsScreenState
   @override
   void initState() {
     super.initState();
-    context.read<CustomerServicesBloc>().add(
-      CustomerFetchServiceInfo(widget.providerId),
-    );
   }
 
   @override
@@ -61,293 +63,344 @@ class _ServiceProviderDetailsScreenState
     final colors = context.appColors;
     final provider = widget.provider;
 
-    return Scaffold(
-      backgroundColor: colors.whiteColor,
-      body: Column(
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                /// ---------- HEADER ----------
-                SliverAppBar(
-                  pinned: true,
-                  expandedHeight: 260,
-                  elevation: 0,
-                  backgroundColor: colors.whiteColor,
-                  leading: IconButton(
-                    icon: Icon(Icons.arrow_back, color: colors.black),
-                    onPressed: () => pop(context),
-                  ),
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Stack(
-                      alignment: Alignment.bottomCenter,
-                      children: [
-                        PageView.builder(
-                          itemCount: gallery.length,
-                          onPageChanged: (i) {
-                            setState(() => currentIndex = i);
-                          },
-                          itemBuilder: (_, index) {
-                            return Image.network(
-                              gallery[index],
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder:
-                                  (_, _, _) => const Icon(Icons.broken_image),
-                            );
-                          },
-                        ),
-                        Positioned(
-                          bottom: 12,
-                          child: Container(
-                            padding: pad(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: GenText(
-                              '${currentIndex + 1}/${gallery.length}',
-                              color: colors.whiteColor,
+    return BlocListener<CustomerChatBloc, CustomerChatState>(
+      listener: (context, state) async {
+        if (state is CustomerChatLoadingState) {
+          unawaited(showLoadingDialog(context,));
+        }
+
+        if (state is CustomerChatLoadedState) {
+          await pop(context);
+
+          // Navigate to chat detail screen with the created chat
+          // final existingChat = await ChatRepo.instance.getPrivateChat(
+          //   widget.providerId,
+          // );
+          // if (existingChat != null) {
+          //   await pushScreen(context, ChatDetailScreen(chat: existingChat));
+          //   return;
+          // }
+          await pushScreen(
+            context,
+            ChatDetailScreen(chat: state.chat),
+          );
+        } else if (state is CustomerChatErrorState) {
+          pop(context);
+          unawaited(showSnackBar(context, 'Error', state.message));
+        }
+      },
+      child: Scaffold(
+        backgroundColor: colors.whiteColor,
+        body: Column(
+          children: [
+            Expanded(
+              child: CustomScrollView(
+                slivers: [
+                  /// ---------- HEADER ----------
+                  SliverAppBar(
+                    pinned: true,
+                    expandedHeight: 260,
+                    elevation: 0,
+                    backgroundColor: colors.whiteColor,
+                    leading: IconButton(
+                      icon: Icon(Icons.arrow_back, color: colors.black),
+                      onPressed: () => pop(context),
+                    ),
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          PageView.builder(
+                            itemCount: gallery.length,
+                            onPageChanged: (i) {
+                              setState(() => currentIndex = i);
+                            },
+                            itemBuilder: (_, index) {
+                              return Image.network(
+                                gallery[index],
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                errorBuilder:
+                                    (_, _, _) => const Icon(Icons.broken_image),
+                              );
+                            },
+                          ),
+                          Positioned(
+                            bottom: 12,
+                            child: Container(
+                              padding: pad(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: GenText(
+                                '${currentIndex + 1}/${gallery.length}',
+                                color: colors.whiteColor,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                /// ---------- DETAILS ----------
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: pad(horizontal: 16, vertical: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /// STATUS
-                        if (provider.activityStatus != null)
-                          Container(
-                            padding: pad(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: colors.success.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: GenText(
-                              provider.activityStatus!,
-                              size: 12,
-                              color: colors.success.shade800,
-                            ),
-                          ),
-
-                        15.verticalSpace,
-
-                        /// HEADER INFO
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const CircleAvatar(
-                              radius: 25,
-                              backgroundImage: NetworkImage(
-                                'https://randomuser.me/api/portraits/men/32.jpg',
+                  /// ---------- DETAILS ----------
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: pad(horizontal: 16, vertical: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          /// STATUS
+                          if (provider.activityStatus != null)
+                            Container(
+                              padding: pad(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: colors.success.shade50,
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                            ),
-                            12.horizontalSpace,
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  UrbText(
-                                    provider.companyName ?? 'Unknown Provider',
-                                    height: 24.5,
-                                    weight: FontWeight.w700,
-                                    color: colors.black,
-                                  ),
-                                  6.verticalSpace,
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.star,
-                                        size: 16,
-                                        color: Colors.orange,
-                                      ),
-                                      4.horizontalSpace,
-                                      GenText(
-                                        '4.8', // TODO: Replace with provider's rating when backend shows
-                                        size: 12,
-                                        color: colors.black,
-                                      ),
-                                      2.horizontalSpace,
-                                      GenText(
-                                        '(127)', // TODO: Replace with actual review count when backend shows
-                                        size: 12,
-                                        color: colors.neutral.shade300,
-                                      ),
-                                      10.horizontalSpace,
-                                      AppAssets.ASSETS_ICONS_LOCATION_SVG
-                                          .svgColor(
-                                            color: colors.neutral.shade300,
-                                          ),
-                                      2.horizontalSpace,
-                                      GenText(
-                                        provider.distance != null
-                                            ? '${(provider.distance! / 1000).toStringAsFixed(1)} km'
-                                            : 'N/A',
-                                        size: 12,
-                                        color: colors.neutral.shade300,
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              child: GenText(
+                                provider.activityStatus!,
+                                size: 12,
+                                color: colors.success.shade800,
                               ),
                             ),
 
-                            /// CHAT + CALL
-                            SVGButton(
-                              path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                              onTap: () {
-                                context.read<CustomerChatBloc>().add(
-                                  CreateChatEvent(
-                                    chatRequest: CreateChatRequest(
-                                      title: 'Chat with ${widget.providerName}',
-                                      type: 'PRIVATE',
-                                      participants: [
-                                        ChatParticipant(
-                                          participantType: 'USER',
-                                          participantId: widget.providerId,
+                          15.verticalSpace,
+
+                          /// HEADER INFO
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const CircleAvatar(
+                                radius: 25,
+                                backgroundImage: NetworkImage(
+                                  'https://randomuser.me/api/portraits/men/32.jpg',
+                                ),
+                              ),
+                              12.horizontalSpace,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    UrbText(
+                                      provider.companyName ??
+                                          'Unknown Provider',
+                                      height: 24.5,
+                                      weight: FontWeight.w700,
+                                      color: colors.black,
+                                    ),
+                                    6.verticalSpace,
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.star,
+                                          size: 16,
+                                          color: Colors.orange,
+                                        ),
+                                        4.horizontalSpace,
+                                        GenText(
+                                          '4.8', // TODO: Replace with provider's rating when backend shows
+                                          size: 12,
+                                          color: colors.black,
+                                        ),
+                                        2.horizontalSpace,
+                                        GenText(
+                                          '(127)', // TODO: Replace with actual review count when backend shows
+                                          size: 12,
+                                          color: colors.neutral.shade300,
+                                        ),
+                                        10.horizontalSpace,
+                                        AppAssets.ASSETS_ICONS_LOCATION_SVG
+                                            .svgColor(
+                                              color: colors.neutral.shade300,
+                                            ),
+                                        2.horizontalSpace,
+                                        GenText(
+                                          provider.distance != null
+                                              ? '${(provider.distance! / 1000).toStringAsFixed(1)} km'
+                                              : 'N/A',
+                                          size: 12,
+                                          color: colors.neutral.shade300,
                                         ),
                                       ],
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
-                            15.horizontalSpace,
-                            SVGButton(
-                              path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-                              onTap: () {},
-                            ),
-                          ],
-                        ),
+                                  ],
+                                ),
+                              ),
 
-                        20.verticalSpace,
+                              /// CHAT + CALL
+                              SVGButton(
+                                path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
+                                onTap: () async {
+                                  final auth =
+                                      CustomerAuthProvider.instance.authInfo;
 
-                        /// CATEGORIES
-                        const Wrap(
-                          spacing: 8,
-                          children: [
-                            ChipWidget(label: 'Towing'),
-                            ChipWidget(label: 'Mechanic'),
-                            ChipWidget(label: 'Locksmith'),
-                          ],
-                        ),
+                                  if (auth == null) {
+                                    await showSnackBar(
+                                      context,
+                                      'Error',
+                                      'Please log in to start a chat.',
+                                    );
+                                    return;
+                                  }
 
-                        30.verticalSpace,
+                                  final currentUserId = auth.user.id;
+                                  final providerId = widget.providerId;
 
-                        /// OVERVIEW
-                        GenText(
-                          'Overview',
-                          height: 24,
-                          weight: FontWeight.w500,
-                          color: colors.black,
-                        ),
-                        16.verticalSpace,
-                        GenText(
-                          provider.description ??
-                              'No description available at the moment.',
-                          height: 22,
-                          color: colors.textColor.shade500,
-                        ),
+                                  final chatRequest = CreateChatRequest(
+                                    title: 'Chat with ${widget.providerName}',
+                                    type: 'PRIVATE',
+                                    participants: [
+                                      ChatParticipant(
+                                        participantType: 'USER',
+                                        participantId: currentUserId!,
+                                      ),
+                                      ChatParticipant(
+                                        participantType: 'PROVIDER',
+                                        participantId: providerId,
+                                      ),
+                                    ],
+                                  );
 
-                        16.verticalSpace,
+                                  log(
+                                    'Creating chat with payload: ${chatRequest.toJson()}',
+                                  );
 
-                        /// SCHEDULE
-                        Row(
-                          children: [
-                            AppAssets.ASSETS_ICONS_CALENDER_SVG.svg,
-                            8.horizontalSpace,
-                            GenText(
-                              provider.workingDays != null &&
-                                      provider.workingDays!.isNotEmpty
-                                  ? '${provider.workingDays!.first.capitalize} - ${provider.workingDays!.last.capitalize}'
-                                  : 'Days unavailable',
-                              size: 13,
-                              color: colors.black,
-                            ),
-                            20.horizontalSpace,
-                            AppAssets.ASSETS_ICONS_CLOCK_SVG.svg,
-                            8.horizontalSpace,
-                            GenText(
-                              '${provider.openingHours ?? 'N/A'}am - ${provider.closingHours ?? 'N/A'}pm',
-                              size: 13,
-                              color: colors.black,
-                            ),
-                          ],
-                        ),
+                                  context.read<CustomerChatBloc>().add(
+                                    CreateChatEvent(chatRequest: chatRequest),
+                                  );
+                                },
+                              ),
+                              15.horizontalSpace,
+                              SVGButton(
+                                path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
+                                onTap: () {},
+                              ),
+                            ],
+                          ),
 
-                        20.verticalSpace,
+                          20.verticalSpace,
 
-                        /// SERVICES SECTIOz
-                        GenText(
-                          'Services',
-                          height: 20.5,
-                          weight: FontWeight.w700,
-                          color: colors.black,
-                        ),
-                        12.verticalSpace,
-                        const _ServiceGroup(
-                          title: 'Towing',
-                          items: ['Emergency Roadside Tow'],
-                        ),
-                        const ListDivider(verticalSpacing: 10),
-                        const _ServiceGroup(
-                          title: 'Mechanic',
-                          items: ['Car Facelifting', 'Wheel Balancing'],
-                        ),
-                        const ListDivider(verticalSpacing: 10),
-                        const _ServiceGroup(
-                          title: 'Locksmith',
-                          items: [
-                            'Car Key Replacement',
-                            'Lock Installation',
-                            'Smart Lock Setup',
-                          ],
-                        ),
+                          /// CATEGORIES
+                          const Wrap(
+                            spacing: 8,
+                            children: [
+                              ChipWidget(label: 'Towing'),
+                              ChipWidget(label: 'Mechanic'),
+                              ChipWidget(label: 'Locksmith'),
+                            ],
+                          ),
 
-                        20.verticalSpace,
+                          30.verticalSpace,
 
-                        /// REVIEWS
-                        UrbText(
-                          'Reviews',
-                          height: 20.5,
-                          weight: FontWeight.w700,
-                          color: colors.black,
-                        ),
-                        20.verticalSpace,
-                        const ReviewSummaryCard(),
-                        16.verticalSpace,
-                        ...reviews.map((r) => UserReviewCard(data: r)),
-                      ],
+                          /// OVERVIEW
+                          GenText(
+                            'Overview',
+                            height: 24,
+                            weight: FontWeight.w500,
+                            color: colors.black,
+                          ),
+                          16.verticalSpace,
+                          GenText(
+                            provider.description ??
+                                'No description available at the moment.',
+                            height: 22,
+                            color: colors.textColor.shade500,
+                          ),
+
+                          16.verticalSpace,
+
+                          /// SCHEDULE
+                          Row(
+                            children: [
+                              AppAssets.ASSETS_ICONS_CALENDER_SVG.svg,
+                              8.horizontalSpace,
+                              GenText(
+                                provider.workingDays != null &&
+                                        provider.workingDays!.isNotEmpty
+                                    ? '${provider.workingDays!.first.capitalize} - ${provider.workingDays!.last.capitalize}'
+                                    : 'Days unavailable',
+                                size: 13,
+                                color: colors.black,
+                              ),
+                              20.horizontalSpace,
+                              AppAssets.ASSETS_ICONS_CLOCK_SVG.svg,
+                              8.horizontalSpace,
+                              GenText(
+                                '${provider.openingHours ?? 'N/A'}am - ${provider.closingHours ?? 'N/A'}pm',
+                                size: 13,
+                                color: colors.black,
+                              ),
+                            ],
+                          ),
+
+                          20.verticalSpace,
+
+                          /// SERVICES SECTIOz
+                          GenText(
+                            'Services',
+                            height: 20.5,
+                            weight: FontWeight.w700,
+                            color: colors.black,
+                          ),
+                          12.verticalSpace,
+                          const _ServiceGroup(
+                            title: 'Towing',
+                            items: ['Emergency Roadside Tow'],
+                          ),
+                          const ListDivider(verticalSpacing: 10),
+                          const _ServiceGroup(
+                            title: 'Mechanic',
+                            items: ['Car Facelifting', 'Wheel Balancing'],
+                          ),
+                          const ListDivider(verticalSpacing: 10),
+                          const _ServiceGroup(
+                            title: 'Locksmith',
+                            items: [
+                              'Car Key Replacement',
+                              'Lock Installation',
+                              'Smart Lock Setup',
+                            ],
+                          ),
+
+                          20.verticalSpace,
+
+                          /// REVIEWS
+                          UrbText(
+                            'Reviews',
+                            height: 20.5,
+                            weight: FontWeight.w700,
+                            color: colors.black,
+                          ),
+                          20.verticalSpace,
+                          const ReviewSummaryCard(),
+                          16.verticalSpace,
+                          ...reviews.map((r) => UserReviewCard(data: r)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          /// FOOTER - BOOK BUTTON
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: pad(horizontal: 16, vertical: 10),
-              child: WideButton(
-                label: 'Book Now',
-                onPressed: () async {
-                  // TODO: Implement booking flow
-                  log('Book Now pressed');
-                },
+                ],
               ),
             ),
-          ),
-        ],
+
+            /// FOOTER - BOOK BUTTON
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: pad(horizontal: 16, vertical: 10),
+                child: WideButton(
+                  label: 'Book Now',
+                  onPressed: () async {
+                 
+                    log('Book Now pressed');
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

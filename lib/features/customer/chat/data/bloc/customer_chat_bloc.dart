@@ -45,16 +45,43 @@ class CustomerChatBloc extends Bloc<CustomerChatEvent, CustomerChatState> {
     }
   }
 
-  Future<void> _onSendMessage(SendMessageEvent event, Emitter<CustomerChatState> emit) async {
-    emit(MessageSending());
-    final result = await _chatRepo.sendMessage(messageRequest: event.messageRequest);
-
-    if (result.data != null) {
-      emit(MessageSent(result.data!));
-    } else {
-      emit(CustomerChatErrorState(result.error ?? 'Failed to send message'));
-    }
+Future<void> _onSendMessage(
+  SendMessageEvent event,
+  Emitter<CustomerChatState> emit,
+) async {
+  ChatMessagesResponse? existing;
+  if (state is MessagesLoaded) {
+    existing = (state as MessagesLoaded).messages;
   }
+
+  emit(MessageSending());
+
+  final result = await _chatRepo.sendMessage(messageRequest: event.messageRequest);
+
+  if (result.data != null) {
+    final newMessage = result.data!;
+
+    // Compose current messages
+    final current = <MessageResponse>[];
+    if (existing != null) current.addAll(existing.messages);
+    current.insert(0, newMessage);
+
+    // Rebuild ChatMessagesResponse using existing metadata if present
+    final updated = ChatMessagesResponse(
+      messages: current,
+      page: existing?.page ?? 1,
+      limit: existing?.limit ?? current.length,
+      total: existing?.total ?? current.length,
+      totalPages: existing?.totalPages ?? 1,
+    );
+
+    emit(MessagesLoaded(updated));
+  } else {
+    emit(CustomerChatErrorState(result.error ?? 'Failed to send message'));
+  }
+}
+
+
 
   Future<void> _onSendFileMessage(
     SendFileMessageEvent event,
