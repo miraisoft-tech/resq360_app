@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/upload_response.model.dart';
 import 'package:resq360/features/settings/data/service/update_user_repo.dart';
@@ -65,16 +66,21 @@ Future<void> _onUpdateProviderInfo(
       log('Uploaded image: ${uploadedImage?.id} / ${uploadedImage?.url}');
     }
 
+     final provider = await AuthLocalRepo.instance.getProviderCredentials();
+      if (provider == null) {
+        log('No user');
+      }
+
     // Step 2: Update provider info
     final result = await updateUserRepo.updateProviderInformation(
-      fullName: event.fullName,
-      phoneNumber: event.phoneNumber,
-      companyName: event.companyName,
+      fullName: provider?.user?.fullName ?? '',
+      phoneNumber: provider?.user?.phoneNumber ?? '',
+      companyName: provider?.user?.companyName ?? '',
       description: event.description,
       workingDays: event.workingDays,
       openingHours: event.openingHours,
       closingHours: event.closingHours,
-      activityStatus: event.activityStatus,
+      activityStatus: 'online',
       profileImageUrl: uploadedImage?.url,
       profileImageId: uploadedImage?.id,
     );

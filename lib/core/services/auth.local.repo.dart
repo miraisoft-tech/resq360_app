@@ -2,9 +2,10 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/auth_base_response.dart.dart';
 import 'package:resq360/core/services/db_keys.local.repo.dart';
 import 'package:resq360/core/services/shared_preferences.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart' as customer;
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart' as provider;
 
 class AuthLocalRepo {
   factory AuthLocalRepo() {
@@ -43,28 +44,58 @@ class AuthLocalRepo {
 
   ////====AUTH DETAILS====////
 
-  Future<bool> storeUserDetails({required BaseAuthResponse authResponse}) async {
-    try {
-      return await pref.saveMap(
-        key: DBKeys.authData,
-        value: authResponse.toJson(),
-      );
-    } on Exception catch (e) {
-      log(e);
-      return false;
-    }
+Future<bool> storeUserDetails({
+  required BaseAuthResponse authResponse,
+  required bool isProvider,
+}) async {
+  try {
+    final key = isProvider ? DBKeys.providerAuthData : DBKeys.authData;
+    return await pref.saveMap(
+      key: key,
+      value: authResponse.toJson(),
+    );
+  } on Exception catch (e) {
+    log('storeUserDetails error: $e');
+    return false;
   }
+}
 
-  Future<AuthResponse?> getAuthCredentials() async {
-    try {
-      final result =
-          await pref.getValue(key: DBKeys.authData) as Map<String, dynamic>?;
-      return result != null ? AuthResponse.fromJson(result) : null;
-    } on Exception catch (e) {
-      log(e);
-      return null;
+/// Get currently authenticated user (either customer or provider)
+Future<BaseAuthResponse?> getAuthCredentials() async {
+  try {
+    final result =
+        await pref.getValue(key: DBKeys.authData) as Map<String, dynamic>?;
+
+    if (result == null) return null;
+
+    // Determine the type of user saved
+    final userType = await getUserType();
+
+    if (userType == 'provider') {
+      return provider.AuthResponse.fromJson(result);
+    } else {
+      return customer.AuthResponse.fromJson(result);
     }
+  } on Exception catch (e) {
+    log('getAuthCredentials error: $e');
+    return null;
   }
+}
+
+/// Get provider-specific credentials 
+Future<provider.AuthResponse?> getProviderCredentials() async {
+  try {
+    final result =
+        await pref.getValue(key: DBKeys.providerAuthData) as Map<String, dynamic>?;
+
+    if (result == null) return null;
+
+    return provider.AuthResponse.fromJson(result);
+  } on Exception catch (e) {
+    log('getProviderCredentials error: $e');
+    return null;
+  }
+}
 
   Future<bool> clearAuthCredentials() async {
     try {

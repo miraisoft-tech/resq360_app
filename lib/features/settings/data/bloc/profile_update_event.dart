@@ -32,26 +32,26 @@ final class UpdateUserInfoEvent extends ProfileUpdateEvent {
 /// Update provider info
 final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
   const UpdateProviderInfoEvent({
-    required this.fullName,
-    required this.phoneNumber,
-    required this.companyName,
     required this.description,
     required this.workingDays,
     required this.openingHours,
     required this.closingHours,
-    required this.activityStatus,
+    this.activityStatus,
+    this.fullName,
+    this.phoneNumber,
+    this.companyName,
     this.filePath,
     this.profileImageUrl,
     this.profileImageId,
   });
-  final String fullName;
-  final String phoneNumber;
-  final String companyName;
+  final String? fullName;
+  final String? phoneNumber;
+  final String? companyName;
   final String description;
   final List<String> workingDays;
   final DateTime openingHours;
   final DateTime closingHours;
-  final String activityStatus;
+  final String? activityStatus;
   final String? filePath;
   final String? profileImageUrl;
   final String? profileImageId;

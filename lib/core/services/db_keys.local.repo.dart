@@ -9,6 +9,8 @@ class DBKeys {
 
   static const String appTheme = 'appTheme';
   static const String authData = 'authData';
+  static const String providerAuthData = 'providerAuthData';
+
   static const String accessTokenKey = 'accessTokenKey';
 
   static const String emailNotifications = 'emailNotifications';

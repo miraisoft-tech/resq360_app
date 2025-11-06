@@ -163,9 +163,6 @@ class AuthRemoteRepo extends BaseAPI {
 
         // Create AuthResponse
         final authResponse = AuthResponse.fromJson(res.data!);
-        await AuthLocalRepo.instance.storeUserDetails(
-          authResponse: authResponse,
-        );
 
         return ApiResult(data: authResponse);
       } else {
@@ -205,10 +202,6 @@ class AuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
-          await AuthLocalRepo.instance.storeUserDetails(
-            authResponse: authResponse,
-          );
-
           return ApiResult(data: authResponse);
         } else {
           return ApiResult(
@@ -416,6 +409,11 @@ class AuthRemoteRepo extends BaseAPI {
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
           log('User profile fetched: ${authResponse.user.fullName}');
+          
+        // Save to local storage
+        await AuthLocalRepo.instance.storeUserDetails(
+          authResponse: authResponse, isProvider: false,
+        );
           return ApiResult(data: authResponse);
         } else {
           return ApiResult(

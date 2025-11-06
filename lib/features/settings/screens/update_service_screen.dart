@@ -79,14 +79,10 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
 
     bloc.add(
       UpdateProviderInfoEvent(
-        fullName: 'Justice Nwogu',
-        phoneNumber: '+2348012345678',
-        companyName: 'ResQ Mechanics',
         description: descController.text.trim(),
         workingDays: selectedDays,
         openingHours: startDateTime,
         closingHours: endDateTime,
-        activityStatus: 'online',
         filePath: pickedImages.isNotEmpty ? pickedImages.first.path : null,
       ),
     );

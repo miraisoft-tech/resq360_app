@@ -108,9 +108,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
-          await AuthLocalRepo.instance.storeUserDetails(
-            authResponse: authResponse,
-          );
 
           return ApiResult(data: authResponse);
         } else {
@@ -181,9 +178,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
-          await AuthLocalRepo.instance.storeUserDetails(
-            authResponse: authResponse,
-          );
           return ApiResult(data: authResponse);
         } else {
           return ApiResult(
@@ -343,7 +337,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  
   Future<ApiResult<dynamic>> resendVerificationOtp(String email) async {
     try {
       const url = '/auth/resend-verification-otp';
@@ -364,7 +357,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
-  
 
   Future<ApiResult<AuthResponse>> getUserProfile() async {
     try {
@@ -375,21 +367,15 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       log(res.statusCode);
       log(res.data);
 
-      // switch (res.statusCode) {
-      //   case 200:
-      //     return UserModel.fromJson(res.data ?? {});
-      //   default:
-      //     return ErrorResponse(
-      //       message:
-      //           res.data?['message'].toString() ??
-      //           'An error occured please try again!',
-      //     );
-      // }
       if (res.statusCode == 200 && res.data != null) {
         final success = res.data!['success'] == true;
 
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
+          // Save to local storage
+          await AuthLocalRepo.instance.storeUserDetails(
+            authResponse: authResponse, isProvider: true,
+          );
           return ApiResult(data: authResponse);
         } else {
           return ApiResult(
