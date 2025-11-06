@@ -12,6 +12,7 @@ import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/settings/data/bloc/profile_update_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,11 +47,13 @@ Future<void> main() async {
       child: TranslationProvider(
         child: MultiBlocProvider(
           providers: [
-            BlocProvider(create: (_) => ThemeCubit(themePreferences)..loadTheme()),
+            BlocProvider(create: (_) => ThemeCubit(themePreferences)),
             BlocProvider(create: (_) => CustomerAuthBloc()),
             BlocProvider(create: (_) => ProviderAuthBloc()),
             BlocProvider(create: (_) => CustomerServicesBloc()),
             BlocProvider(create: (_) => CustomerChatBloc()),
+            BlocProvider(create: (_) => ProfileUpdateBloc()),
+
           ],
           child: const MyApp(),
         ),

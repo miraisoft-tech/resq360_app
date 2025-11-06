@@ -133,6 +133,53 @@ class ChatRepo extends BaseAPI {
     }
   }
 
+  Future<ChatResponse?> findExistingPrivateChat({
+    required int providerId,
+    required int userId,
+  }) async {
+    try {
+      final res = await dio().get<Map<String, dynamic>>('/chat');
+
+      if (res.statusCode == 200 && res.data != null) {
+        log('Chat list API response: ${res.data}');
+
+        final data = res.data!['data'];
+        if (data is! Map<String, dynamic>) {
+          log('Unexpected data format for chat list: ${res.data}');
+          return null;
+        }
+
+        final chatsList = data['chats'] as List<dynamic>? ?? [];
+
+        final chats =
+            chatsList
+                .map((e) => ChatResponse.fromJson(e as Map<String, dynamic>))
+                .toList();
+
+        for (final chat in chats) {
+          final participants = chat.participants ?? [];
+          final hasUser = participants.any(
+            (p) => p.participantType == 'USER' && p.participantId == userId,
+          );
+          final hasProvider = participants.any(
+            (p) =>
+                p.participantType == 'PROVIDER' &&
+                p.participantId == providerId,
+          );
+
+          if (chat.type == 'PRIVATE' && hasUser && hasProvider) {
+            log('Found existing PRIVATE chat with ID: ${chat.id}');
+            return chat;
+          }
+        }
+      }
+    } on Exception catch (e, st) {
+      log('Error finding existing chat: $e\n$st');
+    }
+
+    return null; // No chat found
+  }
+
   /// Mark a message as read
   Future<ApiResult<bool>> markMessageAsRead(int messageId) async {
     final url = '/chat/messages/$messageId/read';

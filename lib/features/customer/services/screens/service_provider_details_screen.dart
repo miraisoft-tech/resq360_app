@@ -7,7 +7,6 @@ import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
@@ -53,6 +52,51 @@ class _ServiceProviderDetailsScreenState
     },
   ];
 
+  Future<void> _createChat() async {
+    log('Statrted');
+    final auth = CustomerAuthProvider.instance.authInfo;
+    if (auth == null) {
+      await showSnackBar(context, 'Error', 'Please log in to continue.');
+      return;
+    }
+
+    final userId = auth.user.id!;
+    final providerId = widget.providerId;
+    final chatRepo = ChatRepo();
+
+    // ✅ Step 1: Check if chat already exists
+    final existingChat = await chatRepo.findExistingPrivateChat(
+      providerId: providerId,
+      userId: userId,
+    );
+
+    if (existingChat != null) {
+      log('Existing chat found → navigating to chat ID ${existingChat.id}');
+      await pushScreen(context, ChatDetailScreen(chat: existingChat));
+      return;
+    }
+
+    // 🚀 Step 2: If not found, create a new chat
+    final chatRequest = CreateChatRequest(
+      title: 'Chat with ${widget.providerName}',
+      type: 'PRIVATE',
+      participants: [
+        ChatParticipant(
+          participantType: 'USER',
+          participantId: userId,
+        ),
+        ChatParticipant(
+          participantType: 'PROVIDER',
+          participantId: providerId,
+        ),
+      ],
+    );
+
+    context.read<CustomerChatBloc>().add(
+      CreateChatEvent(chatRequest: chatRequest),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -66,27 +110,20 @@ class _ServiceProviderDetailsScreenState
     return BlocListener<CustomerChatBloc, CustomerChatState>(
       listener: (context, state) async {
         if (state is CustomerChatLoadingState) {
-          unawaited(showLoadingDialog(context,));
+          await showLoadingDialog(
+            context,
+          );
         }
 
         if (state is CustomerChatLoadedState) {
           await pop(context);
-
-          // Navigate to chat detail screen with the created chat
-          // final existingChat = await ChatRepo.instance.getPrivateChat(
-          //   widget.providerId,
-          // );
-          // if (existingChat != null) {
-          //   await pushScreen(context, ChatDetailScreen(chat: existingChat));
-          //   return;
-          // }
           await pushScreen(
             context,
             ChatDetailScreen(chat: state.chat),
           );
         } else if (state is CustomerChatErrorState) {
-          pop(context);
-          unawaited(showSnackBar(context, 'Error', state.message));
+          await pop(context);
+          await showSnackBar(context, 'Error', state.message);
         }
       },
       child: Scaffold(
@@ -233,43 +270,7 @@ class _ServiceProviderDetailsScreenState
                               SVGButton(
                                 path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
                                 onTap: () async {
-                                  final auth =
-                                      CustomerAuthProvider.instance.authInfo;
-
-                                  if (auth == null) {
-                                    await showSnackBar(
-                                      context,
-                                      'Error',
-                                      'Please log in to start a chat.',
-                                    );
-                                    return;
-                                  }
-
-                                  final currentUserId = auth.user.id;
-                                  final providerId = widget.providerId;
-
-                                  final chatRequest = CreateChatRequest(
-                                    title: 'Chat with ${widget.providerName}',
-                                    type: 'PRIVATE',
-                                    participants: [
-                                      ChatParticipant(
-                                        participantType: 'USER',
-                                        participantId: currentUserId!,
-                                      ),
-                                      ChatParticipant(
-                                        participantType: 'PROVIDER',
-                                        participantId: providerId,
-                                      ),
-                                    ],
-                                  );
-
-                                  log(
-                                    'Creating chat with payload: ${chatRequest.toJson()}',
-                                  );
-
-                                  context.read<CustomerChatBloc>().add(
-                                    CreateChatEvent(chatRequest: chatRequest),
-                                  );
+                                  await _createChat();
                                 },
                               ),
                               15.horizontalSpace,
@@ -393,8 +394,7 @@ class _ServiceProviderDetailsScreenState
                 child: WideButton(
                   label: 'Book Now',
                   onPressed: () async {
-                 
-                    log('Book Now pressed');
+                    await _createChat();
                   },
                 ),
               ),

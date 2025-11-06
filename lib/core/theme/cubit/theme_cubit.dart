@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -13,10 +14,15 @@ part 'theme_state.dart';
 
 
 class ThemeCubit extends Cubit<ThemeState> {
-  ThemeCubit(this._preferences) : super(ThemeState.initial());
+  ThemeCubit(this._preferences) : super(ThemeState.initial()){
+     unawaited(_init());
+  }
 
   final ThemePreferences _preferences;
 
+  Future<void> _init() async {
+    await loadTheme();
+  }
   Future<void> loadTheme() async {
     final mode = await _preferences.getTheme();
     emit(_buildState(mode));

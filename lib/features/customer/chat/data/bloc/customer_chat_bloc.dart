@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
+import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 
@@ -10,7 +10,8 @@ part 'customer_chat_event.dart';
 part 'customer_chat_state.dart';
 
 final ChatRepo _chatRepo = ChatRepo();
-final AuthRemoteRepo _authRepo = AuthRemoteRepo();
+final UploadService uploadService = UploadService.instance;
+
 
 class CustomerChatBloc extends Bloc<CustomerChatEvent, CustomerChatState> {
   CustomerChatBloc() : super(CustomerChatInitial()) {
@@ -89,7 +90,7 @@ Future<void> _onSendMessage(
   ) async {
     emit(MessageSending());
 
-    final uploadResult = await _authRepo.uploadSingle(filePath: event.file.path);
+    final uploadResult = await uploadService.uploadSingle(filePath: event.file.path);
 
     if (uploadResult.error != null) {
       emit(CustomerChatErrorState(uploadResult.error!));

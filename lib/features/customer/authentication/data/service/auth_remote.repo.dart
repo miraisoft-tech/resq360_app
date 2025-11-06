@@ -1,16 +1,17 @@
-import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
+import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/upload_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
+final UploadService uploadService = UploadService.instance;
+
 
 class AuthRemoteRepo extends BaseAPI {
   factory AuthRemoteRepo() {
@@ -497,54 +498,7 @@ class AuthRemoteRepo extends BaseAPI {
 
   // KYC
 
-  Future<ApiResult<UploadResponse>> uploadSingle({
-    required String filePath,
-  }) async {
-    try {
-      const url = '/upload/single';
 
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath),
-      });
-
-      final res = await dio().post<Map<String, dynamic>>(url, data: formData);
-
-      log('${res.statusCode}');
-      log('${res.data}');
-
-      if (res.statusCode == 200 && res.data != null) {
-        final success = res.data!['success'] == true;
-
-        if (success) {
-          final dataList = res.data!['data'] as List<dynamic>;
-          final uploads =
-              dataList
-                  .map(
-                    (item) =>
-                        UploadResponse.fromJson(item as Map<String, dynamic>),
-                  )
-                  .toList();
-          log(
-            'suceeded in Uploading files: ${uploads.first.id} / ${uploads.first.url}',
-          );
-          // returns the first one
-          return ApiResult(data: uploads.first);
-        } else {
-          return ApiResult(
-            error: res.data!['message']?.toString() ?? 'Upload failed',
-          );
-        }
-      }
-
-      return ApiResult(
-        error: res.data?['message']?.toString() ?? 'Upload failed',
-      );
-    } on Exception catch (e, s) {
-      log('$e');
-      log('$s');
-      return ApiResult(error: '$e $s');
-    }
-  }
 
   Future<ApiResult<KycResponse>> submitFaceId({
     required String selfieImageUrl,
@@ -594,7 +548,7 @@ class AuthRemoteRepo extends BaseAPI {
   Future<ApiResult<KycResponse>> uploadAndSubmitFaceId({
     required String filePath,
   }) async {
-    final uploadResult = await uploadSingle(filePath: filePath);
+    final uploadResult = await uploadService.uploadSingle(filePath: filePath);
 
     if (uploadResult.data == null) {
       return ApiResult(error: uploadResult.error);
@@ -654,7 +608,7 @@ class AuthRemoteRepo extends BaseAPI {
     required String filePath,
   }) async {
     // Upload the document file
-    final uploadResult = await uploadSingle(filePath: filePath);
+    final uploadResult = await uploadService.uploadSingle(filePath: filePath);
 
     if (uploadResult.data == null) {
       return ApiResult(error: uploadResult.error);
