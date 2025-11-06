@@ -2,7 +2,6 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 
-/// A repository for updating user and provider details.
 class UpdateUserRepo extends BaseAPI {
   factory UpdateUserRepo() {
     return instance;
@@ -11,7 +10,6 @@ class UpdateUserRepo extends BaseAPI {
   UpdateUserRepo._internal();
   static final UpdateUserRepo instance = UpdateUserRepo._internal();
 
-  /// Generic reusable PUT request handler.
   Future<ApiResult<dynamic>> _updateData({
     required String endpoint,
     required Map<String, dynamic> data,
@@ -31,7 +29,7 @@ class UpdateUserRepo extends BaseAPI {
       final message = res.data?['message'] ?? 'Failed to update at $endpoint';
       return ApiResult(error: message.toString());
     } on Exception catch (e, s) {
-      log('❌ $logTag failed: $e');
+      log('$logTag failed: $e');
       log('Stacktrace: $s');
       return ApiResult(error: e.toString());
     }
