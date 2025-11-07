@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
@@ -12,7 +13,6 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
 final UploadService uploadService = UploadService.instance;
-
 
 class AuthRemoteRepo extends BaseAPI {
   factory AuthRemoteRepo() {
@@ -121,10 +121,7 @@ class AuthRemoteRepo extends BaseAPI {
         'password': password,
         'userType': userType,
       };
-      await authLocalDataSource.storeLocalCredentials(
-        email: email,
-        password: password,
-      );
+
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
       log(res.statusCode);
@@ -133,42 +130,41 @@ class AuthRemoteRepo extends BaseAPI {
       if (res.statusCode == 200 || res.statusCode == 201) {
         final body = res.data!;
         final success = body['success'] == true;
+        await authLocalDataSource.storeLocalCredentials(
+          email: email,
+          password: password,
+        );
 
         if (!success) {
           return ApiResult(
             error: body['message']?.toString() ?? 'Login failed',
           );
         }
-
-        // Extract correct token path
         final token = body['data']?['access_token'];
         if (token == null) {
           return ApiResult(error: 'No token returned from server');
         }
 
-        // Save and attach token
         await authLocalDataSource.storeAccessToken(token.toString());
-        log('Token has finally been saved');
-        log(token.toString());
 
         try {
-          // final userProfile = await getUserProfile(token: token.toString());
           final userProfile = await getUserProfile();
 
           log(
             'Fetched user profile: $userProfile.data.toString()',
-          ); 
+          );
         } on Exception catch (e) {
           log('Failed to fetch profile: $e');
         }
 
-        // Create AuthResponse
         final authResponse = AuthResponse.fromJson(res.data!);
 
         return ApiResult(data: authResponse);
       } else {
         return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
       }
+    } on DioException catch (e) {
+      return handleDioError(e); //
     } on Exception catch (e) {
       log('Login DioException: $e');
       return ApiResult(error: '$e');
@@ -228,7 +224,9 @@ class AuthRemoteRepo extends BaseAPI {
             res.data?['message']?.toString() ??
             'An error occurred, please try again!',
       );
-    } on Exception catch (e, s) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e, s) {
       log(e);
       log(s);
 
@@ -390,7 +388,9 @@ class AuthRemoteRepo extends BaseAPI {
       } else {
         return ApiResult(error: res.data?['message'] as String);
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
       log('Resend verification OTP error: $e');
       return ApiResult(error: e.toString());
     }
@@ -408,13 +408,16 @@ class AuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
 
         if (success) {
-         final customerProfileResponse = CustomerProfileResponse.fromJson(res.data!);
+          final customerProfileResponse = CustomerProfileResponse.fromJson(
+            res.data!,
+          );
           log('User profile fetched: ${customerProfileResponse.user.fullName}');
-          
-        // Save to local storage
-        await AuthLocalRepo.instance.storeUserDetails(
-          customerProfileResponse: customerProfileResponse, isProvider: false,
-        );
+
+          // Save to local storage
+          await AuthLocalRepo.instance.storeUserDetails(
+            customerProfileResponse: customerProfileResponse,
+            isProvider: false,
+          );
           return ApiResult(data: customerProfileResponse);
         } else {
           return ApiResult(
@@ -423,15 +426,15 @@ class AuthRemoteRepo extends BaseAPI {
         }
       }
       return ApiResult(error: 'An error occurred, please try again!');
-    } on Exception catch (e, s) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e, s) {
       log(e);
       log(s);
 
       return ApiResult(error: '$e $s');
     }
   }
-
-
 
   Future<ApiResult<AuthResponse>> updateUserInfo({
     required String fullName,
@@ -459,7 +462,9 @@ class AuthRemoteRepo extends BaseAPI {
         }
       }
       return ApiResult(error: 'An error occurred, please try again!');
-    } on Exception catch (e, s) {
+    }on DioException catch (e) {
+    return handleDioError(e); 
+  }  on Exception catch (e, s) {
       log(e);
       log(s);
 
@@ -468,8 +473,6 @@ class AuthRemoteRepo extends BaseAPI {
   }
 
   // KYC
-
-
 
   Future<ApiResult<KycResponse>> submitFaceId({
     required String selfieImageUrl,
@@ -510,7 +513,9 @@ class AuthRemoteRepo extends BaseAPI {
       } else {
         return ApiResult(error: 'Unexpected server response');
       }
-    } on Exception catch (e, s) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e, s) {
       log('submitFaceId error: $e\n$s');
       return ApiResult(error: e.toString());
     }
@@ -568,7 +573,9 @@ class AuthRemoteRepo extends BaseAPI {
       }
 
       return ApiResult(error: 'Unexpected server response');
-    } on Exception catch (e, s) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e, s) {
       log('submitIdentity error: $e\n$s');
       return ApiResult(error: e.toString());
     }
@@ -649,7 +656,9 @@ class AuthRemoteRepo extends BaseAPI {
           error: res.data!['message']?.toString() ?? "failed to get user's Kyc",
         );
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
       log(e);
       return ApiResult(error: e.toString());
     }

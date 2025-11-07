@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
@@ -34,7 +35,9 @@ class ChatRepo extends BaseAPI {
         }
       }
       return ApiResult(error: 'Faild to create chat');
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
       log('creating chat failed $e');
       return ApiResult(error: e.toString());
     }
@@ -59,7 +62,9 @@ class ChatRepo extends BaseAPI {
       } else {
         return ApiResult(error: 'Failed to load chats');
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
       log('failed to fetch chat $e');
       return ApiResult(error: e.toString());
     }
@@ -78,7 +83,9 @@ class ChatRepo extends BaseAPI {
       } else {
         return ApiResult(error: 'Failed to fetch chat');
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -102,7 +109,9 @@ class ChatRepo extends BaseAPI {
       } else {
         return ApiResult(error: 'Failed to fetch chat messages');
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -128,7 +137,9 @@ class ChatRepo extends BaseAPI {
               response.data?['message'].toString() ?? 'Failed to send message',
         );
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -175,7 +186,7 @@ class ChatRepo extends BaseAPI {
       }
     } on Exception catch (e, st) {
       log('Error finding existing chat: $e\n$st');
-    }
+    } 
 
     return null; // No chat found
   }
@@ -190,7 +201,9 @@ class ChatRepo extends BaseAPI {
       } else {
         return ApiResult(error: 'Failed to mark as read');
       }
-    } on Exception catch (e) {
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -205,7 +218,9 @@ class ChatRepo extends BaseAPI {
       } else {
         return ApiResult(error: 'Failed to leave chat');
       }
-    } on Exception catch (e) {
+    }on DioException catch (e) {
+    return handleDioError(e); 
+  }  on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
@@ -28,7 +29,9 @@ class UpdateUserRepo extends BaseAPI {
 
       final message = res.data?['message'] ?? 'Failed to update at $endpoint';
       return ApiResult(error: message.toString());
-    } on Exception catch (e, s) {
+    } on DioException catch (e) {
+    return handleDioError(e);
+  } on Exception catch (e, s) {
       log('$logTag failed: $e');
       log('Stacktrace: $s');
       return ApiResult(error: e.toString());

@@ -81,10 +81,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         'password': password,
         'userType': userType,
       };
-      await authLocalDataSource.storeLocalCredentials(
-        email: email,
-        password: password,
-      );
+
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
       log(url);
       log(res.statusCode);
@@ -97,11 +94,13 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         await authLocalDataSource.storeAccessToken(
           token.toString(),
         );
+        await authLocalDataSource.storeLocalCredentials(
+          email: email,
+          password: password,
+        );
         try {
-          // final userProfile = await getUserProfile(token: token.toString());
           final userProfile = await getUserProfile();
           final name = userProfile.data?.user.fullName;
-
           log(
             'Fetched user profile: $name',
           );
@@ -126,6 +125,8 @@ class ProviderAuthRemoteRepo extends BaseAPI {
             res.data?['message']?.toString() ??
             'An error occurred, please try again!',
       );
+    } on DioException catch (e) {
+      return handleDioError(e);
     } on Exception catch (e, s) {
       log(e);
       log(s);
@@ -192,6 +193,8 @@ class ProviderAuthRemoteRepo extends BaseAPI {
             res.data?['message']?.toString() ??
             'An error occurred, please try again!',
       );
+    } on DioException catch (e) {
+      return handleDioError(e);
     } on Exception catch (e, s) {
       log(e);
       log(s);
@@ -353,6 +356,8 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       } else {
         return ApiResult(error: res.data?['message'] as String);
       }
+    } on DioException catch (e) {
+      return handleDioError(e);
     } on Exception catch (e) {
       log('Resend verification OTP error: $e');
       return ApiResult(error: e.toString());
@@ -372,10 +377,13 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
 
         if (success) {
-          final providerProfileResponse = ProviderProfileResponse.fromJson(res.data!);
+          final providerProfileResponse = ProviderProfileResponse.fromJson(
+            res.data!,
+          );
           // Save to local storage
           await AuthLocalRepo.instance.storeUserDetails(
-             isProvider: true, providerProfileResponse: providerProfileResponse,
+            isProvider: true,
+            providerProfileResponse: providerProfileResponse,
           );
           return ApiResult(data: providerProfileResponse);
         } else {
@@ -385,6 +393,8 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         }
       }
       return ApiResult(error: 'An error occurred, please try again!');
+    } on DioException catch (e) {
+      return handleDioError(e);
     } on Exception catch (e, s) {
       log(e);
       log(s);
