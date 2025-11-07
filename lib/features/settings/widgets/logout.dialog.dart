@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
@@ -23,7 +23,7 @@ class LogoutDialog extends StatelessWidget {
       }
 
       if (context.mounted) {
-        await replaceScreen(context, const LoginScreen());
+        await replaceScreen(context, const SelectAccountTypeScreen());
       }
     } on Exception catch (e) {
 

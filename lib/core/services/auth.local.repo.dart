@@ -60,36 +60,24 @@ Future<bool> storeUserDetails({
   }
 }
 
-/// Get currently authenticated user (either customer or provider)
-Future<BaseAuthResponse?> getAuthCredentials() async {
+
+Future< customer.AuthResponse?> getAuthCredentials() async {
   try {
     final result =
         await pref.getValue(key: DBKeys.authData) as Map<String, dynamic>?;
-
     if (result == null) return null;
-
-    // Determine the type of user saved
-    final userType = await getUserType();
-
-    if (userType == 'provider') {
-      return provider.AuthResponse.fromJson(result);
-    } else {
       return customer.AuthResponse.fromJson(result);
-    }
   } on Exception catch (e) {
     log('getAuthCredentials error: $e');
     return null;
   }
 }
 
-/// Get provider-specific credentials 
 Future<provider.AuthResponse?> getProviderCredentials() async {
   try {
     final result =
         await pref.getValue(key: DBKeys.providerAuthData) as Map<String, dynamic>?;
-
     if (result == null) return null;
-
     return provider.AuthResponse.fromJson(result);
   } on Exception catch (e) {
     log('getProviderCredentials error: $e');

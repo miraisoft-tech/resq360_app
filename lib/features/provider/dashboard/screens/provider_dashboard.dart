@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
@@ -40,9 +40,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
             }
               
               return FutureBuilder<AuthResponse?>(
-                future: AuthLocalRepo.instance.getAuthCredentials(),
+                future: AuthLocalRepo.instance.getProviderCredentials(),
                 builder: (context, snapshot) {
-                  final userName = snapshot.data?.user.firstName ?? 'user';
+                  final userName = snapshot.data?.user?.fullName ?? 'user';
                   return _buildHeader(context, userName);
                 },
               );

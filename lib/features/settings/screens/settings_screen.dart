@@ -1,7 +1,11 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart'
+    as customer;
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
+import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart'
+    as provider;
 import 'package:resq360/features/settings/data/models/settings_model.dart';
 import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
@@ -18,10 +22,12 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context,) {
+  Widget build(
+    BuildContext context,
+  ) {
     final appColors = context.appColors;
 
-   final isProvider = dashboardViewModel.userType == UserType.provider;
+    final isProvider = dashboardViewModel.userType == UserType.provider;
 
     final customerSettingsOptions = [
       SettingsItem(
@@ -153,7 +159,9 @@ class SettingsScreen extends StatelessWidget {
         ),
         children: [
           10.verticalSpace,
-          const _ProfileSection(),
+          _ProfileSection(
+            isProvider: isProvider,
+          ),
           10.verticalSpace,
           if (isProvider)
             GestureDetector(
@@ -286,18 +294,46 @@ class SettingsScreen extends StatelessWidget {
 }
 
 class _ProfileSection extends StatelessWidget {
-  const _ProfileSection();
-
+  const _ProfileSection({required this.isProvider});
+  final bool isProvider;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return FutureBuilder(
-      future: AuthLocalRepo.instance.getAuthCredentials(),
+      future:
+          isProvider
+              ? AuthLocalRepo.instance.getProviderCredentials()
+              : AuthLocalRepo.instance.getAuthCredentials(),
       builder: (context, asyncSnapshot) {
-        final user = asyncSnapshot.data?.user;
-        final name = user?.fullName ?? 'User';
-        // final email = user?.email ?? '';
+        if (asyncSnapshot.hasError) {
+          return Center(child: Text('Error: ${asyncSnapshot.error}'));
+        }
+
+        if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return const Center(child: Text('No user found'));
+        }
+
+        String name;
+        // String? imageUrl;
+
+        if (isProvider) {
+          final user = asyncSnapshot.data! as provider.AuthResponse;
+          final fullName = user.user?.fullName?.trim();
+          name =
+              (fullName != null && fullName.isNotEmpty)
+                  ? fullName
+                  : 'Provider User';
+          // imageUrl = user.user?.profileImageUrl;
+        } else {
+          final user = asyncSnapshot.data! as customer.AuthResponse;
+          final fullName = user.user.fullName?.trim();
+          name =
+              (fullName != null && fullName.isNotEmpty)
+                  ? fullName
+                  : 'Customer User';
+          // imageUrl = user.user.;
+        }
 
         return Column(
           children: [
