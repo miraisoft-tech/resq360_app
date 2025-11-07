@@ -53,26 +53,30 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-  Future<void> _navigateToNext() async {
-    final userType = await AuthLocalRepo.instance.getUserType();
+Future<void> _navigateToNext() async {
+  final userTypeString = await AuthLocalRepo.instance.getUserType();
 
-    if (userType == null && mounted) {
-      await replaceScreen(
-        context,
-        const SelectAccountTypeScreen(),
-      );
-      return;
-    } else if (mounted) {
-      dashboardViewModel.userType =
-          userType == 'user' ? UserType.customer : UserType.provider;
-
-      await replaceScreen(
-        context,
-        const MainLayoutPage(),
-      );
-    }
+  if (userTypeString == null && mounted) {
+    await replaceScreen(
+      context,
+      const SelectAccountTypeScreen(),
+    );
+    return;
   }
 
+  final userType = userTypeString == 'provider'
+      ? UserType.provider
+      : UserType.customer;
+
+  dashboardViewModel.userType = userType;
+
+  if (!mounted) return;
+
+  await replaceScreen(
+    context,
+    MainLayoutPage(userType: userType),
+  );
+}
   @override
   void initState() {
     super.initState();

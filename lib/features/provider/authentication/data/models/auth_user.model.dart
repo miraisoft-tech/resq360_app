@@ -8,42 +8,38 @@ AuthResponse userFromJson(String str) =>
 
 String userToJson(AuthResponse data) => json.encode(data.toJson());
 
-class AuthResponse extends EmptyResponse  implements BaseAuthResponse{
-  AuthResponse(
-    this.accessToken, {
-    required this.message,
-     required this.success, this.user,
+/// Login response (only used for auth endpoints)
+class AuthResponse extends EmptyResponse implements BaseAuthResponse {
+  AuthResponse({
+    required this.accessToken,
+    required this.provider,
   });
 
-factory AuthResponse.fromJson(Map<String, dynamic> json) {
-  final data = json['data'] as Map<String, dynamic>?;
+  factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>? ?? {};
+    return AuthResponse(
+      accessToken: (data['access_token'] as String?) ?? '',
+      provider: ProviderUserModel.fromJson(
+        (data['provider'] ?? <String, dynamic>{}) as Map<String, dynamic>,
+      ),
+    );
+  }
 
-  final userJson = (data?['provider'] ?? data?['user']) as Map<String, dynamic>?;
-
-  return AuthResponse(
-    data?['access_token'] as String?,
-    message: json['message'] as String? ?? '',
-    user: userJson != null ? ProviderUserModel.fromJson(userJson) : null,
-    success: json['success'] as bool? ?? false,
-  );
-}
-  String message;
-  ProviderUserModel? user;
-  bool success;
   @override
-  final String? accessToken;
+  final String accessToken;
+  final ProviderUserModel provider;
 
   @override
   Map<String, dynamic> toJson() => {
-    'message': message,
-    'user': user?.toJson(),
-    'success': success,
+    'data': {
+      'access_token': accessToken,
+      'provider': provider.toJson(),
+    },
   };
-}
 
-// To parse this JSON data, do
-//
-//     final user = userFromJson(jsonString);
+  @override
+  String toString() => jsonEncode(toJson());
+}
 
 class ProviderUserModel {
   ProviderUserModel({
@@ -89,154 +85,3 @@ class ProviderUserModel {
     'createdAt': createdAt,
   };
 }
-
-class Address {
-  Address({
-    required this.state,
-    required this.city,
-    required this.zipCode,
-    required this.address,
-    required this.longitude,
-    required this.latitude,
-  });
-
-  factory Address.fromJson(Map<String, dynamic> json) => Address(
-    state: json['state'] as String,
-    city: json['city'] as String,
-    zipCode: json['zipCode'] as String,
-    address: json['address'] as String,
-    longitude:
-        (json['longitude'] != null)
-            ? (json['longitude'] as num).toDouble()
-            : 0.0,
-    latitude:
-        (json['latitude'] != null) ? (json['latitude'] as num).toDouble() : 0.0,
-  );
-  String state;
-  String city;
-  String zipCode;
-  String address;
-  double longitude;
-  double latitude;
-
-  Map<String, dynamic> toJson() => {
-    'state': state,
-    'city': city,
-    'zipCode': zipCode,
-    'address': address,
-    'longitude': longitude,
-    'latitude': latitude,
-  };
-}
-
-// class UserModel extends EmptyResponse {
-//   UserModel({
-//     this.id,
-//     this.photoUrl,
-//     this.firstName,
-//     this.lastName,
-//     this.email,
-//     this.address,
-//     this.phone,
-//     this.state,
-//     this.accountState,
-//     this.code,
-//     this.isTruckAssigned,
-//     this.companyId,
-//     this.companyName,
-//     this.companyIconUrl,
-//     this.userId,
-//     this.referralCode,
-//   });
-
-//   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-//     id: json['id'] as String?,
-//     photoUrl: json['profilePic'] as String?,
-//     firstName: json['firstName'] as String?,
-//     lastName: json['lastName'] as String?,
-//     email: json['email'] as String?,
-//     address: json['address'] as String?,
-//     phone: json['phoneNumber'] as String?,
-//     state: json['state'] as String?,
-//     accountState: json['accountState'] as bool?,
-//     code: json['code'] as String?,
-//     isTruckAssigned: json['isTruckAssigned'] as bool?,
-//     companyId: json['companyId'] as String?,
-//     companyName: json['companyName'] as String?,
-//     companyIconUrl: json['companyIconUrl'] as String?,
-//     userId: json['userId'] as String?,
-//     referralCode: json['referralCode'] as String?,
-//   );
-
-//   final String? id;
-//   final String? photoUrl;
-//   final String? firstName;
-//   final String? lastName;
-//   final String? email;
-//   final String? address;
-//   final String? phone;
-//   final String? state;
-//   final bool? accountState;
-//   final String? code;
-//   final bool? isTruckAssigned;
-//   final String? companyId;
-//   final String? companyName;
-//   final String? companyIconUrl;
-//   final String? userId;
-//   final String? referralCode;
-
-//   Map<String, dynamic> toJson() => {
-//     'id': id,
-//     'profilePic': photoUrl,
-//     'firstName': firstName,
-//     'lastName': lastName,
-//     'email': email,
-//     'address': address,
-//     'phoneNumber': phone,
-//     'state': state,
-//     'accountState': accountState,
-//     'code': code,
-//     'isTruckAssigned': isTruckAssigned,
-//     'companyId': companyId,
-//     'companyName': companyName,
-//     'companyIconUrl': companyIconUrl,
-//     'userId': userId,
-//     'referralCode': referralCode,
-//   };
-
-//   UserModel copyWith({
-//     String? id,
-//     String? photoUrl,
-//     String? firstName,
-//     String? lastName,
-//     String? email,
-//     String? address,
-//     String? phone,
-//     String? state,
-//     bool? accountState,
-//     String? code,
-//     bool? isTruckAssigned,
-//     String? companyId,
-//     String? companyName,
-//     String? companyIconUrl,
-//     String? userId,
-//   }) {
-//     return UserModel(
-//       id: id ?? this.id,
-//       photoUrl: photoUrl ?? this.photoUrl,
-//       firstName: firstName ?? this.firstName,
-//       lastName: lastName ?? this.lastName,
-//       email: email ?? this.email,
-//       address: address ?? this.address,
-//       phone: phone ?? this.phone,
-//       state: state ?? this.state,
-//       accountState: accountState ?? this.accountState,
-//       code: code ?? this.code,
-//       isTruckAssigned: isTruckAssigned ?? this.isTruckAssigned,
-//       companyId: companyId ?? this.companyId,
-//       companyName: companyName ?? this.companyName,
-//       companyIconUrl: companyIconUrl ?? this.companyIconUrl,
-//       userId: userId ?? this.userId,
-//     );
-//   }
-// }

@@ -5,8 +5,8 @@ import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 
 class MainLayoutPage extends StatefulWidget {
-  const MainLayoutPage({super.key});
-
+  const MainLayoutPage({required this.userType, super.key});
+  final UserType userType;
   @override
   State<MainLayoutPage> createState() => _MainLayoutPageState();
 }
@@ -14,7 +14,7 @@ class MainLayoutPage extends StatefulWidget {
 GlobalKey<ScaffoldState> mainLayoutScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainLayoutPageState extends State<MainLayoutPage> {
-  final DashboardViewModel dashboardVM = DashboardViewModel();
+  late DashboardViewModel dashboardVM;
 
   DateTime currentBackPressTime = DateTime.now();
 
@@ -31,6 +31,12 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
       dashboardVM.onChanged(0);
       return false;
     }
+  }
+
+   @override
+  void initState() {
+    super.initState();
+    dashboardVM = DashboardViewModel(userType: widget.userType);
   }
 
   @override

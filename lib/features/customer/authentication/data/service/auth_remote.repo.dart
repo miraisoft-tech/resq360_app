@@ -4,6 +4,7 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
@@ -395,7 +396,7 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<AuthResponse>> getUserProfile() async {
+  Future<ApiResult<CustomerProfileResponse>> getUserProfile() async {
     try {
       const url = '/auth/profile/user';
 
@@ -407,14 +408,14 @@ class AuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
 
         if (success) {
-          final authResponse = AuthResponse.fromJson(res.data!);
-          log('User profile fetched: ${authResponse.user.fullName}');
+         final customerProfileResponse = CustomerProfileResponse.fromJson(res.data!);
+          log('User profile fetched: ${customerProfileResponse.user.fullName}');
           
         // Save to local storage
         await AuthLocalRepo.instance.storeUserDetails(
-          authResponse: authResponse, isProvider: false,
+          customerProfileResponse: customerProfileResponse, isProvider: false,
         );
-          return ApiResult(data: authResponse);
+          return ApiResult(data: customerProfileResponse);
         } else {
           return ApiResult(
             error: res.data!['message']?.toString() ?? 'Signup failed',
@@ -430,35 +431,7 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<AuthResponse>> getProviderProfile() async {
-    try {
-      const url = '/auth/profile/provider';
 
-      final res = await dio().get<Map<String, dynamic>>(url);
-
-      log(res.statusCode);
-      log(res.data);
-      if (res.statusCode == 200 && res.data != null) {
-        final success = res.data!['success'] == true;
-
-        if (success) {
-          final authResponse = AuthResponse.fromJson(res.data!);
-          log('User profile fetched: ${authResponse.user.fullName}');
-          return ApiResult(data: authResponse);
-        } else {
-          return ApiResult(
-            error: res.data!['message']?.toString() ?? 'Signup failed',
-          );
-        }
-      }
-      return ApiResult(error: 'An error occurred, please try again!');
-    } on Exception catch (e, s) {
-      log(e);
-      log(s);
-
-      return ApiResult(error: '$e $s');
-    }
-  }
 
   Future<ApiResult<AuthResponse>> updateUserInfo({
     required String fullName,

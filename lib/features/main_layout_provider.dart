@@ -16,10 +16,9 @@ import 'package:resq360/features/settings/screens/settings_screen.dart';
 final dashboardViewModel = DashboardViewModel();
 
 class DashboardViewModel extends ChangeNotifier {
-  DashboardViewModel();
+  DashboardViewModel({this.userType = UserType.customer});
 
-
-  UserType userType = UserType.customer;
+  UserType userType;
 
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;

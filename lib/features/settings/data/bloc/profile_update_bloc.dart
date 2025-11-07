@@ -73,9 +73,9 @@ Future<void> _onUpdateProviderInfo(
 
     // Step 2: Update provider info
     final result = await updateUserRepo.updateProviderInformation(
-      fullName: provider?.user?.fullName ?? '',
-      phoneNumber: provider?.user?.phoneNumber ?? '',
-      companyName: provider?.user?.companyName ?? '',
+      fullName: provider?.user.fullName ?? '',
+      phoneNumber: provider?.user.phoneNumber ?? '',
+      companyName: provider?.user.companyName ?? '',
       description: event.description,
       workingDays: event.workingDays,
       openingHours: event.openingHours,

@@ -2,10 +2,10 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart'
     as customer;
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart'
-    as provider;
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
 import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
@@ -318,15 +318,15 @@ class _ProfileSection extends StatelessWidget {
         // String? imageUrl;
 
         if (isProvider) {
-          final user = asyncSnapshot.data! as provider.AuthResponse;
-          final fullName = user.user?.fullName?.trim();
+          final provider = asyncSnapshot.data! as ProviderProfileResponse;
+          final fullName = provider.user.fullName?.trim();
           name =
               (fullName != null && fullName.isNotEmpty)
                   ? fullName
                   : 'Provider User';
           // imageUrl = user.user?.profileImageUrl;
         } else {
-          final user = asyncSnapshot.data! as customer.AuthResponse;
+          final user = asyncSnapshot.data! as CustomerProfileResponse;
           final fullName = user.user.fullName?.trim();
           name =
               (fullName != null && fullName.isNotEmpty)

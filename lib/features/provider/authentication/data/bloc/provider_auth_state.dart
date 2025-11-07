@@ -66,7 +66,7 @@ class ProviderVerificationResent extends ProviderAuthState {
 }
 class ProviderProfileLoadedState  extends ProviderAuthState {
   const ProviderProfileLoadedState (this.user);
-  final ProviderUserModel user;
+  final ProviderProfileResponse user;
 }
 
 class ProviderKycSubmitted extends ProviderAuthState {

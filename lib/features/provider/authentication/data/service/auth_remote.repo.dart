@@ -4,7 +4,9 @@ import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 
 import 'package:resq360/core/services/base_api.dart';
+import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 // import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
@@ -98,9 +100,10 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         try {
           // final userProfile = await getUserProfile(token: token.toString());
           final userProfile = await getUserProfile();
+          final name = userProfile.data?.user.fullName;
 
           log(
-            'Fetched user profile: $userProfile.data.toString()',
+            'Fetched user profile: $name',
           );
         } on Exception catch (e) {
           log('Failed to fetch profile: $e');
@@ -118,8 +121,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
           );
         }
       }
-
-      // Add a default return in case the above conditions are not met
       return ApiResult(
         error:
             res.data?['message']?.toString() ??
@@ -358,7 +359,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<AuthResponse>> getUserProfile() async {
+  Future<ApiResult<ProviderProfileResponse>> getUserProfile() async {
     try {
       const url = '/auth/profile/provider';
 
@@ -371,12 +372,12 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
 
         if (success) {
-          final authResponse = AuthResponse.fromJson(res.data!);
+          final providerProfileResponse = ProviderProfileResponse.fromJson(res.data!);
           // Save to local storage
           await AuthLocalRepo.instance.storeUserDetails(
-            authResponse: authResponse, isProvider: true,
+             isProvider: true, providerProfileResponse: providerProfileResponse,
           );
-          return ApiResult(data: authResponse);
+          return ApiResult(data: providerProfileResponse);
         } else {
           return ApiResult(
             error: res.data!['message']?.toString() ?? 'Signup failed',

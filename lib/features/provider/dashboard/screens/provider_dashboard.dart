@@ -1,9 +1,7 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
-import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
-import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
@@ -32,21 +30,21 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         backgroundColor: colors.whiteColor,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
-          builder: (context, state) {
-           if (state is ProviderAuthLoginSuccessState) {
-              final user = state.user;
-                return _buildHeader(context, user.fullName!);
+        title: FutureBuilder<ProviderProfileResponse?>(
+          future: AuthLocalRepo.instance.getProviderCredentials(),
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.hasError) {
+              return Center(child: Text('Error: ${asyncSnapshot.error}'));
             }
-              
-              return FutureBuilder<AuthResponse?>(
-                future: AuthLocalRepo.instance.getProviderCredentials(),
-                builder: (context, snapshot) {
-                  final userName = snapshot.data?.user?.fullName ?? 'user';
-                  return _buildHeader(context, userName);
-                },
-              );
-           
+
+            if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+              return const Center(child: Text('No user found'));
+            }
+
+            final provider = asyncSnapshot.data!;
+            final fullName = provider.user.fullName?.trim();
+            log('provider dashboard $fullName');
+            return _buildHeader(context, fullName!);
           },
         ),
         actions: [

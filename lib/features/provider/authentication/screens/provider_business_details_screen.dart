@@ -8,7 +8,7 @@ import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
-import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_confirm_email_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';

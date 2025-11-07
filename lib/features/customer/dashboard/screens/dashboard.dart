@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return _buildHeader(context, user.fullName!);
             }
               
-              return FutureBuilder<AuthResponse?>(
+              return FutureBuilder<CustomerProfileResponse?>(
                 future: AuthLocalRepo.instance.getAuthCredentials(),
                 builder: (context, snapshot) {
                   final userName = snapshot.data?.user.fullName ?? 'user';

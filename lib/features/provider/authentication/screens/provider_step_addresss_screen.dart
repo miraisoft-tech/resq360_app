@@ -4,6 +4,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/helpers/location_helper.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
@@ -32,6 +33,14 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
     'Oyo',
     'Enugu',
   ];
+
+    Future<void> initializeLocation() async {
+    final locationData = await LocationHelper.getCurrentLocation();
+
+    _streetCtrl.text = (locationData['address'] as String?) ?? '';
+    _cityCtrl.text = (locationData['city'] as String?) ?? '';
+  }
+
 
   bool get isFormValid =>
       _streetCtrl.text.isNotEmpty &&
