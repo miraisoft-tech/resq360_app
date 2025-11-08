@@ -1,33 +1,49 @@
 import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:resq360/core/services/upload_service.dart';
+import 'package:resq360/core/services/chat_socket_service.dart';
+import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 
 part 'customer_chat_event.dart';
 part 'customer_chat_state.dart';
 
-final ChatRepo _chatRepo = ChatRepo();
-final UploadService uploadService = UploadService.instance;
-
-
 class CustomerChatBloc extends Bloc<CustomerChatEvent, CustomerChatState> {
   CustomerChatBloc() : super(CustomerChatInitial()) {
+    on<ConnectChatSocketEvent>(_onConnectSocket);
     on<CreateChatEvent>(_onCreateChat);
     on<GetChatsEvent>(_onGetChats);
     on<SendMessageEvent>(_onSendMessage);
-    on<SendFileMessageEvent>(_onSendFileMessage);
     on<GetChatMessagesEvent>(_onGetMessages);
     on<MarkMessageAsReadEvent>(_onMarkAsRead);
     on<LeaveChatEvent>(_onLeaveChat);
+    on<NewMessageReceivedEvent>(_onNewMessageReceived);
   }
 
-  Future<void> _onCreateChat(CreateChatEvent event, Emitter<CustomerChatState> emit) async {
-    emit(CustomerChatLoadingState());
-    final result = await _chatRepo.createChat(chatRequest: event.chatRequest);
+  final ChatRepo _chatRepo = ChatRepo();
+  final ChatSocketService _socket = ChatSocketService.instance;
 
+  /// 🔌 Connect to Socket
+  Future<void> _onConnectSocket(
+    ConnectChatSocketEvent event,
+    Emitter<CustomerChatState> emit,
+  ) async {
+    emit(ConnectingSocketState());
+    await _socket.connect();
+    _socket.messageStream.listen((message) {
+      add(NewMessageReceivedEvent(message));
+    });
+    emit(CustomerChatSocketConnected());
+  }
+
+  /// 💬 Create Chat
+  Future<void> _onCreateChat(
+    CreateChatEvent event,
+    Emitter<CustomerChatState> emit,
+  ) async {
+    emit(CreatingChatState());
+    final result = await _chatRepo.createChat(chatRequest: event.chatRequest);
     if (result.data != null) {
       emit(CustomerChatLoadedState(result.data!));
     } else {
@@ -35,10 +51,13 @@ class CustomerChatBloc extends Bloc<CustomerChatEvent, CustomerChatState> {
     }
   }
 
-  Future<void> _onGetChats(GetChatsEvent event, Emitter<CustomerChatState> emit) async {
-    emit(CustomerChatLoadingState());
+  /// 📜 Get Chats
+  Future<void> _onGetChats(
+    GetChatsEvent event,
+    Emitter<CustomerChatState> emit,
+  ) async {
+    emit(FetchingChatsState());
     final result = await _chatRepo.getChats();
-
     if (result.data != null) {
       emit(CustomerChatListLoadedState(result.data!));
     } else {
@@ -46,83 +65,41 @@ class CustomerChatBloc extends Bloc<CustomerChatEvent, CustomerChatState> {
     }
   }
 
-Future<void> _onSendMessage(
-  SendMessageEvent event,
-  Emitter<CustomerChatState> emit,
-) async {
-  ChatMessagesResponse? existing;
-  if (state is MessagesLoaded) {
-    existing = (state as MessagesLoaded).messages;
-  }
-
-  emit(MessageSending());
-
-  final result = await _chatRepo.sendMessage(messageRequest: event.messageRequest);
-
-  if (result.data != null) {
-    final newMessage = result.data!;
-
-    // Compose current messages
-    final current = <MessageResponse>[];
-    if (existing != null) current.addAll(existing.messages);
-    current.insert(0, newMessage);
-
-    // Rebuild ChatMessagesResponse using existing metadata if present
-    final updated = ChatMessagesResponse(
-      messages: current,
-      page: existing?.page ?? 1,
-      limit: existing?.limit ?? current.length,
-      total: existing?.total ?? current.length,
-      totalPages: existing?.totalPages ?? 1,
-    );
-
-    emit(MessagesLoaded(updated));
-  } else {
-    emit(CustomerChatErrorState(result.error ?? 'Failed to send message'));
-  }
-}
-
-
-
-  Future<void> _onSendFileMessage(
-    SendFileMessageEvent event,
+  /// 📨 Send Message (instant)
+  Future<void> _onSendMessage(
+    SendMessageEvent event,
     Emitter<CustomerChatState> emit,
   ) async {
-    emit(MessageSending());
-
-    final uploadResult = await uploadService.uploadSingle(filePath: event.file.path);
-
-    if (uploadResult.error != null) {
-      emit(CustomerChatErrorState(uploadResult.error!));
-      return;
-    }
-
-    final upload = uploadResult.data!;
-    final messageRequest = SendMessageRequest(
-      chatId: event.chatId,
-      messageType: 'FILE',
-      fileName: event.fileName,
-      mimeType: event.mimeType,
-      fileUrl: upload.url,
-      fileSize: event.file.lengthSync(),
-      content: '',
+    final auth = CustomerAuthProvider.instance.authInfo;
+    final currentUserId = auth?.user.id;
+    //  create a local message to show in UI for now
+    final localMessage = MessageResponse(
+      id: DateTime.now().millisecondsSinceEpoch,
+      chatId: event.messageRequest.chatId,
+      content: event.messageRequest.content,
+      messageType: event.messageRequest.messageType,
+      senderId: currentUserId,
+      senderType: 'USER',
+      createdAt: DateTime.now(),
     );
+    emit(NewMessageState(localMessage));
+    final result = await _chatRepo.sendMessage(messageRequest: event.messageRequest);
 
-    final sendResult = await _chatRepo.sendMessage(messageRequest: messageRequest);
-
-    if (sendResult.error != null && sendResult.error!.isNotEmpty) {
-      emit(CustomerChatErrorState(sendResult.error!));
-    } else if (sendResult.data != null) {
-      emit(MessageSent(sendResult.data!));
-    } else {
-      emit(const CustomerChatErrorState('Unknown error sending file message'));
-    }
+  if (result.data != null) {
+     emit(NewMessageState(result.data!));
+    emit(const MessageSent());
+  } else {
+    emit(const CustomerChatErrorState('Failed to send message'));
+  }
   }
 
-  Future<void> _onGetMessages(GetChatMessagesEvent event, Emitter<CustomerChatState> emit) async {
-    emit(CustomerChatLoadingState());
+  /// 🧾 Get Messages
+  Future<void> _onGetMessages(
+    GetChatMessagesEvent event,
+    Emitter<CustomerChatState> emit,
+  ) async {
+    emit(FetchingMessagesState());
     final result = await _chatRepo.getChatMessages(event.chatId);
-
     if (result.data != null) {
       emit(MessagesLoaded(result.data!));
     } else {
@@ -130,24 +107,42 @@ Future<void> _onSendMessage(
     }
   }
 
-  Future<void> _onMarkAsRead(MarkMessageAsReadEvent event, Emitter<CustomerChatState> emit) async {
+  /// 👁️ Mark Message as Read (no loader)
+  Future<void> _onMarkAsRead(
+    MarkMessageAsReadEvent event,
+    Emitter<CustomerChatState> emit,
+  ) async {
     final result = await _chatRepo.markMessageAsRead(event.messageId);
-
     if (result.data != null) {
       emit(MessageRead(event.messageId));
     } else {
-      emit(CustomerChatErrorState(result.error ?? 'Failed to mark message as read'));
+      emit(
+        CustomerChatErrorState(
+          result.error ?? 'Failed to mark message as read',
+        ),
+      );
     }
   }
 
-  Future<void> _onLeaveChat(LeaveChatEvent event, Emitter<CustomerChatState> emit) async {
-    emit(CustomerChatLoadingState());
+  /// 🚪 Leave Chat
+  Future<void> _onLeaveChat(
+    LeaveChatEvent event,
+    Emitter<CustomerChatState> emit,
+  ) async {
+    emit(LeavingChatState());
     final result = await _chatRepo.leaveChat(event.chatId);
-
     if (result.error == null) {
       emit(ChatLeft());
     } else {
       emit(CustomerChatErrorState(result.error!));
     }
+  }
+
+  /// 🔔 New Message
+  void _onNewMessageReceived(
+    NewMessageReceivedEvent event,
+    Emitter<CustomerChatState> emit,
+  ) {
+    emit(NewMessageState(event.message));
   }
 }

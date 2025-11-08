@@ -38,6 +38,9 @@ class _SplashScreenState extends State<SplashScreen> {
         // If intro done: determine if there's a restored auth for either role.
         final hasCustomerAuth = CustomerAuthProvider.instance.authInfo != null;
         final hasProviderAuth = ProviderAuthProvider.instance.authInfo != null;
+        log('Splash AuthProvider hash: ${CustomerAuthProvider.instance.hashCode}');
+       
+        log('Auth info: ${CustomerAuthProvider.instance.authInfo}');
 
         if (hasCustomerAuth || hasProviderAuth) {
           await _navigateToNext();

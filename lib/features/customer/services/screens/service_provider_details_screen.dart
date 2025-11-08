@@ -54,27 +54,32 @@ class _ServiceProviderDetailsScreenState
 
   Future<void> _createChat() async {
     log('Statrted');
-    final auth = CustomerAuthProvider.instance.authInfo;
-    if (auth == null) {
-      await showSnackBar(context, 'Error', 'Please log in to continue.');
-      return;
+    final provider = CustomerAuthProvider.instance;
+    if (provider.authInfo == null) {
+      await provider.init();
     }
 
-    final userId = auth.user.id!;
+    final auth = provider.authInfo;
+    // if (auth == null) {
+    //   await showSnackBar(context, 'Error', 'Please log in to continue.');
+    //   return;
+    // }
+
+    final userId = auth?.user.id;
     final providerId = widget.providerId;
-    final chatRepo = ChatRepo();
+    // final chatRepo = ChatRepo();
 
     // ✅ Step 1: Check if chat already exists
-    final existingChat = await chatRepo.findExistingPrivateChat(
-      providerId: providerId,
-      userId: userId,
-    );
+    // final existingChat = await chatRepo.findExistingPrivateChat(
+    //   providerId: providerId,
+    //   userId: userId,
+    // );
 
-    if (existingChat != null) {
-      log('Existing chat found → navigating to chat ID ${existingChat.id}');
-      await pushScreen(context, ChatDetailScreen(chat: existingChat));
-      return;
-    }
+    // if (existingChat != null) {
+    //   log('Existing chat found → navigating to chat ID ${existingChat.id}');
+    //   await pushScreen(context, ChatDetailScreen(chat: existingChat));
+    //   return;
+    // }
 
     // 🚀 Step 2: If not found, create a new chat
     final chatRequest = CreateChatRequest(
@@ -83,7 +88,7 @@ class _ServiceProviderDetailsScreenState
       participants: [
         ChatParticipant(
           participantType: 'USER',
-          participantId: userId,
+          participantId: userId!,
         ),
         ChatParticipant(
           participantType: 'PROVIDER',
@@ -109,7 +114,7 @@ class _ServiceProviderDetailsScreenState
 
     return BlocListener<CustomerChatBloc, CustomerChatState>(
       listener: (context, state) async {
-        if (state is CustomerChatLoadingState) {
+        if (state is FetchingChatsState) {
           await showLoadingDialog(
             context,
           );

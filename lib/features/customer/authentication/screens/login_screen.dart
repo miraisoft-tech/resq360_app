@@ -4,6 +4,7 @@ import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/forgot_password_screen.dart';
+import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -64,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }
+          context.read<CustomerChatBloc>().add(ConnectChatSocketEvent());
           await replaceScreen(
             context,
              const MainLayoutPage(userType: UserType.customer,),

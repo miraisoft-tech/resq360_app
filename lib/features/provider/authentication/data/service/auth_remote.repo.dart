@@ -7,6 +7,7 @@ import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
 // import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
@@ -385,6 +386,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
             isProvider: true,
             providerProfileResponse: providerProfileResponse,
           );
+            await ProviderAuthProvider.instance.init();
           return ApiResult(data: providerProfileResponse);
         } else {
           return ApiResult(

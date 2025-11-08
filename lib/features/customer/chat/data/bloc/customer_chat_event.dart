@@ -8,6 +8,12 @@ sealed class CustomerChatEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class ConnectChatSocketEvent extends CustomerChatEvent {}
+class NewMessageReceivedEvent extends CustomerChatEvent {
+  const NewMessageReceivedEvent(this.message);
+  final MessageResponse message;
+}
+
 class CreateChatEvent extends CustomerChatEvent {
   const CreateChatEvent({ required this.chatRequest});
   final CreateChatRequest chatRequest;

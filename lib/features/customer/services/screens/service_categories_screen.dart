@@ -50,7 +50,12 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
 
   @override
   void initState() {
-    context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+     final bloc = context.read<CustomerServicesBloc>();
+  final currentState = bloc.state;
+
+  if (currentState is! CustomerServicesLoaded) {
+    bloc.add(CustomerFetchServices());
+  }
     super.initState();
   }
 

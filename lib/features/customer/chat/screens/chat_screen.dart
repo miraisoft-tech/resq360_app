@@ -55,7 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: BlocBuilder<CustomerChatBloc, CustomerChatState>(
                 builder: (context, state) {
-                  if (state is CustomerChatLoadingState) {
+                  if (state is FetchingChatsState) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
