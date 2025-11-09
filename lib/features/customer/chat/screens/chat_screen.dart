@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
+import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 // import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/widgets/chat_tile.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
@@ -22,7 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<CustomerChatBloc>().add(GetChatsEvent());
+    context.read<ChatBloc>().add(GetChatsEvent());
   }
 
   @override
@@ -53,13 +54,13 @@ class _ChatScreenState extends State<ChatScreen> {
             _buildFilterRow(),
             const SizedBox(height: 12),
             Expanded(
-              child: BlocBuilder<CustomerChatBloc, CustomerChatState>(
+              child: BlocBuilder<ChatBloc, ChatState>(
                 builder: (context, state) {
                   if (state is FetchingChatsState) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  if (state is CustomerChatErrorState) {
+                  if (state is ChatErrorState) {
                     return Center(
                       child: Text(
                         state.message,
@@ -68,7 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     );
                   }
 
-                  if (state is CustomerChatListLoadedState) {
+                  if (state is ChatListLoadedState) {
                     final chats = _applyFilter(state.chats.chats);
                     if (chats.isEmpty) {
                       return const EmptyScreenWidget(
@@ -95,8 +96,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
                           ),
                           // could be computed later
-                          onTap: () {
-                            // context.push(ChatDetailScreen(chat: chat));
+                          onTap: () async {
+                            await pushScreen(context, ChatDetailScreen(chat: chat));
                           },
                         );
                       },
@@ -138,7 +139,6 @@ class _ChatScreenState extends State<ChatScreen> {
 List<ChatResponse> _applyFilter(List<ChatResponse> chats) {
   switch (selectedFilter) {
     case 'Unread':
-      // later use lastReadAt to compute unread
       return chats;
     case 'Appeal':
       return chats
@@ -231,7 +231,7 @@ List<ChatResponse> _applyFilter(List<ChatResponse> chats) {
 //   @override
 //   void initState() {
 //     super.initState();
-//     context.read<CustomerChatBloc>().add(GetChatsEvent());
+//     context.read<ChatBloc>().add(GetChatsEvent());
 //   }
 
 //   @override
@@ -275,7 +275,7 @@ List<ChatResponse> _applyFilter(List<ChatResponse> chats) {
 //                   (value) => setState(() => selectedFilter = value),
 //             ),
 //             16.verticalSpace,
-//             BlocBuilder<CustomerChatBloc, CustomerChatState>(
+//             BlocBuilder<ChatBloc, ChatState>(
 //               builder: (context, state) {
                 
 //                 return Expanded(

@@ -1,20 +1,20 @@
-part of 'customer_chat_bloc.dart';
+part of 'chat_bloc.dart';
 
 
-sealed class CustomerChatEvent extends Equatable {
-  const CustomerChatEvent();
+sealed class ChatEvent extends Equatable {
+  const ChatEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-class ConnectChatSocketEvent extends CustomerChatEvent {}
-class NewMessageReceivedEvent extends CustomerChatEvent {
+class ConnectChatSocketEvent extends ChatEvent {}
+class NewMessageReceivedEvent extends ChatEvent {
   const NewMessageReceivedEvent(this.message);
   final MessageResponse message;
 }
 
-class CreateChatEvent extends CustomerChatEvent {
+class CreateChatEvent extends ChatEvent {
   const CreateChatEvent({ required this.chatRequest});
   final CreateChatRequest chatRequest;
 
@@ -22,9 +22,9 @@ class CreateChatEvent extends CustomerChatEvent {
   List<Object?> get props => [chatRequest];
 }
 
-class GetChatsEvent extends CustomerChatEvent {}
+class GetChatsEvent extends ChatEvent {}
 
-class SendMessageEvent extends CustomerChatEvent {
+class SendMessageEvent extends ChatEvent {
   const SendMessageEvent({required this.messageRequest});
   final SendMessageRequest messageRequest;
 
@@ -32,7 +32,7 @@ class SendMessageEvent extends CustomerChatEvent {
   List<Object?> get props => [messageRequest];
 }
 
-class SendFileMessageEvent extends CustomerChatEvent {
+class SendFileMessageEvent extends ChatEvent {
   const SendFileMessageEvent({
     required this.chatId,
     required this.file,
@@ -49,7 +49,7 @@ class SendFileMessageEvent extends CustomerChatEvent {
   List<Object?> get props => [chatId, file, fileName, mimeType];
 }
 
-class GetChatMessagesEvent extends CustomerChatEvent {
+class GetChatMessagesEvent extends ChatEvent {
   const GetChatMessagesEvent({required this.chatId});
   final int chatId;
 
@@ -57,7 +57,7 @@ class GetChatMessagesEvent extends CustomerChatEvent {
   List<Object?> get props => [chatId];
 }
 
-class MarkMessageAsReadEvent extends CustomerChatEvent {
+class MarkMessageAsReadEvent extends ChatEvent {
   const MarkMessageAsReadEvent(this.messageId);
   final int messageId;
 
@@ -65,7 +65,7 @@ class MarkMessageAsReadEvent extends CustomerChatEvent {
   List<Object?> get props => [messageId];
 }
 
-class LeaveChatEvent extends CustomerChatEvent {
+class LeaveChatEvent extends ChatEvent {
   const LeaveChatEvent(this.chatId);
   final int chatId;
 
@@ -73,7 +73,7 @@ class LeaveChatEvent extends CustomerChatEvent {
   List<Object?> get props => [chatId];
 }
 
-class LoadMoreMessagesEvent extends CustomerChatEvent {
+class LoadMoreMessagesEvent extends ChatEvent {
   const LoadMoreMessagesEvent({required this.chatId, required this.lastMessageId});
   final int chatId;
   final int lastMessageId;

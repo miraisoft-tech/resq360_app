@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
-import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
@@ -18,7 +18,6 @@ class ChatDetailScreen extends StatefulWidget {
 }
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
-  Timer? _pollingTimer;
   final ScrollController _scrollController = ScrollController();
   final List<MessageResponse> _messages = [];
   bool _isFetching = false;
@@ -26,8 +25,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void initState() {
     super.initState();
     // 🔌 Connect socket and join the chat room
-    context.read<CustomerChatBloc>().add(ConnectChatSocketEvent());
-    context.read<CustomerChatBloc>().add(
+    context.read<ChatBloc>().add(ConnectChatSocketEvent());
+    context.read<ChatBloc>().add(
       GetChatMessagesEvent(chatId: widget.chat.id!),
     );
     _fetchMessages();
@@ -37,14 +36,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (_isFetching) return;
     _isFetching = true;
 
-    context.read<CustomerChatBloc>().add(
+    context.read<ChatBloc>().add(
       GetChatMessagesEvent(chatId: widget.chat.id!),
     );
   }
 
   @override
   void dispose() {
-    _pollingTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -98,7 +96,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           ),
         ],
       ),
-      body: BlocConsumer<CustomerChatBloc, CustomerChatState>(
+      body: BlocConsumer<ChatBloc, ChatState>(
         listener: (context, state) {
           if (state is NewMessageState) {
             setState(() => _messages.insert(0, state.message));
@@ -224,7 +222,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         messageType: 'TEXT',
                         content: text.trim(),
                       );
-                      context.read<CustomerChatBloc>().add(
+                      context.read<ChatBloc>().add(
                         SendMessageEvent(messageRequest: request),
                       );
                     }
@@ -233,7 +231,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
                 // ChatBoxWidget(
                 //   onSend: (text) {
-                //     context.read<CustomerChatBloc>().add(
+                //     context.read<ChatBloc>().add(
                 //       SendMessageEvent(
                 //         messageRequest: SendMessageRequest(
                 //           chatId: widget.chat.id!,
@@ -244,7 +242,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 //     );
                 //   },
                 //   onAttachment: (file, fileName, mimeType) {
-                //     context.read<CustomerChatBloc>().add(
+                //     context.read<ChatBloc>().add(
                 //       SendMessageEvent(
                 //         messageRequest: SendMessageRequest(
                 //           chatId: widget.chat.id!,
@@ -338,9 +336,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _onDocumentTap() {}
 
   void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 300), () async {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
+        await _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,

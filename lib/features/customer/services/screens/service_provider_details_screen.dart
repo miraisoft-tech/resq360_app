@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
-import 'package:resq360/features/customer/chat/data/bloc/customer_chat_bloc.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
@@ -97,7 +97,7 @@ class _ServiceProviderDetailsScreenState
       ],
     );
 
-    context.read<CustomerChatBloc>().add(
+    context.read<ChatBloc>().add(
       CreateChatEvent(chatRequest: chatRequest),
     );
   }
@@ -112,7 +112,7 @@ class _ServiceProviderDetailsScreenState
     final colors = context.appColors;
     final provider = widget.provider;
 
-    return BlocListener<CustomerChatBloc, CustomerChatState>(
+    return BlocListener<ChatBloc, ChatState>(
       listener: (context, state) async {
         if (state is FetchingChatsState) {
           await showLoadingDialog(
@@ -120,13 +120,13 @@ class _ServiceProviderDetailsScreenState
           );
         }
 
-        if (state is CustomerChatLoadedState) {
+        if (state is ChatLoadedState) {
           await pop(context);
           await pushScreen(
             context,
             ChatDetailScreen(chat: state.chat),
           );
-        } else if (state is CustomerChatErrorState) {
+        } else if (state is ChatErrorState) {
           await pop(context);
           await showSnackBar(context, 'Error', state.message);
         }

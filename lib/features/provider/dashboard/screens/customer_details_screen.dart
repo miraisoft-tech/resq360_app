@@ -123,7 +123,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               WideButton(
                 label: 'Chat with Client',
                 onPressed: () async {
-                  await pushScreen(context, const ProviderChatDetailScreen());
+                  // await pushScreen(context, const ProviderChatDetailScreen());
                 },
               ),
             ],
