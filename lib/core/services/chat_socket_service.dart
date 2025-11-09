@@ -19,7 +19,6 @@ class ChatSocketService {
   final _userJoinedController = StreamController<Map<String, dynamic>>.broadcast();
   final _userLeftController = StreamController<Map<String, dynamic>>.broadcast();
   final _messageReadController = StreamController<Map<String, dynamic>>.broadcast();
-  final _connectionController = StreamController<bool>.broadcast();
   Stream<MessageResponse> get messageStream => _messageController.stream;
 
   bool get isConnected => _socket?.connected ?? false;
