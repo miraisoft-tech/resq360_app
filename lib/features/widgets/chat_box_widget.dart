@@ -12,7 +12,8 @@ class ChatBoxWidget extends StatefulWidget {
   });
 
   final void Function(String message) onSend; // now sends the message text
-  final void Function(File file, String fileName, String mimeType) onAttachment;
+  final VoidCallback onAttachment;
+
 
   @override
   State<ChatBoxWidget> createState() => _ChatBoxWidgetState();
@@ -29,16 +30,16 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
     }
   }
 
-    Future<void> _pickAttachment() async {
-    final result = await FilePicker.platform.pickFiles();
+  //   Future<void> _pickAttachment() async {
+  //   final result = await FilePicker.platform.pickFiles();
 
-    if (result != null && result.files.isNotEmpty) {
-      final file = File(result.files.single.path!);
-      final fileName = result.files.single.name;
-      final mimeType = result.files.single.extension ?? 'unknown';
-      widget.onAttachment(file, fileName, mimeType);
-    }
-  }
+  //   if (result != null && result.files.isNotEmpty) {
+  //     final file = File(result.files.single.path!);
+  //     final fileName = result.files.single.name;
+  //     final mimeType = result.files.single.extension ?? 'unknown';
+  //     // widget.onAttachment(file, fileName, mimeType);
+  //   }
+  // }
 
 
   @override
@@ -57,7 +58,7 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
         children: [
           SVGButton(
             path: AppAssets.ASSETS_ICONS_ATTACHMENT_ICON_SVG,
-            onTap: _pickAttachment,
+            onTap: widget.onAttachment,
           ),
           6.horizontalSpace,
           Expanded(

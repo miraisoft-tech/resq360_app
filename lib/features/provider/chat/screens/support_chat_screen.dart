@@ -95,7 +95,7 @@ class SupportChatScreen extends StatelessWidget {
               ),
             ),
             ChatBoxWidget(
-              onAttachment:  (file, fileName, mimeType) async {
+              onAttachment:  () async {
                 await _showAttachmentMenu(context);
               },
               // () => _showAttachmentMenu(context),

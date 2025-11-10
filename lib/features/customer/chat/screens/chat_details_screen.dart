@@ -59,7 +59,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         forceMaterialTransparency: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: appColors.black),
-          onPressed: () => pop(context),
+          onPressed: () => pop(context, {'refresh': true}),
         ),
         title: Row(
           children: [
@@ -214,13 +214,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
 
                 ChatBoxWidget(
-                  onAttachment: (file, fileName, mimeType) {},
+                  onAttachment: () {},
                   onSend: (text) {
                     if (text.trim().isNotEmpty) {
                       final request = SendMessageRequest(
                         chatId: widget.chat.id!,
                         messageType: 'TEXT',
-                        content: text.trim(),
+                        content: text,
                       );
                       context.read<ChatBloc>().add(
                         SendMessageEvent(messageRequest: request),

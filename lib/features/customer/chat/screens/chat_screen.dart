@@ -30,85 +30,95 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return Scaffold(
-      backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        elevation: 0,
+    return PopScope(
+  onPopInvokedWithResult: (didPop, result) {
+     final data = result is Map<String, dynamic> ? result : null;
+        if (didPop) {
+          log('it pop and worked');
+          context.read<ChatBloc>().add(GetChatsEvent());
+        }
+      },
+      child: Scaffold(
         backgroundColor: appColors.whiteColor,
-        forceMaterialTransparency: true,
-        automaticallyImplyLeading: false,
-        title: const Text('Chats'),
-        centerTitle: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            FilterSearchFormField(
-              controller: _searchController,
-              onChanged: (_) => setState(() {}),
-              prefixIconPath: '',
-              hintText: '',
-            ),
-            const SizedBox(height: 12),
-            _buildFilterRow(),
-            const SizedBox(height: 12),
-            Expanded(
-              child: BlocBuilder<ChatBloc, ChatState>(
-                builder: (context, state) {
-                  if (state is FetchingChatsState) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (state is ChatErrorState) {
-                    return Center(
-                      child: Text(
-                        state.message,
-                        style: TextStyle(color: appColors.textColor),
-                      ),
-                    );
-                  }
-
-                  if (state is ChatListLoadedState) {
-                    final chats = _applyFilter(state.chats.chats);
-                    if (chats.isEmpty) {
-                      return const EmptyScreenWidget(
-                        imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
-                        message: 'No messages yet',
-                        subMessage:
-                            'Start a conversation with a service provider',
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: appColors.whiteColor,
+          forceMaterialTransparency: true,
+          automaticallyImplyLeading: false,
+          title: const Text('Chats'),
+          centerTitle: false,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              FilterSearchFormField(
+                controller: _searchController,
+                onChanged: (_) => setState(() {}),
+                prefixIconPath: '',
+                hintText: '',
+              ),
+              const SizedBox(height: 12),
+              _buildFilterRow(),
+              const SizedBox(height: 12),
+              Expanded(
+                child: BlocBuilder<ChatBloc, ChatState>(
+                  builder: (context, state) {
+                    if (state is FetchingChatsState) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+      
+                    if (state is ChatErrorState) {
+                      return Center(
+                        child: Text(
+                          state.message,
+                          style: TextStyle(color: appColors.textColor),
+                        ),
                       );
                     }
-
-                    return ListView.separated(
-                      itemCount: chats.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final chat = chats[index];
-                        return ChatTile(
-                          chat: Chat(
-                            name: chat.title ?? 'Untitled',
-                            message: chat.lastMessage ?? '',
-                            time:
-                                chat.lastMessageAt != null
-                                    ? _formatTime(chat.lastMessageAt!)
-                                    : '',
-                            avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                          ),
-                          // could be computed later
-                          onTap: () async {
-                            await pushScreen(context, ChatDetailScreen(chat: chat));
-                          },
+      
+                    if (state is ChatListLoadedState) {
+                      final chats = _applyFilter(state.chats.chats);
+                      if (chats.isEmpty) {
+                        return const EmptyScreenWidget(
+                          imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
+                          message: 'No messages yet',
+                          subMessage:
+                              'Start a conversation with a service provider',
                         );
-                      },
-                    );
-                  }
+                      }
+      
+                      return ListView.separated(
+                        itemCount: chats.length,
+                        separatorBuilder: (_, _) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final chat = chats[index];
+                          return ChatTile(
+                            chat: Chat(
+                              name: chat.title ?? 'Untitled',
+                              message: chat.lastMessage ?? '',
+                              time:
+                                  chat.lastMessageAt != null
+                                      ? _formatTime(chat.lastMessageAt!)
+                                      : '',
+                              avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
 
-                  return const SizedBox.shrink();
-                },
+                            ),
+                            // could be computed later
+                            onTap: () async {
+                              await pushScreen(context, ChatDetailScreen(chat: chat));
+                            },
+                          );
+                        },
+                      );
+                    }
+      
+                    return const SizedBox.shrink();
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
