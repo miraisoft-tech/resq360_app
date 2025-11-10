@@ -47,8 +47,8 @@ class _ChatScreenState extends State<ChatScreen> {
             FilterSearchFormField(
               controller: _searchController,
               onChanged: (_) => setState(() {}),
-              prefixIconPath: '',
-              hintText: '',
+              prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
+              hintText: 'Search',
             ),
             const SizedBox(height: 12),
             _buildFilterRow(),
@@ -97,7 +97,10 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                           // could be computed later
                           onTap: () async {
-                            await pushScreen(context, ChatDetailScreen(chat: chat));
+                            await pushScreen(
+                              context,
+                              ChatDetailScreen(chat: chat),
+                            );
                           },
                         );
                       },
@@ -122,7 +125,9 @@ class _ChatScreenState extends State<ChatScreen> {
           filters.map((f) {
             final isSelected = selectedFilter == f;
             return GestureDetector(
-              onTap: () => setState(() => selectedFilter = f),
+              onTap: () {
+                setState(() => selectedFilter = f);
+              },
               child: Chip(
                 label: Text(f),
                 backgroundColor:
@@ -136,18 +141,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-List<ChatResponse> _applyFilter(List<ChatResponse> chats) {
-  switch (selectedFilter) {
-    case 'Unread':
-      return chats;
-    case 'Appeal':
-      return chats
-          .where((c) => c.title?.toLowerCase().contains('appeal') ?? false)
-          .toList();
-    default:
-      return chats;
+  List<ChatResponse> _applyFilter(List<ChatResponse> chats) {
+    switch (selectedFilter) {
+      case 'Unread':
+        return chats;
+      case 'Appeal':
+        return chats
+            .where((c) => c.title?.toLowerCase().contains('appeal') ?? false)
+            .toList();
+      default:
+        return chats;
+    }
   }
-}
 
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
