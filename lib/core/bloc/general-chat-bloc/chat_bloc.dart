@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 
@@ -70,13 +69,15 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     SendMessageEvent event,
     Emitter<ChatState> emit,
   ) async {
-    final result = await _chatRepo.sendMessage(messageRequest: event.messageRequest);
+    final result = await _chatRepo.sendMessage(
+      messageRequest: event.messageRequest,
+    );
 
-  if (result.data != null) {
-    emit(const MessageSent());
-  } else {
-    emit(const ChatErrorState('Failed to send message'));
-  }
+    if (result.data != null) {
+      emit(const MessageSent());
+    } else {
+      emit(const ChatErrorState('Failed to send message'));
+    }
   }
 
   /// 🧾 Get Messages
