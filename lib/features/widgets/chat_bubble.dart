@@ -44,13 +44,19 @@ class ChatBubble extends StatelessWidget {
               height: 22,
             ),
             6.verticalSpace,
-            GenText(
-              time,
-              size: 12,
-              color:
-                  isReceived
-                      ? appColors.textColor.shade400
-                      : appColors.whiteColor.withValues(alpha: 0.8),
+            Row(
+              children: [
+                GenText(
+                  time,
+                  size: 12,
+                  color:
+                      isReceived
+                          ? appColors.textColor.shade400
+                          : appColors.whiteColor.withValues(alpha: 0.8),
+                ),
+            6.horizontalSpace,
+            // Icon(Icons.)
+              ],
             ),
           ],
         ),

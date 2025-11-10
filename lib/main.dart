@@ -9,6 +9,7 @@ import 'package:resq360/core/theme/cubit/theme_cubit.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/features/customer/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
@@ -53,7 +54,7 @@ Future<void> main() async {
             BlocProvider(create: (_) => CustomerServicesBloc()),
             BlocProvider(create: (_) => ChatBloc()),
             BlocProvider(create: (_) => ProfileUpdateBloc()),
-
+            BlocProvider(create: (_) => ProviderServiceBloc()),
           ],
           child: const MyApp(),
         ),

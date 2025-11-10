@@ -23,7 +23,6 @@ class CustomerServicesBloc
     on<CustomerCompleteServiceBooking>(_onCompleteBooking);
   }
 
-  final ServiceRepo serviceRepo = ServiceRepo();
 
   Future<void> _onFetchCustomerServices(
     CustomerFetchServices event,
