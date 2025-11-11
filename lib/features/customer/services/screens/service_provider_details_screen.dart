@@ -241,13 +241,12 @@ class _ServiceProviderDetailsScreenState
                                         ),
                                         4.horizontalSpace,
                                         GenText(
-                                          '4.8', // TODO: Replace with provider's rating when backend shows
-                                          size: 12,
+                                          '4.8', 
                                           color: colors.black,
                                         ),
                                         2.horizontalSpace,
                                         GenText(
-                                          '(127)', // TODO: Replace with actual review count when backend shows
+                                          '(127)',
                                           size: 12,
                                           color: colors.neutral.shade300,
                                         ),

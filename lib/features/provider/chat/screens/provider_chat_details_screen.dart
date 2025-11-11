@@ -6,11 +6,9 @@ import 'package:resq360/features/customer/chat/data/models/chat/message_response
 import 'package:resq360/features/customer/chat/data/models/chat/send_message_request.dart';
 import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/provider/chat/screens/provider_generate_invoice.dialog.dart';
-import 'package:resq360/features/provider/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
-import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
-import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
+
 
 class ProviderChatDetailScreen extends StatefulWidget {
   const ProviderChatDetailScreen({required this.chat, super.key});
@@ -30,7 +28,9 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
   @override
   void initState() {
     super.initState();
+     WidgetsBinding.instance.addPostFrameCallback((_) {
     _initializeChat();
+  });
   }
 
   Future<void> _initializeChat() async {

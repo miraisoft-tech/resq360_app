@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
@@ -73,10 +72,9 @@ _socket!.onConnectError((error) {
   _retryCount++;
   log('Socket connection error: $error | Retry #$_retryCount');
   
-  // Complete with error - cast to Object or use Exception
   if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
     _connectionCompleter!.completeError(
-      Exception('Socket connection error: ${error.toString()}')
+      Exception('Socket connection error: $error')
     );
   }
 });
@@ -103,31 +101,7 @@ _socket?.on('chat-notification', (data) {
   log('Chat notification received: $data');
   
   try {
-    final notification = data as Map<String, dynamic>;
-    final type = notification['type'] as String?;
-    
-    switch (type) {
-      case 'NEW_MESSAGE':
-        final messageData = notification['data'] as Map<String, dynamic>;
-        final message = MessageResponse.fromJson(messageData);
-        _messageController.add(message);
-        log('Message added to stream: ${message.content}');
-        
-      case 'USER_TYPING':
-        _typingController.add(notification['data'] as Map<String, dynamic>);
-        
-      case 'USER_JOINED':
-        _userJoinedController.add(notification['data'] as Map<String, dynamic>);
-        
-      case 'USER_LEFT':
-        _userLeftController.add(notification['data'] as Map<String, dynamic>);
-        
-      case 'MESSAGE_READ':
-        _messageReadController.add(notification['data'] as Map<String, dynamic>);
-        
-      default:
-        log('Unknown notification type: $type');
-    }
+_handleChatNotification(data);
   } on Exception catch (e) {
     log(' Failed to parse chat notification: $e');
   }
@@ -182,35 +156,35 @@ _socket?.on('chat-notification', (data) {
     });
   }
 
-  // void _handleChatNotification(dynamic data) {
-  //   final notification = data as Map<String, dynamic>;
-  //   final type = notification['type'];
+  void _handleChatNotification(dynamic data) {
+    final notification = data as Map<String, dynamic>;
+    final type = notification['type'];
 
-  //   switch (type) {
-  //     case 'NEW_MESSAGE':
-  //       final message = MessageResponse.fromJson(
-  //         data['data'] as Map<String, dynamic>,
-  //       );
-  //       _messageController.add(message);
+    switch (type) {
+      case 'NEW_MESSAGE':
+        final message = MessageResponse.fromJson(
+          data['data'] as Map<String, dynamic>,
+        );
+        _messageController.add(message);
 
-  //     case 'USER_TYPING':
-  //       _typingController.add(notification['data'] as Map<String, dynamic>);
+      case 'USER_TYPING':
+        _typingController.add(notification['data'] as Map<String, dynamic>);
 
-  //     case 'USER_JOINED':
-  //       _userJoinedController.add(notification['data'] as Map<String, dynamic>);
+      case 'USER_JOINED':
+        _userJoinedController.add(notification['data'] as Map<String, dynamic>);
 
-  //     case 'USER_LEFT':
-  //       _userLeftController.add(notification['data'] as Map<String, dynamic>);
+      case 'USER_LEFT':
+        _userLeftController.add(notification['data'] as Map<String, dynamic>);
 
-  //     case 'MESSAGE_READ':
-  //       _messageReadController.add(
-  //         notification['data'] as Map<String, dynamic>,
-  //       );
+      case 'MESSAGE_READ':
+        _messageReadController.add(
+          notification['data'] as Map<String, dynamic>,
+        );
 
-  //     default:
-  //       log('Unknown notification type: $type');
-  //   }
-  // }
+      default:
+        log('Unknown notification type: $type');
+    }
+  }
 
   Future<void> disconnect() async {
     _socket?.disconnect();

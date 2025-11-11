@@ -75,7 +75,6 @@ class ChatJoinedState extends ChatState {
 class LeavingChatState extends ChatState {}
 class ChatLeft extends ChatState {}
 
-/// Error State
 class ChatErrorState extends ChatState {
   const ChatErrorState(this.message);
   final String message;

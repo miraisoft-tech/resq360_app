@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
@@ -21,11 +20,13 @@ class ChatDetailScreen extends StatefulWidget {
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<MessageResponse> _messages = [];
-  // bool _isFetching = false;
+
   @override
   void initState() {
     super.initState();
-    _initializeChat();
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_initializeChat());
+  });
   }
 
   Future<void> _initializeChat() async {
@@ -218,7 +219,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
 
                 ChatBoxWidget(
-                  onAttachment: () {},
+                  onAttachment: () {
+                    unawaited(_showAttachmentMenu(context));
+                  },
                   onSend: (text) {
                     if (text.trim().isNotEmpty) {
                       final request = SendMessageRequest(
@@ -232,36 +235,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     }
                   },
                 ),
-
-                // ChatBoxWidget(
-                //   onSend: (text) {
-                //     context.read<ChatBloc>().add(
-                //       SendMessageEvent(
-                //         messageRequest: SendMessageRequest(
-                //           chatId: widget.chat.id!,
-                //           messageType: 'TEXT',
-                //           content: text,
-                //         ),
-                //       ),
-                //     );
-                //   },
-                //   onAttachment: (file, fileName, mimeType) {
-                //     context.read<ChatBloc>().add(
-                //       SendMessageEvent(
-                //         messageRequest: SendMessageRequest(
-                //           chatId: widget.chat.id!,
-                //           messageType: 'FILE',
-                //           fileName: fileName,
-                //           mimeType: mimeType,
-                //           content: '',
-                //           // You'll likely upload the file first to get fileUrl:
-                //           // fileUrl: uploadedFileUrl,
-                //           // fileSize: file.lengthSync(),
-                //         ),
-                //       ),
-                //     );
-                //   },
-                // ),
               ],
             ),
           );

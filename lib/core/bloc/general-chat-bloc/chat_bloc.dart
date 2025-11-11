@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 
@@ -32,7 +31,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatRepo _chatRepo = ChatRepo();
   final ChatSocketService _socket = ChatSocketService.instance;
 
-  /// Connect to Socket
+
 Future<void> _onConnectSocket(
   ConnectChatSocketEvent event,
   Emitter<ChatState> emit,
@@ -50,11 +49,11 @@ Future<void> _onConnectSocket(
     emit(ChatSocketConnected());
   } on Exception catch(e){
     debugPrint('Socket connection failed: $e');
-    emit(ChatErrorState('Failed to connect: ${e.toString()}'));
+    emit(ChatErrorState('Failed to connect: $e'));
   }
 }
 
-  /// Create Chat
+  
   Future<void> _onCreateChat(
     CreateChatEvent event,
     Emitter<ChatState> emit,
@@ -68,8 +67,7 @@ Future<void> _onConnectSocket(
     }
   }
 
-  /// Get Chats
-  Future<void> _onGetChats(
+   Future<void> _onGetChats(
     GetChatsEvent event,
     Emitter<ChatState> emit,
   ) async {
@@ -82,7 +80,7 @@ Future<void> _onConnectSocket(
     }
   }
 
-  /// Send Message
+  
   Future<void> _onSendMessage(
     SendMessageEvent event,
     Emitter<ChatState> emit,
@@ -96,7 +94,7 @@ Future<void> _onConnectSocket(
     }
   }
 
-  ///  Get Messages
+  
   Future<void> _onGetMessages(
     GetChatMessagesEvent event,
     Emitter<ChatState> emit,
@@ -110,7 +108,7 @@ Future<void> _onConnectSocket(
     }
   }
 
-  /// Mark Message as Read
+
   Future<void> _onMarkAsRead(
     MarkMessageAsReadEvent event,
     Emitter<ChatState> emit,
@@ -146,8 +144,7 @@ Future<void> _onConnectSocket(
   }
 }
 
-  /// Leave Chat
-  Future<void> _onLeaveChat(
+    Future<void> _onLeaveChat(
     LeaveChatEvent event,
     Emitter<ChatState> emit,
   ) async {
@@ -160,7 +157,7 @@ Future<void> _onConnectSocket(
     }
   }
 
-  ///  New Message
+
   void _onNewMessageReceived(
     NewMessageReceivedEvent event,
     Emitter<ChatState> emit,
