@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
@@ -29,16 +31,17 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
   void initState() {
     super.initState();
      WidgetsBinding.instance.addPostFrameCallback((_) {
-    _initializeChat();
+    unawaited(_initializeChat());
   });
   }
 
   Future<void> _initializeChat() async {
     final chatBloc = context.read<ChatBloc>()
     ..add(ConnectChatSocketEvent());
+     Future.delayed(const Duration(milliseconds: 300), () {
+     chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
+});
 
-     await Future.delayed(const Duration(milliseconds: 300));
-    chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
   }
 
   @override

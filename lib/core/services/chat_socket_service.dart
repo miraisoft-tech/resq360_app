@@ -158,7 +158,8 @@ _handleChatNotification(data);
 
   void _handleChatNotification(dynamic data) {
     final notification = data as Map<String, dynamic>;
-    final type = notification['type'];
+    final type = notification['type'] as String?;
+
 
     switch (type) {
       case 'NEW_MESSAGE':

@@ -61,11 +61,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   }
 
                   if (state is ChatErrorState) {
-                    return Center(
-                      child: Text(
-                        state.message,
-                        style: TextStyle(color: appColors.textColor),
-                      ),
+                    return ErrorMessageAndButton(
+                      error: state.message,
+                      onPressed: () {
+                        context.read<ChatBloc>().add(GetChatsEvent());
+                      },
                     );
                   }
 

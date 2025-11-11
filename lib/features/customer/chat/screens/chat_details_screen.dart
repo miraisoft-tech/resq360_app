@@ -33,8 +33,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final chatBloc = context.read<ChatBloc>()
     ..add(ConnectChatSocketEvent());
 
-     await Future.delayed(const Duration(milliseconds: 300));
-    chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
+     Future.delayed(const Duration(milliseconds: 300), () {
+     chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
+});
   }
 
   @override

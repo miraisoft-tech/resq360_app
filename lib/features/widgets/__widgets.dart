@@ -2,6 +2,7 @@ export 'buttons.widgets.dart';
 export 'checkbox_widget.dart';
 export 'dialogs/dialogs.dart';
 export 'dot_indicator.dart';
+export 'error_message_and_button.dart';
 export 'filter_widget.dart';
 export 'general_container.dart';
 export 'inputs/__inputs.dart';

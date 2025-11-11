@@ -93,30 +93,11 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
             }
 
             if (state is CustomerServicesError) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      state.error,
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: WideButton(
-                        label: 'Retry',
-                        onPressed: () {
-                          context.read<CustomerServicesBloc>().add(
-                            CustomerFetchServices(),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              return ErrorMessageAndButton(error: state.error, onPressed: () {
+                 context.read<CustomerServicesBloc>().add(
+                  CustomerFetchServices(),
+                );
+              },);
             }
 
             if (state is CustomerServicesLoaded) {
