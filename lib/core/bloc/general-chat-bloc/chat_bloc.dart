@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
+import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 
@@ -18,25 +21,40 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<MarkMessageAsReadEvent>(_onMarkAsRead);
     on<LeaveChatEvent>(_onLeaveChat);
     on<NewMessageReceivedEvent>(_onNewMessageReceived);
+    on<JoinChatEvent>(_onJoinChat);
+
+
+    ChatSocketService.instance.messageStream.listen((message) {
+      add(NewMessageReceivedEvent(message));
+    });
   }
 
   final ChatRepo _chatRepo = ChatRepo();
   final ChatSocketService _socket = ChatSocketService.instance;
 
-  /// 🔌 Connect to Socket
-  Future<void> _onConnectSocket(
-    ConnectChatSocketEvent event,
-    Emitter<ChatState> emit,
-  ) async {
-    emit(ConnectingSocketState());
+  /// Connect to Socket
+Future<void> _onConnectSocket(
+  ConnectChatSocketEvent event,
+  Emitter<ChatState> emit,
+) async {
+  emit(ConnectingSocketState());
+  
+  try {
     await _socket.connect();
+    
     _socket.messageStream.listen((message) {
       add(NewMessageReceivedEvent(message));
     });
+    
+    debugPrint('Socket connected and ready');
     emit(ChatSocketConnected());
+  } on Exception catch(e){
+    debugPrint('Socket connection failed: $e');
+    emit(ChatErrorState('Failed to connect: ${e.toString()}'));
   }
+}
 
-  /// 💬 Create Chat
+  /// Create Chat
   Future<void> _onCreateChat(
     CreateChatEvent event,
     Emitter<ChatState> emit,
@@ -50,7 +68,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  /// 📜 Get Chats
+  /// Get Chats
   Future<void> _onGetChats(
     GetChatsEvent event,
     Emitter<ChatState> emit,
@@ -64,23 +82,21 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  /// 📨 Send Message (instant)
+  /// Send Message
   Future<void> _onSendMessage(
     SendMessageEvent event,
     Emitter<ChatState> emit,
   ) async {
-    final result = await _chatRepo.sendMessage(
-      messageRequest: event.messageRequest,
-    );
-
-    if (result.data != null) {
-      emit(const MessageSent());
-    } else {
-      emit(const ChatErrorState('Failed to send message'));
+    try {
+      _socket.sendMessage(
+        event.messageRequest,
+      );
+    } on Exception catch (e) {
+      emit(ChatErrorState('Failed to send message $e'));
     }
   }
 
-  /// 🧾 Get Messages
+  ///  Get Messages
   Future<void> _onGetMessages(
     GetChatMessagesEvent event,
     Emitter<ChatState> emit,
@@ -94,7 +110,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  /// 👁️ Mark Message as Read (no loader)
+  /// Mark Message as Read
   Future<void> _onMarkAsRead(
     MarkMessageAsReadEvent event,
     Emitter<ChatState> emit,
@@ -111,7 +127,26 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  /// 🚪 Leave Chat
+ Future<void> _onJoinChat(
+  JoinChatEvent event,
+  Emitter<ChatState> emit,
+) async {
+  try {
+
+    if (!_socket.isConnected) {
+      emit(const ChatErrorState('Socket not connected'));
+      return;
+    }
+    await _socket.joinChat(event.chatId);
+
+    emit(ChatJoinedState(event.chatId));
+  } on Exception catch (e, s) {
+    emit(ChatErrorState('Failed to join chat: $e'));
+    log('Join chat error: $e\n$s');
+  }
+}
+
+  /// Leave Chat
   Future<void> _onLeaveChat(
     LeaveChatEvent event,
     Emitter<ChatState> emit,
@@ -125,7 +160,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  /// 🔔 New Message
+  ///  New Message
   void _onNewMessageReceived(
     NewMessageReceivedEvent event,
     Emitter<ChatState> emit,

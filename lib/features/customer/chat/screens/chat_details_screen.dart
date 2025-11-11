@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
@@ -20,25 +21,19 @@ class ChatDetailScreen extends StatefulWidget {
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<MessageResponse> _messages = [];
-  bool _isFetching = false;
+  // bool _isFetching = false;
   @override
   void initState() {
     super.initState();
-    // 🔌 Connect socket and join the chat room
-    context.read<ChatBloc>().add(ConnectChatSocketEvent());
-    context.read<ChatBloc>().add(
-      GetChatMessagesEvent(chatId: widget.chat.id!),
-    );
-    _fetchMessages();
+    _initializeChat();
   }
 
-  void _fetchMessages() {
-    if (_isFetching) return;
-    _isFetching = true;
+  Future<void> _initializeChat() async {
+    final chatBloc = context.read<ChatBloc>()
+    ..add(ConnectChatSocketEvent());
 
-    context.read<ChatBloc>().add(
-      GetChatMessagesEvent(chatId: widget.chat.id!),
-    );
+     await Future.delayed(const Duration(milliseconds: 300));
+    chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
   }
 
   @override
@@ -98,6 +93,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
       body: BlocConsumer<ChatBloc, ChatState>(
         listener: (context, state) {
+          if (state is ChatSocketConnected) {
+            context.read<ChatBloc>().add(JoinChatEvent(widget.chat.id!));
+          }
           if (state is NewMessageState) {
             setState(() => _messages.insert(0, state.message));
             _scrollToBottom();
@@ -107,6 +105,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               _messages
                 ..clear()
                 ..addAll(state.messages.messages.reversed);
+            });
+            _scrollToBottom();
+          }
+          if (state is MessageSent) {
+            setState(() {
+              _messages.insert(0, state.message);
             });
             _scrollToBottom();
           }
@@ -135,15 +139,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       final message = _messages[index];
                       final auth = CustomerAuthProvider.instance.authInfo;
                       final currentUserId = auth?.user.id;
-                      log(message.senderType?.toUpperCase());
+                      // log(message.senderType?.toUpperCase());
 
                       // Determine if message was sent by current logged-in user
                       final isSentByCurrentUser =
                           message.senderType?.toUpperCase() == 'USER' &&
                           message.senderId == currentUserId;
-                      log(
-                        'current user $currentUserId and message sender ${message.senderId}',
-                      );
+                      // log(
+                      //   'current user $currentUserId and message sender ${message.senderId}',
+                      // );
                       return Column(
                         children: [
                           ChatBubble(
@@ -339,7 +343,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     Future.delayed(const Duration(milliseconds: 300), () async {
       if (_scrollController.hasClients) {
         await _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          _scrollController.position.minScrollExtent,
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
         );

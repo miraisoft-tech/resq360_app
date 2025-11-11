@@ -24,6 +24,14 @@ class CreateChatEvent extends ChatEvent {
 
 class GetChatsEvent extends ChatEvent {}
 
+class JoinChatEvent extends ChatEvent {
+  const JoinChatEvent(this.chatId);
+  final int chatId;
+
+  @override
+  List<Object?> get props => [chatId];
+}
+
 class SendMessageEvent extends ChatEvent {
   const SendMessageEvent({required this.messageRequest});
   final SendMessageRequest messageRequest;

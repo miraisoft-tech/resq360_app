@@ -25,26 +25,20 @@ class ProviderChatDetailScreen extends StatefulWidget {
 class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<MessageResponse> _messages = [];
-  bool _isFetching = false;
+  // bool _isFetching = false;
 
   @override
   void initState() {
     super.initState();
-    // 🔌 Connect socket and join the chat room
-    context.read<ChatBloc>().add(ConnectChatSocketEvent());
-    context.read<ChatBloc>().add(
-      GetChatMessagesEvent(chatId: widget.chat.id!),
-    );
-    _fetchMessages();
+    _initializeChat();
   }
 
-  void _fetchMessages() {
-    if (_isFetching) return;
-    _isFetching = true;
+  Future<void> _initializeChat() async {
+    final chatBloc = context.read<ChatBloc>()
+    ..add(ConnectChatSocketEvent());
 
-    context.read<ChatBloc>().add(
-      GetChatMessagesEvent(chatId: widget.chat.id!),
-    );
+     await Future.delayed(const Duration(milliseconds: 300));
+    chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
   }
 
   @override
@@ -104,6 +98,9 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
       ),
       body: BlocConsumer<ChatBloc, ChatState>(
         listener: (context, state) {
+          if (state is ChatSocketConnected) {
+            context.read<ChatBloc>().add(JoinChatEvent(widget.chat.id!));
+          }
           if (state is NewMessageState) {
             setState(() => _messages.insert(0, state.message));
             _scrollToBottom();
@@ -113,6 +110,12 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
               _messages
                 ..clear()
                 ..addAll(state.messages.messages.reversed);
+            });
+            _scrollToBottom();
+          }
+            if (state is MessageSent) {
+            setState(() {
+              _messages.insert(0, state.message);
             });
             _scrollToBottom();
           }
