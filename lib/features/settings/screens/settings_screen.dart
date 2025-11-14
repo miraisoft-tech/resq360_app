@@ -313,7 +313,7 @@ class _ProfileSection extends StatelessWidget {
         }
 
         String name;
-        // String? imageUrl;
+        String? imageUrl;
 
         if (isProvider) {
           final provider = asyncSnapshot.data! as ProviderProfileResponse;
@@ -322,7 +322,7 @@ class _ProfileSection extends StatelessWidget {
               (fullName != null && fullName.isNotEmpty)
                   ? fullName
                   : 'Provider User';
-          // imageUrl = user.user?.profileImageUrl;
+           imageUrl = provider.user.profileImage;
         } else {
           final user = asyncSnapshot.data! as CustomerProfileResponse;
           final fullName = user.user.fullName?.trim();
@@ -330,7 +330,7 @@ class _ProfileSection extends StatelessWidget {
               (fullName != null && fullName.isNotEmpty)
                   ? fullName
                   : 'Customer User';
-          // imageUrl = user.user.;
+           imageUrl = user.user.profileImage;
         }
 
         return Column(
@@ -340,8 +340,8 @@ class _ProfileSection extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 45.r,
-                  backgroundImage: const NetworkImage(
-                    'https://randomuser.me/api/portraits/men/30.jpg',
+                  backgroundImage: NetworkImage(
+                    imageUrl ?? 'https://randomuser.me/api/portraits/men/30.jpg',
                   ),
                 ),
                 Positioned(
