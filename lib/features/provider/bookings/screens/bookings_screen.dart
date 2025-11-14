@@ -21,12 +21,10 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    // Fetch initial tab (Upcoming)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchBookingsForTab(0);
     });
 
-    // Listen for tab change
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
       _fetchBookingsForTab(_tabController.index);

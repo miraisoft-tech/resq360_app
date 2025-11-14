@@ -70,15 +70,11 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     return BlocConsumer<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
-
-        // Dismiss any existing loading dialog first
         if (state is! CustomerAuthLoading) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop(); // Dismiss loading
+            Navigator.of(context, rootNavigator: true).pop();
           }
         }
-
-        // Show loading only when entering loading state
         if (state is CustomerAuthLoading) {
           await showLoadingDialog(context);
           return;
@@ -96,8 +92,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             Navigator.of(context, rootNavigator: true).pop();
           }
           await showSuccessSnackbar(context, 'Otp resent ');
-
-          // Restart countdown timer
           controller
             ..endTime =
                 DateTime.now()

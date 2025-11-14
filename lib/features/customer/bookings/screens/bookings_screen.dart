@@ -20,12 +20,11 @@ class _BookingsScreenState extends State<BookingsScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    // Fetch initial tab (Upcoming)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchBookingsForTab(0);
     });
 
-    // Listen for tab changes
+
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
       _fetchBookingsForTab(_tabController.index);
@@ -107,7 +106,7 @@ class _BookingList extends StatelessWidget {
   String _mapTypeToStatus() {
     switch (type) {
       case 'upcoming':
-        return 'ASSIGNED'; // or whatever backend expects
+        return 'ASSIGNED';
       case 'completed':
         return 'COMPLETED';
       case 'cancelled':

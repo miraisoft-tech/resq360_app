@@ -165,8 +165,6 @@ class _ProviderBusinessDetailsScreenState
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          // showSuccessSnackBar(context, 'Registration successful');
-          // navigate to confirm email screen
           pushScreen(
             context,
             ProviderConfirmEmailScreen(

@@ -1,4 +1,4 @@
-/// Request model for sending a new chat message
+
 class SendMessageRequest {
 
   SendMessageRequest({
@@ -12,7 +12,7 @@ class SendMessageRequest {
     this.metadata,
   });
   final int chatId;
-  final String messageType; // e.g. TEXT, IMAGE, FILE
+  final String messageType;
   final String content;
   final String? fileName;
   final String? fileUrl;

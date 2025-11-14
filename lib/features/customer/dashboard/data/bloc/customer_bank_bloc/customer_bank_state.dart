@@ -17,6 +17,4 @@ final class CustomerBankAccountUpdated extends CustomerBankState{}
 final class CustomerBankAccountDeleted extends CustomerBankState{}
 
 
-// failure
-
 final class CustomerBankFailure extends CustomerBankState{}

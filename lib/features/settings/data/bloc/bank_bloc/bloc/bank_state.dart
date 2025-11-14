@@ -22,7 +22,6 @@ final class BankAccountUpdated extends BankState{}
 final class BankAccountDeleted extends BankState{}
 
 
-// failure
 
 final class BankFailure extends BankState{
   const BankFailure({required this.error});
@@ -31,5 +30,3 @@ final class BankFailure extends BankState{
 }
 final class BankAccountAddedFailed extends BankState{}
 final class BankAccountsFetchedfailed extends BankState{}
-
-

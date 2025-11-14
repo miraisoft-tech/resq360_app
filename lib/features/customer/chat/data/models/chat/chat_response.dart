@@ -1,7 +1,6 @@
 import 'message_response.dart';
 import 'participant.dart';
 
-/// Represents a single chat conversation with participants and messages
 class ChatResponse {
 
   ChatResponse({

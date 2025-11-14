@@ -1,6 +1,4 @@
 import 'chat_response.dart';
-
-/// Represents paginated list of chats
 class ChatListResponse {
 
   ChatListResponse({

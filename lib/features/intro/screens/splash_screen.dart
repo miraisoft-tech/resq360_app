@@ -18,7 +18,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   Future<void> _goToNext() async {
     try {
-      // initialize both singletons (safe): they read local storage and populate authInfo if present
       await Future.wait([
         CustomerAuthProvider.instance.init(),
         ProviderAuthProvider.instance.init(),

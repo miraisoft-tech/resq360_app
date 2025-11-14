@@ -94,4 +94,3 @@ on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
     }
   }
     
-

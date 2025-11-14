@@ -18,7 +18,7 @@ class ServiceRepo extends BaseAPI {
   static final ServiceRepo _instance = ServiceRepo._internal();
 
 
-  // Create new service
+
   Future<ApiResult<Service>> createService({
     required String name,
     required String description,
@@ -46,7 +46,6 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // Fetch all services
   Future<ApiResult<List<Service>>> fetchServices() async {
     const url = '/services?page=1';
     try {
@@ -71,7 +70,6 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // Fetch service info by category
   Future<ApiResult<Service>> fetchServiceInfo(int serviceCategoryId) async {
     final url = '/services/$serviceCategoryId/info';
     try {
@@ -89,10 +87,10 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // Fetch providers by service category
-  Future<ApiResult<List<ServiceProvider>>> fetchProviders({required int serviceCategoryId, String? activityStatus, // 'online', 'offline', or 'busy'
-  String? search,         // search query
-  bool nearYou = true,   // filter by proximity
+ 
+  Future<ApiResult<List<ServiceProvider>>> fetchProviders({required int serviceCategoryId, String? activityStatus, 
+  String? search,       
+  bool nearYou = true,   
   } ) async {
     final longitude = await AppLocalPref().getValue(key: 'longitude');
     final latitude = await AppLocalPref().getValue(key: 'latitude');
@@ -127,7 +125,7 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // Update service info
+
   Future<ApiResult<Map<String, dynamic>>> updateServiceInfo({
     required int serviceCategoryId,
     required String name,
@@ -156,7 +154,6 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // Delete a service
   Future<ApiResult<void>> deleteService(int serviceCategoryId) async {
     final url = '/services/$serviceCategoryId/remove';
     try {
@@ -173,7 +170,7 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // service booking 
+
   Future<ApiResult<ServiceBookingsResponse>> getServiceBookings({
     required String status,
     int? limit,
@@ -197,7 +194,6 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // start service booking
   Future<ApiResult<void>> startServiceBooking(int serviceRequestId) async {
     final url = '/services/bookings/$ServiceBookingsResponse/start';
     try {
@@ -214,7 +210,6 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // cancel service booking
   Future<ApiResult<void>> cancelServiceBooking(int serviceRequestId) async {
     final url = '/services/bookings/$serviceRequestId/cancel';
     try {
@@ -231,7 +226,7 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  // complete service booking
+
   Future<ApiResult<void>> completeServiceBooking(int serviceRequestId,  {required String ratings, required String review }) async {
     final url = '/services/bookings/$serviceRequestId/complete';
     try {

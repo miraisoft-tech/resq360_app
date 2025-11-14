@@ -8,7 +8,6 @@ AuthResponse userFromJson(String str) =>
 
 String userToJson(AuthResponse data) => json.encode(data.toJson());
 
-/// Login response (only used for auth endpoints)
 class AuthResponse extends EmptyResponse implements BaseAuthResponse {
   AuthResponse({
     required this.accessToken,

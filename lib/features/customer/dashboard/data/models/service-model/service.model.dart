@@ -81,11 +81,6 @@ class ServiceProvider {
       distance: json['distance'] as double?,
     );
   }
-  // TimeOfDay? _parseTime(String? value) {
-  //   if (value == null || !RegExp(r'^\d{2}:\d{2}$').hasMatch(value)) return null;
-  //   final parts = value.split(':');
-  //   return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-  // }
 
   final String? companyName;
   final int? id;

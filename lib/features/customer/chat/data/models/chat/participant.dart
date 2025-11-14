@@ -1,4 +1,3 @@
-/// Participant details returned from API inside ChatResponse
 class Participant {
 
   Participant({

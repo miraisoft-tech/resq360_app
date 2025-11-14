@@ -80,7 +80,6 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       }
       await showSuccessSnackbar(context, state.message);
 
-      // Restart countdown timer
       controller
         ..endTime = DateTime.now()
             .add(const Duration(seconds: 5 * 60))

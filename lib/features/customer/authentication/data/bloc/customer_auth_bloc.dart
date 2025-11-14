@@ -185,7 +185,6 @@ Future<void> _onResendVerificationOtp(
 
   // Logout
   void _onLogout(CustomerLogout event, Emitter<CustomerAuthState> emit) {
-    // Clear user session if needed
     emit(CustomerAuthInitial());
   }
 

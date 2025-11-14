@@ -7,7 +7,7 @@ sealed class ProviderAuthState extends Equatable {
   List<Object> get props => [];
 }
 
-// initial state
+
 final class ProviderAuthInitial extends ProviderAuthState {}
 
 class ProviderAuthLoadingState  extends ProviderAuthState {}
@@ -20,8 +20,6 @@ class ProviderAuthAuthenticatedState  extends ProviderAuthState {
   List<Object> get props => [ user];
 }
 
-
-// failure stateFAILURE
 class ProviderAuthFailureState extends ProviderAuthState {
   const ProviderAuthFailureState (this.error);
   final String error;

@@ -25,8 +25,6 @@ class ProviderChatDetailScreen extends StatefulWidget {
 class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<MessageResponse> _messages = [];
-  // bool _isFetching = false;
-
   @override
   void initState() {
     super.initState();
@@ -124,7 +122,6 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
           }
         },
         builder: (context, state) {
-          // 🌀 Show loading only for fetching messages
           if (state is FetchingMessagesState && _messages.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -160,7 +157,6 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                       }
 
                       log('content: $content');
-                      // Determine if message was sent by current logged-in user
                       final isSentByCurrentUser =
                           senderType == 'PROVIDER' && senderId == currentUserId;
                       log(
@@ -235,7 +231,6 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                   onAttachment: () async {
                     await _showAttachmentMenu(context);
                   },
-                  // () => _showAttachmentMenu(context),
                   onSend: (text) {
                     if (text.trim().isNotEmpty) {
                       final request = SendMessageRequest(

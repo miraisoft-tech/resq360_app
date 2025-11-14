@@ -10,7 +10,7 @@ class ChatRepo extends BaseAPI {
   ChatRepo._internal();
   static final ChatRepo _instance = ChatRepo._internal();
 
-  /// Create a new chat
+ 
   Future<ApiResult<ChatResponse>> createChat({
     required CreateChatRequest chatRequest,
   }) async {
@@ -43,7 +43,6 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-  /// Get all chats for the current user
   Future<ApiResult<ChatListResponse>> getChats({
     int? pageNumber,
     int? limit,
@@ -70,7 +69,6 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-  /// Get a single chat by ID
   Future<ApiResult<ChatResponse>> getChatById(String chatId) async {
     final url = '/chat/$chatId';
     try {
@@ -90,7 +88,6 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-  /// Get all messages for a specific chat
   Future<ApiResult<ChatMessagesResponse>> getChatMessages(
     int chatId, {
     int page = 1,
@@ -116,7 +113,6 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-  /// Send a message
   Future<ApiResult<MessageResponse>> sendMessage({
     required SendMessageRequest messageRequest,
   }) async {
@@ -144,7 +140,6 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-   /// Mark a message as read
   Future<ApiResult<bool>> markMessageAsRead(int messageId) async {
     final url = '/chat/messages/$messageId/read';
     try {
@@ -161,7 +156,6 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-  /// Leave a chat
   Future<ApiResult<bool>> leaveChat(int chatId) async {
     final url = '/chat/$chatId/leave';
     try {

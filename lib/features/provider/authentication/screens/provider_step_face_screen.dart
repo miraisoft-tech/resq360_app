@@ -29,24 +29,6 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
         ProviderSubmitKyc(filePath: pickedImage!.path),
       );
     }
-
-    // if (context.mounted) {
-    //   await GeneralDialogs.showCustomBottomSheet(
-    //     context,
-    //     body: StepModal(
-    //       title: 'Facial Verification Successful!',
-    //       description: 'Let’s confirm your identification',
-    //       icon: AppAssets.ASSETS_IMAGES_STEP_1_PNG,
-    //       onContinuePressed: () async {
-    //         await pop(context);
-
-    //         if (context.mounted) {
-    //           await pushScreen(context, const ProviderStepIDScreen());
-    //         }
-    //       },
-    //     ),
-    //   );
-    // }
   }
 
   @override
@@ -56,7 +38,6 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async{
         if (state is ProviderAuthLoadingState) {
-          // Optional: show loading overlay
           showLoadingDialog(context);
         }
 

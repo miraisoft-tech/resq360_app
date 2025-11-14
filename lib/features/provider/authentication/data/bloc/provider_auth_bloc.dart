@@ -90,7 +90,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       final result = await providerAuthRemoteRepo.forgotPassword(
         email: event.email,
       );
-      log('Forgot Password Result: $result'); // Debug line
+      log('Forgot Password Result: $result');
       if (result) {
         emit(ProviderForgotPasswordSucessState());
       } else {
@@ -198,7 +198,6 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  // Get user profile
   Future<void> _onGetUserProfile(
     ProvidergetUserProfile event,
     Emitter<ProviderAuthState> emit,
@@ -218,9 +217,8 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  // Logout
   void _onLogout(ProviderLogout event, Emitter<ProviderAuthState> emit) {
-    // Clear user session if needed
+  
     emit(ProviderAuthInitial());
   }
 

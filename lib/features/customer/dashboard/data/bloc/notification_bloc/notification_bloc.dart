@@ -12,7 +12,6 @@ part 'notification_state.dart';
 final NotificationRepo _notificationRepo = NotificationRepo(); 
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   NotificationBloc() : super(NotificationInitial()) {
-    // on<NotificationEvent>((event, emit) {});
     on<FetchRecentNotifications>(_onFetchRecentNotifications);
     on<FetchUnreadCount>(_onFetchUnreadCount);
     on<MarkNotificationsAsRead>(_onMarkNotificationsAsRead);

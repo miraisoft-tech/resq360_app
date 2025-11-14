@@ -1,5 +1,4 @@
-/// Placeholder for message metadata.
-/// Can be extended in the future with custom key-value data.
+
 class Metadata {
   Metadata();
   

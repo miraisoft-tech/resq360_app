@@ -41,7 +41,6 @@ class UploadService extends BaseAPI {
           log(
             'suceeded in Uploading files: ${uploads.first.id} / ${uploads.first.url}',
           );
-          // returns the first one
           return ApiResult(data: uploads.first);
         } else {
           return ApiResult(

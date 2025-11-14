@@ -38,7 +38,6 @@ class UpdateUserRepo extends BaseAPI {
     }
   }
 
-  /// Update basic user information.
   Future<ApiResult<dynamic>> updateUserInformation({
     required String fullName,
     required String phoneNumber,
@@ -61,7 +60,6 @@ class UpdateUserRepo extends BaseAPI {
     );
   }
 
-  /// Update provider profile information.
   Future<ApiResult<dynamic>> updateProviderInformation({
     required String fullName,
     required String phoneNumber,
@@ -96,7 +94,6 @@ class UpdateUserRepo extends BaseAPI {
     );
   }
 
-  /// Update provider address.
   Future<ApiResult<dynamic>> updateProviderAddress({
     required Map<String, dynamic> addressData,
   }) async {
@@ -109,7 +106,6 @@ class UpdateUserRepo extends BaseAPI {
     );
   }
 
-  /// Update bank account information.
   Future<ApiResult<dynamic>> updateBankAccount({
     required String accountName,
     required String accountNumber,

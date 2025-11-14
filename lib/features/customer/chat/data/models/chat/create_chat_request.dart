@@ -1,6 +1,5 @@
 import 'chat_participant.dart';
 
-/// Request model for creating a new chat
 class CreateChatRequest {
 
   CreateChatRequest({
@@ -9,7 +8,7 @@ class CreateChatRequest {
     required this.participants,
   });
   final String title;
-  final String type; // e.g. PRIVATE or GROUP
+  final String type;
   final List<ChatParticipant> participants;
 
   Map<String, dynamic> toJson() => {

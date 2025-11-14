@@ -15,39 +15,6 @@ class ServiceCategoryScreen extends StatefulWidget {
 class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  // final List<NavItem> categories = [
-  //   NavItem(body: const Icon(Icons.local_shipping_outlined), title: 'Towing'),
-  //   NavItem(
-  //     body: const Icon(Icons.medical_services_outlined),
-  //     title: 'Ambulance',
-  //   ),
-  //   NavItem(body: const Icon(Icons.plumbing_outlined), title: 'Plumbing'),
-  //   NavItem(
-  //     body: const Icon(Icons.electrical_services_outlined),
-  //     title: 'Electrical Repair',
-  //   ),
-  //   NavItem(
-  //     body: const Icon(Icons.cleaning_services_outlined),
-  //     title: 'Cleaning',
-  //   ),
-  //   NavItem(
-  //     body: const Icon(Icons.cleaning_services_outlined),
-  //     title: 'Cleaning',
-  //   ),
-  //   NavItem(
-  //     body: const Icon(Icons.cleaning_services_outlined),
-  //     title: 'Cleaning',
-  //   ),
-  //   NavItem(
-  //     body: const Icon(Icons.cleaning_services_outlined),
-  //     title: 'Cleaning',
-  //   ),
-  //   NavItem(
-  //     body: const Icon(Icons.cleaning_services_outlined),
-  //     title: 'Cleaning',
-  //   ),
-  // ];
-
   @override
   void initState() {
      final bloc = context.read<CustomerServicesBloc>();

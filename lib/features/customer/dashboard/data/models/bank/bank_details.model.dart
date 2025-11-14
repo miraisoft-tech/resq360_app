@@ -28,8 +28,6 @@ class BankDetails {
     final String? currency;
     final bool? isDefault;
 
-    // String toRawJson() => json.encode(toJson());
-
     Map<String, dynamic> toJson() => {
         'accountName': accountName,
         'accountNumber': accountNumber,

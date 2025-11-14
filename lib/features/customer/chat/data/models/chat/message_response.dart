@@ -1,6 +1,6 @@
 import 'metadata.dart';
 
-/// Represents a single message in a chat
+///a single message in a chat
 class MessageResponse {
 
   MessageResponse({

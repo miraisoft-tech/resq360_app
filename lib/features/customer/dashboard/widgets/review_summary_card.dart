@@ -72,8 +72,7 @@ class ReviewSummaryCard extends StatelessWidget {
             ],
           ),
 
-          // RIGHT — Progress indicators
-      Expanded( // ✅ Expanded is now safe inside SizedBox
+      Expanded( 
         child: Column(
           children: [
             _buildProgress(colors, 1),

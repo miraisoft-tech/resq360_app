@@ -61,7 +61,6 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    // Initial fetch (All providers)
     context.read<CustomerServicesBloc>().add(
       CustomerFetchProviders(
         categoryId: widget.serviceProviderId,
@@ -277,10 +276,8 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
 class _ProviderList extends StatelessWidget {
   const _ProviderList({
     required this.providers,
-    // required this.providerId
   });
   final List<ServiceProvider> providers;
-  // final int  providerId;
 
   @override
   Widget build(BuildContext context) {

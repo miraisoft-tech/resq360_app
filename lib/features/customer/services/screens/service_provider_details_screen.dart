@@ -68,7 +68,6 @@ class _ServiceProviderDetailsScreenState
     final providerId = widget.providerId;
     // final chatRepo = ChatRepo();
 
-    // ✅ Step 1: Check if chat already exists
     // final existingChat = await chatRepo.findExistingPrivateChat(
     //   providerId: providerId,
     //   userId: userId,

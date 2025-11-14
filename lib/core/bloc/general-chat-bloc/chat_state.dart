@@ -10,7 +10,7 @@ abstract class ChatState extends Equatable {
 
 class ChatInitial extends ChatState {}
 
-/// Socket Connection
+
 class ConnectingSocketState extends ChatState {}
 class ChatSocketConnected extends ChatState {}
 

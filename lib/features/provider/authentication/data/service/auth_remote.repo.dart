@@ -115,7 +115,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
           return ApiResult(data: authResponse);
         } else {
           log('Login failed with response: ${res.data}');
-          // API returned 200 but success == false
           return ApiResult(
             error: res.data!['message']?.toString() ?? 'Login failed',
           );
@@ -236,11 +235,9 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     required String token,
   }) async {
     try {
-      // Fetch the saved user type from AuthLocalRepo
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
 
-      // store otp locally
       final otp = await authLocalDataSource.storeForgotPasswordOtp(otp: token);
       log('otp: $otp');
 
@@ -305,7 +302,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
   Future<bool> verifyEmail({required String emailVerificationToken}) async {
     try {
-      // Fetch the saved user type from AuthLocalRepo
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
 
@@ -381,7 +377,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
           final providerProfileResponse = ProviderProfileResponse.fromJson(
             res.data!,
           );
-          // Save to local storage
           await AuthLocalRepo.instance.storeUserDetails(
             isProvider: true,
             providerProfileResponse: providerProfileResponse,

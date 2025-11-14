@@ -23,7 +23,7 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
     final text = _controller.text.trim();
     if (text.isNotEmpty) {
       widget.onSend(text);
-      _controller.clear(); // clear after sending
+      _controller.clear(); 
     }
   }
 

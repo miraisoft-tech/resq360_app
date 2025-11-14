@@ -112,8 +112,6 @@ class AuthRemoteRepo extends BaseAPI {
   }) async {
     try {
       const url = '/auth/login';
-
-      // Fetch the saved user type from AuthLocalRepo
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
 
@@ -165,7 +163,7 @@ class AuthRemoteRepo extends BaseAPI {
         return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
       }
     } on DioException catch (e) {
-      return handleDioError(e); //
+      return handleDioError(e); 
     } on Exception catch (e) {
       log('Login DioException: $e');
       return ApiResult(error: '$e');
@@ -208,14 +206,12 @@ class AuthRemoteRepo extends BaseAPI {
         }
       }
 
-      // Try to fetch profile safely
       try {
-        // final userProfile = await getUserProfile(token: token.toString());
         final userProfile = await getUserProfile();
 
         log(
           'Fetched user profile: ${userProfile.data?.user.email}',
-        ); // test line
+        ); 
       } on Exception catch (e) {
         log('Failed to fetch profile: $e');
       }
@@ -239,7 +235,6 @@ class AuthRemoteRepo extends BaseAPI {
     required String email,
   }) async {
     try {
-      // Fetch the saved user type from AuthLocalRepo
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
 
@@ -270,7 +265,6 @@ class AuthRemoteRepo extends BaseAPI {
     required String token,
   }) async {
     try {
-      // Fetch the saved user type from AuthLocalRepo
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
 
@@ -300,7 +294,6 @@ class AuthRemoteRepo extends BaseAPI {
   }) async {
     try {
       const url = '/auth/reset-password';
-      // Fetch the saved user type from AuthLocalRepo
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
       final token = await authLocalDataSource.getForgotPaswwordOtp();
@@ -337,7 +330,6 @@ class AuthRemoteRepo extends BaseAPI {
 
   Future<bool> verifyEmail({required String emailVerificationToken}) async {
     try {
-      // Fetch the saved user type from AuthLocalRepo
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
 
@@ -414,7 +406,6 @@ class AuthRemoteRepo extends BaseAPI {
           );
           log('User profile fetched: ${customerProfileResponse.user.fullName}');
 
-          // Save to local storage
           await AuthLocalRepo.instance.storeUserDetails(
             customerProfileResponse: customerProfileResponse,
             isProvider: false,
@@ -587,7 +578,6 @@ class AuthRemoteRepo extends BaseAPI {
     required String documentType,
     required String filePath,
   }) async {
-    // Upload the document file
     final uploadResult = await uploadService.uploadSingle(filePath: filePath);
 
     if (uploadResult.data == null) {
@@ -595,8 +585,6 @@ class AuthRemoteRepo extends BaseAPI {
     }
 
     final upload = uploadResult.data!;
-
-    // Submit the identity data
     final submitResult = await submitIdentity(
       documentType: documentType,
       documentUrl: upload.url,

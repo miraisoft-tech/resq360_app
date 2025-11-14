@@ -67,7 +67,7 @@ class PaymentVerification {
   });
 
   factory PaymentVerification.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] ?? json; // handle if you pass the outer object
+    final data = json['data'] ?? json; 
     return PaymentVerification(
       id: data['id'] as int?,
       status: data['status'] as String?,

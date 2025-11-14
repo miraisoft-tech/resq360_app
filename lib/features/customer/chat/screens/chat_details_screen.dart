@@ -118,7 +118,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           }
         },
         builder: (context, state) {
-          // 🌀 Show loading only for fetching messages
           if (state is FetchingMessagesState && _messages.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -143,7 +142,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       final currentUserId = auth?.user.id;
                       // log(message.senderType?.toUpperCase());
 
-                      // Determine if message was sent by current logged-in user
                       final isSentByCurrentUser =
                           message.senderType?.toUpperCase() == 'USER' &&
                           message.senderId == currentUserId;

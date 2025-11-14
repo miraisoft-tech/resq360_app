@@ -52,7 +52,6 @@ class ChatSocketService {
       _retryCount = 0;
       log('Socket connected to $url at $_connectedAt');
       
-      // Complete the connection future
       if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
         _connectionCompleter!.complete();
       }

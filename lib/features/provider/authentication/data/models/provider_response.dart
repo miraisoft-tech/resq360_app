@@ -1,4 +1,3 @@
-// auth_response.dart
 import 'dart:convert';
 
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
@@ -33,7 +32,6 @@ class ProviderProfileResponse {
   String toString() => jsonEncode(toJson());
 }
 
-// provider_user_model.dart
 class ProviderModel {
   ProviderModel({
     this.id,
