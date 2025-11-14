@@ -21,7 +21,6 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     on<UpdateBankAccountEvent>(_onUpdateBankAccount);
   }
 
-  /// Handles user info update.
   Future<void> _onUpdateUserInfo(
     UpdateUserInfoEvent event,
     Emitter<ProfileUpdateState> emit,
@@ -41,7 +40,6 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     }
   }
 
-  /// Handles provider info update.
 Future<void> _onUpdateProviderInfo(
   UpdateProviderInfoEvent event,
   Emitter<ProfileUpdateState> emit,
@@ -49,7 +47,6 @@ Future<void> _onUpdateProviderInfo(
   emit(ProfileUpdateLoading());
 
   try {
-    // Step 1: Upload provider image(s)
     UploadResponse? uploadedImage;
 
     if (event.filePath != null && event.filePath!.isNotEmpty) {
@@ -71,7 +68,6 @@ Future<void> _onUpdateProviderInfo(
         log('No user');
       }
 
-    // Step 2: Update provider info
     final result = await updateUserRepo.updateProviderInformation(
       fullName: provider?.user.fullName ?? '',
       phoneNumber: provider?.user.phoneNumber ?? '',
@@ -85,7 +81,6 @@ Future<void> _onUpdateProviderInfo(
       profileImageId: uploadedImage?.id,
     );
 
-    // Step 3: Emit state based on result
     if (result.error != null) {
       emit(ProfileUpdateError(result.error!));
     } else {
@@ -97,7 +92,6 @@ Future<void> _onUpdateProviderInfo(
   }
 }
 
-  /// Handles provider address update.
   Future<void> _onUpdateProviderAddress(
     UpdateProviderAddressEvent event,
     Emitter<ProfileUpdateState> emit,
@@ -114,7 +108,6 @@ Future<void> _onUpdateProviderInfo(
     }
   }
 
-  /// Handles bank account update.
   Future<void> _onUpdateBankAccount(
     UpdateBankAccountEvent event,
     Emitter<ProfileUpdateState> emit,

@@ -1,6 +1,5 @@
 part of 'profile_update_bloc.dart';
 
-/// Base state for all profile update operations.
 sealed class ProfileUpdateState extends Equatable {
   const ProfileUpdateState();
 

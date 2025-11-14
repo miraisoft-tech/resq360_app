@@ -7,7 +7,7 @@ sealed class ProfileUpdateEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Update user info
+
 final class UpdateUserInfoEvent extends ProfileUpdateEvent {
   const UpdateUserInfoEvent({
     required this.fullName,
@@ -29,7 +29,6 @@ final class UpdateUserInfoEvent extends ProfileUpdateEvent {
   ];
 }
 
-/// Update provider info
 final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
   const UpdateProviderInfoEvent({
     required this.description,
@@ -71,7 +70,6 @@ final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
   ];
 }
 
-/// Update provider address
 final class UpdateProviderAddressEvent extends ProfileUpdateEvent {
   const UpdateProviderAddressEvent({
     required this.addressData,
@@ -82,7 +80,6 @@ final class UpdateProviderAddressEvent extends ProfileUpdateEvent {
   List<Object> get props => [addressData];
 }
 
-/// Update bank account info
 final class UpdateBankAccountEvent extends ProfileUpdateEvent {
   const UpdateBankAccountEvent({
     required this.accountName,

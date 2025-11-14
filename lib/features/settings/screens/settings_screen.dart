@@ -1,9 +1,11 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
+import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/authentication/data/service/auth_remote.repo.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
 import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
@@ -16,9 +18,28 @@ import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+
+  Future<void> _refreshProfile() async {
+  try {
+    if (dashboardViewModel.userType == UserType.provider) {
+      await AuthRemoteRepo.instance.getUserProfile();
+    } else {
+       await ProviderAuthRemoteRepo.instance.getUserProfile();
+    }
+
+    setState(() {}); // Rebuild UI after saving
+  } on Exception catch (e) {
+    debugPrint('Refresh failed: $e');
+  }
+}
   @override
   Widget build(
     BuildContext context,
@@ -149,143 +170,155 @@ class SettingsScreen extends StatelessWidget {
         backgroundColor: appColors.whiteColor,
         foregroundColor: appColors.black,
       ),
-      body: ListView(
-        padding: EdgeInsets.only(
-          left: 24.w,
-          right: 24.w,
-          bottom: 100.h,
-        ),
-        children: [
-          10.verticalSpace,
-          _ProfileSection(
-            isProvider: isProvider,
+      body: RefreshIndicator(
+        onRefresh: _refreshProfile,
+        child: ListView(
+          padding: EdgeInsets.only(
+            left: 24.w,
+            right: 24.w,
+            bottom: 100.h,
           ),
-          10.verticalSpace,
-          if (isProvider)
+          children: [
+            10.verticalSpace,
+            _ProfileSection(
+              isProvider: isProvider,
+            ),
+            10.verticalSpace,
+            if (isProvider)
+              FutureBuilder(
+                future: AuthLocalRepo.instance.getProviderCredentials(),
+                builder: (context, asyncSnapshot) {
+                        if (!asyncSnapshot.hasData) return const SizedBox();
+        
+        final provider = asyncSnapshot.data!;
+        final status = provider.user.activityStatus ?? 'UNKNOWN';
+                  return GestureDetector(
+                    onTap: () async {
+                      await GeneralDialogs.showCustomDialog(
+                        context,
+                        body: AccountStatusDialog(
+                          onTap: () async {
+                            Navigator.pop(context);
+                  
+                            await pushScreen(context, const ContactAdminScreen());
+                          },
+                        ),
+                      );
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GenText(
+                          'Account Status: $status',
+                          height: 24.5,
+                          color: appColors.success.shade700,
+                          weight: FontWeight.w500,
+                        ),
+                        4.horizontalSpace,
+                        AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
+                          color: appColors.success.shade700,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            20.verticalSpace,
+            if (isProvider)
+              Container(
+                decoration: BoxDecoration(
+                  color: appColors.whiteColor,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Column(
+                  children: [
+                    ...providerSettingsOptions.map(
+                      (item) => Column(
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: item.icon,
+                            title: GenText(
+                              item.title,
+                              color: appColors.black,
+                              weight: FontWeight.w500,
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: appColors.textColor.shade200,
+                            ),
+                            onTap: item.onTap,
+                          ),
+                          Divider(height: 5, color: appColors.textColor.shade100),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                  color: appColors.whiteColor,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Column(
+                  children: [
+                    ...customerSettingsOptions.map(
+                      (item) => Column(
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: item.icon,
+                            title: GenText(
+                              item.title,
+                              color: appColors.black,
+                              weight: FontWeight.w500,
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: appColors.textColor.shade200,
+                            ),
+                            onTap: item.onTap,
+                          ),
+                          Divider(height: 5, color: appColors.textColor.shade100),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            30.verticalSpace,
             GestureDetector(
               onTap: () async {
                 await GeneralDialogs.showCustomDialog(
                   context,
-                  body: AccountStatusDialog(
-                    onTap: () async {
-                      Navigator.pop(context);
-
-                      await pushScreen(context, const ContactAdminScreen());
-                    },
-                  ),
+                  body: const LogoutDialog(),
                 );
               },
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Icon(
+                    Icons.logout,
+                    color: appColors.error.shade500,
+                  ),
+                  10.horizontalSpace,
                   GenText(
-                    'Account Status: ACTIVE',
-                    height: 24.5,
-                    color: appColors.success.shade700,
-                    weight: FontWeight.w500,
+                    'Log out',
+                    color: appColors.error.shade500,
+                    size: 15,
+                    weight: FontWeight.w600,
                   ),
-                  4.horizontalSpace,
-                  AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
-                    color: appColors.success.shade700,
-                  ),
-                ],
-              ),
-            ),
-          20.verticalSpace,
-          if (isProvider)
-            Container(
-              decoration: BoxDecoration(
-                color: appColors.whiteColor,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Column(
-                children: [
-                  ...providerSettingsOptions.map(
-                    (item) => Column(
-                      children: [
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: item.icon,
-                          title: GenText(
-                            item.title,
-                            color: appColors.black,
-                            weight: FontWeight.w500,
-                          ),
-                          trailing: Icon(
-                            Icons.chevron_right,
-                            color: appColors.textColor.shade200,
-                          ),
-                          onTap: item.onTap,
-                        ),
-                        Divider(height: 5, color: appColors.textColor.shade100),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            Container(
-              decoration: BoxDecoration(
-                color: appColors.whiteColor,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Column(
-                children: [
-                  ...customerSettingsOptions.map(
-                    (item) => Column(
-                      children: [
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: item.icon,
-                          title: GenText(
-                            item.title,
-                            color: appColors.black,
-                            weight: FontWeight.w500,
-                          ),
-                          trailing: Icon(
-                            Icons.chevron_right,
-                            color: appColors.textColor.shade200,
-                          ),
-                          onTap: item.onTap,
-                        ),
-                        Divider(height: 5, color: appColors.textColor.shade100),
-                      ],
-                    ),
+                  const Spacer(),
+                  Icon(
+                    Icons.chevron_right,
+                    color: appColors.textColor.shade200,
                   ),
                 ],
               ),
             ),
-          30.verticalSpace,
-          GestureDetector(
-            onTap: () async {
-              await GeneralDialogs.showCustomDialog(
-                context,
-                body: const LogoutDialog(),
-              );
-            },
-            child: Row(
-              children: [
-                Icon(
-                  Icons.logout,
-                  color: appColors.error.shade500,
-                ),
-                10.horizontalSpace,
-                GenText(
-                  'Log out',
-                  color: appColors.error.shade500,
-                  size: 15,
-                  weight: FontWeight.w600,
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.chevron_right,
-                  color: appColors.textColor.shade200,
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

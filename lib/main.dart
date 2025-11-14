@@ -14,7 +14,8 @@ import 'package:resq360/features/customer/bookings/data/bloc/provider_service_bl
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
-import 'package:resq360/features/settings/data/bloc/profile_update_bloc.dart';
+import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
+import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +57,7 @@ Future<void> main() async {
             BlocProvider(create: (_) => ChatBloc()),
             BlocProvider(create: (_) => ProfileUpdateBloc()),
             BlocProvider(create: (_) => ProviderServiceBloc()),
+            BlocProvider(create: (_) => BankBloc()),
           ],
           child: const MyApp(),
         ),
