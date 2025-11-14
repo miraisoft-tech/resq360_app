@@ -1,4 +1,6 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
@@ -65,25 +67,42 @@ class ProviderWalletScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ProviderWalletBalanceCard(
-              balance: 45000,
-              onAddFunds: () async {
-                await GeneralDialogs.showCustomDialog(
-                  context,
-                  body: FundMethodDialog(
-                    onPaymentSelected: (PaymentMethod p1) async {
-                      await GeneralDialogs.showCustomDialog(
-                        context,
-                        body: const FundWalletConfirmDialog(
-                          amount: '₦20,000',
-                        ),
-                      );
-                    },
-                  ),
+            BlocBuilder<WalletBloc, WalletState>(
+              builder: (context, state) {
+                                if (state is FetchWalletLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is FetchingWalletInfoError) {
+                  return Center(
+                    child: ErrorMessageAndButton(error: 'failed to fetch balance', onPressed: (){
+                      context.read<WalletBloc>().add(FetchWalletInfo());
+                    },),
+                  );
+                } if (state is FetchedWalletInfo) {
+                  final balance = state.wallet.balance;
+                return ProviderWalletBalanceCard(
+                  balance: balance!.toInt(),
+                  onAddFunds: () async {
+                    await GeneralDialogs.showCustomDialog(
+                      context,
+                      body: FundMethodDialog(
+                        onPaymentSelected: (PaymentMethod p1) async {
+                          await GeneralDialogs.showCustomDialog(
+                            context,
+                            body: const FundWalletConfirmDialog(
+                              amount: '₦20,000',
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  onWithdraw: () async {
+                    await pushScreen(context, const ProviderWithdrawScreen());
+                  },
                 );
-              },
-              onWithdraw: () async {
-                await pushScreen(context, const ProviderWithdrawScreen());
+                }
+                return const SizedBox.shrink();
               },
             ),
             30.verticalSpace,

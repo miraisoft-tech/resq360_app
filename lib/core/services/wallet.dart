@@ -5,16 +5,24 @@ import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet/wallet.model.dart';
 
 class WalletRepo extends BaseAPI {
-  Future<ApiResult<WalletResponse>> getWalletBalance() async {
+  factory WalletRepo(){
+    return instance;
+  }
+
+  WalletRepo._internal();
+  static final WalletRepo instance = WalletRepo._internal();
+
+  Future<ApiResult<Wallet>> getWalletInfo() async {
     const url = '/wallet/info';
 
     try {
       final response = await dio().get<Map<String, dynamic>>(url);
       if (response.statusCode == 200) {
         final data = response.data;
-        final balance = data?['balance'] as double;
+        log(data.toString());
+        final balance = data?['data']['balance'];
         log('Wallet Balance: $balance');
-        return ApiResult(data: WalletResponse.fromJson(data!));
+        return ApiResult(data: Wallet.fromJson(data!));
       } else {
         return ApiResult(error: 'Failed to fetch wallet balance');
       }

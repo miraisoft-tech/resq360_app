@@ -52,7 +52,7 @@ on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
     } on Exception catch (e) {
         log('Error fetching bank account: $e');
 
-      emit(const BankFailure(error: ''));
+      emit( BankFailure(error: '$e'));
     }
   }
 
