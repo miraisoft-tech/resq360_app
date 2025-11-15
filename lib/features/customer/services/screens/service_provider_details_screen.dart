@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
@@ -59,27 +60,10 @@ class _ServiceProviderDetailsScreenState
     }
 
     final auth = provider.authInfo;
-    // if (auth == null) {
-    //   await showSnackBar(context, 'Error', 'Please log in to continue.');
-    //   return;
-    // }
 
     final userId = auth?.user.id;
     final providerId = widget.providerId;
-    // final chatRepo = ChatRepo();
 
-    // final existingChat = await chatRepo.findExistingPrivateChat(
-    //   providerId: providerId,
-    //   userId: userId,
-    // );
-
-    // if (existingChat != null) {
-    //   log('Existing chat found → navigating to chat ID ${existingChat.id}');
-    //   await pushScreen(context, ChatDetailScreen(chat: existingChat));
-    //   return;
-    // }
-
-    // 🚀 Step 2: If not found, create a new chat
     final chatRequest = CreateChatRequest(
       title: 'Chat with ${widget.providerName}',
       type: 'PRIVATE',
@@ -240,7 +224,7 @@ class _ServiceProviderDetailsScreenState
                                         ),
                                         4.horizontalSpace,
                                         GenText(
-                                          '4.8', 
+                                          '4.8',
                                           color: colors.black,
                                         ),
                                         2.horizontalSpace,
@@ -330,17 +314,18 @@ class _ServiceProviderDetailsScreenState
                               20.horizontalSpace,
                               AppAssets.ASSETS_ICONS_CLOCK_SVG.svg,
                               8.horizontalSpace,
-                              GenText(
-                                '${provider.openingHours ?? 'N/A'}am - ${provider.closingHours ?? 'N/A'}pm',
-                                size: 13,
-                                color: colors.black,
+                              Expanded(
+                                child: GenText(
+                                  '${AppTextUtil.formatDateToStringNormal(provider.openingHours, 'hh:mmaa')} - ${AppTextUtil.formatDateToStringNormal(provider.closingHours, 'hh:mmaa')}',
+                                  size: 13,
+                                  color: colors.black,
+                                ),
                               ),
                             ],
                           ),
 
                           20.verticalSpace,
 
-                          /// SERVICES SECTIOz
                           GenText(
                             'Services',
                             height: 20.5,

@@ -34,11 +34,12 @@ class _SplashScreenState extends State<SplashScreen> {
           return;
         }
 
-        // If intro done: determine if there's a restored auth for either role.
         final hasCustomerAuth = CustomerAuthProvider.instance.authInfo != null;
         final hasProviderAuth = ProviderAuthProvider.instance.authInfo != null;
-        log('Splash AuthProvider hash: ${CustomerAuthProvider.instance.hashCode}');
-       
+        log(
+          'Splash AuthProvider hash: ${CustomerAuthProvider.instance.hashCode}',
+        );
+
         log('Auth info: ${CustomerAuthProvider.instance.authInfo}');
 
         if (hasCustomerAuth || hasProviderAuth) {
@@ -55,30 +56,30 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-Future<void> _navigateToNext() async {
-  final userTypeString = await AuthLocalRepo.instance.getUserType();
+  Future<void> _navigateToNext() async {
+    final userTypeString = await AuthLocalRepo.instance.getUserType();
 
-  if (userTypeString == null && mounted) {
+    if (userTypeString == null && mounted) {
+      await replaceScreen(
+        context,
+        const SelectAccountTypeScreen(),
+      );
+      return;
+    }
+
+    final userType =
+        userTypeString == 'provider' ? UserType.provider : UserType.customer;
+
+    dashboardViewModel.userType = userType;
+
+    if (!mounted) return;
+
     await replaceScreen(
       context,
-      const SelectAccountTypeScreen(),
+      MainLayoutPage(userType: userType),
     );
-    return;
   }
 
-  final userType = userTypeString == 'provider'
-      ? UserType.provider
-      : UserType.customer;
-
-  dashboardViewModel.userType = userType;
-
-  if (!mounted) return;
-
-  await replaceScreen(
-    context,
-    MainLayoutPage(userType: userType),
-  );
-}
   @override
   void initState() {
     super.initState();

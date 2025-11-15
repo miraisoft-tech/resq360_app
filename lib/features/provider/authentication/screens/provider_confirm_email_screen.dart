@@ -46,9 +46,20 @@ class _ProviderConfirmEmailScreenState
   }
 
   Future<void> onResend() async {
+    if (controller.isRunning) {
+      return;
+    }
+
     context.read<ProviderAuthBloc>().add(
       ProviderResendVerificationOtp(email: widget.email),
     );
+
+    controller
+      ..endTime =
+          DateTime.now()
+              .add(const Duration(seconds: 5 * 60))
+              .millisecondsSinceEpoch
+      ..start();
   }
 
   Future<void> onVerify() async {
@@ -87,7 +98,6 @@ class _ProviderConfirmEmailScreenState
           }
           await showSuccessSnackbar(context, state.message);
 
-          // Restart countdown timer
           controller
             ..endTime =
                 DateTime.now()
@@ -132,19 +142,17 @@ class _ProviderConfirmEmailScreenState
                       widgetBuilder: (_, CurrentRemainingTime? time) {
                         return Column(
                           children: [
-                            InkWell(
-                              onTap: onResend,
-                              child: GenText(
-                                'Didn’t receive code?',
-                                size: 12,
-                                height: 20.5,
-                                color: colors.neutral.shade500,
-                                weight: FontWeight.w400,
-                              ),
+                            GenText(
+                              'Didn’t receive code?',
+                              size: 12,
+                              height: 20.5,
+                              color: colors.neutral.shade500,
+                              weight: FontWeight.w400,
                             ),
                             5.verticalSpace,
                             GoToWidget(
                               ligthText: 'Resend code in ',
+                              onTap: onResend,
                               coloredText:
                                   '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
                             ),

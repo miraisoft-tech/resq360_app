@@ -14,8 +14,6 @@ class ServiceCategoryWidget extends StatelessWidget {
     final colors = context.appColors;
 
     return Container(
-      width: 100.w,
-      padding: pad(vertical: 20),
       decoration: BoxDecoration(
         border: Border.all(color: colors.lightGreyColor2),
         borderRadius: BorderRadius.circular(12),
@@ -24,21 +22,22 @@ class ServiceCategoryWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-          height: 70,
-          width: 80,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(16),
+            height: 80,
+            width: 80,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            clipBehavior: Clip.hardEdge,
+            child: icon,
           ),
-          clipBehavior: Clip.hardEdge,
-          child: icon,
-        ),
           6.verticalSpace,
           GenText(
             label,
             color: colors.black,
             size: 12,
             weight: FontWeight.w400,
+            textAlign: TextAlign.center,
           ),
         ],
       ),

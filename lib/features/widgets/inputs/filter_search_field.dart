@@ -109,7 +109,7 @@ class _FilterSearchFormFieldState extends State<FilterSearchFormField> {
                         child: Padding(
                           padding: const EdgeInsets.only(right: 5),
                           child: Transform.scale(
-                            scale: 0.5,
+                            scale: 1,
                             child: Icon(
                               Icons.close,
                               color: appTheme.textColor.shade300,

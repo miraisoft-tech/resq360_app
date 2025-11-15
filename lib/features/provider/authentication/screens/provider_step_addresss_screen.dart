@@ -1,12 +1,9 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
-import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
@@ -34,13 +31,12 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
     'Enugu',
   ];
 
-    Future<void> initializeLocation() async {
+  Future<void> initializeLocation() async {
     final locationData = await LocationHelper.getCurrentLocation();
 
     _streetCtrl.text = (locationData['address'] as String?) ?? '';
     _cityCtrl.text = (locationData['city'] as String?) ?? '';
   }
-
 
   bool get isFormValid =>
       _streetCtrl.text.isNotEmpty &&
@@ -59,14 +55,14 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
     final colors = context.appColors;
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
-      listener: (context, state) async{
+      listener: (context, state) async {
         if (!context.mounted) return;
         if (state is ProviderAuthLoadingState) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is ProviderKycSubmissionFailure) {
-          showSnackBar(context, 'Error', state.error);
+          await showSnackBar(context, 'Error', state.error);
         }
         if (state is ProviderKycAddressSubmitted) {
           await GeneralDialogs.showCustomBottomSheet(
@@ -81,8 +77,12 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
                 await pop(context);
 
                 if (context.mounted) {
-                  // Navigate to login
-                  await pushAndReplaceScreen(const ProviderHomeScreen(), context: context);
+                  await replaceScreen(
+                    context,
+                    const MainLayoutPage(
+                      userType: UserType.provider,
+                    ),
+                  );
                 }
               },
             ),
@@ -173,15 +173,14 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
                   onPressed:
                       isFormValid
                           ? () async {
-                             context.read<ProviderAuthBloc>().add(
-                                    ProviderSubmitKycAddress(
-                                      address: _streetCtrl.text,
-                                      city: _cityCtrl.text,
-                                      state: _selectState.value!,
-                                    ),
-                                  );
-                            }
-                          
+                            context.read<ProviderAuthBloc>().add(
+                              ProviderSubmitKycAddress(
+                                address: _streetCtrl.text,
+                                city: _cityCtrl.text,
+                                state: _selectState.value!,
+                              ),
+                            );
+                          }
                           : null,
                 ),
                 20.verticalSpace,

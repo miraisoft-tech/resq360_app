@@ -82,8 +82,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
         if (state is CustomerAuthFailure) {
           await pop(context);
-          Future.delayed(const Duration(seconds: 2), () async{
-             await showSnackBar(context, 'Error', state.error);
+          Future.delayed(const Duration(seconds: 2), () async {
+            await showSnackBar(context, 'Error', state.error);
           });
         }
 

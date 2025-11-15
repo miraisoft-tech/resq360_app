@@ -11,8 +11,20 @@ import 'package:resq360/features/widgets/dialogs/fund_wallet_confirm.dialog.dart
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
-class ProviderWalletScreen extends StatelessWidget {
+class ProviderWalletScreen extends StatefulWidget {
   const ProviderWalletScreen({super.key});
+
+  @override
+  State<ProviderWalletScreen> createState() => _ProviderWalletScreenState();
+}
+
+class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    context.read<WalletBloc>().add(FetchWalletInfo());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,38 +81,47 @@ class ProviderWalletScreen extends StatelessWidget {
           children: [
             BlocBuilder<WalletBloc, WalletState>(
               builder: (context, state) {
-                                if (state is FetchWalletLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                if (state is FetchWalletLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: appColors.primary.shade500,
+                    ),
+                  );
                 }
                 if (state is FetchingWalletInfoError) {
                   return Center(
-                    child: ErrorMessageAndButton(error: 'failed to fetch balance', onPressed: (){
-                      context.read<WalletBloc>().add(FetchWalletInfo());
-                    },),
+                    child: ErrorMessageAndButton(
+                      error: 'failed to fetch balance',
+                      onPressed: () {
+                        context.read<WalletBloc>().add(FetchWalletInfo());
+                      },
+                    ),
                   );
-                } if (state is FetchedWalletInfo) {
+                }
+
+                if (state is FetchedWalletInfo) {
                   final balance = state.wallet.balance;
-                return ProviderWalletBalanceCard(
-                  balance: balance!.toInt(),
-                  onAddFunds: () async {
-                    await GeneralDialogs.showCustomDialog(
-                      context,
-                      body: FundMethodDialog(
-                        onPaymentSelected: (PaymentMethod p1) async {
-                          await GeneralDialogs.showCustomDialog(
-                            context,
-                            body: const FundWalletConfirmDialog(
-                              amount: '₦20,000',
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                  onWithdraw: () async {
-                    await pushScreen(context, const ProviderWithdrawScreen());
-                  },
-                );
+                  return ProviderWalletBalanceCard(
+                    balance: balance!.toInt(),
+                    onAddFunds: () async {
+                      await GeneralDialogs.showCustomDialog(
+                        context,
+                        body: FundMethodDialog(
+                          onPaymentSelected: (PaymentMethod p1) async {
+                            await GeneralDialogs.showCustomDialog(
+                              context,
+                              body: const FundWalletConfirmDialog(
+                                amount: '₦20,000',
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    onWithdraw: () async {
+                      await pushScreen(context, const ProviderWithdrawScreen());
+                    },
+                  );
                 }
                 return const SizedBox.shrink();
               },

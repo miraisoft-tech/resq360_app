@@ -94,9 +94,8 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
         categoryId: widget.serviceProviderId,
         activityStatus: activityStatus,
         nearYou: _sortByProximity,
-        search: _searchController.text.isNotEmpty
-                ? _searchController.text
-                : null,
+        search:
+            _searchController.text.isNotEmpty ? _searchController.text : null,
       ),
     );
   }
@@ -139,8 +138,10 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
               hintText: 'Search for services',
               onTapSuffix: () {},
               onChanged: (value) {
-               Future.delayed(const Duration(milliseconds: 500), _fetchProviders);
-
+                Future.delayed(
+                  const Duration(milliseconds: 500),
+                  _fetchProviders,
+                );
               },
               prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
             ),
@@ -218,7 +219,11 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
             child: BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
               builder: (context, state) {
                 if (state is CustomerServicesLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: colors.primary.shade500,
+                    ),
+                  );
                 }
 
                 if (state is CustomerServicesError) {
@@ -281,6 +286,39 @@ class _ProviderList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
+    if (providers.isEmpty) {
+      return Padding(
+        padding: pad(horizontal: 16),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.search_off,
+                size: 64,
+                color: colors.greyColor,
+              ),
+              16.verticalSpace,
+              UrbText(
+                'No providers found',
+                size: 16,
+                weight: FontWeight.w600,
+                color: colors.greyColor,
+              ),
+              8.verticalSpace,
+              GenText(
+                'There are no service providers available in this category',
+                color: colors.textColor.shade500,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
       itemCount: providers.length,
       padding: pad(horizontal: 16, vertical: 8),
@@ -294,8 +332,9 @@ class _ProviderList extends StatelessWidget {
               await pushScreen(
                 context,
                 ServiceProviderDetailsScreen(
-                  providerId: provider.id!, providerName: provider.companyName!, provider: provider,
-                  
+                  providerId: provider.id!,
+                  providerName: provider.companyName!,
+                  provider: provider,
                 ),
               );
             },
@@ -334,7 +373,6 @@ class _ProviderCard extends StatelessWidget {
                 children: [
                   const CircleAvatar(
                     radius: 26,
-                    // backgroundImage: NetworkImage(provider.),
                   ),
                   12.horizontalSpace,
                   Expanded(
