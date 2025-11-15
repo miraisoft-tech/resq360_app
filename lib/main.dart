@@ -47,22 +47,20 @@ Future<void> main() async {
   final themePreferences = ThemePreferences();
 
   runApp(
-    ProviderScope(
-      child: TranslationProvider(
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => ThemeCubit(themePreferences)),
-            BlocProvider(create: (_) => CustomerAuthBloc()),
-            BlocProvider(create: (_) => ProviderAuthBloc()),
-            BlocProvider(create: (_) => CustomerServicesBloc()),
-            BlocProvider(create: (_) => ChatBloc()),
-            BlocProvider(create: (_) => ProfileUpdateBloc()),
-            BlocProvider(create: (_) => ProviderServiceBloc()),
-            BlocProvider(create: (_) => BankBloc()),
-            BlocProvider(create: (_) => WalletBloc()),
-          ],
-          child: const MyApp(),
-        ),
+    TranslationProvider(
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => ThemeCubit(themePreferences)),
+          BlocProvider(create: (_) => CustomerAuthBloc()),
+          BlocProvider(create: (_) => ProviderAuthBloc()),
+          BlocProvider(create: (_) => CustomerServicesBloc()),
+          BlocProvider(create: (_) => ChatBloc()),
+          BlocProvider(create: (_) => ProfileUpdateBloc()),
+          BlocProvider(create: (_) => ProviderServiceBloc()),
+          BlocProvider(create: (_) => BankBloc()),
+          BlocProvider(create: (_) => WalletBloc()),
+        ],
+        child: const MyApp(),
       ),
     ),
   );

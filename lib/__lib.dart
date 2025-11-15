@@ -1,5 +1,4 @@
 export 'package:flutter/material.dart';
-export 'package:flutter_riverpod/flutter_riverpod.dart';
 export 'package:flutter_screenutil/flutter_screenutil.dart';
 export 'package:flutter_svg/svg.dart';
 export 'package:resq360/core/extensions/extensions.dart';

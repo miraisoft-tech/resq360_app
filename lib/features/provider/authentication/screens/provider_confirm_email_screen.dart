@@ -1,6 +1,3 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
@@ -74,7 +71,7 @@ class _ProviderConfirmEmailScreenState
       listener: (context, state) async {
         if (!context.mounted) return;
         if (state is ProviderAuthLoadingState) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {
@@ -173,7 +170,7 @@ class _ProviderConfirmEmailScreenState
   }
 }
 
-class GoToWidget extends ConsumerWidget {
+class GoToWidget extends StatelessWidget {
   const GoToWidget({
     required this.ligthText,
     required this.coloredText,
@@ -190,7 +187,7 @@ class GoToWidget extends ConsumerWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return Text.rich(

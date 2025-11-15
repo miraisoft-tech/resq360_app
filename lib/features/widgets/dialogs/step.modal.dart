@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 
-class StepModal extends ConsumerWidget {
+class StepModal extends StatelessWidget {
   const StepModal({
     required this.onContinuePressed,
     required this.title,
@@ -17,7 +17,7 @@ class StepModal extends ConsumerWidget {
   final void Function() onContinuePressed;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(

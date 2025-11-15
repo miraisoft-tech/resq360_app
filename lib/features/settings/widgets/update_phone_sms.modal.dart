@@ -36,28 +36,8 @@ class _UpdateSMSModalState extends State<UpdateSMSModal> {
     super.dispose();
   }
 
-  Future<void> onResend() async {
-    // showLoadingDialog();
+  Future<void> onResend() async {}
 
-    // final result = await AuthRemoteRepo.instance.resendVerifyEmail(
-    //   email: widget.email,
-    // );
-
-    // if (result is ErrorResponse && mounted) {
-    //   await pop(context);
-    //   await showErrorSnackbar(result.errorMessage);
-    // } else if (result is AuthResponse && mounted) {
-    //   await pop(context);
-
-    //   await showSuccessSnackbar('Verification mail resent successfully!');
-    //   controller.endTime =
-    //       DateTime.now()
-    //           .add(const Duration(seconds: 5 * 60))
-    //           .millisecondsSinceEpoch;
-    //   controller.start();
-    //   setState(() {});
-    // }
-  }
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;

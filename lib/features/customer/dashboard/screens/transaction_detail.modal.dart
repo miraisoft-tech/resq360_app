@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 
-class TransactionDetailModal extends ConsumerWidget {
+class TransactionDetailModal extends StatelessWidget {
   const TransactionDetailModal({
     required this.onRetry,
     required this.onSupport,
@@ -11,7 +11,7 @@ class TransactionDetailModal extends ConsumerWidget {
   final VoidCallback onSupport;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(

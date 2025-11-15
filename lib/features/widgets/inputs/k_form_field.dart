@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resq360/__lib.dart';
 
-class KFormField extends ConsumerStatefulWidget {
+class KFormField extends StatefulWidget {
   const KFormField({
     required this.label,
     required this.controller,
@@ -46,10 +46,10 @@ class KFormField extends ConsumerStatefulWidget {
   final void Function()? onEditingComplete;
 
   @override
-  ConsumerState<KFormField> createState() => _KFormFieldState();
+  State<KFormField> createState() => _KFormFieldState();
 }
 
-class _KFormFieldState extends ConsumerState<KFormField> {
+class _KFormFieldState extends State<KFormField> {
   late FocusNode _focusNode;
   late ValueNotifier<bool> _obscureNotier;
 

@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 
-class ThankYouModal extends ConsumerWidget {
+class ThankYouModal extends StatelessWidget {
   const ThankYouModal({
     required this.onContinuePressed,
 
@@ -10,7 +10,7 @@ class ThankYouModal extends ConsumerWidget {
   final void Function() onContinuePressed;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(

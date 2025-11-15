@@ -2,7 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resq360/__lib.dart';
 
-class KDropDown extends ConsumerStatefulWidget {
+class KDropDown extends StatefulWidget {
   const KDropDown({
     required this.hintText,
     required this.value,
@@ -34,10 +34,10 @@ class KDropDown extends ConsumerStatefulWidget {
   final bool showPrefix;
 
   @override
-  ConsumerState<KDropDown> createState() => _CustomDropdownButtonState();
+  State<KDropDown> createState() => _CustomDropdownButtonState();
 }
 
-class _CustomDropdownButtonState extends ConsumerState<KDropDown> {
+class _CustomDropdownButtonState extends State<KDropDown> {
   List<DropdownMenuItem<String>> addDividersAfterItems(List<String> items) {
     final menuItems = <DropdownMenuItem<String>>[];
     for (final item in items) {
@@ -219,7 +219,7 @@ class _CustomDropdownButtonState extends ConsumerState<KDropDown> {
   }
 }
 
-class ObjectKDropDown<T> extends ConsumerStatefulWidget {
+class ObjectKDropDown<T> extends StatefulWidget {
   const ObjectKDropDown({
     required this.hintText,
     required this.value,
@@ -254,10 +254,10 @@ class ObjectKDropDown<T> extends ConsumerStatefulWidget {
   final String Function(T) displayStringForOption;
 
   @override
-  ConsumerState<ObjectKDropDown<T>> createState() => _ObjectKDropDownState<T>();
+  State<ObjectKDropDown<T>> createState() => _ObjectKDropDownState<T>();
 }
 
-class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
+class _ObjectKDropDownState<T> extends State<ObjectKDropDown<T>> {
   List<DropdownMenuItem<T>> addDividersAfterItems(List<T> items) {
     final menuItems = <DropdownMenuItem<T>>[];
     for (var i = 0; i < items.length; i++) {

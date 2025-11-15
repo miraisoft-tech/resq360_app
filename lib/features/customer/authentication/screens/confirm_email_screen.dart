@@ -41,9 +41,9 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
   }
 
   Future<void> onResend() async {
- context.read<CustomerAuthBloc>().add(
-    CustomerResendVerificationOtp(email: widget.email),
-  );
+    context.read<CustomerAuthBloc>().add(
+      CustomerResendVerificationOtp(email: widget.email),
+    );
   }
 
   Future<void> onVerify() async {
@@ -74,20 +74,21 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           await showErrorSnackbar(context, state.error);
         }
 
-         if (state is CustomerVerificationResent) {
-      if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-      await showSuccessSnackbar(context, state.message);
+        if (state is CustomerVerificationResent) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          await showSuccessSnackbar(context, state.message);
 
-      controller
-        ..endTime = DateTime.now()
-            .add(const Duration(seconds: 5 * 60))
-            .millisecondsSinceEpoch
-        ..start();
+          controller
+            ..endTime =
+                DateTime.now()
+                    .add(const Duration(seconds: 5 * 60))
+                    .millisecondsSinceEpoch
+            ..start();
 
-      setState(() {});
-    }
+          setState(() {});
+        }
 
         if (state is CustomerEmailVerified) {
           log('Email verified');
@@ -159,7 +160,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
   }
 }
 
-class GoToWidget extends ConsumerWidget {
+class GoToWidget extends StatelessWidget {
   const GoToWidget({
     required this.ligthText,
     required this.coloredText,
@@ -176,7 +177,7 @@ class GoToWidget extends ConsumerWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return Text.rich(

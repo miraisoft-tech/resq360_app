@@ -1,7 +1,3 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
@@ -19,7 +15,6 @@ class ProviderVerifyEmailScreen extends StatefulWidget {
   });
 
   final String email;
-  // final VerificationPurpose purpose;
 
   @override
   State<ProviderVerifyEmailScreen> createState() =>
@@ -75,7 +70,7 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
         if (!context.mounted) return;
 
         if (state is ProviderAuthLoadingState) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {
@@ -92,7 +87,6 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
           }
           await showSuccessSnackbar(context, state.message);
 
-          // Restart countdown timer
           controller
             ..endTime =
                 DateTime.now()
@@ -174,7 +168,7 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
   }
 }
 
-class GoToWidget extends ConsumerWidget {
+class GoToWidget extends StatelessWidget {
   const GoToWidget({
     required this.ligthText,
     required this.coloredText,
@@ -191,7 +185,7 @@ class GoToWidget extends ConsumerWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return Text.rich(

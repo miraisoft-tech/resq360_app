@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 
-class CancelledModal extends ConsumerWidget {
+class CancelledModal extends StatelessWidget {
   const CancelledModal({
     required this.onContinuePressed,
 
@@ -10,7 +10,7 @@ class CancelledModal extends ConsumerWidget {
   final void Function() onContinuePressed;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(
