@@ -142,11 +142,13 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                       crossAxisCount: 3,
                                       mainAxisSpacing: 16,
                                       crossAxisSpacing: 16,
-                                      mainAxisExtent: 130,
+                                      mainAxisExtent: 150,
                                     ),
                                 itemBuilder: (context, index) {
                                   final service = filteredServices[index];
-                                  return GestureDetector(
+
+                                  return ServiceCategoryWidget(
+                                    category: service,
                                     onTap: () async {
                                       await pushScreen(
                                         context,
@@ -155,25 +157,6 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                         ),
                                       );
                                     },
-                                    child: ServiceCategoryWidget(
-                                      icon: Image.network(
-                                        service.image,
-                                        fit: BoxFit.cover,
-
-                                        errorBuilder: (
-                                          context,
-                                          error,
-                                          stackTrace,
-                                        ) {
-                                          return const Icon(
-                                            Icons.image_not_supported,
-                                            size: 32,
-                                            color: Colors.grey,
-                                          );
-                                        },
-                                      ),
-                                      label: service.name,
-                                    ),
                                   );
                                 },
                               ),
