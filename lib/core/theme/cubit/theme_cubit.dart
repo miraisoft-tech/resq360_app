@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/core/theme/app_color_theme.dart';
 import 'package:resq360/core/theme/app_text_theme.dart';
 import 'package:resq360/core/theme/app_theme.preferences.dart';
-import 'package:resq360/core/theme/static_colors.dart';
 
 part 'theme_state.dart';
 
