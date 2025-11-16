@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/core/theme/app_color_theme.dart';
 import 'package:resq360/core/theme/app_text_theme.dart';
 import 'package:resq360/core/theme/app_theme.preferences.dart';
+import 'package:resq360/core/theme/static_colors.dart';
 
 part 'theme_state.dart';
 
@@ -68,7 +69,13 @@ class ThemeCubit extends Cubit<ThemeState> {
         labelSmall: textTheme.labelSmall,
       ),
       extensions: <ThemeExtension<dynamic>>[colors, textTheme],
+          progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: AppColorPalette.dark().primary.shade600,
+      // circularTrackColor: Colors.grey,
+    ),
+
     );
+    
 
     return ThemeState(
       mode: mode,
