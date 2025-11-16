@@ -4,16 +4,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
+import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
 
 class SelectAccountTypeScreen extends StatefulWidget {
   const SelectAccountTypeScreen({super.key});
 
   @override
-  State<SelectAccountTypeScreen> createState() => _SelectAccountTypeScreenState();
+  State<SelectAccountTypeScreen> createState() =>
+      _SelectAccountTypeScreenState();
 }
 
 class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
@@ -38,19 +39,18 @@ class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
         context,
         BlocProvider(
           create: (_) => CustomerAuthBloc(),
-          child: const CreateAccountScreen(),
+          child: const LoginScreen(),
         ),
       );
     } else {
-      await pushScreen(context, const ProviderCreateAccountScreen());
+      await pushScreen(context, const ProviderLoginScreen());
     }
   }
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,6 @@ class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
     );
   }
 }
-
 
 class _AccountTypeCard extends StatelessWidget {
   const _AccountTypeCard({

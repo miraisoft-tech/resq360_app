@@ -102,7 +102,7 @@ class CacheNetworkImageWidget extends StatelessWidget {
       errorBuilder: (context, error, stackTrace) {
         log('---Image.network----url: $imgUrl -----error: $error ------');
         return assetsImage(
-          imgUrl: '', //AppAssets.ASSETS_LOGO_LOGO_PNG,
+          imgUrl: AppAssets.ASSETS_LOGO_LOGO_PNG,
           shape: shape,
           both: both,
           height: height,

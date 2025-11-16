@@ -8,6 +8,7 @@ import 'package:resq360/features/customer/dashboard/screens/notification_screen.
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
+import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 // import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
 // import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
@@ -43,17 +44,17 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, state) {
             if (state is CustomerAuthLoginSuccess) {
               final user = state.user;
-                return _buildHeader(context, user.fullName!);
+              return _buildHeader(context, user.fullName!);
             }
-              
-              return FutureBuilder<CustomerProfileResponse?>(
-                future: AuthLocalRepo.instance.getAuthCredentials(),
-                builder: (context, snapshot) {
-                  final userName = snapshot.data?.user.fullName ?? 'user';
-                  return _buildHeader(context, userName);
-                },
-              );
-            },
+
+            return FutureBuilder<CustomerProfileResponse?>(
+              future: AuthLocalRepo.instance.getAuthCredentials(),
+              builder: (context, snapshot) {
+                final userName = snapshot.data?.user.fullName ?? 'user';
+                return _buildHeader(context, userName);
+              },
+            );
+          },
         ),
         actions: [
           IconButton(
@@ -124,46 +125,39 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          // 20.verticalSpace,
-          // BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
-          //   builder: (context, state) {
-          //     if (state is CustomerServicesLoading) {
-          //       return const Center(child: CircularProgressIndicator());
-          //     }
+          20.verticalSpace,
+          BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+            builder: (context, state) {
+              if (state is CustomerServicesLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          //     if (state is CustomerServicesLoaded) {
-          //       final categories = state.services;
+              if (state is CustomerServicesLoaded) {
+                final categories = state.services;
 
-          //       return SizedBox(
-          //         height: 130, // or whatever fits your design
-          //         child: ListView.separated(
-          //           scrollDirection: Axis.horizontal,
-          //           itemCount: categories.length,
-          //           separatorBuilder: (_, _) => 12.horizontalSpace,
-          //           itemBuilder: (context, index) {
-          //             final category = categories[index];
-          //             return ServiceCategoryWidget(
-          //               icon: Image.network(
-          //                 category.image,
-          //                 height: 28,
-          //                 width: 28,
-          //                 errorBuilder:
-          //                     (_,_,_) => const Icon(Icons.broken_image),
-          //               ),
-          //               label: category.name,
-          //             );
-          //           },
-          //         ),
-          //       );
-          //     }
+                return SizedBox(
+                  height: 130,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, _) => 12.horizontalSpace,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return ServiceCategoryWidget(
+                        category: category,
+                      );
+                    },
+                  ),
+                );
+              }
 
-          //     if (state is CustomerServicesError) {
-          //       return Center(child: Text(state.error));
-          //     }
+              if (state is CustomerServicesError) {
+                return Center(child: Text(state.error));
+              }
 
-          //     return const SizedBox.shrink();
-          //   },
-          // ),
+              return const SizedBox.shrink();
+            },
+          ),
           30.verticalSpace,
           Row(
             children: [
