@@ -56,6 +56,8 @@ class CustomerAuthLoginSuccess extends CustomerAuthState {
 
 class CustomerPasswordResetSuccess extends CustomerAuthState {}
 class CustomerForgotPasswordOtpSent extends CustomerAuthState{}
+class CustomerForgotPasswordOtpVerified extends CustomerAuthState{}
+
 class CustomerVerificationResent extends CustomerAuthState {
   const CustomerVerificationResent(this.message);
   final String message;

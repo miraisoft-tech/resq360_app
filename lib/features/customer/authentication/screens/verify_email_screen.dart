@@ -45,6 +45,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   }
 
   Future<void> onResend() async {
+     if (_otpController1.text.isNotEmpty) {
+      _otpController1.clear();
+    }
     context.read<CustomerAuthBloc>().add(
       CustomerForgotPassword(
         email: widget.email.trim(),
@@ -102,7 +105,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           setState(() {});
         }
 
-        if (state is CustomerForgotPasswordOtpSent && context.mounted) {
+        if (state is CustomerForgotPasswordOtpVerified && context.mounted) {
           await replaceScreen(context, const ResetPasswordScreen());
         }
       },

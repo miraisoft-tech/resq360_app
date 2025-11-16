@@ -45,6 +45,9 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
   }
 
   Future<void> onResend() async {
+    if (_otpController1.text.isNotEmpty) {
+      _otpController1.clear();
+    }
     context.read<ProviderAuthBloc>().add(
       ProviderResendVerificationOtp(email: widget.email),
     );
@@ -131,18 +134,16 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
                       widgetBuilder: (_, CurrentRemainingTime? time) {
                         return Column(
                           children: [
-                            InkWell(
-                              onTap: onResend,
-                              child: GenText(
-                                'Didn’t receive code?',
-                                size: 12,
-                                height: 20.5,
-                                color: colors.neutral.shade500,
-                                weight: FontWeight.w400,
-                              ),
+                            GenText(
+                              'Didn’t receive code?',
+                              size: 12,
+                              height: 20.5,
+                              color: colors.neutral.shade500,
+                              weight: FontWeight.w400,
                             ),
                             5.verticalSpace,
                             GoToWidget(
+                              onTap: onResend,
                               ligthText: 'Resend code in ',
                               coloredText:
                                   '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',

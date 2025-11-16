@@ -139,7 +139,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       );
 
       if (result) {
-        emit(ProviderForgotPasswordOtpSent());
+        emit(ProviderForgotPasswordOtpVerified());
       } else {
         emit(
           const ProviderAuthFailureState(

@@ -53,6 +53,7 @@ class ProviderAuthLoginSuccessState  extends ProviderAuthState {
   List<Object> get props => [ user];
 }
 class ProviderForgotPasswordOtpSent extends ProviderAuthState{}
+class ProviderForgotPasswordOtpVerified extends ProviderAuthState{}
 
 class ProviderPasswordResetSuccessState  extends ProviderAuthState {}
 class ProviderEmailVerifiedState  extends ProviderAuthState {}
