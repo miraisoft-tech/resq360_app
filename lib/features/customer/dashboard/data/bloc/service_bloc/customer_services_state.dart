@@ -14,10 +14,7 @@ class CustomerServicesLoaded extends CustomerServicesState {
   final List<Service> services;
 }
 
-class CustomerProvidersLoaded extends CustomerServicesState {
-  const CustomerProvidersLoaded({required this.providers});
-  final List<ServiceProvider> providers;
-}
+
 
 class CustomerServiceInfoLoaded extends CustomerServicesState {
   const CustomerServiceInfoLoaded({required this.info});

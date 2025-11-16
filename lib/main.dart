@@ -13,6 +13,7 @@ import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
@@ -54,6 +55,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => CustomerAuthBloc()),
           BlocProvider(create: (_) => ProviderAuthBloc()),
           BlocProvider(create: (_) => CustomerServicesBloc()),
+          BlocProvider(create: (_) => ServiceProviderBloc()),
           BlocProvider(create: (_) => ChatBloc()),
           BlocProvider(create: (_) => ProfileUpdateBloc()),
           BlocProvider(create: (_) => ProviderServiceBloc()),

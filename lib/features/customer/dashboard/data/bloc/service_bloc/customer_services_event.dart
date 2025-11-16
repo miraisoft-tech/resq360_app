@@ -9,18 +9,7 @@ sealed class CustomerServicesEvent extends Equatable {
 
 class CustomerFetchServices extends CustomerServicesEvent {}
 
-class CustomerFetchProviders extends CustomerServicesEvent {
-  const CustomerFetchProviders({
-    required this.categoryId,
-    required this.nearYou,
-    this.activityStatus,
-    this.search,
-  });
-  final int categoryId;
-  final String? activityStatus;
-  final bool nearYou;
-  final String? search;
-}
+
 
 class CustomerFetchServiceInfo extends CustomerServicesEvent {
   const CustomerFetchServiceInfo(this.categoryId);

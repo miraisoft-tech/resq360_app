@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
@@ -61,8 +62,8 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    context.read<CustomerServicesBloc>().add(
-      CustomerFetchProviders(
+    context.read<ServiceProviderBloc>().add(
+      FetchServiceProviders(
         categoryId: widget.serviceProviderId,
         nearYou: _sortByProximity,
       ),
@@ -89,8 +90,8 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
         activityStatus = null;
     }
 
-    context.read<CustomerServicesBloc>().add(
-      CustomerFetchProviders(
+    context.read<ServiceProviderBloc>().add(
+      FetchServiceProviders(
         categoryId: widget.serviceProviderId,
         activityStatus: activityStatus,
         nearYou: _sortByProximity,
@@ -216,9 +217,9 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
           ),
           20.verticalSpace,
           Expanded(
-            child: BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+            child: BlocBuilder<ServiceProviderBloc, ServiceProviderState>(
               builder: (context, state) {
-                if (state is CustomerServicesLoading) {
+                if (state is ServiceProvidersLoading) {
                   return Center(
                     child: CircularProgressIndicator(
                       color: colors.primary.shade500,
@@ -226,7 +227,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                   );
                 }
 
-                if (state is CustomerServicesError) {
+                if (state is ServiceProvidersError) {
                   return Center(
                     child: Text(
                       state.error,
@@ -235,7 +236,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                   );
                 }
 
-                if (state is CustomerProvidersLoaded) {
+                if (state is ServiceProvidersLoaded) {
                   final providers = state.providers;
                   if (providers.isNotEmpty) {
                     return TabBarView(

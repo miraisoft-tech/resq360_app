@@ -13,7 +13,6 @@ class CustomerServicesBloc
     extends Bloc<CustomerServicesEvent, CustomerServicesState> {
   CustomerServicesBloc() : super(CustomerServicesInitial()) {
     on<CustomerFetchServices>(_onFetchCustomerServices);
-    on<CustomerFetchProviders>(_onFetchProviders);
     on<CustomerFetchServiceInfo>(_onFetchServiceInfo);
     on<CustomerCreateService>(_onCreateCustomerService);
     // on<CustomerFetchBookings>(_onFetchBookings);
@@ -37,32 +36,6 @@ class CustomerServicesBloc
         emit(
           CustomerServicesError(
             error: result.error ?? 'Failed to load services',
-          ),
-        );
-      }
-    } on Exception catch (e) {
-      emit(CustomerServicesError(error: e.toString()));
-    }
-  }
-
-  Future<void> _onFetchProviders(
-    CustomerFetchProviders event,
-    Emitter<CustomerServicesState> emit,
-  ) async {
-    emit(CustomerServicesLoading());
-    try {
-      final result = await serviceRepo.fetchProviders(
-        serviceCategoryId: event.categoryId,
-        activityStatus: event.activityStatus,
-        search: event.search,
-        nearYou: event.nearYou,
-      );
-      if (result.data != null) {
-        emit(CustomerProvidersLoaded(providers: result.data!));
-      } else {
-        emit(
-          CustomerServicesError(
-            error: result.error ?? 'Failed to load providers',
           ),
         );
       }
