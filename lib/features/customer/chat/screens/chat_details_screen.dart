@@ -120,7 +120,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         builder: (context, state) {
           if (state is FetchingMessagesState && _messages.isEmpty) {
             return const Center(child: CircularProgressIndicator());
-          }
+          } 
+          if (state is ChatErrorState) {
+            return ErrorMessageAndButton(error: state.error);
+          } 
           return SafeArea(
             child: Column(
               children: [

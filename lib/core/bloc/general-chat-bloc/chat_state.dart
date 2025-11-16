@@ -76,8 +76,8 @@ class LeavingChatState extends ChatState {}
 class ChatLeft extends ChatState {}
 
 class ChatErrorState extends ChatState {
-  const ChatErrorState(this.message);
-  final String message;
+  const ChatErrorState(this.error);
+  final String error;
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [error];
 }

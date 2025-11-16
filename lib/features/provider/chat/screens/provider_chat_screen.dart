@@ -132,7 +132,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                   if (state is ChatErrorState) {
                     return Center(
                       child: Text(
-                        state.message,
+                        state.error,
                         style: TextStyle(color: appColors.textColor),
                       ),
                     );

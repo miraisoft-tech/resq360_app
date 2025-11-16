@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
@@ -32,7 +33,7 @@ class _BookingsScreenState extends State<BookingsScreen>
   }
 
   void _fetchBookingsForTab(int index) {
-    final bloc = context.read<CustomerServicesBloc>();
+    final bloc = context.read<CustomerBookingBloc>();
     String status;
 
     switch (index) {
@@ -49,7 +50,7 @@ class _BookingsScreenState extends State<BookingsScreen>
         status = 'PENDING';
     }
 
-    bloc.add(CustomerFetchBookings(status: status));
+    bloc.add(FetchCustomerBookings(status: status),);
   }
 
   @override
@@ -118,13 +119,13 @@ class _BookingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+    return BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
       builder: (context, state) {
         if (state is CustomerServicesLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state is CustomerServicesError) {
+        if (state is CustomerBookingError) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -140,8 +141,8 @@ class _BookingList extends StatelessWidget {
                   child: WideButton(
                     label: 'Retry',
                     onPressed: () {
-                      context.read<CustomerServicesBloc>().add(
-                        CustomerFetchBookings(status: _mapTypeToStatus()),
+                      context.read<CustomerBookingBloc>().add(
+                        FetchCustomerBookings(status: _mapTypeToStatus()),
                       );
                     },
                   ),
@@ -151,7 +152,7 @@ class _BookingList extends StatelessWidget {
           );
         }
 
-        if (state is CustomerBookingsLoaded) {
+        if (state is CustomerBookingLoaded) {
           final bookings = state.bookings;
           if (bookings.isEmpty) {
             return const Center(child: GenText('No bookings found.'));
@@ -159,8 +160,8 @@ class _BookingList extends StatelessWidget {
 
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<CustomerServicesBloc>().add(
-                CustomerFetchBookings(status: _mapTypeToStatus()),
+              context.read<CustomerBookingBloc>().add(
+                FetchCustomerBookings(status: _mapTypeToStatus()),
               );
             },
             child: ListView.separated(

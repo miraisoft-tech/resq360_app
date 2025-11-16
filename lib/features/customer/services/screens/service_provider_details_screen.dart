@@ -110,7 +110,7 @@ class _ServiceProviderDetailsScreenState
           );
         } else if (state is ChatErrorState) {
           await pop(context);
-          await showSnackBar(context, 'Error', state.message);
+          await showSnackBar(context, 'Error', state.error);
         }
       },
       child: Scaffold(

@@ -61,7 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   if (state is ChatErrorState) {
                     return ErrorMessageAndButton(
-                      error: state.message,
+                      error: state.error,
                       onPressed: () {
                         context.read<ChatBloc>().add(GetChatsEvent());
                       },

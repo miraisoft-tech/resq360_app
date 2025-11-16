@@ -16,7 +16,7 @@ class CustomerServicesBloc
     on<CustomerFetchServiceInfo>(_onFetchServiceInfo);
     on<CustomerCreateService>(_onCreateCustomerService);
     // on<CustomerFetchBookings>(_onFetchBookings);
-    on<CustomerFetchBookings>(_onGetServiceBookings);
+    // on<CustomerFetchBookings>(_onGetServiceBookings);
     on<CustomerStartServiceBooking>(_onStartBooking);
     on<CustomerCancelServiceBooking>(_onCancelBooking);
     on<CustomerCompleteServiceBooking>(_onCompleteBooking);
