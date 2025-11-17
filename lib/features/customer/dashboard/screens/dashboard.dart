@@ -3,6 +3,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
@@ -26,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+    context.read<CustomerAdvertisementBloc>().add(CustomerFetchAdvertisement());
     super.initState();
   }
 
@@ -184,7 +186,28 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           12.verticalSpace,
-          const RecommendedCard(),
+          BlocBuilder<CustomerAdvertisementBloc, CustomerAdvertisementState>(
+            builder: (context, state) {
+              switch (state) {
+                case CustomerAdvertisementLoading():
+                  return const CircularProgressIndicator();
+                case CustomerAdvertisementInitial():
+                  return const SizedBox.shrink();
+                case CustomerAdvertisementFetched(adverisementList: final ads):
+                  if (ads.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No advertisements available',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }
+                  return RecommendedCard(advertisement: ads.first);
+                case CustomerAdvertisementError(error: final message):
+                  return ErrorMessageAndButton(error: message);
+              }
+            },
+          ),
           30.verticalSpace,
         ],
       ),
