@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 130,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
+                    itemCount: 3,
                     separatorBuilder: (_, _) => 12.horizontalSpace,
                     itemBuilder: (context, index) {
                       final category = categories[index];
