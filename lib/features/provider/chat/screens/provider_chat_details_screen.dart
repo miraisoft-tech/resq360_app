@@ -11,7 +11,6 @@ import 'package:resq360/features/provider/chat/screens/provider_generate_invoice
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 
-
 class ProviderChatDetailScreen extends StatefulWidget {
   const ProviderChatDetailScreen({required this.chat, super.key});
 
@@ -28,18 +27,16 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
   @override
   void initState() {
     super.initState();
-     WidgetsBinding.instance.addPostFrameCallback((_) {
-    unawaited(_initializeChat());
-  });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_initializeChat());
+    });
   }
 
   Future<void> _initializeChat() async {
-    final chatBloc = context.read<ChatBloc>()
-    ..add(ConnectChatSocketEvent());
-     Future.delayed(const Duration(milliseconds: 300), () {
-     chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
-});
-
+    final chatBloc = context.read<ChatBloc>()..add(ConnectChatSocketEvent());
+    Future.delayed(const Duration(milliseconds: 300), () {
+      chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
+    });
   }
 
   @override
@@ -51,6 +48,8 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    final auth = ProviderAuthProvider.instance.authInfo;
+    final currentUserId = auth?.user.id;
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -114,7 +113,7 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
             });
             _scrollToBottom();
           }
-            if (state is MessageSent) {
+          if (state is MessageSent) {
             setState(() {
               _messages.insert(0, state.message);
             });
@@ -141,11 +140,9 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                     itemCount: _messages.length,
                     itemBuilder: (BuildContext context, int index) {
                       final message = _messages[index];
-                      final auth = ProviderAuthProvider.instance.authInfo;
-                      final currentUserId = auth?.user.id?.toString();
 
                       final senderType = message.senderType?.toUpperCase();
-                      final senderId = message.senderId?.toString();
+                      final senderId = message.senderId;
                       log(
                         'senderType: $senderType, senderId: $senderId, currentUserId: $currentUserId, content: ${message.content}',
                       );
@@ -233,12 +230,23 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                   },
                   onSend: (text) {
                     if (text.trim().isNotEmpty) {
+                      final localMessage = MessageResponse(
+                        id: DateTime.now().millisecondsSinceEpoch * -1,
+                        chatId: widget.chat.id,
+                        senderType: 'USER',
+                        senderId: currentUserId,
+                        messageType: 'TEXT',
+                        content: text,
+                        createdAt: DateTime.now(),
+                      );
                       final request = SendMessageRequest(
                         chatId: widget.chat.id!,
                         messageType: 'TEXT',
                         content: text.trim(),
                       );
-                      context.read<ChatBloc>().add(SendMessageEvent(messageRequest: request),);
+                      context.read<ChatBloc>().add(
+                        SendMessageEvent(messageRequest: request, localMessage: localMessage),
+                      );
                     }
                   },
                 ),

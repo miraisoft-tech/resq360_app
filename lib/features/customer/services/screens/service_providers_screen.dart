@@ -100,12 +100,12 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     );
   }
 
-  void _toggleProximity() {
-    setState(() {
-      _sortByProximity = !_sortByProximity;
-    });
-    _fetchProviders();
-  }
+  // void _toggleProximity() {
+  //   setState(() {
+  //     _sortByProximity = !_sortByProximity;
+  //   });
+  //   _fetchProviders();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -183,7 +183,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                   ),
                   onPressed: () {
                     log('Ping Providers pressed');
-                    _toggleProximity();
+                    // _toggleProximity();
                   },
                   icon: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG.svg,
                   label: GenText(
