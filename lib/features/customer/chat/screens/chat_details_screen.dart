@@ -24,18 +24,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
-     WidgetsBinding.instance.addPostFrameCallback((_) {
-    unawaited(_initializeChat());
-  });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_initializeChat());
+    });
   }
 
   Future<void> _initializeChat() async {
-    final chatBloc = context.read<ChatBloc>()
-    ..add(ConnectChatSocketEvent());
+    final chatBloc = context.read<ChatBloc>()..add(ConnectChatSocketEvent());
 
-     Future.delayed(const Duration(milliseconds: 300), () {
-     chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
-});
+    Future.delayed(const Duration(milliseconds: 300), () {
+      chatBloc.add(GetChatMessagesEvent(chatId: widget.chat.id!));
+    });
   }
 
   @override
@@ -47,6 +46,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+                          final auth = CustomerAuthProvider.instance.authInfo;
+                      final currentUserId = auth?.user.id;
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -120,10 +121,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         builder: (context, state) {
           if (state is FetchingMessagesState && _messages.isEmpty) {
             return const Center(child: CircularProgressIndicator());
-          } 
+          }
           if (state is ChatErrorState) {
             return ErrorMessageAndButton(error: state.error);
-          } 
+          }
           return SafeArea(
             child: Column(
               children: [
@@ -141,8 +142,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     itemCount: _messages.length,
                     itemBuilder: (BuildContext context, int index) {
                       final message = _messages[index];
-                      final auth = CustomerAuthProvider.instance.authInfo;
-                      final currentUserId = auth?.user.id;
+
                       // log(message.senderType?.toUpperCase());
 
                       final isSentByCurrentUser =
@@ -226,13 +226,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   },
                   onSend: (text) {
                     if (text.trim().isNotEmpty) {
+                      // still waiting for response from BE on how they send notification.
+                      final localMessage = MessageResponse(
+                        id:
+                            DateTime.now().millisecondsSinceEpoch *
+                            -1,
+                        chatId: widget.chat.id,
+                        senderType: 'USER',
+                        senderId: currentUserId,
+                        messageType: 'TEXT',
+                        content: text,
+                        createdAt: DateTime.now(),
+                      );
                       final request = SendMessageRequest(
                         chatId: widget.chat.id!,
                         messageType: 'TEXT',
                         content: text,
                       );
                       context.read<ChatBloc>().add(
-                        SendMessageEvent(messageRequest: request),
+                        SendMessageEvent(
+                          messageRequest: request,
+                          localMessage: localMessage,
+                        ),
                       );
                     }
                   },

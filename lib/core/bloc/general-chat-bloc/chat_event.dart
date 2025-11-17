@@ -33,11 +33,12 @@ class JoinChatEvent extends ChatEvent {
 }
 
 class SendMessageEvent extends ChatEvent {
-  const SendMessageEvent({required this.messageRequest});
+  const SendMessageEvent({required this.messageRequest, required this.localMessage});
   final SendMessageRequest messageRequest;
+    final MessageResponse localMessage;
 
   @override
-  List<Object?> get props => [messageRequest];
+  List<Object?> get props => [messageRequest, localMessage];
 }
 
 class SendFileMessageEvent extends ChatEvent {
