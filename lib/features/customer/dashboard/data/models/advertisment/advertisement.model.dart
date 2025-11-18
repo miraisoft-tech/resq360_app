@@ -99,10 +99,10 @@ class Advertisement {
 class Admin {
     Admin();
 
-    factory Admin.fromJson(Map<String, dynamic> json) => Admin(
+    factory Admin.fromJson(_) => Admin(
     );
 
-    factory Admin.fromRawJson(String str) => Admin.fromJson(json.decode(str) as Map<String, dynamic>);
+    // factory Admin.fromRawJson(String str) => Admin.fromJson(json.decode(str) as Map<String, dynamic>);
 
     String toRawJson() => json.encode(toJson());
 

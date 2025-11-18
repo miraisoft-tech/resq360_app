@@ -26,5 +26,5 @@ final class CustomerAdvertisementError extends CustomerAdvertisementState {
   final String error;
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [error];
 }

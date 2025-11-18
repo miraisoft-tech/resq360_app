@@ -107,27 +107,27 @@ class CustomerServicesBloc
 //   }
 // }
 
-Future<void> _onGetServiceBookings(
-  CustomerFetchBookings event,
-  Emitter<CustomerServicesState> emit,
-) async {
-  emit(CustomerServicesLoading());
-  try {
-    final result = await serviceRepo.getServiceBookings(
-       status: event.status,
-    );
+// Future<void> _onGetServiceBookings(
+//   CustomerFetchBookings event,
+//   Emitter<CustomerServicesState> emit,
+// ) async {
+//   emit(CustomerServicesLoading());
+//   try {
+//     final result = await serviceRepo.getServiceBookings(
+//        status: event.status,
+//     );
 
-    if (result.data != null) {
-      emit(CustomerBookingsLoaded( result.data!.data ?? []));
-    } else {
-      emit(CustomerServicesError(
-        error: result.error ?? 'Failed to book service',
-      ));
-    }
-  } on Exception catch (e) {
-    emit(CustomerServicesError(error: e.toString()));
-  }
-}
+//     if (result.data != null) {
+//       emit(CustomerBookingsLoaded( result.data!.data ?? []));
+//     } else {
+//       emit(CustomerServicesError(
+//         error: result.error ?? 'Failed to book service',
+//       ));
+//     }
+//   } on Exception catch (e) {
+//     emit(CustomerServicesError(error: e.toString()));
+//   }
+// }
 
 
 Future<void> _onStartBooking(

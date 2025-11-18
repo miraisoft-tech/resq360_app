@@ -16,7 +16,7 @@ class ServiceProvidersScreen extends StatefulWidget {
 class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _sortByProximity = false;
+  final bool _sortByProximity = false;
 
   final TextEditingController _searchController = TextEditingController();
 

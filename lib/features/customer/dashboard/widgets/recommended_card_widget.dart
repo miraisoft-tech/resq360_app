@@ -1,6 +1,5 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
-import 'package:resq360/features/widgets/images.widgets.dart';
 
 class RecommendedCard extends StatelessWidget {
   const RecommendedCard({required this.advertisement, super.key});
