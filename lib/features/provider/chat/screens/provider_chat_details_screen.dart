@@ -51,6 +51,9 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
     final auth = ProviderAuthProvider.instance.authInfo;
     final currentUserId = auth?.user.id;
 
+    final displayTitle = getChatDisplayTitle(widget.chat, currentUserId!);
+
+
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
@@ -75,7 +78,7 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GenText(
-                    widget.chat.title ?? 'QuickTow Emergency',
+                    displayTitle,
                     weight: FontWeight.w500,
                     color: appColors.black,
                   ),
@@ -143,9 +146,9 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
 
                       final senderType = message.senderType?.toUpperCase();
                       final senderId = message.senderId;
-                      log(
-                        'senderType: $senderType, senderId: $senderId, currentUserId: $currentUserId, content: ${message.content}',
-                      );
+                      // log(
+                      //   'senderType: $senderType, senderId: $senderId, currentUserId: $currentUserId, content: ${message.content}',
+                      // );
 
                       String? content;
 
@@ -153,12 +156,12 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                         content = message.content;
                       }
 
-                      log('content: $content');
+                      // log('content: $content');
                       final isSentByCurrentUser =
                           senderType == 'PROVIDER' && senderId == currentUserId;
-                      log(
-                        'current user $currentUserId and message sender ${message.senderId}',
-                      );
+                      // log(
+                      //   'current user $currentUserId and message sender ${message.senderId}',
+                      // );
 
                       return Column(
                         children: [
@@ -233,7 +236,7 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                       final localMessage = MessageResponse(
                         id: DateTime.now().millisecondsSinceEpoch * -1,
                         chatId: widget.chat.id,
-                        senderType: 'USER',
+                        senderType: 'PROVIDER' ,
                         senderId: currentUserId,
                         messageType: 'TEXT',
                         content: text,
@@ -370,4 +373,17 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
       }
     });
   }
+
+  String getChatDisplayTitle(ChatResponse chat, int viewerId) {
+  final participants = chat.participants ?? [];
+  final other = participants.firstWhere(
+    (p) => p.participantId != viewerId,
+    orElse: () => participants.first,
+  );
+  if (other.participantType == 'PROVIDER') {
+    return other.role ?? 'Provider'; 
+  } else {
+    return 'User';
+  }
+}
 }

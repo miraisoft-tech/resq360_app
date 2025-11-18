@@ -65,7 +65,7 @@ class _ServiceProviderDetailsScreenState
     final providerId = widget.providerId;
 
     final chatRequest = CreateChatRequest(
-      title: 'Chat with ${widget.providerName}',
+      title: widget.providerName,
       type: 'PRIVATE',
       participants: [
         ChatParticipant(
