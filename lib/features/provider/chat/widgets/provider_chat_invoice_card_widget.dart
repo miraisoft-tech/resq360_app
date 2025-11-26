@@ -1,9 +1,22 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/metadata.dart';
+
+enum PaymentStatus {
+  pending,
+  paid,
+}
 
 class ProviderChatInvoiceCardWidget extends StatelessWidget {
-  const ProviderChatInvoiceCardWidget({required this.onTapPay, super.key});
+  const ProviderChatInvoiceCardWidget({
+    required this.onTapPay,
+    required this.paymentStatus, required this.metadata, required this.messageCreatedAt, super.key,
+
+  });
 
   final void Function() onTapPay;
+  final PaymentStatus paymentStatus;
+  final Metadata metadata;
+  final String messageCreatedAt;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -12,7 +25,10 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
       width: double.infinity,
       padding: pad(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
+        color:
+            paymentStatus == PaymentStatus.paid
+                ? const Color(0xFFF0FDF4)
+                : appColors.primary.shade500,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Col(
@@ -21,7 +37,12 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
             padding: pad(horizontal: 14, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: appColors.textColor.shade100),
+              border: Border.all(
+                color:
+                    paymentStatus == PaymentStatus.paid
+                        ? appColors.textColor.shade100
+                        : Colors.white,
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,16 +55,22 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                       children: [
                         UrbText(
                           'Invoice No.',
-                          color: appColors.success.shade700,
+                          color:
+                              paymentStatus == PaymentStatus.paid
+                                  ? appColors.success.shade700
+                                  : Colors.white,
                           size: 18,
                           height: 20.5,
                           weight: FontWeight.w700,
                         ),
                         4.verticalSpace,
                         GenText(
-                          '#INV-238777',
+                          metadata.invoiceNo!,
                           weight: FontWeight.w400,
-                          color: appColors.textColor.shade300,
+                          color:
+                              paymentStatus == PaymentStatus.paid
+                                  ? appColors.textColor.shade300
+                                  : Colors.white,
                         ),
                       ],
                     ),
@@ -52,16 +79,23 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                       children: [
                         UrbText(
                           'Date',
-                          color: appColors.success.shade700,
+                          color:
+                              paymentStatus == PaymentStatus.paid
+                                  ? appColors.success.shade700
+                                  : Colors.white,
                           size: 18,
                           height: 20.5,
                           weight: FontWeight.w700,
                         ),
                         2.verticalSpace,
                         GenText(
-                          '8/27/2025',
+                          metadata.date!,
+                          // '8/27/2025',
                           weight: FontWeight.w400,
-                          color: appColors.textColor.shade300,
+                          color:
+                              paymentStatus == PaymentStatus.paid
+                                  ? appColors.textColor.shade300
+                                  : Colors.white,
                         ),
                       ],
                     ),
@@ -76,15 +110,21 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                       children: [
                         GenText(
                           'Service Provider',
-                          color: appColors.success.shade700,
+                          color:
+                              paymentStatus == PaymentStatus.paid
+                                  ? appColors.success.shade700
+                                  : Colors.white,
                           weight: FontWeight.w500,
                         ),
                         2.verticalSpace,
                         GenText(
-                          'QuickTow Emergency',
+                          metadata.serviceCategory!,
                           size: 12,
                           weight: FontWeight.w400,
-                          color: appColors.textColor.shade300,
+                          color:
+                              paymentStatus == PaymentStatus.paid
+                                  ? appColors.textColor.shade300
+                                  : Colors.white,
                         ),
                       ],
                     ),
@@ -93,15 +133,21 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                       children: [
                         GenText(
                           'Client',
-                          color: appColors.success.shade700,
+                          color:
+                              paymentStatus == PaymentStatus.paid
+                                  ? appColors.success.shade700
+                                  : Colors.white,
                           weight: FontWeight.w500,
                         ),
                         2.verticalSpace,
                         GenText(
-                          'Jane Doe',
+                          metadata.clientName!,
                           size: 12,
                           weight: FontWeight.w400,
-                          color: appColors.textColor.shade300,
+                          color:
+                              paymentStatus == PaymentStatus.paid
+                                  ? appColors.textColor.shade300
+                                  : Colors.white,
                         ),
                       ],
                     ),
@@ -114,12 +160,18 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                     children: [
                       GenText(
                         'View More Details',
-                        color: appColors.success.shade700,
+                        color:
+                            paymentStatus == PaymentStatus.paid
+                                ? appColors.success.shade700
+                                : Colors.white,
                         weight: FontWeight.w500,
                       ),
                       4.horizontalSpace,
                       AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
-                        color: appColors.success.shade700,
+                        color:
+                            paymentStatus == PaymentStatus.paid
+                                ? appColors.success.shade700
+                                : Colors.white,
                       ),
                     ],
                   ),
@@ -132,13 +184,19 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                   children: [
                     GenText(
                       'Total Amount',
-                      color: appColors.textColor.shade400,
+                      color:
+                          paymentStatus == PaymentStatus.paid
+                              ? appColors.textColor.shade400
+                              : Colors.white,
                     ),
                     GenText(
-                      '₦15,000',
+                      metadata.amount.toString(),
                       size: 16,
                       weight: FontWeight.w700,
-                      color: appColors.success.shade700,
+                      color:
+                          paymentStatus == PaymentStatus.paid
+                              ? appColors.success.shade700
+                              : Colors.white,
                     ),
                   ],
                 ),
@@ -147,17 +205,25 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
           ),
           16.verticalSpace,
           UrbText(
-            'Payment Confirmed',
+            paymentStatus == PaymentStatus.paid
+                ? 'Payment Confirmed'
+                : 'Pending Payment...',
             size: 16,
             height: 26.5,
             weight: FontWeight.w700,
-            color: appColors.success.shade700,
+            color:
+                paymentStatus == PaymentStatus.paid
+                    ? appColors.success.shade700
+                    : Colors.white,
           ),
           6.verticalSpace,
           GenText(
-            '2:36 pm',
+          messageCreatedAt,
             size: 12,
-            color: appColors.textColor.shade300,
+            color:
+                paymentStatus == PaymentStatus.paid
+                    ? appColors.textColor.shade300
+                    : Colors.white,
           ),
         ],
       ),

@@ -89,11 +89,25 @@ Future<void> _onConnectSocket(
       _socket.sendMessage(
         event.messageRequest,
       );
-      emit(MessageSent(event.localMessage));
+      emit(MessageSent(event.localMessage!));
     } on Exception catch (e) {
       emit(ChatErrorState('Failed to send message $e'));
     }
   }
+
+  //   Future<void> _onSendMessage(
+  //   SendMessageEvent event,
+  //   Emitter<ChatState> emit,
+  // ) async {
+  //   try {
+  //     _socket.sendMessage(
+  //       event.messageRequest,
+  //     );
+  //     emit(MessageSent(event.localMessage));
+  //   } on Exception catch (e) {
+  //     emit(ChatErrorState('Failed to send message $e'));
+  //   }
+  // }
 
   
   Future<void> _onGetMessages(

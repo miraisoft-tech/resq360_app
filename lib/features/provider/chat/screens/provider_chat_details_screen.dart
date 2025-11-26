@@ -8,8 +8,11 @@ import 'package:resq360/features/customer/chat/data/models/chat/message_response
 import 'package:resq360/features/customer/chat/data/models/chat/send_message_request.dart';
 import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/provider/chat/screens/provider_generate_invoice.dialog.dart';
+import 'package:resq360/features/provider/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
+import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
+import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
 class ProviderChatDetailScreen extends StatefulWidget {
   const ProviderChatDetailScreen({required this.chat, super.key});
@@ -52,7 +55,6 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
     final currentUserId = auth?.user.id;
 
     final displayTitle = getChatDisplayTitle(widget.chat, currentUserId!);
-
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -163,18 +165,42 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                       //   'current user $currentUserId and message sender ${message.senderId}',
                       // );
 
+                      final amount = message.metadata?.amount?.toString() ?? '';
+                     
                       return Column(
                         children: [
-                          ChatBubble(
-                            type:
-                                isSentByCurrentUser
-                                    ? MessageType.sent
-                                    : MessageType.received,
-                            message: content ?? '',
-                            time: formatMessageTime(
-                              message.createdAt.toString(),
+                          if (message.messageType == 'TEXT')
+                            ChatBubble(
+                              type:
+                                  isSentByCurrentUser
+                                      ? MessageType.sent
+                                      : MessageType.received,
+                              message: content ?? '',
+                              time: formatMessageTime(
+                                message.createdAt.toString(),
+                              ),
+                            )
+                          else if (message.messageType == 'SYSTEM')
+                            ProviderChatInvoiceCardWidget(
+                              onTapPay: () async {
+                                await GeneralDialogs.showCustomDialog(
+                                  context,
+                                  body: PaymentOptionDialog(
+                                    onPaymentSelected: (option) async {
+                                      await GeneralDialogs.showCustomDialog(
+                                        context,
+                                        body: CompletePaymentDialog(
+                                          amount: amount,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                              paymentStatus: PaymentStatus.pending, metadata: message.metadata!, messageCreatedAt: formatMessageTime(
+                                message.createdAt.toString(),
+                              ),
                             ),
-                          ),
                           20.verticalSpace,
                         ],
                       );
@@ -229,14 +255,14 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                 ),
                 ChatBoxWidget(
                   onAttachment: () async {
-                    await _showAttachmentMenu(context);
+                    await _showAttachmentMenu(context, widget.chat);
                   },
                   onSend: (text) {
                     if (text.trim().isNotEmpty) {
                       final localMessage = MessageResponse(
                         id: DateTime.now().millisecondsSinceEpoch * -1,
                         chatId: widget.chat.id,
-                        senderType: 'PROVIDER' ,
+                        senderType: 'PROVIDER',
                         senderId: currentUserId,
                         messageType: 'TEXT',
                         content: text,
@@ -248,7 +274,10 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                         content: text.trim(),
                       );
                       context.read<ChatBloc>().add(
-                        SendMessageEvent(messageRequest: request, localMessage: localMessage),
+                        SendMessageEvent(
+                          messageRequest: request,
+                          localMessage: localMessage,
+                        ),
                       );
                     }
                   },
@@ -261,7 +290,10 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
     );
   }
 
-  Future<void> _showAttachmentMenu(BuildContext context) async {
+  Future<void> _showAttachmentMenu(
+    BuildContext context,
+    ChatResponse? chat,
+  ) async {
     final button = context.findRenderObject()! as RenderBox;
     final overlay =
         Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
@@ -334,7 +366,7 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
           case 'document':
             _onDocumentTap();
           case 'invoice':
-            await _onInvoiceTap(context);
+            await _onInvoiceTap(context, chat!);
         }
       }
     });
@@ -346,12 +378,12 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
 
   void _onDocumentTap() {}
 
-  Future<void> _onInvoiceTap(
-    BuildContext context,
-  ) async {
+  Future<void> _onInvoiceTap(BuildContext context, ChatResponse chat) async {
     await GeneralDialogs.showCustomDialog(
       context,
-      body: const ProviderGenerateInvoiceDialog(),
+      body: ProviderGenerateInvoiceDialog(
+        chat: chat,
+      ),
     );
   }
 
@@ -375,15 +407,15 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
   }
 
   String getChatDisplayTitle(ChatResponse chat, int viewerId) {
-  final participants = chat.participants ?? [];
-  final other = participants.firstWhere(
-    (p) => p.participantId != viewerId,
-    orElse: () => participants.first,
-  );
-  if (other.participantType == 'PROVIDER') {
-    return other.role ?? 'Provider'; 
-  } else {
-    return 'User';
+    final participants = chat.participants ?? [];
+    final other = participants.firstWhere(
+      (p) => p.participantId != viewerId,
+      orElse: () => participants.first,
+    );
+    if (other.participantType == 'PROVIDER') {
+      return other.role ?? 'Provider';
+    } else {
+      return 'User';
+    }
   }
-}
 }

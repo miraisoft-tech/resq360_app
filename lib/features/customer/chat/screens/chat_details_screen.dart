@@ -5,8 +5,11 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
+import 'package:resq360/features/customer/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
+import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
+import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   const ChatDetailScreen({required this.chat, super.key});
@@ -46,8 +49,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-                          final auth = CustomerAuthProvider.instance.authInfo;
-                      final currentUserId = auth?.user.id;
+    final auth = CustomerAuthProvider.instance.authInfo;
+    final currentUserId = auth?.user.id;
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -151,18 +154,40 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       // log(
                       //   'current user $currentUserId and message sender ${message.senderId}',
                       // );
+                      final amount = message.metadata?.amount?.toString() ?? '';
                       return Column(
                         children: [
-                          ChatBubble(
-                            type:
-                                isSentByCurrentUser
-                                    ? MessageType.sent
-                                    : MessageType.received,
-                            message: message.content!,
-                            time: formatMessageTime(
-                              message.createdAt.toString(),
+                          if (message.messageType == 'TEXT')
+                            ChatBubble(
+                              type:
+                                  isSentByCurrentUser
+                                      ? MessageType.sent
+                                      : MessageType.received,
+                              message: message.content!,
+                              time: formatMessageTime(
+                                message.createdAt.toString(),
+                              ),
+                            )
+                          else if (message.messageType == 'SYSTEM')
+                            ChatInvoiceCardWidget(
+                              onTapPay: () async {
+                                await GeneralDialogs.showCustomDialog(
+                                  context,
+                                  body: PaymentOptionDialog(
+                                    onPaymentSelected: (option) async {
+                                      await GeneralDialogs.showCustomDialog(
+                                        context,
+                                        body:  CompletePaymentDialog(
+                                          amount: amount,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              }, metadata: message.metadata!, messageCreatedAt: formatMessageTime(
+                                message.createdAt.toString(),
+                              ),
                             ),
-                          ),
                           20.verticalSpace,
                         ],
                       );
@@ -228,9 +253,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     if (text.trim().isNotEmpty) {
                       // still waiting for response from BE on how they send notification.
                       final localMessage = MessageResponse(
-                        id:
-                            DateTime.now().millisecondsSinceEpoch *
-                            -1,
+                        id: DateTime.now().millisecondsSinceEpoch * -1,
                         chatId: widget.chat.id,
                         senderType: 'USER',
                         senderId: currentUserId,

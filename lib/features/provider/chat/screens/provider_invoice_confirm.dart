@@ -1,8 +1,13 @@
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/send_message_request.dart';
 
 class ProviderInvoiceConfirmDialog extends StatefulWidget {
-  const ProviderInvoiceConfirmDialog({super.key});
+  const ProviderInvoiceConfirmDialog({required this.invoice, super.key});
+
+  final Map<String, dynamic> invoice;
 
   @override
   State<ProviderInvoiceConfirmDialog> createState() =>
@@ -12,6 +17,35 @@ class ProviderInvoiceConfirmDialog extends StatefulWidget {
 class _ProviderGenerateInvoiceDialogState
     extends State<ProviderInvoiceConfirmDialog> {
   bool viewMore = false;
+    final now = DateTime.now();
+late final formattedDate =
+    '${now.month}/${now.day}/${now.year}';
+  Future<void> sendInvoice() async {
+    final meta = {
+      'InvoiceNo': widget.invoice['invoiceNo'],
+      'Date': formattedDate,
+      'serviceCategory': widget.invoice['serviceCategory'],
+      'ClientName': 'John Doe',
+      'description': widget.invoice['description'],
+      'amount': widget.invoice['price'],
+    };
+    final request = SendMessageRequest(
+      chatId: widget.invoice['chatId'] as int,
+      messageType: 'SYSTEM',
+      content: 'Here is your invoice',
+      metadata: meta,
+    );
+    context.read<ChatBloc>().add(
+      SendMessageEvent(messageRequest: request),
+    );
+    // await GeneralDialogs.showCustomDialog(
+    //   context,
+    //   body: const PaymentCompleted(),
+    // );
+    await showSuccessSnackbar(context, 'invoice sent sucessfully');
+    log('Sending invoice with metadata: $meta');
+    Navigator.of(context).pop();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +113,7 @@ class _ProviderGenerateInvoiceDialogState
                             ),
                             4.verticalSpace,
                             GenText(
-                              '#INV-238777',
+                              widget.invoice['invoiceNo'].toString(),
                               weight: FontWeight.w400,
                               color: appColors.textColor.shade300,
                             ),
@@ -97,7 +131,7 @@ class _ProviderGenerateInvoiceDialogState
                             ),
                             2.verticalSpace,
                             GenText(
-                              '8/27/2025',
+                              formattedDate,
                               weight: FontWeight.w400,
                               color: appColors.textColor.shade300,
                             ),
@@ -119,7 +153,7 @@ class _ProviderGenerateInvoiceDialogState
                             ),
                             2.verticalSpace,
                             GenText(
-                              'QuickTow Emergency',
+                              widget.invoice['serviceCategory'].toString(),
                               size: 12,
                               weight: FontWeight.w400,
                               color: appColors.textColor.shade300,
@@ -188,7 +222,7 @@ class _ProviderGenerateInvoiceDialogState
                               ),
                               2.verticalSpace,
                               GenText(
-                                'Towing Service',
+                                widget.invoice['serviceCategory'].toString(),
                                 size: 12,
                                 weight: FontWeight.w400,
                                 color: appColors.textColor.shade300,
@@ -206,7 +240,7 @@ class _ProviderGenerateInvoiceDialogState
                               ),
                               2.verticalSpace,
                               GenText(
-                                'To tow your 2018 Honda Civic from Gwarimpa highway to Olympia street ',
+                                widget.invoice['description'].toString(),
                                 size: 12,
                                 weight: FontWeight.w400,
                                 color: appColors.textColor.shade300,
@@ -224,7 +258,7 @@ class _ProviderGenerateInvoiceDialogState
                               ),
                               2.verticalSpace,
                               GenText(
-                                'Gwarimpa highway-Olympia street',
+                                widget.invoice['location'].toString(),
                                 size: 12,
                                 weight: FontWeight.w400,
                                 color: appColors.textColor.shade300,
@@ -243,7 +277,7 @@ class _ProviderGenerateInvoiceDialogState
                           color: appColors.textColor.shade400,
                         ),
                         GenText(
-                          '₦15,000',
+                          widget.invoice['price'].toString(),
                           size: 16,
                           weight: FontWeight.w700,
                           color: appColors.black,
@@ -270,13 +304,7 @@ class _ProviderGenerateInvoiceDialogState
                       label: 'Send to Client',
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                        await GeneralDialogs.showCustomDialog(
-                          context,
-                          body: const PaymentCompleted(),
-                        );
-                      },
+                      onPressed: sendInvoice,
                     ),
                   ),
                 ],

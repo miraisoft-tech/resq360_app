@@ -1,8 +1,20 @@
+import 'dart:async';
+import 'dart:math';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/helpers/location_helper.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/provider/chat/screens/provider_invoice_confirm.dart';
 
 class ProviderGenerateInvoiceDialog extends StatefulWidget {
-  const ProviderGenerateInvoiceDialog({super.key});
+  const ProviderGenerateInvoiceDialog({required this.chat, super.key});
+
+  final ChatResponse chat;
 
   @override
   State<ProviderGenerateInvoiceDialog> createState() =>
@@ -11,18 +23,66 @@ class ProviderGenerateInvoiceDialog extends StatefulWidget {
 
 class _ProviderGenerateInvoiceDialogState
     extends State<ProviderGenerateInvoiceDialog> {
-  final ValueNotifier<String?> _selectType = ValueNotifier(null);
+  final ValueNotifier<Service?> _selectType = ValueNotifier(null);
 
-  final List<String> categoryTypes = [
-    'Towing',
-    'Cleaning',
-    'Mechanic',
-    'Electrician',
-  ];
+  // final List<String> categoryTypes = [
+  //   'Towing',
+  //   'Cleaning',
+  //   'Mechanic',
+  //   'Electrician',
+  // ];
 
-  final TextEditingController locationController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
-  final TextEditingController serviceController = TextEditingController();
+  late TextEditingController locationController = TextEditingController();
+  late TextEditingController priceController;
+  late TextEditingController serviceController;
+
+  late String selectedCategory;
+  late final int? currentUserId;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(initializeLocation());
+      context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+      unawaited(fetchCategory());
+    });
+
+    priceController = TextEditingController();
+    serviceController = TextEditingController();
+    currentUserId = auth?.user.id;
+  }
+
+  Future<void> initializeLocation() async {
+    final locationData = await LocationHelper.getCurrentLocation();
+    locationController.text = (locationData['address'] as String?) ?? '';
+  }
+
+  Future<bool> fetchCategory() async {
+    final state = context.read<CustomerServicesBloc>().state;
+
+    if (state is! CustomerServicesLoaded) {
+      return false;
+    }
+
+    if (_selectType.value == null) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  void dispose() {
+    locationController.dispose();
+    priceController.dispose();
+    serviceController.dispose();
+
+    super.dispose();
+  }
+
+  bool isProcessing = false;
+
+  final ProviderProfileResponse? auth = ProviderAuthProvider.instance.authInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -61,26 +121,76 @@ class _ProviderGenerateInvoiceDialogState
                   ),
                 ],
               ),
-              ValueListenableBuilder<String?>(
-                valueListenable: _selectType,
-                builder: (
-                  BuildContext context,
-                  String? value,
-                  Widget? child,
-                ) {
-                  return ObjectKDropDown(
-                    label: 'Service Category',
-                    hintText: 'select service category',
-                    displayStringForOption: (String? id) => id ?? '',
-                    showPrefix: false,
-                    value: value,
-                    dropdownItems: categoryTypes,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectType.value = value;
-                      });
-                    },
-                  );
+              BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+                builder: (context, state) {
+                  if (state is CustomerServicesLoading) {
+                    isProcessing = true;
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (state is CustomerServicesError) {
+                    isProcessing = false;
+                    log('Error loading services: ${state.error}');
+                    return Column(
+                      children: [
+                        const Center(
+                          child: Text(
+                            'fetching services failed',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                        WideButton(
+                          label: 'retry',
+                          onPressed: () {
+                            context.read<CustomerServicesBloc>().add(
+                              CustomerFetchServices(),
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  }
+
+                  if (state is CustomerServicesLoaded) {
+                    isProcessing = false;
+
+                    // final categories = state.services;
+
+                    // // return ValueListenableBuilder<Service?>(
+                    // //   valueListenable: _selectType,
+                    // //   builder: (
+                    // //     BuildContext context,
+                    // //     Service? value,
+                    // //     Widget? child,
+                    // //   ) {
+                    // //     return ObjectKDropDown<Service>(
+                    // //       label: 'Service Category',
+                    // //       hintText: 'select service category',
+                    // //       displayStringForOption:  (Service service) => service.name,
+                    // //       showPrefix: false,
+                    // //       value:  value != null
+                    // //                       ? categories.firstWhere(
+                    // //                         (service) => service.id == value.id,
+                    // //                         orElse: () => categories.first,
+                    // //                       )
+                    // //                       : null,
+                    // //       dropdownItems: categories,
+                    // //        onChanged: (service) {
+                    // //                 setState(() {
+                    // //                   _selectType.value = service;
+                    // //                 });
+                    // //       },
+                    // //     );
+                    // //   },
+                    // // );
+                    return ServiceDropdown(
+                      items: state.services,
+                      controller: _selectType,
+                    );
+                  }
+                  return const SizedBox.shrink();
                 },
               ),
               14.verticalSpace,
@@ -124,10 +234,33 @@ class _ProviderGenerateInvoiceDialogState
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
+                        if (locationController.text.isEmpty ||
+                            priceController.text.isEmpty ||
+                            serviceController.text.isEmpty) {
+                          await showErrorSnackbar(
+                            context,
+                            'Please fill in all required fields',
+                          );
+                          return;
+                        }
+                        final rand = Random().nextInt(999);
+                        final invoiceNo =
+                            "INV-${rand.toString().padLeft(3, '0')}";
+                        final invoice = {
+                          'invoiceNo': invoiceNo,
+                          'chatId': widget.chat.id,
+                          'serviceCategory': selectedCategory,
+                          'location': locationController.text,
+                          'price': int.tryParse(priceController.text) ?? 0,
+                          'description': serviceController.text,
+                        };
+
                         Navigator.of(context).pop();
                         await GeneralDialogs.showCustomDialog(
                           context,
-                          body: const ProviderInvoiceConfirmDialog(),
+                          body: ProviderInvoiceConfirmDialog(
+                            invoice: invoice,
+                          ),
                         );
                       },
                     ),
@@ -138,6 +271,38 @@ class _ProviderGenerateInvoiceDialogState
           ),
         ),
       ),
+    );
+  }
+}
+
+class ServiceDropdown extends StatefulWidget {
+  const ServiceDropdown({
+    required this.items,
+    required this.controller,
+    super.key,
+  });
+  final List<Service> items;
+  final ValueNotifier<Service?> controller;
+
+  @override
+  State<ServiceDropdown> createState() => _ServiceDropdownState();
+}
+
+class _ServiceDropdownState extends State<ServiceDropdown> {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Service?>(
+      valueListenable: widget.controller,
+      builder: (_, value, _) {
+        return ObjectKDropDown<Service>(
+          label: 'Service Category',
+          hintText: 'select service category',
+          dropdownItems: widget.items,
+          value: value,
+          displayStringForOption: (s) => s.name,
+          onChanged: (service) => widget.controller.value = service,
+        );
+      },
     );
   }
 }

@@ -42,20 +42,12 @@ class _ProviderBusinessDetailsScreenState
   late TextEditingController stateController;
   late TextEditingController countryController;
   late TextEditingController zipCodeController;
-  // late TextEditingController addressController;
   late TextEditingController longitudeController;
   late TextEditingController latitudeController;
 
   final _formKey = GlobalKey<FormState>();
   final ValueNotifier<Service?> _selectType = ValueNotifier(null);
 
-  // final List<String> categories = [
-  //   'Towing',
-  //   'Cleaning',
-  //   'Mechanic',
-  //   'Electrician',
-  //   'Other',
-  // ];
   @override
   void initState() {
     super.initState();
