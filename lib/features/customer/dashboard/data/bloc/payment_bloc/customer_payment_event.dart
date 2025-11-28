@@ -9,11 +9,11 @@ sealed class CustomerPaymentEvent extends Equatable {
 }
 
 class CustomerInitializePaymentEvent extends CustomerPaymentEvent {
-  const CustomerInitializePaymentEvent(this.amount, this.email, this.currency, this.callbackUrl);
+  const CustomerInitializePaymentEvent({required this.amount, required this.email, required this.currency, required this.callbackUrl});
   @override
   List<Object> get props => [];
 
-  final double amount;
+  final int amount;
   final String email;
   final String currency;  
   final String callbackUrl;

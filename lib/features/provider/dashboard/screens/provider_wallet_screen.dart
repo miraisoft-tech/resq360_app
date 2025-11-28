@@ -111,7 +111,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                             await GeneralDialogs.showCustomDialog(
                               context,
                               body: const FundWalletConfirmDialog(
-                                amount: '₦20,000',
+                                // amount: '₦20,000',
                               ),
                             );
                           },

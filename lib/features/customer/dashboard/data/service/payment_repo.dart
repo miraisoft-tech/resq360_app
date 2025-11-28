@@ -13,22 +13,24 @@ PaymentRepo._internal();
  PaymentRepo._internal();
  
   Future<ApiResult<PaymentResponse>> initiatePayment({
-    required double amount,
+    required int amount,
     required String email,
     required String currency,
     required String callbackUrl,
   }) async {
-    const url = '/payments/initiate';
+    const url = '/payment/initialize';
+    final data = {
+      'amount': amount * 100, 
+      'email': email,
+      'currency': currency,
+      'callback_url': callbackUrl,
+    };
 
+     log('Initiate Payment Request Data: $data');
     try {
       final response = await dio().post<Map<String, dynamic>>(
         url,
-        data: InitializePaymentRequest(
-          amount: (amount * 100).toInt(), 
-          email: email,
-          currency: currency,
-          callbackUrl: callbackUrl,
-        ).toJson(),
+        data: data,
       );
 
       if (response.statusCode == 200 && response.data != null) {

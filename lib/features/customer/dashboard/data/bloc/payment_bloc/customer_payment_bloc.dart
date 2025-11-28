@@ -37,7 +37,6 @@ class CustomerPaymentBloc extends Bloc<CustomerPaymentEvent, CustomerPaymentStat
         emit(CustomerPaymentFailureState(result.error ?? 'Failed to initiate payment'));
       }
       log('bloc Payment initiation result: ${result.data}, Error: ${result.error}');
-      emit(const CustomerPaymentFailureState('Error message'));
     } on Exception catch (e) {
       log('Bloc Payment initiation exception: $e');
       emit(CustomerPaymentFailureState(e.toString()));
