@@ -65,7 +65,6 @@ class _WalletScreenState extends State<WalletScreen> {
             final url = state.payment.authorizationUrl;
             final reference = state.payment.reference;
              if (!mounted) return;
-            // Open in-app webview and wait for result (true = finished, false = cancelled)
             final finished = await Navigator.of(context, rootNavigator: true).push<bool>(
               MaterialPageRoute(
                 builder:
@@ -86,19 +85,10 @@ class _WalletScreenState extends State<WalletScreen> {
                 CustomerVerifyPaymentEvent(reference),
               );
             } else {
-              // Optionally show cancelled UI
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Payment cancelled')),
               );
             }
-
-            // await launchUrl(
-            //   Uri.parse(url),
-            //   mode: LaunchMode.inAppBrowserView,
-            // );
-            // context.read<CustomerPaymentBloc>().add(
-            //   CustomerVerifyPaymentEvent(reference),
-            // );
           }
 
           if (state is CustomerPaymentVerifiedState) {
