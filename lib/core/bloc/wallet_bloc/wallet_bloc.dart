@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/services/wallet.dart';
+import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet/wallet.model.dart';
 
 part 'wallet_event.dart';
@@ -23,6 +24,7 @@ try {
   if (result.isSuccess) {
     emit(FetchedWalletInfo(wallet: result.data!));
   } else {
+    log(result.error);
     emit(FetchingWalletInfoError(error: result.error));
   }
 } on Exception catch (e) {

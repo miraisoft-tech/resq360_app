@@ -29,7 +29,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
 
-    // WidgetsBinding.instance.addPostFrameCallback(
+    //  .instance.addPostFrameCallback(
     //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
     // );
   }

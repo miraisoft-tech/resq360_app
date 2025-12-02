@@ -24,7 +24,10 @@ class WalletRepo extends BaseAPI {
         log('Wallet Balance: $balance');
         return ApiResult(data: Wallet.fromJson(data!));
       } else {
-        return ApiResult(error: 'Failed to fetch wallet balance');
+        final data = response.data;
+        final error = data?['message'] as String;
+        log('Error fetching wallet info: $error');
+        return ApiResult(error: error);
       }
     } on Exception catch (e) {
       return ApiResult(error:  e.toString());

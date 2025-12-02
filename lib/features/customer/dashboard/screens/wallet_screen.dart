@@ -4,6 +4,7 @@ import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
+import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
 import 'package:resq360/features/widgets/dialogs/fund_method.dialog.dart';
@@ -11,7 +12,6 @@ import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.da
 import 'package:resq360/features/widgets/dialogs/fund_wallet_confirm.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -57,36 +57,48 @@ class _WalletScreenState extends State<WalletScreen> {
       ),
     ];
 
-    return Scaffold(
-      backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: appColors.whiteColor,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: appColors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: UrbText(
-          'My Wallet',
-          color: appColors.black,
-          size: 22,
-          height: 28.5,
-          weight: FontWeight.w700,
-        ),
-        centerTitle: true,
-      ),
-      body: BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
-        listener: (context, state) async {
+    return BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
+      listener: (context, state) async {
           if (state is CustomerPaymentSuccessState) {
+
+            log('heyyyyy');
             final url = state.payment.authorizationUrl;
             final reference = state.payment.reference;
-            await launchUrl(
-              Uri.parse(url),
-              mode: LaunchMode.inAppBrowserView,
+             if (!mounted) return;
+            // Open in-app webview and wait for result (true = finished, false = cancelled)
+            final finished = await Navigator.of(context, rootNavigator: true).push<bool>(
+              MaterialPageRoute(
+                builder:
+                    (_) => PaystackWebViewPage(
+                      authorizationUrl: url,
+                      reference: reference,
+                      callbackUrl: 'https://example.com/callback',
+                    ),
+              ),
             );
-            context.read<CustomerPaymentBloc>().add(
-              CustomerVerifyPaymentEvent(reference),
-            );
+
+          log(finished.toString());
+
+          if (!mounted) return;
+            // // If finished is true -> trigger verification
+            if (finished ?? false) {
+              context.read<CustomerPaymentBloc>().add(
+                CustomerVerifyPaymentEvent(reference),
+              );
+            } else {
+              // Optionally show cancelled UI
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Payment cancelled')),
+              );
+            }
+
+            // await launchUrl(
+            //   Uri.parse(url),
+            //   mode: LaunchMode.inAppBrowserView,
+            // );
+            // context.read<CustomerPaymentBloc>().add(
+            //   CustomerVerifyPaymentEvent(reference),
+            // );
           }
 
           if (state is CustomerPaymentVerifiedState) {
@@ -101,7 +113,25 @@ class _WalletScreenState extends State<WalletScreen> {
             await showErrorSnackbar(context, state.error);
           }
         },
-        child: SingleChildScrollView(
+      child: Scaffold(
+        backgroundColor: appColors.whiteColor,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: appColors.whiteColor,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: appColors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: UrbText(
+            'My Wallet',
+            color: appColors.black,
+            size: 22,
+            height: 28.5,
+            weight: FontWeight.w700,
+          ),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
           padding: pad(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

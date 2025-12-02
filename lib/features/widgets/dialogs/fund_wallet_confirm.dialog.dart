@@ -6,6 +6,7 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
+
 class FundWalletConfirmDialog extends StatefulWidget {
   const FundWalletConfirmDialog({super.key});
 
@@ -125,65 +126,44 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
                 ],
               ),
               24.verticalSpace,
-              BlocConsumer<CustomerPaymentBloc, CustomerPaymentState>(
-                listener: (context, state) async {
-                  if (state is CustomerPaymentSuccessState) {
-                    Navigator.of(context).pop();
-                  }
-                  if (state is CustomerPaymentFailureState) {
-                    await showErrorSnackbar(context, state.error);
-                    Navigator.of(context).pop();
-                  }
-                },
-                builder: (context, state) {
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: WideButton(
-                          label: 'Cancel',
-                          backgroundColor: appColors.primary.shade50,
-                          textColor: appColors.primary.shade500,
-                          onPressed:
-                              state is CustomerPaymentLoadingState
-                                  ? null
-                                  : () => Navigator.pop(context),
-                        ),
-                      ),
-                      12.horizontalSpace,
-                      Expanded(
-                        child:
-                            state is CustomerPaymentLoadingState
-                                ? const Center(
-                                  child: CircularProgressIndicator(),
-                                )
-                                : WideButton(
-                                  label: 'Add Funds',
-                                  backgroundColor: appColors.primary.shade500,
-                                  textColor: appColors.whiteColor,
-                                  onPressed: () async {
-                                    context.read<CustomerPaymentBloc>().add(
-                                      CustomerInitializePaymentEvent(
-                                        amount:
-                                            cardNumberController.text.isNotEmpty
-                                                ? int.parse(
-                                                  cardNumberController.text,
-                                                )
-                                                : 0,
-                                        email: email!,
-                                        currency: 'NGN',
-                                        callbackUrl: '',
-                                      ),
-                                    );
-                                    // await GeneralDialogs.showCustomDialog(
-                                    //   context,
-                                    //   body: const FundWalletCompleted(),
-                                    // );
-                                  },
-                                ),
-                      ),
-                    ],
-                  );
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: WideButton(
+                      label: 'Cancel',
+                      backgroundColor: appColors.primary.shade50,
+                      textColor: appColors.primary.shade500,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  12.horizontalSpace,
+                  Expanded(
+                    child: WideButton(
+                      label: 'Add Funds',
+                      backgroundColor: appColors.primary.shade500,
+                      textColor: appColors.whiteColor,
+                      onPressed: () async {
+                        context.read<CustomerPaymentBloc>().add(
+                          CustomerInitializePaymentEvent(
+                            amount:
+                                cardNumberController.text.isNotEmpty
+                                    ? int.parse(
+                                      cardNumberController.text,
+                                    )
+                                    : 0,
+                            email: email!,
+                            currency: 'NGN',
+                            callbackUrl: 'https://example.com/callback',
+                          ),
+                        );
+                        // await GeneralDialogs.showCustomDialog(
+                        //   context,
+                        //   body: const FundWalletCompleted(),
+                        // );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

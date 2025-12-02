@@ -33,7 +33,7 @@ PaymentRepo._internal();
         data: data,
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      if (response.statusCode == 201 && response.data != null) {
         final json = response.data!;
         final paymentData = PaymentResponse.fromJson(json['data'] as Map<String, dynamic>);
         return ApiResult(data: paymentData);

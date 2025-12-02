@@ -30,7 +30,7 @@ class CustomerPaymentBloc extends Bloc<CustomerPaymentEvent, CustomerPaymentStat
         currency: event.currency,
         callbackUrl: event.callbackUrl,
         );
-      if (result.data != null && result.isSuccess) {
+      if (result.data != null) {
         log( 'bloc payment initiated: ${result.data}');
       emit(CustomerPaymentSuccessState(result.data!));
       } else {
