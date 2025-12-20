@@ -99,14 +99,16 @@ class ProviderAuthRemoteRepo extends BaseAPI {
           email: email,
           password: password,
         );
-        try {
-          final userProfile = await getUserProfile();
-          final name = userProfile.data?.user.fullName;
-          log(
-            'Fetched user profile: $name',
+        final userProfileResult = await getUserProfile();
+
+        final name = userProfileResult.data?.user.fullName;
+        log(
+          'Fetched user profile: $name',
+        );
+        if (userProfileResult.error != null) {
+          return ApiResult(
+            error: userProfileResult.error,
           );
-        } on Exception catch (e) {
-          log('Failed to fetch profile: $e');
         }
 
         if (success) {
@@ -177,7 +179,13 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
       if (res.statusCode == 201 && res.data != null) {
         final success = res.data!['success'] == true;
+        final userProfileResult = await getUserProfile();
 
+        if (userProfileResult.error != null) {
+          return ApiResult(
+            error: userProfileResult.error,
+          );
+        }
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
           return ApiResult(data: authResponse);
@@ -381,16 +389,15 @@ class ProviderAuthRemoteRepo extends BaseAPI {
             isProvider: true,
             providerProfileResponse: providerProfileResponse,
           );
-            await ProviderAuthProvider.instance.init();
+          await ProviderAuthProvider.instance.init();
           return ApiResult(data: providerProfileResponse);
-        } else {
-          return ApiResult(
-            error: res.data!['message']?.toString() ?? 'Signup failed',
-          );
-        }
+        } 
       }
-      return ApiResult(error: 'An error occurred, please try again!');
+      return ApiResult(error:  res.data!['message']?.toString() ?? 'Failed to fetch profile');
     } on DioException catch (e) {
+      if (e.response?.statusCode == 403) {
+        return ApiResult(error: 'PROVIDER_NOT_APPROVED');
+      }
       return handleDioError(e);
     } on Exception catch (e, s) {
       log(e);

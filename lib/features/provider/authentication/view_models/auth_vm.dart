@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/location_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
@@ -15,7 +14,7 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
 
   final AuthRemoteRepo authRemoteRepo;
 
-  BuildContext get context => AppNavigator.navKey.currentContext!;
+
 
   ////======================LOCATION=========================////
 
@@ -46,6 +45,7 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
       authInfo = authData;
     } else {
       log('No saved AuthResponse for provider — user not logged in');
+       authInfo = null;
     }
 
     await initLocalRepo();
@@ -64,7 +64,7 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
     notifyListeners();
   }
 
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
     try {
       setBusy(isBusy: true);
 

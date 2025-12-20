@@ -146,15 +146,13 @@ class AuthRemoteRepo extends BaseAPI {
 
         await authLocalDataSource.storeAccessToken(token.toString());
 
-        try {
-          final userProfile = await getUserProfile();
+        final userProfileResult = await getUserProfile();
 
-          log(
-            'Fetched user profile: $userProfile.data.toString()',
-          );
-        } on Exception catch (e) {
-          log('Failed to fetch profile: $e');
-        }
+      if (userProfileResult.error != null) {
+        return ApiResult(
+          error: userProfileResult.error,
+        );
+      }
 
         final authResponse = AuthResponse.fromJson(res.data!);
 
@@ -163,7 +161,7 @@ class AuthRemoteRepo extends BaseAPI {
         return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
       }
     } on DioException catch (e) {
-      return handleDioError(e); 
+      return handleDioError(e);
     } on Exception catch (e) {
       log('Login DioException: $e');
       return ApiResult(error: '$e');
@@ -206,14 +204,12 @@ class AuthRemoteRepo extends BaseAPI {
         }
       }
 
-      try {
-        final userProfile = await getUserProfile();
+      final userProfileResult = await getUserProfile();
 
-        log(
-          'Fetched user profile: ${userProfile.data?.user.email}',
-        ); 
-      } on Exception catch (e) {
-        log('Failed to fetch profile: $e');
+      if (userProfileResult.error != null) {
+        return ApiResult(
+          error: userProfileResult.error,
+        );
       }
 
       return ApiResult(
@@ -222,8 +218,8 @@ class AuthRemoteRepo extends BaseAPI {
             'An error occurred, please try again!',
       );
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e, s) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
       log(e);
       log(s);
 
@@ -382,8 +378,8 @@ class AuthRemoteRepo extends BaseAPI {
         return ApiResult(error: res.data?['message'] as String);
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       log('Resend verification OTP error: $e');
       return ApiResult(error: e.toString());
     }
@@ -410,7 +406,7 @@ class AuthRemoteRepo extends BaseAPI {
             customerProfileResponse: customerProfileResponse,
             isProvider: false,
           );
-            await CustomerAuthProvider.instance.init();
+          await CustomerAuthProvider.instance.init();
           return ApiResult(data: customerProfileResponse);
         } else {
           return ApiResult(
@@ -420,8 +416,8 @@ class AuthRemoteRepo extends BaseAPI {
       }
       return ApiResult(error: 'An error occurred, please try again!');
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e, s) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
       log(e);
       log(s);
 
@@ -455,9 +451,9 @@ class AuthRemoteRepo extends BaseAPI {
         }
       }
       return ApiResult(error: 'An error occurred, please try again!');
-    }on DioException catch (e) {
-    return handleDioError(e); 
-  }  on Exception catch (e, s) {
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
       log(e);
       log(s);
 
@@ -507,8 +503,8 @@ class AuthRemoteRepo extends BaseAPI {
         return ApiResult(error: 'Unexpected server response');
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e, s) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
       log('submitFaceId error: $e\n$s');
       return ApiResult(error: e.toString());
     }
@@ -567,8 +563,8 @@ class AuthRemoteRepo extends BaseAPI {
 
       return ApiResult(error: 'Unexpected server response');
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e, s) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
       log('submitIdentity error: $e\n$s');
       return ApiResult(error: e.toString());
     }
@@ -647,8 +643,8 @@ class AuthRemoteRepo extends BaseAPI {
         );
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       log(e);
       return ApiResult(error: e.toString());
     }
