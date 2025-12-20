@@ -247,4 +247,21 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
+  Future<ApiResult<bool>> pingProviders({required int serviceCategoryId,}) async {
+    final url = '/services/$serviceCategoryId/ping-providers';
+    try {
+    
+      final res = await dio().post<Map<String, dynamic>>(url,);
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 200) {
+        return ApiResult(data: true);
+      } else {
+        return ApiResult(error: res.data?['message']?.toString() ?? 'Failed to complete service booking');
+      }
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
 }

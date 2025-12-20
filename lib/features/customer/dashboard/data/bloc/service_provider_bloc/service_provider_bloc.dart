@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/service_repo.dart';
 
@@ -9,7 +10,9 @@ final ServiceRepo serviceRepo = ServiceRepo();
 
 class ServiceProviderBloc extends Bloc<ServiceProviderEvent, ServiceProviderState> {
   ServiceProviderBloc() : super(ServiceProviderInitial()) {
+      debugPrint('Bloc initialized');
   on<FetchServiceProviders>(_onFetchProviders);
+  on<PingServiceProviders>(_onPingServiceProviders);
   }
 
    Future<void> _onFetchProviders(
@@ -31,6 +34,29 @@ class ServiceProviderBloc extends Bloc<ServiceProviderEvent, ServiceProviderStat
         emit(
           ServiceProvidersError(
             error: result.error ?? 'Failed to load providers',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(ServiceProvidersError(error: e.toString()));
+    }
+  }
+
+    Future<void> _onPingServiceProviders(
+    PingServiceProviders event,
+    Emitter<ServiceProviderState> emit,
+  ) async {
+    emit( ServiceProvidersLoading());
+    try {
+      final result = await serviceRepo.pingProviders(
+        serviceCategoryId: event.serviceCategoryId,
+      );
+      if (result.data != null) {
+      emit(PingProvidersSuccess());
+      } else {
+        emit(
+          ServiceProvidersError(
+            error: result.error ?? 'ping providers failed',
           ),
         );
       }

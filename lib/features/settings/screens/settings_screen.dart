@@ -35,7 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
        await ProviderAuthRemoteRepo.instance.getUserProfile();
     }
 
-    setState(() {}); // Rebuild UI after saving
+    setState(() {}); 
   } on Exception catch (e) {
     debugPrint('Refresh failed: $e');
   }

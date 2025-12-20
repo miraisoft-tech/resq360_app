@@ -100,6 +100,13 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     );
   }
 
+  void _pingProviders() {
+    const event = PingServiceProviders(serviceCategoryId: 1);
+    context.read<ServiceProviderBloc>().add(event);
+    debugPrint(event.runtimeType.toString());
+    _fetchProviders();
+  }
+
   // void _toggleProximity() {
   //   setState(() {
   //     _sortByProximity = !_sortByProximity;
@@ -183,7 +190,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                   ),
                   onPressed: () {
                     log('Ping Providers pressed');
-                    // _toggleProximity();
+                    _pingProviders();
                   },
                   icon: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG.svg,
                   label: GenText(
@@ -233,6 +240,15 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                       style: const TextStyle(color: Colors.red),
                     ),
                   );
+                }
+
+                if (state is PingProvidersSuccess) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) async {
+                    await showSuccessSnackbar(
+                      context,
+                      'Providers pinged successfully',
+                    );
+                  });
                 }
 
                 if (state is ServiceProvidersLoaded) {

@@ -29,6 +29,9 @@ class ServiceProviderInfoLoaded extends ServiceProviderState {
   List<Object?> get props => [info];
 }
 
+class PingProvidersSuccess extends ServiceProviderState {}
+
+
 class ServiceProvidersError extends ServiceProviderState {
 
   const ServiceProvidersError({required this.error});

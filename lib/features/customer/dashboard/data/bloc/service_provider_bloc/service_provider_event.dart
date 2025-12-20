@@ -33,3 +33,12 @@ class FetchServiceProviderInfo extends ServiceProviderEvent {
   @override
   List<Object?> get props => [categoryId];
 }
+
+
+class PingServiceProviders extends ServiceProviderEvent {
+  const PingServiceProviders({required this.serviceCategoryId});
+  final int serviceCategoryId;
+
+  @override
+  List<Object?> get props => [serviceCategoryId];
+}
