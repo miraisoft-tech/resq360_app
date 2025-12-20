@@ -99,7 +99,7 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
 
           setState(() {});
         }
-        if (state is ProviderForgotPasswordOtpSent) {
+        if (state is ProviderForgotPasswordOtpVerified) {
           log('provider otp sent, navigating to next step');
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
@@ -202,6 +202,7 @@ class GoToWidget extends StatelessWidget {
             ligthText,
             color: colors.primary.shade500,
             decoration: TextDecoration.underline,
+            onTap: onTap
           ),
           circularSTDTextSpan(
             coloredText,

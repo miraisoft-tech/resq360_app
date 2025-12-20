@@ -263,13 +263,13 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                         _ProviderList(
                           providers:
                               providers
-                                  .where((p) => p.activityStatus == 'Online')
+                                  .where((p) => p.activityStatus == 'online')
                                   .toList(),
                         ),
                         _ProviderList(
                           providers:
                               providers
-                                  .where((p) => p.activityStatus == 'Offline')
+                                  .where((p) => p.activityStatus == 'offline')
                                   .toList(),
                         ),
                       ],

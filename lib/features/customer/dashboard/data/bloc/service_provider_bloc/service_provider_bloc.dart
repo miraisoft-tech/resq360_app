@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/service_repo.dart';
 
@@ -10,7 +9,6 @@ final ServiceRepo serviceRepo = ServiceRepo();
 
 class ServiceProviderBloc extends Bloc<ServiceProviderEvent, ServiceProviderState> {
   ServiceProviderBloc() : super(ServiceProviderInitial()) {
-      debugPrint('Bloc initialized');
   on<FetchServiceProviders>(_onFetchProviders);
   on<PingServiceProviders>(_onPingServiceProviders);
   }
