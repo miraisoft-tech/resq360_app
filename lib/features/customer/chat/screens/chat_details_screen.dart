@@ -56,51 +56,57 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final currentUserId = auth?.user.id;
 
     return BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
-      listener: (context, state) async {
-        if (state is CustomerPaymentSuccessState) {
-          final url = state.payment.authorizationUrl;
-          final reference = state.payment.reference;
-          if (!mounted) return;
-          final finished = await Navigator.of(
-            context,
-            rootNavigator: true,
-          ).push<bool>(
-            MaterialPageRoute(
-              builder:
-                  (_) => PaystackWebViewPage(
-                    authorizationUrl: url,
-                    reference: reference,
-                    callbackUrl: 'https://example.com/callback',
-                  ),
-            ),
-          );
+        listener: (context, state) async {
+   
+    if (state is ServicePaymentLoadingState) {
+      await showLoadingDialog(context);
+    }
 
-          log(finished.toString());
+   
+    if (state is ServicePaymentInitiatedState) {
+      Navigator.of(context, rootNavigator: true).pop(); 
 
-          if (!mounted) return;
-          // // If finished is true -> trigger verification
-          if (finished ?? false) {
-            context.read<CustomerPaymentBloc>().add(
-              CustomerVerifyPaymentEvent(reference),
-            );
-          } else {
-            await showErrorSnackbar(context, 'Payment cancelled');
-          }
-        }
+      final finished = await Navigator.of(
+        context,
+        rootNavigator: true,
+      ).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => PaystackWebViewPage(
+            authorizationUrl: state.payment.authorizationUrl,
+            reference: state.payment.reference,
+            callbackUrl: 'https://example.com/callback',
+          ),
+        ),
+      );
 
-        if (state is CustomerPaymentVerifiedState) {
-          await GeneralDialogs.showCustomDialog(
-            context,
-            body: const PaymentCompleted(),
-          );
-          context.read<ChatBloc>().add(
-            GetChatMessagesEvent(chatId: widget.chat.id!),
-          );
-        }
+      if (finished ?? false) {
+        context.read<CustomerPaymentBloc>().add(
+          CustomerVerifyServicePaymentEvent(state.payment.reference),
+        );
+      } else {
+        await showErrorSnackbar(context, 'Payment cancelled');
+      }
+    }
 
-        if (state is CustomerPaymentFailureState) {
-          await showErrorSnackbar(context, state.error);
-        }
+  
+    if (state is ServicePaymentVerifiedState) {
+      Navigator.of(context, rootNavigator: true).pop();
+
+      await GeneralDialogs.showCustomDialog(
+        context,
+        body: const PaymentCompleted(),
+      );
+
+      context.read<ChatBloc>().add(
+        GetChatMessagesEvent(chatId: widget.chat.id!),
+      );
+    }
+
+   
+    if (state is ServicePaymentFailureState) {
+      Navigator.of(context, rootNavigator: true).pop();
+      await showErrorSnackbar(context, state.error);
+    }
       },
       child: Scaffold(
         backgroundColor: appColors.whiteColor,

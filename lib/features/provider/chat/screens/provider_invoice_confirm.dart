@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/send_message_request.dart';
 
 class ProviderInvoiceConfirmDialog extends StatefulWidget {
   const ProviderInvoiceConfirmDialog({required this.invoice, super.key});

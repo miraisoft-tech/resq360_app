@@ -180,7 +180,7 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                                 message.createdAt?.toIso8601String() ?? '',
                               ),
                             )
-                          else if (message.messageType == 'SYSTEM' && message.metadata?.type == 'INVOICE')
+                          else if (message.messageType == 'SYSTEM')
                             ProviderChatInvoiceCardWidget(
                               onTapPay: () async {
                                 await GeneralDialogs.showCustomDialog(

@@ -3,9 +3,8 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:resq360/core/extensions/theme_extension.dart';
+import 'package:resq360/__lib.dart';
 
 class PaystackWebViewPage extends StatefulWidget {
   const PaystackWebViewPage({
@@ -33,21 +32,21 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
 
   late final PullToRefreshController pullToRefreshController;
 
-  
-
   @override
   void initState() {
     super.initState();
 
     if (Platform.isAndroid) {
-      unawaited(AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true));
+      unawaited(
+        AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true),
+      );
     }
 
     pullToRefreshController = PullToRefreshController(
       options: PullToRefreshOptions(color: const Color(0xFFE8683B)),
       onRefresh: () async {
         if (Platform.isAndroid) {
-         await _controller?.reload();
+          await _controller?.reload();
         } else if (Platform.isIOS) {
           final url = await _controller?.getUrl();
           await _controller?.loadUrl(urlRequest: URLRequest(url: url));
@@ -59,6 +58,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
   bool _isCallbackUrl(String? url) {
     if (url == null) return false;
     final lower = url.toLowerCase();
+    log('lower $lower');
 
     if (widget.callbackUrl.isNotEmpty &&
         lower.contains(widget.callbackUrl.toLowerCase())) {
@@ -90,6 +90,10 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
           backgroundColor: context.appColors.whiteColor,
           title: const Text('Complete Payment'),
           actions: [
+            TextButton(
+              onPressed: _finish,
+              child: const Text('Done'),
+            ),
             if (_loading)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -100,7 +104,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
                     value: progress > 0 ? progress : null,
                   ),
                 ),
-              )
+              ),
           ],
         ),
         body: SafeArea(
@@ -125,23 +129,46 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
 
             onWebViewCreated: (controller) {
               _controller = controller;
+              controller
+                ..addJavaScriptHandler(
+                  handlerName: 'paystackSuccess',
+                  callback: (args) {
+                    _finish();
+                  },
+                )
+                ..addJavaScriptHandler(
+                  handlerName: 'paystackClose',
+                  callback: (args) {
+                    _finish(false);
+                  },
+                );
             },
 
             onLoadStart: (_, url) {
               setState(() => _loading = true);
               if (_isCallbackUrl(url?.toString())) _finish();
             },
-
             onLoadStop: (_, url) async {
               await pullToRefreshController.endRefreshing();
               setState(() => _loading = false);
-              if (_isCallbackUrl(url?.toString())) _finish();
-            },
 
-            onProgressChanged: (_, p) {
-              setState(() {
-                progress = p / 100;
-              });
+              await _controller?.evaluateJavascript(
+                source: """
+    (function () {
+      window.addEventListener('message', function (e) {
+        if (!e.data) return;
+
+        if (e.data.event === 'success') {
+          window.flutter_inappwebview.callHandler('paystackSuccess');
+        }
+
+        if (e.data.event === 'close') {
+          window.flutter_inappwebview.callHandler('paystackClose');
+        }
+      });
+    })();
+  """,
+              );
             },
 
             shouldOverrideUrlLoading: (_, nav) async {
@@ -155,7 +182,11 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
               return NavigationActionPolicy.ALLOW;
             },
 
-            onReceivedError: (_, _, _, ) async {
+            onReceivedError: (
+              _,
+              _,
+              _,
+            ) async {
               await pullToRefreshController.endRefreshing();
             },
           ),

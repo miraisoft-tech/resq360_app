@@ -11,9 +11,9 @@ class ChatInvoiceCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
     
-if (metadata.type != 'INVOICE' || metadata.amount == null) {
-    return const SizedBox.shrink();
-  }
+// if (metadata.type != 'INVOICE' || metadata.amount == null) {
+//     return const SizedBox.shrink();
+//   }
     return Container(
       width: double.infinity,
       padding: pad(horizontal: 14, vertical: 14),

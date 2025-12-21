@@ -277,7 +277,7 @@ class _ClientPaymentConfirmDialogState
                         Navigator.pop(context);
 
                         context.read<CustomerPaymentBloc>().add(
-                          CustomerInitializePaymentEvent(
+                          CustomerInitServicePaymentEvent(
                             amount: widget.amount,
                             email: email!,
                             currency: 'NGN',

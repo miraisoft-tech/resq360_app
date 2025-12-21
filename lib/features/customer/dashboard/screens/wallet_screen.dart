@@ -7,10 +7,8 @@ import 'package:resq360/features/customer/dashboard/data/models/wallet_transacti
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
-import 'package:resq360/features/widgets/dialogs/fund_method.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_confirm.dialog.dart';
-import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -56,53 +54,69 @@ class _WalletScreenState extends State<WalletScreen> {
         isCredit: false,
       ),
     ];
+    var isLoadingDialogShown = false;
 
     return BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
       listener: (context, state) async {
-          if (state is CustomerPaymentSuccessState) {
+        if (state is WalletFundingLoadingState) {
+          if (!isLoadingDialogShown) {
+            isLoadingDialogShown = true;
+            await showLoadingDialog(context);
+          }
+          return;
+        }
 
-            log('heyyyyy');
-            final url = state.payment.authorizationUrl;
-            final reference = state.payment.reference;
-             if (!mounted) return;
-            final finished = await Navigator.of(context, rootNavigator: true).push<bool>(
-              MaterialPageRoute(
-                builder:
-                    (_) => PaystackWebViewPage(
-                      authorizationUrl: url,
-                      reference: reference,
-                      callbackUrl: 'https://example.com/callback',
-                    ),
-              ),
-            );
+        if (isLoadingDialogShown) {
+          isLoadingDialogShown = false;
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+
+        if (state is WalletFundingInitiatedState) {
+          log('heyyyyy');
+          final url = state.payment.authorizationUrl;
+          final reference = state.payment.reference;
+          if (!mounted) return;
+          final finished = await Navigator.of(
+            context,
+            rootNavigator: true,
+          ).push<bool>(
+            MaterialPageRoute(
+              builder:
+                  (_) => PaystackWebViewPage(
+                    authorizationUrl: url,
+                    reference: reference,
+                    callbackUrl: 'https://example.com/callback',
+                  ),
+            ),
+          );
 
           log(finished.toString());
 
           if (!mounted) return;
-            // // If finished is true -> trigger verification
-            if (finished ?? false) {
-              context.read<CustomerPaymentBloc>().add(
-                CustomerVerifyPaymentEvent(reference),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Payment cancelled')),
-              );
-            }
-          }
 
-          if (state is CustomerPaymentVerifiedState) {
-            await GeneralDialogs.showCustomDialog(
-              context,
-              body: const FundWalletCompleted(),
+          if (finished ?? false) {
+            context.read<CustomerPaymentBloc>().add(
+              CustomerVerifyWalletFundingEvent(reference),
             );
-            context.read<WalletBloc>().add(FetchWalletInfo());
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Payment cancelled')),
+            );
           }
+        }
 
-          if (state is CustomerPaymentFailureState) {
-            await showErrorSnackbar(context, state.error);
-          }
-        },
+        if (state is WalletFundingVerifiedState) {
+          await GeneralDialogs.showCustomDialog(
+            context,
+            body: const FundWalletCompleted(),
+          );
+          context.read<WalletBloc>().add(FetchWalletInfo());
+        }
+
+        if (state is WalletFundingFailureState) {
+          await showErrorSnackbar(context, state.error);
+        }
+      },
       child: Scaffold(
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
@@ -148,16 +162,19 @@ class _WalletScreenState extends State<WalletScreen> {
                       onAddFunds: () async {
                         await GeneralDialogs.showCustomDialog(
                           context,
-                          body: FundMethodDialog(
-                            onPaymentSelected: (PaymentMethod p1) async {
-                              await GeneralDialogs.showCustomDialog(
-                                context,
-                                body: const FundWalletConfirmDialog(
-                                  // amount: 20000,
-                                ),
-                              );
-                            },
+                          body: const FundWalletConfirmDialog(
+                            // amount: 20000,
                           ),
+                          //  FundMethodDialog(
+                          //   onPaymentSelected: (PaymentMethod p1) async {
+                          //     await GeneralDialogs.showCustomDialog(
+                          //       context,
+                          //       body: const FundWalletConfirmDialog(
+                          //         // amount: 20000,
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
                         );
                       },
                     );

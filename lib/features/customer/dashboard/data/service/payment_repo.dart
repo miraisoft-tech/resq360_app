@@ -11,6 +11,38 @@ class PaymentRepo extends BaseAPI {
 PaymentRepo._internal();
   static final PaymentRepo _instance =
  PaymentRepo._internal();
+
+   Future<ApiResult<PaymentResponse>> fundWallet({
+    required int amount,
+    required String userType,
+
+  }) async {
+    const url = '/wallet/fund';
+    final data = {
+      'amount': amount * 10, 
+      'userType': userType,
+
+    };
+
+     log('fund wallet Data: $data');
+    try {
+      final response = await dio().post<Map<String, dynamic>>(
+        url,
+        data: data,
+      );
+
+      if (response.statusCode == 201 && response.data != null) {
+        final json = response.data!;
+        final paymentData = PaymentResponse.fromJson(json['data'] as Map<String, dynamic>);
+        return ApiResult(data: paymentData);
+      } else {
+        return ApiResult(error:response.data!['message'].toString() );
+      }
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+  
  
   Future<ApiResult<PaymentResponse>> initiatePayment({
     required int amount,
