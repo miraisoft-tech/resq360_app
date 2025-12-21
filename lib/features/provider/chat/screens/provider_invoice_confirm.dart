@@ -2,6 +2,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/send_message_request.dart';
 
 class ProviderInvoiceConfirmDialog extends StatefulWidget {
@@ -20,32 +21,54 @@ class _ProviderGenerateInvoiceDialogState
     final now = DateTime.now();
 late final formattedDate =
     '${now.month}/${now.day}/${now.year}';
+
+
+  // Future<void> sendInvoice() async {
+  //   final meta = {
+  //     'InvoiceNo': widget.invoice['invoiceNo'],
+  //     'Date': formattedDate,
+  //     'serviceCategory': widget.invoice['serviceCategory'],
+  //     'ClientName': 'John Doe',
+  //     'description': widget.invoice['description'],
+  //     'amount': widget.invoice['price'],
+  //   };
+
+
+  //   final request = SendMessageRequest(
+  //     chatId: widget.invoice['chatId'] as int,
+  //     messageType: 'SYSTEM',
+  //     content: 'Here is your invoice',
+  //     metadata: meta,
+  //   );
+  //   context.read<ChatBloc>().add(
+  //     SendMessageEvent(messageRequest: request),
+  //   );
+  //   // await GeneralDialogs.showCustomDialog(
+  //   //   context,
+  //   //   body: const PaymentCompleted(),
+  //   // );
+  //   await showSuccessSnackbar(context, 'invoice sent sucessfully');
+  //   log('Sending invoice with metadata: $meta');
+  //   Navigator.of(context).pop();
+  // }
+
   Future<void> sendInvoice() async {
-    final meta = {
-      'InvoiceNo': widget.invoice['invoiceNo'],
-      'Date': formattedDate,
-      'serviceCategory': widget.invoice['serviceCategory'],
-      'ClientName': 'John Doe',
-      'description': widget.invoice['description'],
-      'amount': widget.invoice['price'],
-    };
-    final request = SendMessageRequest(
-      chatId: widget.invoice['chatId'] as int,
-      messageType: 'SYSTEM',
-      content: 'Here is your invoice',
-      metadata: meta,
-    );
-    context.read<ChatBloc>().add(
-      SendMessageEvent(messageRequest: request),
-    );
-    // await GeneralDialogs.showCustomDialog(
-    //   context,
-    //   body: const PaymentCompleted(),
-    // );
-    await showSuccessSnackbar(context, 'invoice sent sucessfully');
-    log('Sending invoice with metadata: $meta');
-    Navigator.of(context).pop();
-  }
+  final request = SendInvoice(
+    chatId: widget.invoice['chatId'] as int,
+    amount: widget.invoice['price'] as int,
+    currency: 'NGN',
+    description: widget.invoice['description'] as String,
+    invoiceId: widget.invoice['invoiceNo'] as String,
+  );
+
+  context.read<ChatBloc>().add(
+    SendInvoiceEvent(messageRequest: request),
+  );
+
+  Navigator.of(context).pop();
+  await showSuccessSnackbar(context, 'Invoice sent successfully');
+}
+
 
   @override
   Widget build(BuildContext context) {

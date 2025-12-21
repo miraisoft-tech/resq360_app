@@ -10,7 +10,10 @@ class ChatInvoiceCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
+    
+if (metadata.type != 'INVOICE' || metadata.amount == null) {
+    return const SizedBox.shrink();
+  }
     return Container(
       width: double.infinity,
       padding: pad(horizontal: 14, vertical: 14),
@@ -37,7 +40,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   4.verticalSpace,
                   GenText(
-                    metadata.invoiceNo!,
+                    metadata.invoiceNo  ?? '—',
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
                   ),
@@ -55,7 +58,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    metadata.date!,
+                    metadata.date ?? '—',
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
                   ),
@@ -77,7 +80,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    metadata.serviceCategory!,
+                    metadata.serviceCategory ?? '—',
                     size: 12,
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
@@ -129,7 +132,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                 color: appColors.textColor.shade400,
               ),
               GenText(
-                metadata.amount!.toString(),
+                metadata.amount?.toString() ?? '0',
                 size: 16,
                 weight: FontWeight.w700,
                 color: appColors.black,

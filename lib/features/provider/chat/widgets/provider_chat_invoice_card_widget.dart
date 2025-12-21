@@ -65,7 +65,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         4.verticalSpace,
                         GenText(
-                          metadata.invoiceNo!,
+                          metadata.invoiceNo ?? '—',
                           weight: FontWeight.w400,
                           color:
                               paymentStatus == PaymentStatus.paid
@@ -89,7 +89,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                          metadata.date!,
+                          metadata.date ?? '8/27/2025',
                           // '8/27/2025',
                           weight: FontWeight.w400,
                           color:
@@ -118,7 +118,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                          metadata.serviceCategory!,
+                          metadata.serviceCategory ?? '-',
                           size: 12,
                           weight: FontWeight.w400,
                           color:
@@ -141,7 +141,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                          metadata.clientName!,
+                          metadata.clientName ?? '-',
                           size: 12,
                           weight: FontWeight.w400,
                           color:
@@ -190,7 +190,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                               : Colors.white,
                     ),
                     GenText(
-                      metadata.amount.toString(),
+                      metadata.amount?.toString() ?? '0',
                       size: 16,
                       weight: FontWeight.w700,
                       color:

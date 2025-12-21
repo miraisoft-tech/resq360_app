@@ -41,6 +41,15 @@ class SendMessageEvent extends ChatEvent {
   List<Object?> get props => [messageRequest, localMessage];
 }
 
+class SendInvoiceEvent extends ChatEvent {
+  const SendInvoiceEvent({required this.messageRequest,  this.localMessage});
+  final SendInvoice messageRequest;
+    final MessageResponse? localMessage;
+
+  @override
+  List<Object?> get props => [messageRequest, localMessage];
+}
+
 class SendFileMessageEvent extends ChatEvent {
   const SendFileMessageEvent({
     required this.chatId,

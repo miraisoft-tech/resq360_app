@@ -3,7 +3,7 @@ import 'metadata.dart';
 ///a single message in a chat
 class MessageResponse {
 
-  MessageResponse({
+  MessageResponse( {
     this.id,
     this.chatId,
     this.senderType,
@@ -22,6 +22,7 @@ class MessageResponse {
     this.createdAt,
     this.updatedAt,
     this.metadata,
+    this.readReceipts,
   });
 
   factory MessageResponse.fromJson(Map<String, dynamic> json) =>
@@ -56,6 +57,7 @@ class MessageResponse {
         metadata: json['metadata'] == null
             ? null
             : Metadata.fromJson(json['metadata'] as Map<String, dynamic>),
+        readReceipts: json['readReceipts'] as List<dynamic>?,
       );
   final int? id;
   final int? chatId;
@@ -75,6 +77,7 @@ class MessageResponse {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final Metadata? metadata;
+  final List<dynamic>? readReceipts;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -95,5 +98,6 @@ class MessageResponse {
         'createdAt': createdAt?.toIso8601String(),
         'updatedAt': updatedAt?.toIso8601String(),
         'metadata': metadata?.toJson(),
+        'readReceipts': readReceipts,
       };
 }

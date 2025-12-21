@@ -1,0 +1,53 @@
+import 'dart:convert';
+
+class SendInvoice {
+  SendInvoice({
+    this.chatId,
+    this.amount,
+    this.currency,
+    this.description,
+    this.invoiceId,
+    this.fileName,
+    this.fileUrl,
+    this.fileSize,
+    this.mimeType,
+  });
+
+  factory SendInvoice.fromRawJson(String str) =>
+      SendInvoice.fromJson(json.decode(str) as Map<String, dynamic>);
+
+  factory SendInvoice.fromJson(Map<String, dynamic> json) => SendInvoice(
+    chatId: json['chatId'] as int?,
+    amount: json['amount'] as int?,
+    currency: json['currency'] as String?,
+    description: json['description'] as String?,
+    invoiceId: json['invoiceId'] as String?,
+    fileName: json['fileName'] as String?,
+    fileUrl: json['fileUrl'] as String?,
+    fileSize: json['fileSize'] as int?,
+    mimeType: json['mimeType'] as String?,
+  );
+  final int? chatId;
+  final int? amount;
+  final String? currency;
+  final String? description;
+  final String? invoiceId;
+  final String? fileName;
+  final String? fileUrl;
+  final int? fileSize;
+  final String? mimeType;
+
+  String toRawJson() => json.encode(toJson());
+
+  Map<String, dynamic> toJson() => {
+    'chatId': chatId,
+    'amount': amount,
+    'currency': currency,
+    'description': description,
+    'invoiceId': invoiceId,
+    'fileName': fileName,
+    'fileUrl': fileUrl,
+    'fileSize': fileSize,
+    'mimeType': mimeType,
+  };
+}

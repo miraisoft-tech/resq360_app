@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
 
 class ChatRepo extends BaseAPI {
   factory ChatRepo() => _instance;
@@ -121,6 +122,34 @@ class ChatRepo extends BaseAPI {
       final response = await dio().post<Map<String, dynamic>>(
         url,
         data: messageRequest.toJson(),
+      );
+
+      if (response.statusCode == 201 && response.data != null) {
+        final messageData = response.data!;
+        final message = MessageResponse.fromJson(messageData);
+        return ApiResult(data: message);
+      } else {
+        return ApiResult(
+          error:
+              response.data?['message'].toString() ?? 'Failed to send message',
+        );
+      }
+    } on DioException catch (e) {
+    return handleDioError(e); 
+  } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+
+    Future<ApiResult<MessageResponse>> sendInvoice({
+    required SendInvoice invoiceRequest,
+  }) async {
+    const url = '/chat/messages/invoice';
+    try {
+      final response = await dio().post<Map<String, dynamic>>(
+        url,
+        data: invoiceRequest.toJson(),
       );
 
       if (response.statusCode == 201 && response.data != null) {

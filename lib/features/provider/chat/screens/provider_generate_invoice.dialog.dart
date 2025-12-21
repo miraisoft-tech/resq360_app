@@ -249,7 +249,7 @@ class _ProviderGenerateInvoiceDialogState
                         final invoice = {
                           'invoiceNo': invoiceNo,
                           'chatId': widget.chat.id,
-                          'serviceCategory': selectedCategory,
+                          'serviceCategory': _selectType.value!.name,
                           'location': locationController.text,
                           'price': int.tryParse(priceController.text) ?? 0,
                           'description': serviceController.text,

@@ -177,10 +177,10 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                                       : MessageType.received,
                               message: content ?? '',
                               time: formatMessageTime(
-                                message.createdAt.toString(),
+                                message.createdAt?.toIso8601String() ?? '',
                               ),
                             )
-                          else if (message.messageType == 'SYSTEM')
+                          else if (message.messageType == 'SYSTEM' && message.metadata?.type == 'INVOICE')
                             ProviderChatInvoiceCardWidget(
                               onTapPay: () async {
                                 await GeneralDialogs.showCustomDialog(
@@ -198,7 +198,7 @@ class _ProviderChatDetailScreenState extends State<ProviderChatDetailScreen> {
                                 );
                               },
                               paymentStatus: PaymentStatus.pending, metadata: message.metadata!, messageCreatedAt: formatMessageTime(
-                                message.createdAt.toString(),
+                                message.createdAt?.toIso8601String() ?? '',
                               ),
                             ),
                           20.verticalSpace,
