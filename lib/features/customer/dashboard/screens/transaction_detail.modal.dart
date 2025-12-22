@@ -129,6 +129,7 @@ class TransactionDetailModal extends StatelessWidget {
                   ),
                 ],
               ),
+              20.verticalSpace,
               WideButton(
                 label: 'Download Receipt',
                 backgroundColor: appColors.primary.shade500,
