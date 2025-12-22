@@ -12,11 +12,11 @@ final class NotificationInitial extends NotificationState {}
 class NotificationLoading extends NotificationState {}
 
 class NotificationLoaded extends NotificationState {
-  const NotificationLoaded(this.notifications);
-  final NotificationResponse notifications;
+  const NotificationLoaded(this.response);
+  final NotificationResponse response;
 
   @override
-  List<Object> get props =>  [notifications];
+  List<Object> get props =>  [response];
 }
 
 class UnreadCountLoaded extends NotificationState {

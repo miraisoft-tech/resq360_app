@@ -1,141 +1,135 @@
 import 'dart:convert';
 
 class NotificationResponse {
-  NotificationResponse({
-    this.notifications,
+
+  const NotificationResponse({
+    this.notifications = const [],
     this.pagination,
   });
 
-  factory NotificationResponse.fromJson(Map<String, dynamic> json) =>
-      NotificationResponse(
-        notifications:
-            json['notifications'] == null
-                ? []
-                : List<Notification>.from(
-                  (json['notifications'] as List).map(
-                    (x) => Notification.fromJson(x as Map<String, dynamic>),
-                  ),
-                ),
-        pagination:
-            json['pagination'] == null
-                ? null
-                : Pagination.fromJson(
-                  json['pagination'] as Map<String, dynamic>,
-                ),
-      );
-
-  factory NotificationResponse.fromRawJson(String str) =>
-      NotificationResponse.fromJson(json.decode(str) as Map<String, dynamic>);
-  final List<Notification>? notifications;
+  factory NotificationResponse.fromJson(Map<String, dynamic> json) {
+    return NotificationResponse(
+      notifications: (json['notifications'] as List?)
+              ?.map((e) => Notification.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      pagination: json['pagination'] is Map<String, dynamic>
+          ? Pagination.fromJson(json['pagination'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+  final List<Notification> notifications;
   final Pagination? pagination;
-
-  String toRawJson() => json.encode(toJson());
-
-  Map<String, dynamic> toJson() => {
-    'notifications':
-        notifications == null
-            ? <dynamic>[]
-            : List<dynamic>.from(notifications!.map((x) => x.toJson())),
-    'pagination': pagination?.toJson(),
-  };
 }
 
+
 class Notification {
-  Notification({
+
+  const Notification({
     this.id,
-    this.title,
-    this.message,
     this.category,
-    this.priority,
+    this.details,
     this.status,
-    this.tags,
-    this.readAt,
+    this.tags = const [],
+    this.createdBy,
+    this.priority,
+    this.userId,
+    this.providerId,
+    this.adminId,
+    this.serviceRequestId,
+    this.metadata,
+    this.entityType,
+    this.entityId,
     this.createdAt,
     this.updatedAt,
+    this.readAt,
     this.user,
     this.provider,
     this.admin,
     this.serviceRequest,
   });
 
-  factory Notification.fromRawJson(String str) =>
-      Notification.fromJson(json.decode(str) as Map<String, dynamic>);
+  factory Notification.fromJson(Map<String, dynamic> json) {
+    return Notification(
+      id: json['id'] as int?,
+      category: json['category']?.toString(),
+      details: json['details']?.toString(),
+      status: json['status']?.toString(),
 
-  factory Notification.fromJson(Map<String, dynamic> json) => Notification(
-    id: json['id'] as int,
-    title: json['title'] as String,
-    message: json['message'] as String,
-    category: json['category'] as String,
-    priority: json['priority'] as String,
-    status: json['status'] as String,
-    tags:
-        json['tags'] == null
-            ? []
-            : List<String>.from((json['tags'] as List).map((x) => x)),
-    readAt:
-        json['readAt'] == null
-            ? null
-            : DateTime.parse(json['readAt'] as String),
-    createdAt:
-        json['createdAt'] == null
-            ? null
-            : DateTime.parse(json['createdAt'] as String),
-    updatedAt:
-        json['updatedAt'] == null
-            ? null
-            : DateTime.parse(json['updatedAt'] as String),
-    user:
-        json['user'] == null
-            ? null
-            : Provider.fromJson(json['user'] as Map<String, dynamic>),
-    provider:
-        json['provider'] == null
-            ? null
-            : Provider.fromJson(json['provider'] as Map<String, dynamic>),
-    admin:
-        json['admin'] == null
-            ? null
-            : Admin.fromJson(json['admin'] as Map<String, dynamic>),
-    serviceRequest:
-        json['serviceRequest'] == null
-            ? null
-            : ServiceRequest.fromJson(
-              json['serviceRequest'] as Map<String, dynamic>,
-            ),
-  );
+      tags: (json['tags'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+
+      createdBy: json['createdBy']?.toString(),
+      priority: json['priority']?.toString(),
+
+      userId: json['userId'] as int?,
+      providerId: json['providerId'] as int?,
+      adminId: json['adminId'] as int?,
+
+      serviceRequestId: json['serviceRequestId']?.toString(),
+
+      metadata: json['metadata'] is Map<String, dynamic>
+          ? Metadata.fromJson(json['metadata'] as Map<String, dynamic>)
+          : null,
+
+      entityType: json['entityType']?.toString(),
+      entityId: json['entityId'] as int?,
+
+      createdAt: _parseDate(json['createdAt']),
+      updatedAt: _parseDate(json['updatedAt']),
+      readAt: _parseDate(json['readAt']),
+
+      user: json['user'] is Map<String, dynamic>
+          ? Provider.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
+
+      provider: json['provider'] is Map<String, dynamic>
+          ? Provider.fromJson(json['provider'] as Map<String, dynamic>)
+          : null,
+
+      admin: json['admin'] is Map<String, dynamic>
+          ? Admin.fromJson(json['admin'] as Map<String, dynamic>)
+          : null,
+
+      serviceRequest: json['serviceRequest'] is Map<String, dynamic>
+          ? json['serviceRequest'] as Map<String, dynamic>
+          : null,
+    );
+  }
   final int? id;
-  final String? title;
-  final String? message;
   final String? category;
-  final String? priority;
+  final String? details;
   final String? status;
-  final List<String>? tags;
-  final DateTime? readAt;
+  final List<String> tags;
+  final String? createdBy;
+  final String? priority;
+
+  final int? userId;
+  final int? providerId;
+  final int? adminId;
+
+  final String? serviceRequestId;
+  final Metadata? metadata;
+
+  final String? entityType;
+  final int? entityId;
+
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final DateTime? readAt;
+
   final Provider? user;
   final Provider? provider;
   final Admin? admin;
-  final ServiceRequest? serviceRequest;
 
-  String toRawJson() => json.encode(toJson());
+  final Map<String, dynamic>? serviceRequest;
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'message': message,
-    'category': category,
-    'priority': priority,
-    'status': status,
-    'tags': tags == null ? <dynamic>[] : List<dynamic>.from(tags!.map((x) => x)),
-    'readAt': readAt?.toIso8601String(),
-    'createdAt': createdAt?.toIso8601String(),
-    'updatedAt': updatedAt?.toIso8601String(),
-    'user': user?.toJson(),
-    'provider': provider?.toJson(),
-    'admin': admin?.toJson(),
-    'serviceRequest': serviceRequest?.toJson(),
-  };
+  static DateTime? _parseDate(dynamic value) {
+    if (value is String) return DateTime.tryParse(value);
+    return null;
+  }
 }
 
 class Admin {
@@ -171,36 +165,87 @@ class Admin {
 }
 
 class Provider {
-  Provider({
+
+  const Provider({
     this.id,
     this.fullName,
     this.email,
     this.profileImage,
   });
 
-  factory Provider.fromRawJson(String str) =>
-      Provider.fromJson(json.decode(str) as Map<String, dynamic>);
-
-  factory Provider.fromJson(Map<String, dynamic> json) => Provider(
-    id: json['id'] as int,
-    fullName: json['fullName'] as String,
-    email: json['email'] as String,
-    profileImage: json['profileImage'] as String,
-  );
+  factory Provider.fromJson(Map<String, dynamic> json) {
+    return Provider(
+      id: json['id'] as int?,
+      fullName: json['fullName']?.toString(),
+      email: json['email']?.toString(),
+      profileImage: json['profileImage']?.toString(),
+    );
+  }
   final int? id;
   final String? fullName;
   final String? email;
   final String? profileImage;
-
-  String toRawJson() => json.encode(toJson());
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'fullName': fullName,
-    'email': email,
-    'profileImage': profileImage,
-  };
 }
+
+
+class Metadata {
+
+  const Metadata({
+    this.status,
+    this.serviceDescription,
+    this.severity,
+    this.complaintType,
+    this.requiresAction,
+    this.amount,
+    this.netAmount,
+    this.payoutDate,
+    this.serviceFee,
+    this.paymentMethod,
+    this.transactionId,
+    this.serviceType,
+    this.providerName,
+    this.estimatedArrival,
+  });
+
+  factory Metadata.fromJson(Map<String, dynamic> json) {
+    return Metadata(
+      status: json['status']?.toString(),
+      serviceDescription: json['serviceDescription']?.toString(),
+      severity: json['severity']?.toString(),
+      complaintType: json['complaintType']?.toString(),
+      requiresAction: json['requiresAction'] as bool?,
+      amount: json['amount'] as int?,
+      netAmount: json['netAmount'] as int?,
+      payoutDate: _parseDate(json['payoutDate']),
+      serviceFee: json['serviceFee'] as int?,
+      paymentMethod: json['paymentMethod']?.toString(),
+      transactionId: json['transactionId']?.toString(),
+      serviceType: json['serviceType']?.toString(),
+      providerName: json['providerName']?.toString(),
+      estimatedArrival: json['estimatedArrival']?.toString(),
+    );
+  }
+  final String? status;
+  final String? serviceDescription;
+  final String? severity;
+  final String? complaintType;
+  final bool? requiresAction;
+  final int? amount;
+  final int? netAmount;
+  final DateTime? payoutDate;
+  final int? serviceFee;
+  final String? paymentMethod;
+  final String? transactionId;
+  final String? serviceType;
+  final String? providerName;
+  final String? estimatedArrival;
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value is String) return DateTime.tryParse(value);
+    return null;
+  }
+}
+
 
 class ServiceRequest {
   ServiceRequest({

@@ -13,6 +13,7 @@ import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/notification_bloc/notification_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
@@ -71,6 +72,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => CustomerAdvertisementBloc()),
           BlocProvider(create: (_) => CustomerPaymentBloc()),
           BlocProvider(create: (_) => RatingsBloc(ratingsRepo)),
+          BlocProvider(create: (_) => NotificationBloc()),
         ],
         child: const MyApp(),
       ),

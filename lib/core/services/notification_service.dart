@@ -17,14 +17,12 @@ class NotificationRepo extends BaseAPI {
   static final NotificationRepo _instance = NotificationRepo._internal();
 
   Future<NotificationResponse> getRecentNotificationActivities({
-    required String toDate,
-    required String fromDate,
-    required String tags,
-    required String priority,
-    required String status,
-    required String category,
-    required int offset,
-    required int limit,
+     String? toDate,
+     String? fromDate,
+     String? tags,
+     String? priority,
+     String? status,
+     String? category,
   }) async {
     const url = '/notifications/recent';
 
@@ -32,20 +30,20 @@ class NotificationRepo extends BaseAPI {
       final res = await dio().get<Map<String, dynamic>>(
         url,
         queryParameters: {
-          'toDate': toDate,
-          'fromDate': fromDate,
+          // 'toDate': toDate,
+          // 'fromDate': fromDate,
           'tags': tags,
-          'priority': priority,
-          'status': status,
-          'category': category,
-          'offset': offset,
-          'limit': limit,
+          // 'priority': priority,
+          // 'status': status,
+          // 'category': category,
+          'offset': 0,
+          'limit': 20,
         },
       );
-      log(res.toString());
+      log('res $res');
       if (res.statusCode == 200) {
         final json = res.data;
-        return NotificationResponse.fromJson(json!);
+        return NotificationResponse.fromJson(json!['data'] as Map<String, dynamic>);
       } else {
         throw Exception(
           'Failed to fetch recent notifications. Status code: ${res.statusCode}',
@@ -95,7 +93,7 @@ Future<bool> markNotificationsAsRead(List<int> notificationIds) async {
     log('Mark-as-read response: ${res.data}');
 
     if (res.statusCode == 200) {
-      return true; // Successfully marked as read
+      return true;
     } else if (res.statusCode == 400) {
       throw Exception(
         'Bad Request — Each value in notificationIds must be an integer.',
@@ -115,7 +113,7 @@ Future<bool> markNotificationsAsRead(List<int> notificationIds) async {
 
 Future<ApiResult<Map<String, dynamic>>> markAllNotificationsAsRead() async {
   try {
-    final response = await dio().post<Map<String, dynamic>>('/notifications/mark-all-as-read');
+    final response = await dio().patch<Map<String, dynamic>>('/notifications/mark-all-as-read');
     if (response.statusCode == 200) {
       return ApiResult(data: response.data);
     } else {
@@ -154,7 +152,7 @@ Future<ApiResult<Map<String, dynamic>>> archiveNotification(int id) async {
       log('Delete notification response: ${res.data}');
 
       if (res.statusCode == 200) {
-        return true; // Successfully deleted
+        return true;
       } else if (res.statusCode == 401) {
         throw Exception('Unauthorized — Invalid or missing JWT token.');
       } else {

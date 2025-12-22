@@ -36,8 +36,6 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         priority: event.priority,
         status: event.status,
         category: event.category,
-        offset: event.offset,
-        limit: event.limit,
       );
       emit(NotificationLoaded(res));
     } on Exception catch (e) {
