@@ -20,7 +20,9 @@ import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
+import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
+import 'package:resq360/features/settings/data/service/ratings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +51,7 @@ Future<void> main() async {
 
   Bloc.observer = AppBlocObserver();
   final themePreferences = ThemePreferences();
+  final ratingsRepo = RatingsRepo.instance;
 
   runApp(
     TranslationProvider(
@@ -67,6 +70,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => CustomerBookingBloc()),
           BlocProvider(create: (_) => CustomerAdvertisementBloc()),
           BlocProvider(create: (_) => CustomerPaymentBloc()),
+          BlocProvider(create: (_) => RatingsBloc(ratingsRepo)),
         ],
         child: const MyApp(),
       ),
