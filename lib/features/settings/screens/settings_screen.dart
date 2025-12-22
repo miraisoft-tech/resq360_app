@@ -53,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_RATINGS_SVG.svg,
         title: 'Rating',
         onTap: () async {
-          await pushScreen(context, const RatingScreen());
+          await pushScreen(context, RatingScreen(isProvider: isProvider,));
         },
       ),
       SettingsItem(
@@ -96,7 +96,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_RATINGS_SVG.svg,
         title: 'Rating',
         onTap: () async {
-          await pushScreen(context, const RatingScreen());
+          await pushScreen(context,  RatingScreen(isProvider: isProvider));
         },
       ),
       SettingsItem(

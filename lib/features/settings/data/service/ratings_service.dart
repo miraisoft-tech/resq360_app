@@ -40,7 +40,7 @@ class RatingsRepo extends BaseAPI {
 
   Future<ApiResult<ProviderRatings>> providerGetRatings() async {
     try {
-      const endpoint = '/user/ratings/customer';
+      const endpoint = '/user/ratings/provider';
       final res = await dio().get<Map<String, dynamic>>(endpoint);
 
       log('Status: ${res.statusCode}');
