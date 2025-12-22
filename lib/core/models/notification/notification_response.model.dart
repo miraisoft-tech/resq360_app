@@ -94,7 +94,7 @@ class Notification {
           : null,
 
       serviceRequest: json['serviceRequest'] is Map<String, dynamic>
-          ? json['serviceRequest'] as Map<String, dynamic>
+          ? ServiceRequest.fromJson(json['serviceRequest'] as Map<String, dynamic>)
           : null,
     );
   }
@@ -124,7 +124,7 @@ class Notification {
   final Provider? provider;
   final Admin? admin;
 
-  final Map<String, dynamic>? serviceRequest;
+  final ServiceRequest? serviceRequest;
 
   static DateTime? _parseDate(dynamic value) {
     if (value is String) return DateTime.tryParse(value);

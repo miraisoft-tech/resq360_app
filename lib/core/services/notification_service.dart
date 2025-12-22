@@ -85,7 +85,7 @@ Future<bool> markNotificationsAsRead(List<int> notificationIds) async {
   const url = '/notifications/mark-as-read';
 
   try {
-    final res = await dio().post<Map<String, dynamic>>(
+    final res = await dio().patch<Map<String, dynamic>>(
       url,
       data: {'notificationIds': notificationIds},
     );
@@ -126,7 +126,7 @@ Future<ApiResult<Map<String, dynamic>>> markAllNotificationsAsRead() async {
 
 Future<ApiResult<Map<String, dynamic>>> archiveNotification(int id) async {
   try {
-    final response = await dio().post<Map<String, dynamic>>('/notifications/$id/archive');
+    final response = await dio().patch<Map<String, dynamic>>('/notifications/$id/archive');
 
     if (response.statusCode == 200 && response.data != null) {
       final data = response.data!['data'] as Map<String, dynamic>;

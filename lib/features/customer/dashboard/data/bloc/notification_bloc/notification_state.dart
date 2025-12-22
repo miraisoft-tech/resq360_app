@@ -12,12 +12,24 @@ final class NotificationInitial extends NotificationState {}
 class NotificationLoading extends NotificationState {}
 
 class NotificationLoaded extends NotificationState {
-  const NotificationLoaded(this.response);
-  final NotificationResponse response;
 
-  @override
-  List<Object> get props =>  [response];
+  const NotificationLoaded({
+    required this.notifications,
+    this.pagination,
+  });
+  final List<Notification> notifications;
+  final Pagination? pagination;
+
+  NotificationLoaded copyWith({
+    List<Notification>? notifications,
+  }) {
+    return NotificationLoaded(
+      notifications: notifications ?? this.notifications,
+      pagination: pagination,
+    );
+  }
 }
+
 
 class UnreadCountLoaded extends NotificationState {
   const UnreadCountLoaded(this.count);

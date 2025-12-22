@@ -3,6 +3,7 @@ import 'package:resq360/core/models/api_response.dart';
 
 class NotificationModel extends EmptyResponse {
   NotificationModel({
+    required this.id,
     required this.title,
     required this.message,
     required this.time,
@@ -11,6 +12,7 @@ class NotificationModel extends EmptyResponse {
     this.group,
   });
 
+  final int id;
   final String title;
   final String message;
   final String time;

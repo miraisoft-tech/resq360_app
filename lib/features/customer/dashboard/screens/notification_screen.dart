@@ -100,7 +100,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           }
 
           if (state is NotificationLoaded) {
-            final notifications = state.response.notifications;
+            final notifications = state.notifications;
 
             if (notifications.isEmpty) {
               return const EmptyScreenWidget(
@@ -111,7 +111,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               );
             }
 
-            final uiList = notifications.map(mapToUi).toList();
+            final uiList = state.notifications.map(mapToUi).toList();
             final grouped = _groupNotifications(uiList);
             return Padding(
               padding: pad(horizontal: 20, vertical: 10),
@@ -190,23 +190,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         listener: (BuildContext context, NotificationState state) {
           if (state is NotificationActionSuccess) {
             unawaited(showSuccessSnackbar(context, state.message));
-            context.read<NotificationBloc>().add(
-              const FetchRecentNotifications(
-                tags: 'urgent,payment,service',
-                // priority: '',
-                // status: '',
-                // category: '',
-              ),
-            );
           }
+
           if (state is NotificationError) {
             unawaited(showErrorSnackbar(context, state.message));
-            const FetchRecentNotifications(
-              tags: 'urgent,payment,service',
-              // priority: '',
-              // status: '',
-              // category: '',
-            );
           }
         },
       ),
@@ -251,6 +238,7 @@ class _HeaderRow extends StatelessWidget {
 
 NotificationModel mapToUi(notif.Notification n) {
   return NotificationModel(
+    id: n.id!,
     title: n.user?.fullName ?? 'N/A',
     message: n.details ?? '',
     time: timeAgo(n.createdAt),
