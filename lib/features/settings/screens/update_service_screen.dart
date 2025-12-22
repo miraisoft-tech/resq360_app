@@ -22,12 +22,10 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // --- Service Details ---
   final descController = TextEditingController();
   List<File> pickedImages = [];
   ServiceTypeEnums? selectedServiceType;
 
-  // --- Working Hours ---
   final startTimeController = TextEditingController();
   final endTimeController = TextEditingController();
   final workingDays = {
@@ -56,7 +54,6 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
   }
 
   Future<void> handleUpdateService() async {
-    log('handling shit');
     final bloc = context.read<ProfileUpdateBloc>();
 
     final selectedDays =
