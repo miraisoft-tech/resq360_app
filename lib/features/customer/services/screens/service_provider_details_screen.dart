@@ -168,14 +168,13 @@ class _ServiceProviderDetailsScreenState
                     ),
                   ),
 
-                  /// ---------- DETAILS ----------
+                 
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: pad(horizontal: 16, vertical: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          /// STATUS
                           if (provider.activityStatus != null)
                             Container(
                               padding: pad(horizontal: 8, vertical: 2),
@@ -192,7 +191,6 @@ class _ServiceProviderDetailsScreenState
 
                           15.verticalSpace,
 
-                          /// HEADER INFO
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -269,13 +267,13 @@ class _ServiceProviderDetailsScreenState
 
                           20.verticalSpace,
 
-                          /// CATEGORIES
-                          const Wrap(
+                          
+                           Wrap(
                             spacing: 8,
                             children: [
-                              ChipWidget(label: 'Towing'),
-                              ChipWidget(label: 'Mechanic'),
-                              ChipWidget(label: 'Locksmith'),
+                              ChipWidget(label:  provider.serviceName ??'service' ),
+                              // ChipWidget(label: 'Mechanic'),
+                              // ChipWidget(label: 'Locksmith'),
                             ],
                           ),
 

@@ -346,12 +346,12 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
         GenText(
           'You can upload up to 3 images',
           textAlign: TextAlign.center,
-          color: appColors.textColor.shade500,
+          color: appColors.textColor.shade300,
         ),
         GenText(
           'PNG, JPG up to 10mb each',
           textAlign: TextAlign.center,
-          color: appColors.textColor.shade500,
+          color: appColors.textColor.shade300,
         ),
 
         40.verticalSpace,
