@@ -21,6 +21,7 @@ import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
+import 'package:resq360/features/settings/data/bloc/gallery_bloc/gallery_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/service/ratings_service.dart';
@@ -73,6 +74,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => CustomerPaymentBloc()),
           BlocProvider(create: (_) => RatingsBloc(ratingsRepo)),
           BlocProvider(create: (_) => NotificationBloc()),
+          BlocProvider(create: (_) => GalleryBloc()),
         ],
         child: const MyApp(),
       ),

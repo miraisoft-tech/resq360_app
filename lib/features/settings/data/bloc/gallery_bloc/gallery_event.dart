@@ -32,6 +32,15 @@ final class UpdateAGalleryItem extends GalleryEvent {
   @override
   List<Object?> get props => [galleryItemId, caption, displayOrder];
 }
+class UpdateServiceEvent extends GalleryEvent {
+
+  const UpdateServiceEvent({
+    required this.caption,
+    required this.images,
+  });
+  final String caption;
+  final List<File> images;
+}
 
 final class DeleteAGalleryItem extends GalleryEvent {
   const DeleteAGalleryItem(this.galleryItemId);

@@ -69,53 +69,105 @@ class GalleryRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<Map<String, dynamic>>> createAgalleryItem({
-    String? filePath,
-    String? caption,
-    String? displayOrder,
+  // Future<ApiResult<Map<String, dynamic>>> createAgalleryItem({
+  //   String? filePath,
+  //   String? caption,
+  //   String? displayOrder,
+  // }) async {
+  //   try {
+  //     const url = '/gallery';
+
+  //     final uploadResult = await uploadService.uploadSingle(
+  //       filePath: filePath!,
+  //     );
+  //     if (uploadResult.data == null) {
+  //       return ApiResult(error: uploadResult.error);
+  //     }
+
+  //     final upload = uploadResult.data!;
+  //     final data = {
+  //       'providerId': providerId,
+  //       'imageUrl': upload.url,
+  //       'imageId': upload.id,
+  //       'caption': caption,
+  //       'displayOrder': displayOrder,
+  //     };
+
+  //     final res = await dio().post<Map<String, dynamic>>(
+  //       url,
+  //       data: data,
+  //     );
+
+  //     log('Status: ${res.statusCode}');
+  //     log('Response: ${res.data}');
+
+  //     if (res.statusCode == 200 && res.data != null) {
+  //       final json = res.data?['data'] as Map<String, dynamic>;
+  //       return ApiResult(data: json);
+  //     }
+
+  //     final message = res.data?['message'] ?? 'Failed to update at $url';
+  //     return ApiResult(error: message.toString());
+  //   } on DioException catch (e) {
+  //     return handleDioError(e);
+  //   } on Exception catch (e, s) {
+  //     log('Stacktrace: $s');
+  //     return ApiResult(error: e.toString());
+  //   }
+  // }
+
+
+ Future<ApiResult<dynamic>> createNewGalleryItem({
+    required int providerId,
+    required String imageUrl,
+    required String imageId,
+    required String caption,
+    required int displayOrder,
   }) async {
+    const endpoint = '/gallery';
+    final data = {
+      'providerId': providerId,
+      'imageUrl': imageUrl,
+      'imageId': imageId,
+      'caption': caption,
+      'displayOrder': displayOrder,
+    };
     try {
-      const url = '/gallery';
+      final res = await dio().post<Map<String, dynamic>>(endpoint, data: data);
 
-      final uploadResult = await uploadService.uploadSingle(
-        filePath: filePath!,
-      );
-      if (uploadResult.data == null) {
-        return ApiResult(error: uploadResult.error);
-      }
-
-      final upload = uploadResult.data!;
-      final data = {
-        'providerId': providerId,
-        'imageUrl': upload.url,
-        'imageId': upload.id,
-        'caption': caption,
-        'displayOrder': displayOrder,
-      };
-
-      final res = await dio().post<Map<String, dynamic>>(
-        url,
-        data: data,
-      );
-
+      log('createNewGalleryItem: $endpoint');
       log('Status: ${res.statusCode}');
       log('Response: ${res.data}');
 
-      if (res.statusCode == 200 && res.data != null) {
-        final json = res.data?['data'] as Map<String, dynamic>;
-        return ApiResult(data: json);
+      if (res.statusCode == 201 && res.data != null) {
+        return ApiResult(data: res.data);
       }
 
-      final message = res.data?['message'] ?? 'Failed to update at $url';
+      final message = res.data?['message'] ?? 'Failed to update at $endpoint';
       return ApiResult(error: message.toString());
     } on DioException catch (e) {
       return handleDioError(e);
     } on Exception catch (e, s) {
+      log('$createNewGalleryItem failed: $e');
       log('Stacktrace: $s');
       return ApiResult(error: e.toString());
     }
   }
+  // Future<ApiResult<dynamic>> createNewGalleryItem({
+  //   required String providerId,
+  //   required String imageUrl,
+  //   required String imageId,
+  //   required String caption,
+  //   required int displayOrder,
+  // }) async {
+  //   const endpoint = '/gallery';
 
+  //   return _updateData(
+  //     endpoint: endpoint,
+  //     data: data,
+  //     logTag: 'Provider Info Update',
+  //   );
+  // }
   Future<ApiResult<Map<String, dynamic>>> updateAgalleryItem({
     String? galleryitemID,
     String? caption,

@@ -4,12 +4,12 @@ import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
+import 'package:resq360/features/settings/data/bloc/gallery_bloc/gallery_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/service_type.enums.dart';
 import 'package:resq360/features/widgets/custom_switch.dart';
 import 'package:resq360/features/widgets/images.widgets.dart';
 import 'package:resq360/features/widgets/issue_radio_widget.dart';
-
 
 class UpdateServiceScreen extends StatefulWidget {
   const UpdateServiceScreen({super.key});
@@ -51,6 +51,15 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+  }
+
+  Future<void> handleUploadGalleryService() async {
+    context.read<GalleryBloc>().add(
+      UpdateServiceEvent(
+        images: pickedImages,
+        caption: descController.text,
+      ),
+    );
   }
 
   Future<void> handleUpdateService() async {
@@ -119,35 +128,67 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
         ),
       ),
 
-      body: BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
-        listener: (context, state) async {
-          if (state is ProfileUpdateLoading) {
-            await showLoadingDialog(context);
-          } else {
-            Navigator.pop(context);
-          }
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          BlocConsumer<GalleryBloc, GalleryState>(
+            listener: (context, state) async {
+              if (state is GalleryLoading) {
+                await showLoadingDialog(context);
+              } else {
+                Navigator.pop(context);
+              }
 
-          if (state is ProfileUpdateSuccess) {
-            unawaited(
-              showSnackBar(context, 'Success', 'Service updated successfully'),
-            );
-          } else if (state is ProfileUpdateError) {
-            unawaited(showErrorSnackbar(context, state.message));
-          }
-        },
-        builder: (context, state) {
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              ServiceDetailSection(
+              if (state is GalleryItemCreated) {
+                unawaited(
+                  showSnackBar(
+                    context,
+                    'Success',
+                    'Service gallery updated successfully',
+                  ),
+                );
+
+                setState(() {
+                  pickedImages.clear();
+                  descController.clear();
+                });
+              } else if (state is GalleryError) {
+                unawaited(showErrorSnackbar(context, state.message));
+              }
+            },
+            builder: (context, state) {
+              return ServiceDetailSection(
                 descController: descController,
                 pickedImages: pickedImages,
                 onImagesPicked:
                     (images) => setState(() => pickedImages = images),
                 onServiceSelected: (type) => selectedServiceType = type,
-                onSubmit: handleUpdateService,
-              ),
-              WorkingHoursSection(
+                onSubmit: handleUploadGalleryService,
+              );
+            },
+          ),
+          BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
+            listener: (context, state) async {
+              if (state is ProfileUpdateLoading) {
+                await showLoadingDialog(context);
+              } else {
+                Navigator.pop(context);
+              }
+
+              if (state is ProfileUpdateSuccess) {
+                unawaited(
+                  showSnackBar(
+                    context,
+                    'Success',
+                    'Service updated successfully',
+                  ),
+                );
+              } else if (state is ProfileUpdateError) {
+                unawaited(showErrorSnackbar(context, state.message));
+              }
+            },
+            builder: (context, state) {
+              return WorkingHoursSection(
                 workingDays: workingDays,
                 startTimeController: startTimeController,
                 endTimeController: endTimeController,
@@ -157,10 +198,10 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
                 },
                 onSubmit: handleUpdateService,
                 onToggleDay: handleToggleDay,
-              ),
-            ],
-          );
-        },
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -233,59 +274,73 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
         30.verticalSpace,
         GenText('Service image', color: appColors.black),
         10.verticalSpace,
-        Wrap(
-          spacing: 10.w,
-          children:
-              widget.pickedImages.isEmpty
-                  ? [1, 2, 3].map((_) {
-                    return GestureDetector(
-                      onTap: () => pickCameraPhoto(context),
-                      child: Container(
-                        padding: pad(vertical: 25, horizontal: 20),
-                        height: 110,
-                        width: 115,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: appColors.primary.shade500),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AppAssets.ASSETS_ICONS_UPLOAD_SVG.svg,
-                            10.verticalSpace,
-                            GenText(
-                              'Add Image',
-                              size: 12,
-                              color: appColors.primary.shade500,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList()
-                  : widget.pickedImages.map((image) {
-                    return Stack(
-                      alignment: Alignment.topRight,
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: widget.pickedImages.length + 1,
+            separatorBuilder: (_, _) => 10.horizontalSpace,
+            itemBuilder: (context, index) {
+              if (index == widget.pickedImages.length) {
+                return GestureDetector(
+                  onTap: () => pickCameraPhoto(context),
+                  child: Container(
+                    height: 110,
+                    width: 115,
+                    padding: pad(vertical: 25, horizontal: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: appColors.primary.shade500),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        memoryImage(
-                          imgBytes: image.readAsBytesSync(),
-                          height: 110,
-                          width: 115,
-                          fit: BoxFit.cover,
-                        ),
-                        SVGButton(
-                          path: AppAssets.ASSETS_ICONS_DELETE_ICON_SVG,
-                          onTap: () {
-                            setState(() {
-                              widget.pickedImages.remove(image);
-                              widget.onImagesPicked(widget.pickedImages);
-                            });
-                          },
+                        AppAssets.ASSETS_ICONS_UPLOAD_SVG.svg,
+                        10.verticalSpace,
+                        GenText(
+                          'Add Image',
+                          size: 12,
+                          color: appColors.primary.shade500,
                         ),
                       ],
-                    );
-                  }).toList(),
+                    ),
+                  ),
+                );
+              }
+
+              final image = widget.pickedImages[index];
+
+              return Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: memoryImage(
+                      imgBytes: image.readAsBytesSync(),
+                      height: 110,
+                      width: 115,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: SVGButton(
+                      path: AppAssets.ASSETS_ICONS_DELETE_ICON_SVG,
+                      onTap: () {
+                        setState(() {
+                          widget.pickedImages.removeAt(index);
+                          widget.onImagesPicked(widget.pickedImages);
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
+
         40.verticalSpace,
         WideButton(
           label: 'Update Service',
@@ -329,7 +384,8 @@ class WorkingHoursSection extends StatelessWidget {
                 const Spacer(),
                 CustomSwitchWidget(
                   value: workingDays[day] ?? false,
-                  onChanged: ({required value}) => onToggleDay(day: day, value: value),
+                  onChanged:
+                      ({required value}) => onToggleDay(day: day, value: value),
                   activeThumbColor: appColors.primary.shade500,
                   disabledThumbColor: appColors.textColor.shade100,
                   tapColor: appColors.whiteColor,

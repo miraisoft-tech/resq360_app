@@ -23,15 +23,15 @@ class UpdateUserRepo extends BaseAPI {
       log('Status: ${res.statusCode}');
       log('Response: ${res.data}');
 
-      if (res.statusCode == 200 && res.data != null) {
+      if (res.statusCode == 200 && res.statusCode == 201 && res.data != null) {
         return ApiResult(data: res.data);
       }
 
       final message = res.data?['message'] ?? 'Failed to update at $endpoint';
       return ApiResult(error: message.toString());
     } on DioException catch (e) {
-    return handleDioError(e);
-  } on Exception catch (e, s) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
       log('$logTag failed: $e');
       log('Stacktrace: $s');
       return ApiResult(error: e.toString());

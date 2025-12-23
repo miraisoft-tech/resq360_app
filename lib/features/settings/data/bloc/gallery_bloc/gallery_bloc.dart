@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/settings/data/models/gallery.model.dart';
 import 'package:resq360/features/settings/data/service/gallery_service.dart';
 
@@ -14,6 +17,8 @@ class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
     on<FetchAGalleryItem>(_onFetchAGalleryItem);
     on<UpdateAGalleryItem>(_onUpdateAGalleryItem);
     on<DeleteAGalleryItem>(_onDeleteAGalleryItem);
+    on<UpdateServiceEvent>(_onCreateGallery);
+
   }
   final GalleryRepo galleryRepo = GalleryRepo();
 
@@ -78,6 +83,61 @@ class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
       emit(GalleryError(message: e.toString()));
     }
   }
+
+  Future<void> _onCreateGallery(
+  UpdateServiceEvent event,
+  Emitter<GalleryState> emit,
+) async {
+  emit(GalleryLoading());
+
+  try {
+    final provider = await AuthLocalRepo.instance.getProviderCredentials();
+    if (provider == null) {
+      emit(const GalleryError(message: 'no Provider found'));
+      return;
+    }
+
+    final uploadResult = await uploadService.uploadMultiple(
+      files: event.images,
+    );
+
+    if (uploadResult.error != null) {
+      emit( GalleryError(message: uploadResult.error!));
+      return;
+    }
+
+    final uploads = uploadResult.data ?? [];
+    if (uploads.isEmpty) {
+      emit(const GalleryError(message: 'no images were uploaded'));
+      return;
+    }
+
+    /// 3. Create gallery items (ONE call per image)
+    for (var i = 0; i < uploads.length; i++) {
+      final upload = uploads[i];
+
+      final result = await galleryRepo.createNewGalleryItem(
+        providerId: provider.user.id!,
+        imageUrl: upload.url,
+        imageId: upload.id,
+        caption: event.caption,
+        displayOrder: i,
+      );
+
+      if (result.error != null) {
+              emit( GalleryError(message: result.error!));
+
+        return;
+      }
+    }
+
+    emit(GalleryItemCreated());
+  } on Exception catch (e, s) {
+    log('Create gallery failed: $e');
+    log('Stacktrace: $s');
+    emit(GalleryError(message:e.toString()));
+  }
+}
 
   Future<void> _onDeleteAGalleryItem(
     DeleteAGalleryItem event,
