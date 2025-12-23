@@ -341,6 +341,19 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
           ),
         ),
 
+        10.verticalSpace,
+
+        GenText(
+          'You can upload up to 3 images',
+          textAlign: TextAlign.center,
+          color: appColors.textColor.shade500,
+        ),
+        GenText(
+          'PNG, JPG up to 10mb each',
+          textAlign: TextAlign.center,
+          color: appColors.textColor.shade500,
+        ),
+
         40.verticalSpace,
         WideButton(
           label: 'Update Service',
