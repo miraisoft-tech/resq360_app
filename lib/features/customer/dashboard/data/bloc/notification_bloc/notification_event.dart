@@ -8,22 +8,16 @@ sealed class NotificationEvent extends Equatable {
 }
 
 class FetchRecentNotifications extends NotificationEvent {
-  const FetchRecentNotifications({
-    this.toDate,
-    this.fromDate,
-    this.tags,
-    this.priority,
-    this.status,
-    this.category,
-  });
-  final String? toDate;
-  final String? fromDate;
-  final String? tags;
-  final String? priority;
-  final String? status;
-  final String? category;
-}
 
+  const FetchRecentNotifications({
+    this.offset = 0,
+    this.limit = 20,
+    this.loadMore = false,
+  });
+  final int offset;
+  final int limit;
+  final bool loadMore;
+}
 class FetchUnreadCount extends NotificationEvent {}
 
 class MarkNotificationsAsRead extends NotificationEvent {

@@ -23,32 +23,43 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     on<FetchNotificationStatuses>(_onFetchStatuses);
   }
 
- Future<void> _onFetchRecentNotifications(
+Future<void> _onFetchRecentNotifications(
   FetchRecentNotifications event,
   Emitter<NotificationState> emit,
 ) async {
-  emit(NotificationLoading());
+  final current = state;
+
   try {
     final res =
         await _notificationRepo.getRecentNotificationActivities(
-      toDate: event.toDate,
-      fromDate: event.fromDate,
-      tags: event.tags,
-      priority: event.priority,
-      status: event.status,
-      category: event.category,
+      offset: event.offset,
+      limit: event.limit,
     );
 
-    emit(
-      NotificationLoaded(
-        notifications: res.notifications,
-        pagination: res.pagination,
-      ),
-    );
-  } on Exception catch (e) {
+    final fetched = res.notifications;
+
+    if (current is NotificationLoaded && event.loadMore) {
+      emit(
+        current.copyWith(
+          notifications: [
+            ...current.notifications,
+            ...fetched,
+          ],
+        ),
+      );
+    } else {
+      emit(
+        NotificationLoaded(
+          notifications: fetched,
+          pagination: res.pagination,
+        ),
+      );
+    }
+  } on  Exception catch (e) {
     emit(NotificationError(e.toString()));
   }
 }
+
 
 
   Future<void> _onFetchUnreadCount(

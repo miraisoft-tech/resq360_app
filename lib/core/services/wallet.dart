@@ -50,4 +50,6 @@ class WalletRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+
+  
 }

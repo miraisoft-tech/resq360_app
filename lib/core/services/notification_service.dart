@@ -23,6 +23,8 @@ class NotificationRepo extends BaseAPI {
      String? priority,
      String? status,
      String? category,
+     int? offset,
+     int? limit
   }) async {
     const url = '/notifications/recent';
 
@@ -32,12 +34,12 @@ class NotificationRepo extends BaseAPI {
         queryParameters: {
           // 'toDate': toDate,
           // 'fromDate': fromDate,
-          'tags': tags,
+          // 'tags': tags,
           // 'priority': priority,
           // 'status': status,
           // 'category': category,
-          'offset': 0,
-          'limit': 20,
+          'offset': offset ?? 0,
+          'limit': limit ?? 20,
         },
       );
       log('res $res');

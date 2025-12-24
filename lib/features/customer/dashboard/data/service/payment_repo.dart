@@ -97,6 +97,19 @@ PaymentRepo._internal();
     }
   }
 
+//   Future<ApiResult<>> verifyTransaction(
+//   String reference,
+// ) async {
+//   final res = await dio().get('/transaction/$reference');
+
+//   if (res.statusCode == 200) {
+//     return ApiResult(data: TransactionResponse.fromJson(res.data));
+//   }
+
+//   return ApiResult(error: 'Payment verification failed');
+// }
+
+
   Future<ApiResult<EmptyResponse>> payStackPayment () async {
     try {
       const url = '/payment/paystack/webhook';
