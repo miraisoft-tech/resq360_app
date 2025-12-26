@@ -5,9 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/bloc/auth_bloc.dart';
+import 'package:resq360/core/bloc/bloc/auth_bloc_registry.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
+import 'package:resq360/core/navigation/navigator.dart';
+import 'package:resq360/core/services/auth_session_killer.dart';
 import 'package:resq360/core/theme/app_theme.preferences.dart';
 import 'package:resq360/core/theme/cubit/theme_cubit.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
@@ -18,6 +22,7 @@ import 'package:resq360/features/customer/dashboard/data/bloc/notification_bloc/
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
@@ -29,6 +34,11 @@ import 'package:resq360/features/settings/data/service/ratings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  late final AuthBloc globalAuthBloc;
+
+  globalAuthBloc = AuthBloc();
+  BlocRegistry.authBloc = globalAuthBloc;
 
   LocaleSettings.useDeviceLocale();
   FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
@@ -60,6 +70,7 @@ Future<void> main() async {
     TranslationProvider(
       child: MultiBlocProvider(
         providers: [
+          BlocProvider<AuthBloc>.value(value: globalAuthBloc),
           BlocProvider(create: (_) => ThemeCubit(themePreferences)),
           BlocProvider(create: (_) => CustomerAuthBloc()),
           BlocProvider(create: (_) => ProviderAuthBloc()),
@@ -136,38 +147,58 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThemeCubit, ThemeState>(
-      builder: (context, state) {
-        return GestureDetector(
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: ScreenUtilInit(
-            designSize: const Size(375, 812),
-            minTextAdapt: true,
-            child: MaterialApp(
-              debugShowCheckedModeBanner: false,
-              theme: state.themeData,
-              darkTheme: ThemeData.dark(),
-              themeMode: state.mode,
-              locale: TranslationProvider.of(context).flutterLocale,
-              supportedLocales: AppLocaleUtils.supportedLocales,
-              localizationsDelegates: GlobalMaterialLocalizations.delegates,
-              home: const SplashScreen(),
-              builder:
-                  (context, child) => Overlay(
-                    initialEntries: [
-                      OverlayEntry(
-                        builder:
-                            (context) => MediaQuery(
-                              data: MediaQuery.of(context),
-                              child: child!,
-                            ),
-                      ),
-                    ],
-                  ),
-            ),
-          ),
-        );
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) async {
+        if (state is AuthLoggedOut) {
+          log('🔥 AuthLoggedOut caught at app root');
+          AuthSessionKiller.reset();
+
+          final navigator = AppNavigator.navKey.currentState;
+
+          if (navigator != null) {
+            await navigator.pushAndRemoveUntil(
+              MaterialPageRoute<void>(
+                builder: (_) => const SelectAccountTypeScreen(),
+              ),
+              (_) => false,
+            );
+          }
+        }
       },
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, state) {
+          return GestureDetector(
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: ScreenUtilInit(
+              designSize: const Size(375, 812),
+              minTextAdapt: true,
+              child: MaterialApp(
+                navigatorKey: AppNavigator.navKey,
+                debugShowCheckedModeBanner: false,
+                theme: state.themeData,
+                darkTheme: ThemeData.dark(),
+                themeMode: state.mode,
+                locale: TranslationProvider.of(context).flutterLocale,
+                supportedLocales: AppLocaleUtils.supportedLocales,
+                localizationsDelegates: GlobalMaterialLocalizations.delegates,
+                home: const SplashScreen(),
+                builder:
+                    (context, child) => Overlay(
+                      initialEntries: [
+                        OverlayEntry(
+                          builder:
+                              (context) => MediaQuery(
+                                data: MediaQuery.of(context),
+                                child: child!,
+                              ),
+                        ),
+                      ],
+                    ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

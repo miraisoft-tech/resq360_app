@@ -29,6 +29,7 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    
     // final transactions = [
     //   const WalletTransaction(
     //     title: 'QuickTow Emergency',
@@ -63,6 +64,7 @@ class _WalletScreenState extends State<WalletScreen> {
           if (!isLoadingDialogShown) {
             isLoadingDialogShown = true;
             await showLoadingDialog(context);
+            log(isLoadingDialogShown);
           }
           return;
         }
@@ -100,9 +102,7 @@ class _WalletScreenState extends State<WalletScreen> {
               CustomerVerifyWalletFundingEvent(reference),
             );
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Payment cancelled')),
-            );
+            await showErrorSnackbar(context, 'Payment cancelled');
           }
         }
 

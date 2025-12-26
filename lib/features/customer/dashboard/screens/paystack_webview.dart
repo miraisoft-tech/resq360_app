@@ -57,19 +57,26 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
 
   bool _isCallbackUrl(String? url) {
     if (url == null) return false;
-    final lower = url.toLowerCase();
-    log('lower $lower');
 
-    if (widget.callbackUrl.isNotEmpty &&
-        lower.contains(widget.callbackUrl.toLowerCase())) {
-      return true;
-    }
+    final uri = Uri.tryParse(url);
+    if (uri == null) return false;
 
-    if (lower.contains(widget.reference.toLowerCase())) return true;
+    final callbackUri = Uri.parse(widget.callbackUrl);
 
-    if (lower.contains('success') || lower.contains('close')) return true;
+    // Match ONLY scheme + host + path
+    final isCallbackEndpoint =
+        uri.scheme == callbackUri.scheme &&
+        uri.host == callbackUri.host &&
+        uri.path == callbackUri.path;
 
-    return false;
+    if (!isCallbackEndpoint) return false;
+
+    // Paystack always sends at least one of these
+    final trxRef = uri.queryParameters['trxref'];
+    final reference = uri.queryParameters['reference'];
+
+    // If either matches the one we initiated
+    return trxRef == widget.reference || reference == widget.reference;
   }
 
   void _finish([bool success = true]) {
@@ -129,52 +136,27 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
 
             onWebViewCreated: (controller) {
               _controller = controller;
-              controller
-                ..addJavaScriptHandler(
-                  handlerName: 'paystackSuccess',
-                  callback: (args) {
-                    _finish();
-                  },
-                )
-                ..addJavaScriptHandler(
-                  handlerName: 'paystackClose',
-                  callback: (args) {
-                    _finish(false);
-                  },
-                );
             },
 
             onLoadStart: (_, url) {
               setState(() => _loading = true);
-              if (_isCallbackUrl(url?.toString())) _finish();
+
+              if (_isCallbackUrl(url?.toString())) {
+                _finish();
+              }
             },
-            onLoadStop: (_, url) async {
+
+            onLoadStop: (_, _) async {
               await pullToRefreshController.endRefreshing();
-              setState(() => _loading = false);
-
-              await _controller?.evaluateJavascript(
-                source: """
-    (function () {
-      window.addEventListener('message', function (e) {
-        if (!e.data) return;
-
-        if (e.data.event === 'success') {
-          window.flutter_inappwebview.callHandler('paystackSuccess');
-        }
-
-        if (e.data.event === 'close') {
-          window.flutter_inappwebview.callHandler('paystackClose');
-        }
-      });
-    })();
-  """,
-              );
+              if (mounted) {
+                setState(() => _loading = false);
+              }
             },
 
             shouldOverrideUrlLoading: (_, nav) async {
-              final uri = nav.request.url.toString();
+              final url = nav.request.url.toString();
 
-              if (_isCallbackUrl(uri)) {
+              if (_isCallbackUrl(url)) {
                 _finish();
                 return NavigationActionPolicy.CANCEL;
               }

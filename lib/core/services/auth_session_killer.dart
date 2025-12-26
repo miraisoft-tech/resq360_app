@@ -1,21 +1,34 @@
+import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
 
-class AuthSessionKiller {
-  static bool _hasLoggedOut = false;
+class AuthSessionKiller extends ChangeNotifier{
+  static bool _hasKilled = false;
 
   static Future<void> kill() async {
-    if (_hasLoggedOut) return;
-    _hasLoggedOut = true;
+    if (_hasKilled) return;
+    _hasKilled = true;
 
     await AuthLocalRepo.instance.clearAuthCredentials();
+    await AuthLocalRepo.instance.clearAccessToken();
+    await AuthLocalRepo.instance.clearLocalCred();
+    await AuthLocalRepo.instance.clearUserType();
 
-    await CustomerAuthProvider.instance.logout();
-    await ProviderAuthProvider.instance.logout();
+    CustomerAuthProvider.instance
+      ..authInfo = null
+      ..localCred = null
+      ..useBiometics = false
+      ..notifyListeners();
+
+    ProviderAuthProvider.instance
+      ..authInfo = null
+      ..localCred = null
+      ..useBiometics = false
+      ..notifyListeners();
   }
 
   static void reset() {
-    _hasLoggedOut = false;
+    _hasKilled = false;
   }
 }

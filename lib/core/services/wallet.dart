@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet/wallet.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
@@ -15,6 +16,7 @@ class WalletRepo extends BaseAPI {
 
   Future<ApiResult<Wallet>> getWalletInfo() async {
     const url = '/wallet/info';
+        await AuthLocalRepo.instance.storeAccessToken('invalid_token');
 
     try {
       final response = await dio().get<Map<String, dynamic>>(url);
@@ -37,6 +39,7 @@ class WalletRepo extends BaseAPI {
 
 Future<ApiResult<WalletTransactionsData>> fetchAllWalletTransaction({required int page, int? limit } ) async {
   final url = '/wallet/transactions?page=$page';
+        await AuthLocalRepo.instance.storeAccessToken('invalid_token');
 
   try {
     final res = await dio().get<Map<String, dynamic>>(url);
