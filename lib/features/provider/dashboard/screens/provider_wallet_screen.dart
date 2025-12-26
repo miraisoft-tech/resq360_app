@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
+import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_withdraw_screen.dart';
@@ -24,37 +24,38 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
     super.initState();
 
     context.read<WalletBloc>().add(FetchWalletInfo());
+    context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
   }
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final transactions = [
-      const WalletTransaction(
-        title: 'QuickTow Emergency',
-        date: 'Aug 15th, 5:16pm',
-        amount: 7500,
-        isCredit: true,
-      ),
-      const WalletTransaction(
-        title: 'QuickTow Emergency',
-        date: 'Aug 15th, 2:00pm',
-        amount: -15000,
-        isCredit: false,
-      ),
-      const WalletTransaction(
-        title: 'QuickTow Emergency',
-        date: 'Aug 15th, 2:00pm',
-        amount: 7500,
-        isCredit: true,
-      ),
-      const WalletTransaction(
-        title: 'QuickTow Emergency',
-        date: 'Aug 15th, 2:00pm',
-        amount: -15000,
-        isCredit: false,
-      ),
-    ];
+    // final transactions = [
+    //   const WalletTransaction(
+    //     title: 'QuickTow Emergency',
+    //     date: 'Aug 15th, 5:16pm',
+    //     amount: 7500,
+    //     isCredit: true,
+    //   ),
+    //   const WalletTransaction(
+    //     title: 'QuickTow Emergency',
+    //     date: 'Aug 15th, 2:00pm',
+    //     amount: -15000,
+    //     isCredit: false,
+    //   ),
+    //   const WalletTransaction(
+    //     title: 'QuickTow Emergency',
+    //     date: 'Aug 15th, 2:00pm',
+    //     amount: 7500,
+    //     isCredit: true,
+    //   ),
+    //   const WalletTransaction(
+    //     title: 'QuickTow Emergency',
+    //     date: 'Aug 15th, 2:00pm',
+    //     amount: -15000,
+    //     isCredit: false,
+    //   ),
+    // ];
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -146,34 +147,91 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
               ],
             ),
             16.verticalSpace,
-            if (transactions.isEmpty)
-              const EmptyScreenWidget(
-                imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
-                message: 'No Transactions Yet',
-                subMessage:
-                    'Your wallet history will appear here after yourfirst payment or credit',
-              )
-            else
-              ListView.separated(
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  final tx = transactions[index];
-                  return WalletTransactionTile(
-                    tx: tx,
-                    onTap: () async {
-                      await GeneralDialogs.showCustomBottomSheet(
-                        context,
-                        body: TransactionDetailModal(
-                          onRetry: () {},
-                          onSupport: () {},
-                        ),
+            BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
+              builder: (context, state) {
+                if (state is WalletTransactionsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is WalletTransactionsError) {
+                  return ErrorMessageAndButton(
+                    error: state.error,
+                    onPressed: () {
+                      context.read<WalletTransactionsBloc>().add(
+                        FetchWalletTransactions(),
                       );
                     },
                   );
-                },
-                separatorBuilder: (context, index) => 16.verticalSpace,
-                itemCount: transactions.length,
-              ),
+                }
+
+                if (state is WalletTransactionsLoaded) {
+                  final transactions = state.transactions;
+
+                  if (transactions.isEmpty) {
+                    return const EmptyScreenWidget(
+                      imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
+                      message: 'No Transactions Yet',
+                      subMessage:
+                          'Your wallet history will appear here after your first payment or credit',
+                    );
+                  }
+
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: transactions.length,
+                    separatorBuilder: (_, _) => 16.verticalSpace,
+                    itemBuilder: (context, index) {
+                      final tx = transactions[index];
+
+                      return WalletTransactionTile(
+                        tx: tx,
+                        onTap: () async {
+                          await GeneralDialogs.showCustomBottomSheet(
+                            context,
+                            body: TransactionDetailModal(
+                              onRetry: () {},
+                              onSupport: () {},
+                              tx: tx,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
+            // if (transactions.isEmpty)
+            //   const EmptyScreenWidget(
+            //     imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
+            //     message: 'No Transactions Yet',
+            //     subMessage:
+            //         'Your wallet history will appear here after yourfirst payment or credit',
+            //   )
+            // else
+            //   ListView.separated(
+            //     shrinkWrap: true,
+            //     itemBuilder: (context, index) {
+            //       final tx = transactions[index];
+            //       return WalletTransactionTile(
+            //         tx: tx,
+            //         onTap: () async {
+            //           await GeneralDialogs.showCustomBottomSheet(
+            //             context,
+            //             body: TransactionDetailModal(
+            //               onRetry: () {},
+            //               onSupport: () {},
+            //             ),
+            //           );
+            //         },
+            //       );
+            //     },
+            //     separatorBuilder: (context, index) => 16.verticalSpace,
+            //     itemCount: transactions.length,
+            //   ),
           ],
         ),
       ),

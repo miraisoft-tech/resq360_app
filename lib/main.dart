@@ -7,6 +7,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
+import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/theme/app_theme.preferences.dart';
 import 'package:resq360/core/theme/cubit/theme_cubit.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
@@ -75,6 +76,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => RatingsBloc(ratingsRepo)),
           BlocProvider(create: (_) => NotificationBloc()),
           BlocProvider(create: (_) => GalleryBloc()),
+          BlocProvider(create: (_) => WalletTransactionsBloc()),
         ],
         child: const MyApp(),
       ),
