@@ -47,6 +47,11 @@ class _SplashScreenState extends State<SplashScreen> {
         } else {
           await replaceScreen(context, const SelectAccountTypeScreen());
         }
+        if (hasCustomerAuth && hasProviderAuth) {
+          await AuthLocalRepo.instance.clearAuthCredentials();
+          await replaceScreen(context, const SelectAccountTypeScreen());
+          return;
+        }
       });
     } on Exception catch (e, t) {
       log('e $e, $t');

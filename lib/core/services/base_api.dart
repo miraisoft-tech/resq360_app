@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/services/auth_session_killer.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 export 'dart:io';
@@ -64,28 +65,13 @@ class BaseAPI {
           return handler.next(res);
         },
         onResponse: (res, handler) async {
-          // if (res.statusCode == 200 &&
-          //     res.data.toString().contains('DOCTYPE')) {
-          //   await container.read(authProvider).clearAuthData();
+          final statusCode = res.statusCode;
+          final data = res.data?.toString() ?? '';
 
-          //   if (AppRouter.buildContext.mounted) {
-          //     if (AppRouter.buildContext.mounted) {
-          //       await LoginRoute().push<void>(AppRouter.buildContext);
-          //     }
-          //   }
-          // } else if (res.statusCode == 401) {
-          //   final currentLocation =
-          //       GoRouter.of(
-          //         AppRouter.buildContext,
-          //       ).routeInformationProvider.value.uri.toString();
-
-          //   final isLoginModeRoute = currentLocation == LoginRoute.path;
-          //   await container.read(authProvider).clearAuthData();
-
-          //   if (AppRouter.buildContext.mounted && !isLoginModeRoute) {
-          //     await LoginRoute().push<void>(AppRouter.buildContext);
-          //   }
-          // }
+          if (statusCode == 401 ||
+              (statusCode == 200 && data.contains('DOCTYPE'))) {
+            await AuthSessionKiller.kill();
+          }
 
           return handler.next(res);
         },
