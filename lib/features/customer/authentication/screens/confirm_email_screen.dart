@@ -46,7 +46,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
     }
 
     context.read<CustomerAuthBloc>().add(
-      CustomerResendVerificationOtp(email: widget.email),
+      CustomerResendVerificationEmailEvent(email: widget.email),
     );
     controller
       ..endTime =
@@ -63,7 +63,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
     }
 
     context.read<CustomerAuthBloc>().add(
-      CustomerverifyEmail(emailVerificationToken: _otpController1.text),
+      CustomerVerifyEmailAddressEvent(emailVerificationToken: _otpController1.text),
     );
     log('pushing to verification steps');
   }
@@ -85,7 +85,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           await showErrorSnackbar(context, state.error);
         }
 
-        if (state is CustomerVerificationResent) {
+        if (state is CustomerVerificationEmailResentState) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }

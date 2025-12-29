@@ -60,7 +60,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           showSnackBar(context, 'Error', state.error);
         }
 
-        if (state is CustomerPasswordResetSuccess) {
+        if (state is CustomerPasswordResetSuccessState) {
           // showSuccessSnackbar(context, 'Password reset email sent successfully!');
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
@@ -134,7 +134,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     }
 
                     context.read<CustomerAuthBloc>().add(
-                      CustomerResetPassword(
+                      CustomerSetNewPasswordEvent(
                         password: newPasswordController.text,
                       ),
                     );

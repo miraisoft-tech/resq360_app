@@ -54,12 +54,13 @@ class CustomerAuthLoginSuccess extends CustomerAuthState {
   List<Object> get props => [user];
 }
 
-class CustomerPasswordResetSuccess extends CustomerAuthState {}
-class CustomerForgotPasswordOtpSent extends CustomerAuthState{}
-class CustomerForgotPasswordOtpVerified extends CustomerAuthState{}
+class CustomerPasswordResetSuccessState extends CustomerAuthState {}
 
-class CustomerVerificationResent extends CustomerAuthState {
-  const CustomerVerificationResent(this.message);
+class CustomerPasswordResetEmailSentState extends CustomerAuthState{}
+class CustomerResetTokenValidatedState extends CustomerAuthState{}
+
+class CustomerVerificationEmailResentState extends CustomerAuthState {
+  const CustomerVerificationEmailResentState(this.message);
   final String message;
 }
 

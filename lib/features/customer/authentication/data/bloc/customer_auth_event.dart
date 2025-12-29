@@ -34,49 +34,59 @@ class CustomerSignupWIthEmail extends CustomerAuthEvent {
   ];
 }
 
-class CustomerForgotPassword extends CustomerAuthEvent {
-  const CustomerForgotPassword({
+class CustomerRequestPasswordResetEvent extends CustomerAuthEvent {
+  const CustomerRequestPasswordResetEvent({
     required this.email,
   });
 
   final String email;
+  
   @override
   List<Object> get props => [email];
 }
 
-class CustomerResetPassword extends CustomerAuthEvent {
-  const CustomerResetPassword({
-    required this.password,
-  });
-  final String password;
-}
-
-class CustomerverifyEmail extends CustomerAuthEvent {
-  const CustomerverifyEmail({
-    required this.emailVerificationToken,
-  });
-
-  final String emailVerificationToken;
-  @override
-  List<Object> get props => [emailVerificationToken];
-}
-
-class CustomerVerifyForgotPasswordOtp extends CustomerAuthEvent {
-  const CustomerVerifyForgotPasswordOtp({
+class CustomerValidateResetTokenEvent extends CustomerAuthEvent {
+  const CustomerValidateResetTokenEvent({
     required this.token,
   });
-
+  
   final String token;
+  
   @override
   List<Object> get props => [token];
 }
 
-
-class CustomerResendVerificationOtp extends CustomerAuthEvent {
-  const CustomerResendVerificationOtp({required this.email});
-  final String email;
+class CustomerSetNewPasswordEvent extends CustomerAuthEvent {
+  const CustomerSetNewPasswordEvent({
+    required this.password,
+  });
+  final String password;
+  
+  @override
+  List<Object> get props => [password];
 }
 
+class CustomerVerifyEmailAddressEvent extends CustomerAuthEvent {
+  const CustomerVerifyEmailAddressEvent({
+    required this.emailVerificationToken,
+  });
+
+  final String emailVerificationToken;
+  
+  @override
+  List<Object> get props => [emailVerificationToken];
+}
+
+class CustomerResendVerificationEmailEvent extends CustomerAuthEvent {
+  const CustomerResendVerificationEmailEvent({
+    required this.email,
+  });
+  
+  final String email;
+  
+  @override
+  List<Object> get props => [email];
+}
 
 
 class CustomergetUserProfile extends CustomerAuthEvent {

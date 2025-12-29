@@ -11,8 +11,8 @@ import 'package:resq360/features/customer/authentication/screens/reset_password_
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
-class VerifyEmailScreen extends StatefulWidget {
-  const VerifyEmailScreen({
+class VerifyResetTokenScreen extends StatefulWidget {
+  const VerifyResetTokenScreen({
     required this.email,
     super.key,
   });
@@ -20,49 +20,49 @@ class VerifyEmailScreen extends StatefulWidget {
   final String email;
 
   @override
-  State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
+  State<VerifyResetTokenScreen> createState() => _VerifyResetTokenScreenState();
 }
 
-class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
-  late final TextEditingController _otpController1;
+class _VerifyResetTokenScreenState extends State<VerifyResetTokenScreen> {
+  late final TextEditingController _tokenController;
   late final CountdownTimerController controller;
 
   int endTime =
-      DateTime.now().add(const Duration(minutes: 5)).millisecondsSinceEpoch;
+      DateTime.now().add(const Duration(minutes: 4)).millisecondsSinceEpoch;
 
   @override
   void initState() {
     super.initState();
     controller = CountdownTimerController(endTime: endTime, onEnd: () {});
-    _otpController1 = TextEditingController();
+    _tokenController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _otpController1.dispose();
+    _tokenController.dispose();
     controller.dispose();
     super.dispose();
   }
 
   Future<void> onResend() async {
-     if (_otpController1.text.isNotEmpty) {
-      _otpController1.clear();
+     if (_tokenController.text.isNotEmpty) {
+      _tokenController.clear();
     }
     context.read<CustomerAuthBloc>().add(
-      CustomerForgotPassword(
+      CustomerRequestPasswordResetEvent(
         email: widget.email.trim(),
       ),
     );
   }
 
   Future<void> onVerify() async {
-    if (_otpController1.text.length < 6) {
-      await showErrorSnackbar(context, 'OTP field must be 6 digits');
+    if (_tokenController.text.length < 6) {
+      await showErrorSnackbar(context, 'Reset code must be 6 digits');
       return;
     }
 
     context.read<CustomerAuthBloc>().add(
-      CustomerVerifyForgotPasswordOtp(token: _otpController1.text),
+      CustomerValidateResetTokenEvent(token: _tokenController.text),
     );
   }
 
@@ -90,11 +90,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           });
         }
 
-        if (state is CustomerForgotPasswordOtpSent) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-          await showSuccessSnackbar(context, 'Otp resent ');
+        if (state is CustomerPasswordResetEmailSentState) {
+          await showSuccessSnackbar(context, 'Reset code resent successfully');
           controller
             ..endTime =
                 DateTime.now()
@@ -105,7 +102,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           setState(() {});
         }
 
-        if (state is CustomerForgotPasswordOtpVerified && context.mounted) {
+        if (state is CustomerResetTokenValidatedState && context.mounted) {
           await replaceScreen(context, const ResetPasswordScreen());
         }
       },
@@ -113,7 +110,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       buildWhen: (previous, current) => false,
       builder: (context, state) {
         return AppScaffold(
-          title: 'Enter Code',
+          title: 'Enter Reset Code',
           subTitle: 'Please enter the reset code sent to your email',
           body: Column(
             children: [
@@ -122,7 +119,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     NormalPinCodeField(
-                      controller: _otpController1,
+                      controller: _tokenController,
                       onDone: (code) {},
                       onChange: (value) => setState(() {}),
                     ),
@@ -160,7 +157,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               ),
               WideButton(
                 label: 'Verify & Continue',
-                onPressed: _otpController1.text.length < 6 ? null : onVerify,
+                onPressed: _tokenController.text.length < 6 ? null : onVerify,
               ),
               const Spacer(),
             ],

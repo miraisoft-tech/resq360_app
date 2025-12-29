@@ -3,7 +3,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
-import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
+import 'package:resq360/features/customer/authentication/screens/verify_reset_token_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -53,13 +53,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           log(state.error);
         }
 
-        if (state is CustomerForgotPasswordOtpSent) {
+        if (state is CustomerPasswordResetEmailSentState) {
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
           await pushScreen(
             context,
-            VerifyEmailScreen(
+            VerifyResetTokenScreen(
               email: emailController.text,
             ),
           );
@@ -120,7 +120,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     return;
                   } else {
                     context.read<CustomerAuthBloc>().add(
-                      CustomerForgotPassword(
+                      CustomerRequestPasswordResetEvent(
                         email: emailController.text.trim(),
                       ),
                     );
