@@ -24,9 +24,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<JoinChatEvent>(_onJoinChat);
     on<SendInvoiceEvent>(_onSendInvoice);
 
-    ChatSocketService.instance.messageStream.listen((message) {
-      add(NewMessageReceivedEvent(message));
-    });
+    // ChatSocketService.instance.messageStream.listen((message) {
+    //   add(NewMessageReceivedEvent(message));
+    // });
   }
 
   final ChatRepo _chatRepo = ChatRepo();
