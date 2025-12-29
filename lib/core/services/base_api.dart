@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:resq360/core/bloc/bloc/auth_bloc.dart';
 import 'package:resq360/core/bloc/bloc/auth_bloc_registry.dart';
 import 'package:resq360/core/models/api_response.dart';
-import 'package:resq360/core/services/auth_session_killer.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 export 'dart:io';
@@ -71,8 +70,10 @@ class BaseAPI {
           final data = res.data?.toString() ?? '';
 
           if (statusCode == 401 ||
-              (statusCode == 200 && data.contains('DOCTYPE'))) {
-            log(' 401 detected → force logout');
+              (statusCode == 200 && data.contains('Unauthorized'))) {
+            log(' 401 detected force logout');
+                
+            log(' 401 detected force logout');
             final authBloc = BlocRegistry.authBloc;
             if (authBloc == null) return handler.next(res);
             authBloc.add(ForceLogoutEvent());

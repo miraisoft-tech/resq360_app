@@ -150,7 +150,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthLoggedOut) {
-          log('🔥 AuthLoggedOut caught at app root');
           AuthSessionKiller.reset();
 
           final navigator = AppNavigator.navKey.currentState;

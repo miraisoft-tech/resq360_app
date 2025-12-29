@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:resq360/core/models/api_response.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet/wallet.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
@@ -16,8 +15,6 @@ class WalletRepo extends BaseAPI {
 
   Future<ApiResult<Wallet>> getWalletInfo() async {
     const url = '/wallet/info';
-        await AuthLocalRepo.instance.storeAccessToken('invalid_token');
-
     try {
       final response = await dio().get<Map<String, dynamic>>(url);
       if (response.statusCode == 200) {
@@ -28,8 +25,13 @@ class WalletRepo extends BaseAPI {
         return ApiResult(data: Wallet.fromJson(data!));
       } else {
         final data = response.data;
+        final statusCode = response.statusCode;
+
+        
         final error = data?['message'] as String;
         log('Error fetching wallet info: $error');
+        log('Error fetching wallet info: $statusCode');
+
         return ApiResult(error: error);
       }
     } on Exception catch (e) {
@@ -39,8 +41,6 @@ class WalletRepo extends BaseAPI {
 
 Future<ApiResult<WalletTransactionsData>> fetchAllWalletTransaction({required int page, int? limit } ) async {
   final url = '/wallet/transactions?page=$page';
-        await AuthLocalRepo.instance.storeAccessToken('invalid_token');
-
   try {
     final res = await dio().get<Map<String, dynamic>>(url);
 

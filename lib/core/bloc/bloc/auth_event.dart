@@ -7,8 +7,6 @@ sealed class AuthEvent extends Equatable {
   List<Object> get props => [];
 }
 
-/// Fired when a 401 / session expiry happens
 class ForceLogoutEvent extends AuthEvent {}
 
-/// Fired after navigation is complete
 class AuthResetEvent extends AuthEvent {}
