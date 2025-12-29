@@ -20,11 +20,11 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ProviderAuthBloc() : super(ProviderAuthInitial()) {
     on<ProviderLoginWithEmail>(_onLoginWithEmail);
     on<ProviderSignupWIthEmail>(_onSignupWithEmail);
-    on<ProviderForgotPassword>(_onForgotPassword);
-    on<ProviderVerifyForgotPasswordOtp>(_onVerifyForgotPasswordOtp);
-    on<ProviderResetPassword>(_onResetPassword);
-    on<ProviderverifyEmail>(_onVerifyEmail);
-    on<ProviderResendVerificationOtp>(_onResendVerificationOtp);
+    on<ProviderRequestPasswordResetEvent>(_onRequestPasswordReset);
+    on<ProviderValidateResetTokenEvent>(_onValidateResetToken);
+    on<ProviderSetNewPasswordEvent>(_onSetNewPassword);
+    on<ProviderVerifyEmailAddressEvent>(_onVerifyEmailAddress);
+    on<ProviderResendVerificationEmailEvent>(_onResendVerificationEmail);
     on<ProvidergetUserProfile>(_onGetUserProfile);
     on<ProviderSubmitKyc>(_onSubmitKyc);
     on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
@@ -81,18 +81,18 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onForgotPassword(
-    ProviderForgotPassword event,
+  Future<void> _onRequestPasswordReset(
+    ProviderRequestPasswordResetEvent event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.forgotPassword(
+      final result = await providerAuthRemoteRepo.requestPasswordReset(
         email: event.email,
       );
       log('Forgot Password Result: $result');
       if (result) {
-        emit(ProviderForgotPasswordSucessState());
+        emit(ProviderPasswordResetEmailSentState());
       } else {
         emit(
           const ProviderAuthFailureState(
@@ -105,13 +105,37 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onResetPassword(
-    ProviderResetPassword event,
+  Future<void> _onValidateResetToken(
+    ProviderValidateResetTokenEvent event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.resetPassword(
+      final result = await providerAuthRemoteRepo.validateResetToken(
+        token: event.token,
+      );
+
+      if (result) {
+        emit(ProviderResetTokenValidatedState());
+      } else {
+        emit(
+          const ProviderAuthFailureState(
+            'Verification failed. Please check your code.',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(ProviderAuthFailureState(e.toString()));
+    }
+  }
+
+  Future<void> _onSetNewPassword(
+    ProviderSetNewPasswordEvent event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    emit(ProviderAuthLoadingState());
+    try {
+      final result = await providerAuthRemoteRepo.setNewPassword(
         password: event.password,
       );
       if (result) {
@@ -128,37 +152,13 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onVerifyForgotPasswordOtp(
-    ProviderVerifyForgotPasswordOtp event,
+  Future<void> _onVerifyEmailAddress(
+    ProviderVerifyEmailAddressEvent event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.forgotPasswordVerifyEmail(
-        token: event.token,
-      );
-
-      if (result) {
-        emit(ProviderForgotPasswordOtpVerified());
-      } else {
-        emit(
-          const ProviderAuthFailureState(
-            'Verification failed. Please check your code.',
-          ),
-        );
-      }
-    } on Exception catch (e) {
-      emit(ProviderAuthFailureState(e.toString()));
-    }
-  }
-
-  Future<void> _onVerifyEmail(
-    ProviderverifyEmail event,
-    Emitter<ProviderAuthState> emit,
-  ) async {
-    emit(ProviderAuthLoadingState());
-    try {
-      final result = await providerAuthRemoteRepo.verifyEmail(
+      final result = await providerAuthRemoteRepo.verifyEmailAddress(
         emailVerificationToken: event.emailVerificationToken,
       );
 
@@ -176,13 +176,13 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onResendVerificationOtp(
-    ProviderResendVerificationOtp event,
+  Future<void> _onResendVerificationEmail(
+    ProviderResendVerificationEmailEvent event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.resendVerificationOtp(
+      final result = await providerAuthRemoteRepo.resendVerificationEmail(
         event.email,
       );
 
@@ -191,7 +191,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       } else {
         final message =
             result.data?['message'] ?? 'Verification OTP resent successfully';
-        emit(ProviderVerificationResent(message.toString()));
+        emit(ProviderVerificationEmailResentState(message.toString()));
       }
     } on Exception catch (e) {
       emit(ProviderAuthFailureState('Failed to resend verification OTP: $e'));
@@ -218,7 +218,6 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   }
 
   void _onLogout(ProviderLogout event, Emitter<ProviderAuthState> emit) {
-  
     emit(ProviderAuthInitial());
   }
 

@@ -27,40 +27,40 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
           .add(const Duration(seconds: 5 * 60))
           .millisecondsSinceEpoch;
 
-  late TextEditingController _otpController1;
+  late TextEditingController _tokenController;
   late CountdownTimerController controller;
   @override
   void initState() {
     super.initState();
     controller = CountdownTimerController(endTime: endTime, onEnd: () {});
 
-    _otpController1 = TextEditingController();
+    _tokenController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _otpController1 = TextEditingController();
+    _tokenController = TextEditingController();
 
     super.dispose();
   }
 
   Future<void> onResend() async {
-    if (_otpController1.text.isNotEmpty) {
-      _otpController1.clear();
+    if (_tokenController.text.isNotEmpty) {
+      _tokenController.clear();
     }
     context.read<ProviderAuthBloc>().add(
-      ProviderResendVerificationOtp(email: widget.email),
+      ProviderRequestPasswordResetEvent(email: widget.email),
     );
   }
 
   Future<void> onVerify() async {
-    if (_otpController1.text.length < 6) {
+    if (_tokenController.text.length < 6) {
       await showErrorSnackbar(context, 'otp field must be 6 digits');
       return;
     }
 
     context.read<ProviderAuthBloc>().add(
-      ProviderVerifyForgotPasswordOtp(token: _otpController1.text),
+      ProviderValidateResetTokenEvent(token: _tokenController.text),
     );
   }
 
@@ -68,10 +68,14 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<ProviderAuthBloc, ProviderAuthState>(
+    return BlocConsumer<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
-        if (!context.mounted) return;
-
+        if (!mounted) return;
+        if (state is! ProviderAuthLoadingState) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        }
         if (state is ProviderAuthLoadingState) {
           await showLoadingDialog(context);
         }
@@ -84,87 +88,84 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
           log(state.error);
         }
 
-        if (state is ProviderVerificationResent) {
+        if (state is ProviderVerificationEmailResentState) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }
           await showSuccessSnackbar(context, state.message);
 
-          controller
-            ..endTime =
-                DateTime.now()
-                    .add(const Duration(seconds: 5 * 60))
-                    .millisecondsSinceEpoch
-            ..start();
-
-          setState(() {});
+          setState(() {
+            controller
+              ..endTime =
+                  DateTime.now()
+                      .add(const Duration(seconds: 5 * 60))
+                      .millisecondsSinceEpoch
+              ..start();
+          });
         }
-        if (state is ProviderForgotPasswordOtpVerified) {
-          log('provider otp sent, navigating to next step');
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-
+        if (state is ProviderResetTokenValidatedState) {
           await replaceScreen(context, const ProviderResetPasswordScreen());
         }
       },
-      child: AppScaffold(
-        title: 'Enter Code',
-        subTitle: 'Please enter the reset code sent to your email',
-        body: Column(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  NormalPinCodeField(
-                    controller: _otpController1,
-                    onDone: (code) {},
-                    onChange: (dynamic value) {
-                      log(value);
-                      setState(() {});
-                    },
-                  ),
-                  25.verticalSpace,
-
-                  Center(
-                    child: CountdownTimer(
-                      endTime: endTime,
-                      controller: controller,
-                      widgetBuilder: (_, CurrentRemainingTime? time) {
-                        return Column(
-                          children: [
-                            GenText(
-                              'Didn’t receive code?',
-                              size: 12,
-                              height: 20.5,
-                              color: colors.neutral.shade500,
-                              weight: FontWeight.w400,
-                            ),
-                            5.verticalSpace,
-                            GoToWidget(
-                              onTap: onResend,
-                              ligthText: 'Resend code in ',
-                              coloredText:
-                                  '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
-                            ),
-                          ],
-                        );
+      builder: (BuildContext context, ProviderAuthState state) {
+        return AppScaffold(
+          title: 'Enter Code',
+          subTitle: 'Please enter the reset code sent to your email',
+          body: Column(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    NormalPinCodeField(
+                      controller: _tokenController,
+                      onDone: (code) {},
+                      onChange: (dynamic value) {
+                        log(value);
+                        setState(() {});
                       },
                     ),
-                  ),
-                ],
-              ),
-            ),
+                    25.verticalSpace,
 
-            WideButton(
-              label: 'Verify & Continue',
-              onPressed: (_otpController1.text.length < 6 ? null : onVerify),
-            ),
-            const Spacer(),
-          ],
-        ),
-      ),
+                    Center(
+                      child: CountdownTimer(
+                        endTime: endTime,
+                        controller: controller,
+                        widgetBuilder: (_, CurrentRemainingTime? time) {
+                          return Column(
+                            children: [
+                              GenText(
+                                'Didn’t receive code?',
+                                size: 12,
+                                height: 20.5,
+                                color: colors.neutral.shade500,
+                                weight: FontWeight.w400,
+                              ),
+                              5.verticalSpace,
+                              GoToWidget(
+                                onTap: onResend,
+                                ligthText: 'Resend code in ',
+                                coloredText:
+                                    '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              WideButton(
+                label: 'Verify & Continue',
+                onPressed: (_tokenController.text.length < 6 ? null : onVerify),
+              ),
+              const Spacer(),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -202,7 +203,7 @@ class GoToWidget extends StatelessWidget {
             ligthText,
             color: colors.primary.shade500,
             decoration: TextDecoration.underline,
-            onTap: onTap
+            onTap: onTap,
           ),
           circularSTDTextSpan(
             coloredText,

@@ -44,46 +44,58 @@ class ProviderSignupWIthEmail extends ProviderAuthEvent {
   ];
 }
 
-class ProviderForgotPassword extends ProviderAuthEvent {
-  const ProviderForgotPassword({
+class ProviderRequestPasswordResetEvent extends ProviderAuthEvent {
+  const ProviderRequestPasswordResetEvent({
     required this.email,
   });
 
   final String email;
+  
   @override
   List<Object> get props => [email];
 }
 
-class ProviderResetPassword extends ProviderAuthEvent {
-  const ProviderResetPassword({
-    required this.password,
-  });
-  final String password;
-}
-
-class ProviderVerifyForgotPasswordOtp extends ProviderAuthEvent {
-  const ProviderVerifyForgotPasswordOtp({
+class ProviderValidateResetTokenEvent extends ProviderAuthEvent {
+  const ProviderValidateResetTokenEvent({
     required this.token,
   });
-
+  
   final String token;
+  
   @override
   List<Object> get props => [token];
 }
 
-class ProviderverifyEmail extends ProviderAuthEvent {
-  const ProviderverifyEmail({
+class ProviderSetNewPasswordEvent extends ProviderAuthEvent {
+  const ProviderSetNewPasswordEvent({
+    required this.password,
+  });
+  final String password;
+  
+  @override
+  List<Object> get props => [password];
+}
+
+class ProviderVerifyEmailAddressEvent extends ProviderAuthEvent {
+  const ProviderVerifyEmailAddressEvent({
     required this.emailVerificationToken,
   });
 
   final String emailVerificationToken;
+  
   @override
   List<Object> get props => [emailVerificationToken];
 }
 
-class ProviderResendVerificationOtp extends ProviderAuthEvent {
-  const ProviderResendVerificationOtp({required this.email});
+class ProviderResendVerificationEmailEvent extends ProviderAuthEvent {
+  const ProviderResendVerificationEmailEvent({
+    required this.email,
+  });
+  
   final String email;
+  
+  @override
+  List<Object> get props => [email];
 }
 
 class ProvidergetUserProfile extends ProviderAuthEvent {

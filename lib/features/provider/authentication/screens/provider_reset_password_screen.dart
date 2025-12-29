@@ -123,7 +123,7 @@ class _ProviderResetPasswordScreenState
                     }
 
                     context.read<ProviderAuthBloc>().add(
-                      ProviderResetPassword(
+                      ProviderSetNewPasswordEvent(
                         password: newPasswordController.text,
                       ),
                     );

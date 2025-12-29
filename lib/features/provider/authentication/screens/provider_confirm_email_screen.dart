@@ -51,7 +51,7 @@ class _ProviderConfirmEmailScreenState
     }
 
     context.read<ProviderAuthBloc>().add(
-      ProviderResendVerificationOtp(email: widget.email),
+      ProviderResendVerificationEmailEvent(email: widget.email),
     );
 
     controller
@@ -68,7 +68,7 @@ class _ProviderConfirmEmailScreenState
       return;
     }
     context.read<ProviderAuthBloc>().add(
-      ProviderverifyEmail(
+      ProviderVerifyEmailAddressEvent(
         emailVerificationToken: _otpController1.text,
       ),
     );
@@ -92,7 +92,7 @@ class _ProviderConfirmEmailScreenState
 
           await showSnackBar(context, 'Error', state.error);
         }
-        if (state is ProviderVerificationResent) {
+        if (state is ProviderVerificationEmailResentState) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }

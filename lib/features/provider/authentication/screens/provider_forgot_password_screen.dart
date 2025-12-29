@@ -42,21 +42,15 @@ class _ProviderForgotPasswordScreenState
           await showLoadingDialog(context);
         }
 
-        if (state is ProviderAuthFailureState) {
-          final navigator = Navigator.of(context, rootNavigator: true);
-          if (navigator.canPop()) {
-            navigator.pop();
-            await Future<void>.delayed(const Duration(milliseconds: 400));
-          }
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (context.mounted) {
-              unawaited(showSnackBar(context, 'Error', state.error));
-            }
+       if (state is ProviderAuthFailureState) {
+          await pop(context);
+          Future.delayed(const Duration(seconds: 2), () async{
+             await showSnackBar(context, 'Error', state.error);
           });
+          log(state.error);
         }
 
-        if (state is ProviderForgotPasswordSucessState) {
+        if (state is ProviderPasswordResetEmailSentState) {
           if (context.mounted) {
             await replaceScreen(
               context,
@@ -122,7 +116,7 @@ class _ProviderForgotPasswordScreenState
                     return;
                   } else {
                     context.read<ProviderAuthBloc>().add(
-                      ProviderForgotPassword(email: emailController.text),
+                      ProviderRequestPasswordResetEvent(email: emailController.text),
                     );
                   }
                 },

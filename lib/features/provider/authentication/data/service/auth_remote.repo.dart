@@ -211,7 +211,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> forgotPassword({
+  Future<bool> requestPasswordReset({
     required String email,
   }) async {
     try {
@@ -239,7 +239,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> forgotPasswordVerifyEmail({
+  Future<bool> validateResetToken({
     required String token,
   }) async {
     try {
@@ -270,7 +270,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> resetPassword({
+  Future<bool> setNewPassword({
     required String password,
   }) async {
     try {
@@ -308,7 +308,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> verifyEmail({required String emailVerificationToken}) async {
+  Future<bool> verifyEmailAddress({required String emailVerificationToken}) async {
     try {
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
@@ -346,7 +346,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<dynamic>> resendVerificationOtp(String email) async {
+  Future<ApiResult<dynamic>> resendVerificationEmail(String email) async {
     try {
       const url = '/auth/resend-verification-otp';
       final savedUserType = await authLocalDataSource.getUserType();
