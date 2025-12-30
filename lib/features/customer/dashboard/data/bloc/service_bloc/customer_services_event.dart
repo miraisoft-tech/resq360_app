@@ -41,6 +41,10 @@ class CustomerFetchBookings extends CustomerServicesEvent {
 //   final String? status;
 // }
 
+class CustomerCreateServiceRequest extends CustomerServicesEvent {
+  const CustomerCreateServiceRequest({required this.providerServiceId});
+  final int providerServiceId;
+}
 class CustomerStartServiceBooking extends CustomerServicesEvent {
   const CustomerStartServiceBooking(this.serviceRequestId);
   final int serviceRequestId;

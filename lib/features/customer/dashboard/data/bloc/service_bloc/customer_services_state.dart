@@ -47,6 +47,16 @@ class CustomerBookingsError extends CustomerServicesState {
   List<Object?> get props => [error];
 }
 
+ 
+class CustomerServiceRequestCreated extends CustomerServicesState {
+   const CustomerServiceRequestCreated({required this.chatId, required this.serviceRequestId});
+  final int chatId;
+  final int serviceRequestId;
+
+  @override
+  List<Object?> get props => [chatId, serviceRequestId];
+}
+
 class ServiceBookingStarted extends CustomerServicesState {}
 
 class ServiceBookingCancelled extends CustomerServicesState {}

@@ -70,7 +70,7 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<ChatResponse>> getChatById(String chatId) async {
+  Future<ApiResult<ChatResponse>> getChatById(int chatId) async {
     final url = '/chat/$chatId';
     try {
       final response = await dio().get<Map<String, dynamic>>(url);

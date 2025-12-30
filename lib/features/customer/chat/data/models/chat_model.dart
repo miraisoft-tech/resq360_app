@@ -2,7 +2,7 @@
 
 import 'package:resq360/core/models/api_response.dart';
 
-class Chat extends EmptyResponse {
+class  Chat extends EmptyResponse {
   Chat({
     required this.name,
     required this.message,

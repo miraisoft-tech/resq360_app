@@ -17,6 +17,8 @@ class CustomerServicesBloc
     on<CustomerCreateService>(_onCreateCustomerService);
     // on<CustomerFetchBookings>(_onFetchBookings);
     // on<CustomerFetchBookings>(_onGetServiceBookings);
+
+    on<CustomerCreateServiceRequest>(_createServiceRequest);
     on<CustomerStartServiceBooking>(_onStartBooking);
     on<CustomerCancelServiceBooking>(_onCancelBooking);
     on<CustomerCompleteServiceBooking>(_onCompleteBooking);
@@ -129,7 +131,6 @@ class CustomerServicesBloc
 //   }
 // }
 
-
 Future<void> _onStartBooking(
   CustomerStartServiceBooking event,
   Emitter<CustomerServicesState> emit,
@@ -144,6 +145,29 @@ Future<void> _onStartBooking(
       ));
     } else {
       emit(ServiceBookingStarted());
+    }
+  } on Exception catch (e) {
+    emit(CustomerServicesError(error: e.toString()));
+  }
+}
+
+Future<void> _createServiceRequest(
+  CustomerCreateServiceRequest event,
+  Emitter<CustomerServicesState> emit,
+) async {
+  emit(CustomerServicesLoading());
+  try {
+    final result = await serviceRepo.createServiceRequest(providerServiceId: event.providerServiceId);
+
+    if (result.error != null) {
+      emit(CustomerServicesError(
+        error: result.error!,
+      ));
+    } else {
+      final chatId = result.data?['chatId'] as int;
+      final serviceRequestId = result.data?['serviceRequestId'] as int;
+
+      emit(CustomerServiceRequestCreated(chatId: chatId, serviceRequestId: serviceRequestId));
     }
   } on Exception catch (e) {
     emit(CustomerServicesError(error: e.toString()));

@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:resq360/core/theme/app_color_theme.dart';
 import 'package:resq360/core/theme/app_text_theme.dart';
 import 'package:resq360/core/theme/app_theme.preferences.dart';

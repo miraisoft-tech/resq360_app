@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
@@ -12,9 +10,9 @@ import 'package:resq360/features/provider/authentication/view_models/auth_vm.dar
 import 'package:resq360/features/provider/chat/screens/provider_invoice_confirm.dart';
 
 class ProviderGenerateInvoiceDialog extends StatefulWidget {
-  const ProviderGenerateInvoiceDialog({required this.chat, super.key});
+  const ProviderGenerateInvoiceDialog({required this.chatId, super.key});
 
-  final ChatResponse chat;
+  final int chatId;
 
   @override
   State<ProviderGenerateInvoiceDialog> createState() =>
@@ -248,7 +246,7 @@ class _ProviderGenerateInvoiceDialogState
                             "INV-${rand.toString().padLeft(3, '0')}";
                         final invoice = {
                           'invoiceNo': invoiceNo,
-                          'chatId': widget.chat.id,
+                          'chatId': widget.chatId,
                           'serviceCategory': _selectType.value!.name,
                           'location': locationController.text,
                           'price': int.tryParse(priceController.text) ?? 0,

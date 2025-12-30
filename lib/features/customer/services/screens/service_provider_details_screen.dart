@@ -1,12 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
@@ -52,35 +49,38 @@ class _ServiceProviderDetailsScreenState
     },
   ];
 
-  Future<void> _createChat() async {
-    log('Statrted');
-    final provider = CustomerAuthProvider.instance;
-    if (provider.authInfo == null) {
-      await provider.init();
-    }
+  Future<void> _createServiceRequest() async {
+    // log('Statrted');
+    // final provider = CustomerAuthProvider.instance;
+    // if (provider.authInfo == null) {
+    //   await provider.init();
+    // }
 
-    final auth = provider.authInfo;
+    // final auth = provider.authInfo;
 
-    final userId = auth?.user.id;
-    final providerId = widget.providerId;
+    // final userId = auth?.user.id;
+    // final providerId = widget.providerId;
 
-    final chatRequest = CreateChatRequest(
-      title: widget.providerName,
-      type: 'PRIVATE',
-      participants: [
-        ChatParticipant(
-          participantType: 'USER',
-          participantId: userId!,
-        ),
-        ChatParticipant(
-          participantType: 'PROVIDER',
-          participantId: providerId,
-        ),
-      ],
-    );
+    // final chatRequest = CreateChatRequest(
+    //   title: widget.providerName,
+    //   type: 'PRIVATE',
+    //   participants: [
+    //     ChatParticipant(
+    //       participantType: 'USER',
+    //       participantId: userId!,
+    //     ),
+    //     ChatParticipant(
+    //       participantType: 'PROVIDER',
+    //       participantId: providerId,
+    //     ),
+    //   ],
+    // );
 
-    context.read<ChatBloc>().add(
-      CreateChatEvent(chatRequest: chatRequest),
+   final providerServiceId= widget.provider.providerServiceId;
+   if (providerServiceId == null) return;
+
+    context.read<CustomerServicesBloc>().add(
+      CustomerCreateServiceRequest(providerServiceId: providerServiceId),
     );
   }
 
@@ -94,21 +94,21 @@ class _ServiceProviderDetailsScreenState
     final colors = context.appColors;
     final provider = widget.provider;
 
-    return BlocListener<ChatBloc, ChatState>(
+    return BlocListener<CustomerServicesBloc, CustomerServicesState>(
       listener: (context, state) async {
-        if (state is FetchingChatsState) {
+        if (state is CustomerServicesLoading) {
           await showLoadingDialog(
             context,
           );
         }
 
-        if (state is ChatLoadedState) {
+        if (state is CustomerServiceRequestCreated) {
           await pop(context);
           await pushScreen(
             context,
-            ChatDetailScreen(chat: state.chat),
+            ChatDetailScreen(chatId: state.chatId),
           );
-        } else if (state is ChatErrorState) {
+        } else if (state is CustomerServicesError) {
           await pop(context);
           await showSnackBar(context, 'Error', state.error);
         }
@@ -254,7 +254,7 @@ class _ServiceProviderDetailsScreenState
                               SVGButton(
                                 path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
                                 onTap: () async {
-                                  await _createChat();
+                                  // ChatDetailScreen(chatId: state.chatId),
                                 },
                               ),
                               15.horizontalSpace,
@@ -379,7 +379,7 @@ class _ServiceProviderDetailsScreenState
                 child: WideButton(
                   label: 'Book Now',
                   onPressed: () async {
-                    await _createChat();
+                    await _createServiceRequest();
                   },
                 ),
               ),

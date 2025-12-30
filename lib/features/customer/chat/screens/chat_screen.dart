@@ -1,7 +1,6 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_list_bloc/chat_list_bloc.dart';
+import 'package:resq360/core/models/chat_summary.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/widgets/chat_tile.dart';
@@ -22,9 +21,13 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ChatBloc>().add(GetChatsEvent());
+    context.read<ChatListBloc>().add(LoadChatList());
   }
 
+Future<void> _onRefresh() async {
+   context.read<ChatListBloc>().add(RefreshChatList());
+
+}
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -37,132 +40,161 @@ class _ChatScreenState extends State<ChatScreen> {
         forceMaterialTransparency: true,
         automaticallyImplyLeading: false,
         title: const Text('Chats'),
-        centerTitle: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            FilterSearchFormField(
-              controller: _searchController,
-              onChanged: (_) => setState(() {}),
-              prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
-              hintText: 'Search',
+        child: RefreshIndicator(
+          onRefresh:_onRefresh,
+          child: Column(
+            children: [
+              FilterSearchFormField(
+                controller: _searchController,
+                onChanged: (_) => setState(() {}),
+                prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
+                hintText: 'Search',
+              ),
+              const SizedBox(height: 12),
+              // _buildFilterRow(),
+               ChatFilterTabs(
+              selectedFilter: selectedFilter,
+              onFilterSelected:
+                  (value) => setState(() => selectedFilter = value),
             ),
-            const SizedBox(height: 12),
-            _buildFilterRow(),
-            const SizedBox(height: 12),
-            Expanded(
-              child: BlocBuilder<ChatBloc, ChatState>(
-                builder: (context, state) {
-                  if (state is FetchingChatsState) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (state is ChatErrorState) {
-                    return ErrorMessageAndButton(
-                      error: state.error,
-                      onPressed: () {
-                        context.read<ChatBloc>().add(GetChatsEvent());
-                      },
-                    );
-                  }
-
-                  if (state is ChatListLoadedState) {
-                    final chats = _applyFilter(state.chats.chats);
+              const SizedBox(height: 12),
+              Expanded(
+                child: BlocBuilder<ChatListBloc, ChatListState>(
+                  builder: (context, state) {
+                    if (state.isLoading && state.chats.isEmpty) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+          
+                    if (state.error != null) {
+                      return ErrorMessageAndButton(
+                        error: state.error!,
+                        onPressed: () {
+                          context
+                              .read<ChatListBloc>()
+                              .add(LoadChatList());
+                        },
+                      );
+                    }
+          
+                    final chats = _applyFilter(state.chats);
+          
                     if (chats.isEmpty) {
                       return const EmptyScreenWidget(
-                        imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
+                        imagePath:
+                            AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
                         message: 'No messages yet',
                         subMessage:
                             'Start a conversation with a service provider',
                       );
                     }
-
+          
                     return ListView.separated(
                       itemCount: chats.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      separatorBuilder: (_, _) =>
+                          const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final chat = chats[index];
+          
                         return ChatTile(
                           chat: Chat(
-                            name: chat.title ?? 'Untitled',
+                            name: chat.title,
                             message: chat.lastMessage ?? '',
-                            time:
-                                chat.lastMessageAt != null
-                                    ? _formatTime(chat.lastMessageAt!)
-                                    : '',
-                            avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+                            time: chat.lastMessageTime != null
+                                ? _formatTime(chat.lastMessageTime!)
+                                : '',
+                            avatar:
+                                AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
                           ),
-                          // could be computed later
                           onTap: () async {
+                            context
+                                .read<ChatListBloc>()
+                                .add(ClearUnreadCount(chat.chatId));
+          
                             await pushScreen(
                               context,
-                              ChatDetailScreen(chat: chat),
+                              ChatDetailScreen(
+                                chatId: chat.chatId,
+                              ),
                             );
                           },
                         );
                       },
                     );
-                  }
-
-                  return const SizedBox.shrink();
-                },
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFilterRow() {
-    final filters = ['All', 'Unread', 'Appeal'];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children:
-          filters.map((f) {
-            final isSelected = selectedFilter == f;
-            return GestureDetector(
-              onTap: () {
-                setState(() => selectedFilter = f);
-              },
-              child: Chip(
-                label: Text(f),
-                backgroundColor:
-                    isSelected ? context.appColors.primary : Colors.grey[200],
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
-                ),
-              ),
-            );
-          }).toList(),
-    );
-  }
+  // Widget _buildFilterRow() {
+  //   final filters = ['All', 'Unread', 'Appeal'];
 
-  List<ChatResponse> _applyFilter(List<ChatResponse> chats) {
-    switch (selectedFilter) {
-      case 'Unread':
-        return chats;
-      case 'Appeal':
-        return chats
-            .where((c) => c.title?.toLowerCase().contains('appeal') ?? false)
-            .toList();
-      default:
-        return chats;
-    }
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //     children: filters.map((filter) {
+  //       final isSelected = selectedFilter == filter;
+
+  //       return GestureDetector(
+  //         onTap: () {
+  //           setState(() => selectedFilter = filter);
+  //         },
+  //         child: Chip(
+  //           label: Text(filter),
+  //           backgroundColor: isSelected
+  //               ? context.appColors.primary
+  //               : Colors.grey[200],
+  //           labelStyle: TextStyle(
+  //             color:
+  //                 isSelected ? Colors.white : Colors.black87,
+  //           ),
+  //         ),
+  //       );
+  //     }).toList(),
+  //   );
+  // }
+
+  List<ChatSummary> _applyFilter(List<ChatSummary> chats) {
+    final query = _searchController.text.toLowerCase();
+
+    return chats.where((chat) {
+      if (query.isNotEmpty &&
+          !chat.title.toLowerCase().contains(query)) {
+        return false;
+      }
+
+      switch (selectedFilter) {
+        case 'Unread':
+          return chat.unreadCount > 0;
+        case 'Appeal':
+          return chat.title.toLowerCase().contains('appeal');
+        default:
+          return true;
+      }
+    }).toList();
   }
 
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
-    if (dateTime.day == now.day &&
+
+    if (dateTime.year == now.year &&
         dateTime.month == now.month &&
-        dateTime.year == now.year) {
+        dateTime.day == now.day) {
       return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
     }
+
     return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
   }
 }
+
 
 
 // class ChatScreen extends StatefulWidget {
@@ -320,53 +352,53 @@ class _ChatScreenState extends State<ChatScreen> {
 //   }
 // }
 
-// class ChatFilterTabs extends StatelessWidget {
-//   const ChatFilterTabs({
-//     required this.selectedFilter,
-//     required this.onFilterSelected,
-//     super.key,
-//   });
-//   final String selectedFilter;
-//   final ValueChanged<String> onFilterSelected;
+class ChatFilterTabs extends StatelessWidget {
+  const ChatFilterTabs({
+    required this.selectedFilter,
+    required this.onFilterSelected,
+    super.key,
+  });
+  final String selectedFilter;
+  final ValueChanged<String> onFilterSelected;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     final appColors = context.appColors;
-//     final filters = ['All', 'Unread', 'Appeal'];
+  @override
+  Widget build(BuildContext context) {
+    final appColors = context.appColors;
+    final filters = ['All', 'Unread', 'Appeal'];
 
-//     return Row(
-//       children:
-//           filters.map((f) {
-//             final isActive = selectedFilter == f;
-//             return Padding(
-//               padding: const EdgeInsets.only(right: 16),
-//               child: GestureDetector(
-//                 onTap: () => onFilterSelected(f),
-//                 child: Container(
-//                   padding: pad(vertical: 4, horizontal: 10),
-//                   decoration: BoxDecoration(
-//                     color: isActive ? appColors.primary : Colors.transparent,
-//                     borderRadius: BorderRadius.circular(8.r),
-//                     border: Border.all(
-//                       color:
-//                           isActive
-//                               ? Colors.transparent
-//                               : appColors.textColor.shade200,
-//                     ),
-//                   ),
-//                   child: GenText(
-//                     f,
-//                     color:
-//                         isActive
-//                             ? appColors.whiteColor
-//                             : appColors.textColor.shade500,
-//                     height: 16.5,
-//                     weight: FontWeight.w400,
-//                   ),
-//                 ),
-//               ),
-//             );
-//           }).toList(),
-//     );
-//   }
-// }
+    return Row(
+      children:
+          filters.map((f) {
+            final isActive = selectedFilter == f;
+            return Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: GestureDetector(
+                onTap: () => onFilterSelected(f),
+                child: Container(
+                  padding: pad(vertical: 4, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: isActive ? appColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(
+                      color:
+                          isActive
+                              ? Colors.transparent
+                              : appColors.textColor.shade200,
+                    ),
+                  ),
+                  child: GenText(
+                    f,
+                    color:
+                        isActive
+                            ? appColors.whiteColor
+                            : appColors.textColor.shade500,
+                    height: 16.5,
+                    weight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+    );
+  }
+}

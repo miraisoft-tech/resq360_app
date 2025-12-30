@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/bloc/auth_bloc.dart';
 import 'package:resq360/core/bloc/bloc/auth_bloc_registry.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/navigation/navigator.dart';
@@ -77,6 +77,8 @@ Future<void> main() async {
           BlocProvider(create: (_) => CustomerServicesBloc()),
           BlocProvider(create: (_) => ServiceProviderBloc()),
           BlocProvider(create: (_) => ChatBloc()),
+          BlocProvider(create: (_) => ChatListBloc()),
+          // BlocProvider(create: (_) => ChatDetailBloc(chatId: null)),
           BlocProvider(create: (_) => ProfileUpdateBloc()),
           BlocProvider(create: (_) => ProviderServiceBloc()),
           BlocProvider(create: (_) => BankBloc()),

@@ -247,6 +247,34 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
+Future<ApiResult<Map<String, dynamic>>> createServiceRequest({
+  required int providerServiceId,
+}) async {
+  const url = '/requests/service-request';
+
+  final data = {
+    'providerServiceId': providerServiceId,
+  };
+
+  try {
+    final res = await dio().post<Map<String, dynamic>>(url, data: data);
+    log('POST $url => ${res.statusCode}');
+
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      final responseData = res.data?['data'] as Map<String, dynamic>;
+      return ApiResult(data: responseData);
+    } else {
+      return ApiResult(
+        error: res.data?['message']?.toString() ??
+            'Failed to create new service request',
+      );
+    }
+  } on Exception catch (e) {
+    return ApiResult(error: e.toString());
+  }
+}
+
+
   Future<ApiResult<bool>> pingProviders({required int serviceCategoryId,}) async {
     final url = '/services/$serviceCategoryId/ping-providers';
     try {
