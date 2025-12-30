@@ -1,13 +1,19 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/metadata.dart';
 
 class ChatInvoiceCardWidget extends StatelessWidget {
-  const ChatInvoiceCardWidget({required this.onTapPay, super.key});
+  const ChatInvoiceCardWidget({required this.onTapPay, required this.metadata, required this.messageCreatedAt, super.key});
 
   final void Function() onTapPay;
+    final Metadata metadata;
+  final String messageCreatedAt;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
+    
+// if (metadata.type != 'INVOICE' || metadata.amount == null) {
+//     return const SizedBox.shrink();
+//   }
     return Container(
       width: double.infinity,
       padding: pad(horizontal: 14, vertical: 14),
@@ -34,7 +40,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   4.verticalSpace,
                   GenText(
-                    '#INV-238777',
+                    metadata.invoiceNo  ?? '—',
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
                   ),
@@ -52,7 +58,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    '8/27/2025',
+                    metadata.date ?? '—',
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
                   ),
@@ -74,7 +80,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    'QuickTow Emergency',
+                    metadata.serviceCategory ?? '—',
                     size: 12,
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
@@ -126,7 +132,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                 color: appColors.textColor.shade400,
               ),
               GenText(
-                '₦15,000',
+                metadata.amount?.toString() ?? '0',
                 size: 16,
                 weight: FontWeight.w700,
                 color: appColors.black,
@@ -140,7 +146,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
           ),
           6.verticalSpace,
           GenText(
-            '2:36 pm',
+            messageCreatedAt,
             size: 12,
             color: appColors.textColor.shade300,
           ),

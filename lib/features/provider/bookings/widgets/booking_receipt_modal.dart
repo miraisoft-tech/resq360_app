@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 
-class BookingReceiptModal extends ConsumerWidget {
+class BookingReceiptModal extends StatelessWidget {
   const BookingReceiptModal({
     required this.service,
     required this.provider,
@@ -21,7 +21,7 @@ class BookingReceiptModal extends ConsumerWidget {
   final VoidCallback onDownload;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(

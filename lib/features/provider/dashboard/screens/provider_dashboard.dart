@@ -1,5 +1,7 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
@@ -28,59 +30,22 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         backgroundColor: colors.whiteColor,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            const CircleAvatar(
-              radius: 20,
-              backgroundImage: AssetImage(
-                AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-              ),
-            ),
-            10.horizontalSpace,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GenText(
-                  'Hello, David 👋',
-                  size: 12,
-                  color: colors.textColor.shade600,
-                ),
-                8.horizontalSpace,
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.w,
-                        vertical: 2.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.success.shade50,
-                        borderRadius: BorderRadius.circular(20.r),
-                      ),
-                      child: Row(
-                        children: [
-                          GenText(
-                            'Active',
-                            size: 12,
-                            color: colors.success.shade600,
-                            weight: FontWeight.w500,
-                          ),
-                        ],
-                      ),
-                    ),
-                    8.horizontalSpace,
-                    const Icon(Icons.star, color: Colors.amber, size: 16),
-                    GenText(
-                      '4.9',
-                      size: 12,
-                      weight: FontWeight.w400,
-                      color: colors.black,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+        title: FutureBuilder<ProviderProfileResponse?>(
+          future: AuthLocalRepo.instance.getProviderCredentials(),
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.hasError) {
+              return Center(child: Text('Error: ${asyncSnapshot.error}'));
+            }
+
+            if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+              return const Center(child: Text('No user found'));
+            }
+
+            final provider = asyncSnapshot.data!;
+            final fullName = provider.user.fullName?.trim();
+            log('provider dashboard $fullName');
+            return _buildHeader(context, fullName!);
+          },
         ),
         actions: [
           IconButton(
@@ -218,4 +183,48 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
       ),
     );
   }
+}
+
+Widget _buildHeader(BuildContext context, String name) {
+  final colors = context.appColors;
+  return Row(
+    children: [
+      const CircleAvatar(
+        radius: 19,
+        backgroundImage: AssetImage(
+          AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+        ),
+      ),
+      10.horizontalSpace,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GenText(
+            'Hello, $name 👋',
+            size: 12,
+            height: 20,
+            weight: FontWeight.w400,
+            color: colors.neutral.shade500,
+          ),
+          Row(
+            children: [
+              AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
+              4.horizontalSpace,
+              GenText(
+                'No. 2 Olympia Street',
+                height: 24,
+                color: colors.black,
+                weight: FontWeight.w500,
+              ),
+              Icon(
+                Icons.keyboard_arrow_down,
+                size: 14,
+                color: colors.textColor.shade500,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
 }

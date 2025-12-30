@@ -1,6 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 
 class CompletePaymentDialog extends StatefulWidget {
   const CompletePaymentDialog({required this.amount, super.key});
@@ -140,6 +146,143 @@ class _CompletePaymentDialogState extends State<CompletePaymentDialog> {
                         await GeneralDialogs.showCustomDialog(
                           context,
                           body: const PaymentCompleted(),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ClientPaymentConfirmDialog extends StatefulWidget {
+  const ClientPaymentConfirmDialog({
+    required this.title,
+    required this.amount,
+    required this.invoiceNumber,
+    super.key,
+  });
+
+  final String title;
+  final int amount;
+  final String invoiceNumber;
+
+  @override
+  State<ClientPaymentConfirmDialog> createState() =>
+      _ClientPaymentConfirmDialogState();
+}
+
+class _ClientPaymentConfirmDialogState
+    extends State<ClientPaymentConfirmDialog> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(getCurrentUser());
+    });
+  }
+
+  late final String? email;
+
+  Future<LocalUser?> getCurrentUser() async {
+    final user = await AuthLocalRepo.instance.getLocalCredentials();
+    email = user?.userName;
+    return user;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appColors = context.appColors;
+
+    return Padding(
+      padding: EdgeInsets.only(top: 200.h, bottom: 150.h),
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          margin: pad(horizontal: 20),
+          padding: pad(horizontal: 25, vertical: 25),
+          decoration: BoxDecoration(
+            color: appColors.whiteColor,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GenText(
+                    'Complete Payment',
+                    weight: FontWeight.w700,
+                    color: appColors.black,
+                    size: 16,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: appColors.textColor.shade400,
+                    ),
+                  ),
+                ],
+              ),
+
+              12.verticalSpace,
+
+              GenText(
+                widget.title,
+                size: 15,
+                weight: FontWeight.w600,
+                color: appColors.black,
+              ),
+              4.verticalSpace,
+              GenText(
+                'Invoice No: ${widget.invoiceNumber}',
+                size: 13,
+                color: appColors.textColor.shade400,
+              ),
+              4.verticalSpace,
+              GenText(
+                '₦${widget.amount}',
+                size: 22,
+                weight: FontWeight.w700,
+                color: appColors.black,
+              ),
+
+              20.verticalSpace,
+
+              Row(
+                children: [
+                  Expanded(
+                    child: WideButton(
+                      label: 'Cancel',
+                      backgroundColor: appColors.primary.shade50,
+                      textColor: appColors.primary.shade500,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  12.horizontalSpace,
+                  Expanded(
+                    child: WideButton(
+                      label: 'Pay ₦${widget.amount}',
+                      backgroundColor: appColors.primary.shade500,
+                      textColor: appColors.whiteColor,
+                      onPressed: () {
+                        Navigator.pop(context);
+
+                        context.read<CustomerPaymentBloc>().add(
+                          CustomerInitServicePaymentEvent(
+                            amount: widget.amount,
+                            email: email!,
+                            currency: 'NGN',
+                            callbackUrl: 'https://example.com/callback',
+                          ),
                         );
                       },
                     ),

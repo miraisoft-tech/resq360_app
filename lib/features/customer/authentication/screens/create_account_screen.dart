@@ -1,12 +1,9 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/confirm_email_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
-import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -32,7 +29,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
 
-    // WidgetsBinding.instance.addPostFrameCallback(
+    //  .instance.addPostFrameCallback(
     //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
     // );
   }
@@ -51,27 +48,28 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-        if (!mounted) return;
         if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
-    
+
         if (state is CustomerAuthFailure) {
           if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
+            await pop(context);
           }
+
           log(state.error);
-          showSnackBar(context, 'Error', state.error);
+          await showSnackBar(context, 'Error', state.error);
         }
-    
-        if (state is CustomerAuthAuthenticated) {
+
+        if (state is CustomerAuthAuthenticated && context.mounted) {
           if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
+            await pop(context);
           }
+
           await pushScreen(
             context,
-            VerifyEmailScreen(email: emailController.text,
-            purpose: VerificationPurpose.registration
+            ConfirmEmailScreen(
+              email: emailController.text,
             ),
           );
         }
@@ -94,7 +92,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         onChanged: (a) {
                           setState(() {});
                         },
-                        validator: (value) => Validators.validateNotEmpty(value, 'Full Name'),
+                        validator:
+                            (value) =>
+                                Validators.validateNotEmpty(value, 'Full Name'),
                       ),
                       16.verticalSpace,
                       KFormField(
@@ -125,7 +125,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             isChecked: _agree,
                             onChanged: (value) {
                               _agree = value!;
-    
+
                               setState(() {});
                             },
                           ),

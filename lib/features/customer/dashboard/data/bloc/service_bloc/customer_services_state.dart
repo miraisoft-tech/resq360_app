@@ -1,62 +1,54 @@
 part of 'customer_services_bloc.dart';
 
-sealed class CustomerServicesState extends Equatable {
+abstract class CustomerServicesState extends Equatable {
   const CustomerServicesState();
-  
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-final class CustomerServicesInitial extends CustomerServicesState {}
+class CustomerServicesInitial extends CustomerServicesState {}
+class CustomerServicesLoading extends CustomerServicesState {}
 
-final class CustomerServicesLoading extends CustomerServicesState {}
-final class CustomerServicesLoaded extends CustomerServicesState {
+class CustomerServicesLoaded extends CustomerServicesState {
   const CustomerServicesLoaded({required this.services});
   final List<Service> services;
-
-  @override
-  List<Object> get props => [services];
 }
-final class CustomerServicesError extends CustomerServicesState {
-  const CustomerServicesError({required this.error});
-  final String error;
 
-  @override
-  List<Object> get props => [error];
+
+
+class CustomerServiceInfoLoaded extends CustomerServicesState {
+  const CustomerServiceInfoLoaded({required this.info});
+  final Service info;
 }
-final class CustomerServiceCreated extends CustomerServicesState {
+
+class CustomerServiceCreated extends CustomerServicesState {
   const CustomerServiceCreated({required this.service});
   final Service service;
+}
+
+class CustomerServicesError extends CustomerServicesState {
+  const CustomerServicesError({required this.error});
+  final String error;
+}
+
+class CustomerBookingsLoaded extends CustomerServicesState {
+  const CustomerBookingsLoaded(this.bookings);
+  final List<Bookings> bookings;
 
   @override
-  List<Object> get props => [service];
+  List<Object?> get props => [bookings];
 }
-final class CustomerServiceCreationError extends CustomerServicesState {
-  const CustomerServiceCreationError({required this.error});
+
+class CustomerBookingsError extends CustomerServicesState {
+  const CustomerBookingsError(this.error);
   final String error;
 
   @override
-  List<Object> get props => [error];
+  List<Object?> get props => [error];
 }
-final class CustomerServiceCategoryInfoLoaded extends CustomerServicesState {
-  const CustomerServiceCategoryInfoLoaded({required this.categoryInfo});
-  final Map<String, dynamic> categoryInfo;
 
-  @override
-  List<Object> get props => [categoryInfo];
-}
-final class CustomerServiceCategoryInfoError extends CustomerServicesState {
-  const CustomerServiceCategoryInfoError({required this.error});
-  final String error; 
-  @override
-  List<Object> get props => [error];
-}
-final class CustomerServiceCategoryUpdated extends CustomerServicesState {
-  const CustomerServiceCategoryUpdated();
-}
-final class CustomerServiceCategoryUpdateError extends CustomerServicesState {
-  const CustomerServiceCategoryUpdateError({required this.error});
-  final String error;   
-  @override
-  List<Object> get props => [error];
-}
+class ServiceBookingStarted extends CustomerServicesState {}
+
+class ServiceBookingCancelled extends CustomerServicesState {}
+
+class ServiceBookingCompleted extends CustomerServicesState {}

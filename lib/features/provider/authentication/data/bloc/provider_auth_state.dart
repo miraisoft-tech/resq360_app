@@ -7,7 +7,7 @@ sealed class ProviderAuthState extends Equatable {
   List<Object> get props => [];
 }
 
-// initial state
+
 final class ProviderAuthInitial extends ProviderAuthState {}
 
 class ProviderAuthLoadingState  extends ProviderAuthState {}
@@ -20,8 +20,6 @@ class ProviderAuthAuthenticatedState  extends ProviderAuthState {
   List<Object> get props => [ user];
 }
 
-
-// failure stateFAILURE
 class ProviderAuthFailureState extends ProviderAuthState {
   const ProviderAuthFailureState (this.error);
   final String error;
@@ -54,16 +52,20 @@ class ProviderAuthLoginSuccessState  extends ProviderAuthState {
   @override
   List<Object> get props => [ user];
 }
+class ProviderForgotPasswordOtpSent extends ProviderAuthState{}
+class ProviderResetTokenValidatedState extends ProviderAuthState{}
 
 class ProviderPasswordResetSuccessState  extends ProviderAuthState {}
 class ProviderEmailVerifiedState  extends ProviderAuthState {}
-class ProviderForgotPasswordSucessState  extends ProviderAuthState {}
-class ProviderResetPasswordSuccesStste extends ProviderAuthState {
-  
+class ProviderPasswordResetEmailSentState  extends ProviderAuthState {}
+class ProviderResetPasswordSuccesState extends ProviderAuthState {}
+class ProviderVerificationEmailResentState extends ProviderAuthState {
+  const ProviderVerificationEmailResentState(this.message);
+  final String message;
 }
 class ProviderProfileLoadedState  extends ProviderAuthState {
   const ProviderProfileLoadedState (this.user);
-  final ProviderUserModel user;
+  final ProviderProfileResponse user;
 }
 
 class ProviderKycSubmitted extends ProviderAuthState {

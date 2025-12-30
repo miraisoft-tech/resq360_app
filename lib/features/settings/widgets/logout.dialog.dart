@@ -1,8 +1,39 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
+
+  Future<void> _handleLogout(BuildContext context) async {
+    unawaited(showLoadingDialog(context));
+
+    try {
+      await AuthLocalRepo.instance.clearAuthCredentials();
+      await AuthLocalRepo.instance.clearAccessToken();
+      await AuthLocalRepo.instance.clearLocalCred();
+      await AuthLocalRepo.instance.clearUserType();
+
+      log('🧹 Cleared all local auth data successfully');
+
+      if (Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      if (context.mounted) {
+        await replaceScreen(context, const SelectAccountTypeScreen());
+      }
+    } on Exception catch (e) {
+
+      if (Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
+      await showErrorSnackbar(context, 'Logout failed: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +65,7 @@ class LogoutDialog extends StatelessWidget {
                 label: 'Yes',
                 backgroundColor: appColors.error.shade500,
                 textColor: appColors.whiteColor,
-                onPressed: () async {
-                  if (context.mounted) {
-                    await replaceScreen(
-                      context,
-                      const LoginScreen(),
-                    );
-                  }
-                },
+                onPressed: () async => _handleLogout(context),
               ),
               20.verticalSpace,
               WideButton(

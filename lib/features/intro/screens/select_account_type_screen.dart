@@ -1,51 +1,55 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
 
-class SelectAccountTypeScreen extends ConsumerStatefulWidget {
+class SelectAccountTypeScreen extends StatefulWidget {
   const SelectAccountTypeScreen({super.key});
 
   @override
-  ConsumerState<SelectAccountTypeScreen> createState() =>
-      _CreateAccountTypeScreenState();
+  State<SelectAccountTypeScreen> createState() =>
+      _SelectAccountTypeScreenState();
 }
 
-class _CreateAccountTypeScreenState
-    extends ConsumerState<SelectAccountTypeScreen> {
+class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
   int _selectedIndex = 0;
 
   Future<void> _onContinue() async {
     log('Selected index: $_selectedIndex');
 
-    ref.read(dashboardViewModel).userType =
+    final selectedType =
         _selectedIndex == 0 ? UserType.customer : UserType.provider;
 
+    await AuthLocalRepo.instance.saveUserType(selectedType);
+
+    if (!mounted) return;
+
+    log('saved the type $selectedType');
+
+    dashboardViewModel.userType = selectedType;
+
     if (_selectedIndex == 0) {
-//       final repo = AuthRemoteRepo.instance;
-// final profile = await repo.getUserProfile();
-// log('PROFILE TEST: $profile');
-      await pushScreen( context,
-        BlocProvider( 
-          create: (context) => CustomerAuthBloc(),
-          child: 
-          const CreateAccountScreen(),
+      await pushScreen(
+        context,
+        BlocProvider(
+          create: (_) => CustomerAuthBloc(),
+          child: const LoginScreen(),
         ),
       );
     } else {
-      await pushScreen(context, const ProviderCreateAccountScreen());
+      await pushScreen(context, const ProviderLoginScreen());
     }
   }
 
   @override
   void initState() {
     super.initState();
-
-    ref.read(authProvider);
   }
 
   @override
@@ -87,11 +91,7 @@ class _CreateAccountTypeScreenState
                 subTitle: 'Looking for services',
                 isSelected: _selectedIndex == 0,
                 icon: AppAssets.ASSETS_ICONS_CLIENT_ICON_SVG.svg,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = 0;
-                  });
-                },
+                onTap: () => setState(() => _selectedIndex = 0),
               ),
               20.verticalSpace,
               _AccountTypeCard(
@@ -99,17 +99,10 @@ class _CreateAccountTypeScreenState
                 subTitle: 'Offering my services',
                 isSelected: _selectedIndex == 1,
                 icon: AppAssets.ASSETS_ICONS_VENDOR_ICON_SVG.svg,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = 1;
-                  });
-                },
+                onTap: () => setState(() => _selectedIndex = 1),
               ),
               const Spacer(),
-              WideButton(
-                label: 'Continue',
-                onPressed: _onContinue,
-              ),
+              WideButton(label: 'Continue', onPressed: _onContinue),
               20.verticalSpace,
             ],
           ),

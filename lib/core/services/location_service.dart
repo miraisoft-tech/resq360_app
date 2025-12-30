@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/shared_preferences.dart';
 
 abstract class BaseViewModel extends ChangeNotifier {
   BaseViewModel() {
@@ -66,6 +67,8 @@ mixin LocationMixin on BaseViewModel {
     throw Exception('Current position is null');
   }
   log('Lat: ${currentPosition!.latitude}, Lng: ${currentPosition!.longitude}');
+  await AppLocalPref().save(key: 'latitude', value: currentPosition!.latitude.toString());
+  await AppLocalPref().save(key: 'longitude', value: currentPosition!.longitude.toString());
 
   try {
     final placemarks = await placemarkFromCoordinates(

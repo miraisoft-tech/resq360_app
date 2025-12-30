@@ -1,11 +1,24 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 
 class RecommendedCard extends StatelessWidget {
-  const RecommendedCard({super.key});
+  const RecommendedCard({required this.advertisement, super.key});
+
+  final Advertisement advertisement;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final title = advertisement.title ?? 'Untitled';
+    final description = advertisement.description ?? '';
+    final image = advertisement.imageUrl;
+    final serviceType = advertisement.serviceType ?? '';
+    final isSponsored = advertisement.adType?.toLowerCase() == 'sponsored';
+
+   
+    const rating = 4.8;
+    const reviewCount = 127;
+    const distance = '1.2km';
 
     return Column(
       children: [
@@ -19,11 +32,12 @@ class RecommendedCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
+               CircleAvatar(
                 radius: 25,
-                backgroundImage: AssetImage(
-                  AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                ),
+                backgroundImage:  image != null 
+                  ? NetworkImage(image) 
+                  : const AssetImage(AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG) 
+                      as ImageProvider,
               ),
               12.horizontalSpace,
               Expanded(
@@ -33,12 +47,13 @@ class RecommendedCard extends StatelessWidget {
                     Row(
                       children: [
                         UrbText(
-                          'Plumbing Pro',
+                          title,
                           height: 24.5,
                           weight: FontWeight.w500,
                           color: colors.black,
                         ),
                         const Spacer(),
+                        if (isSponsored)
                         Container(
                           padding: pad(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
@@ -54,22 +69,25 @@ class RecommendedCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    GenText(
-                      'Emergency Plumbing',
-                      size: 12,
-                      height: 20.5,
-                      weight: FontWeight.w400,
-                      color: colors.textColor.shade500,
-                    ),
+                  
+                    if (serviceType.isNotEmpty)
+                      GenText(
+                        serviceType,
+                        size: 12,
+                        height: 20.5,
+                        weight: FontWeight.w400,
+                        color: colors.textColor.shade500,
+                      ),
                     4.verticalSpace,
+                     
                     Row(
                       children: [
                         const Icon(Icons.star, size: 16, color: Colors.orange),
                         4.horizontalSpace,
-                        GenText('4.8', size: 12, color: colors.black),
+                        GenText('$rating', size: 12, color: colors.black),
                         2.horizontalSpace,
                         GenText(
-                          '(127)',
+                          '($reviewCount)',
                           size: 12,
                           color: colors.neutral.shade300,
                         ),
@@ -79,33 +97,36 @@ class RecommendedCard extends StatelessWidget {
                         ),
                         2.horizontalSpace,
                         GenText(
-                          '1.2km',
+                          distance,
                           size: 12,
                           color: colors.neutral.shade300,
                         ),
                       ],
                     ),
                     8.verticalSpace,
-                    GenText(
-                      'With over 5 years experience we provide prompt and professional plumbing service.',
-                      size: 12,
-                      weight: FontWeight.w400,
-                      color: colors.textColor.shade500,
-                    ),
+                     if (description.isNotEmpty)
+                      GenText(
+                        description,
+                        size: 12,
+                        weight: FontWeight.w400,
+                        color: colors.textColor.shade500,
+                        maxLines: 3,
+                      ),
                     20.verticalSpace,
-                    Container(
-                      padding: pad(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: colors.primary.shade500,
-                        borderRadius: BorderRadius.circular(33.r),
+                     if (advertisement.budget != null)
+                      Container(
+                        padding: pad(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: colors.primary.shade500,
+                          borderRadius: BorderRadius.circular(33.r),
+                        ),
+                        child: GenText(
+                          '\$${advertisement.budget}',
+                          size: 13,
+                          weight: FontWeight.w600,
+                          color: colors.whiteColor,
+                        ),
                       ),
-                      child: GenText(
-                        '-30% Today',
-                        size: 13,
-                        weight: FontWeight.w600,
-                        color: colors.whiteColor,
-                      ),
-                    ),
                   ],
                 ),
               ),

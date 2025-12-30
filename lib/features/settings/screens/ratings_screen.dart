@@ -1,43 +1,66 @@
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/settings/data/models/reviews_model.dart';
+import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
+import 'package:resq360/features/settings/data/models/provider_ratings.dart';
 import 'package:resq360/features/settings/widgets/reviews_card.dart';
 
-class RatingScreen extends StatelessWidget {
-  const RatingScreen({super.key});
+class RatingScreen extends StatefulWidget {
+  const RatingScreen({required this.isProvider, super.key});
+
+final bool isProvider;
+  @override
+  State<RatingScreen> createState() => _RatingScreenState();
+}
+
+class _RatingScreenState extends State<RatingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_refreshRatings());
+  }
+
+  Future<void> _refreshRatings() async {
+    if (widget.isProvider) {
+      context.read<RatingsBloc>().add(FetchProviderRatings());
+    }else{
+      context.read<RatingsBloc>().add(FetchCustomerRatings());
+    } 
+  }
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
-    final reviews = [
-      ReviewModel(
-        name: 'QuickTow Emergency',
-        category: 'Towing Service',
-        date: 'Aug 12, 2025',
-        rating: 5,
-        review:
-            'Jane Doe was an easy client, we had no back and forth and she trusted me to do the job right.',
-        avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
-      ),
-      ReviewModel(
-        name: 'Homify',
-        category: 'Cleaning Service',
-        date: 'Aug 12, 2025',
-        rating: 3,
-        review:
-            'An easy going client, no arguments whatsoever, I had a smooth working experience.',
-        avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
-      ),
-      ReviewModel(
-        name: 'The Johnson’s',
-        category: 'Locksmith',
-        date: 'Aug 12, 2025',
-        rating: 3,
-        review:
-            'An easy going client, no arguments whatsoever, I had a smooth working experience.',
-        avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
-      ),
-    ];
+    // final reviews = [
+    //   ReviewModel(
+    //     name: 'QuickTow Emergency',
+    //     category: 'Towing Service',
+    //     date: 'Aug 12, 2025',
+    //     rating: 5,
+    //     review:
+    //         'Jane Doe was an easy client, we had no back and forth and she trusted me to do the job right.',
+    //     avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
+    //   ),
+    //   ReviewModel(
+    //     name: 'Homify',
+    //     category: 'Cleaning Service',
+    //     date: 'Aug 12, 2025',
+    //     rating: 3,
+    //     review:
+    //         'An easy going client, no arguments whatsoever, I had a smooth working experience.',
+    //     avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
+    //   ),
+    //   ReviewModel(
+    //     name: 'The Johnson’s',
+    //     category: 'Locksmith',
+    //     date: 'Aug 12, 2025',
+    //     rating: 3,
+    //     review:
+    //         'An easy going client, no arguments whatsoever, I had a smooth working experience.',
+    //     avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
+    //   ),
+    // ];
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -57,31 +80,64 @@ class RatingScreen extends StatelessWidget {
         elevation: 0,
         foregroundColor: appColors.black,
       ),
-      body: Padding(
-        padding: pad(horizontal: 20, vertical: 16),
-        child: ListView(
-          children: [
-            const _RatingSummary(),
-            20.verticalSpace,
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: reviews.length,
-              separatorBuilder: (_, _) => 14.verticalSpace,
-              itemBuilder: (context, index) {
-                final item = reviews[index];
-                return ReviewCard(item: item);
-              },
-            ),
-          ],
-        ),
+
+      body: BlocConsumer<RatingsBloc, RatingsState>(
+        builder: (context, state) {
+          if (state is RatingsLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+         
+          if (state is ProviderRatingsLoaded) {
+            final ratings = state.ratings;
+            final reviews = state.ratings.reviews;
+            if (reviews != null) {
+              if (reviews.isEmpty) {
+                return Center(
+                  child: GenText(
+                    'No reviews available.',
+                    color: appColors.textColor.shade300,
+                  ),
+                );
+              }
+              return Padding(
+                padding: pad(horizontal: 20, vertical: 16),
+                child: ListView(
+                  children: [
+                     _RatingSummary(ratings),
+                    20.verticalSpace,
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: reviews.length,
+                      separatorBuilder: (_, _) => 14.verticalSpace,
+                      itemBuilder: (context, index) {
+                        final item = reviews[index];
+                        return ReviewCard(item: item);
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }
+          }
+          return const SizedBox.shrink();
+        }, listener: (BuildContext context, RatingsState state) { 
+           if (state is RatingsError) {
+            unawaited(showErrorSnackbar(context, state.message));
+          }
+         },
       ),
     );
   }
 }
 
 class _RatingSummary extends StatelessWidget {
-  const _RatingSummary();
+  const _RatingSummary(this.ratings);
+
+  final ProviderRatings ratings;
 
   @override
   Widget build(BuildContext context) {

@@ -1,38 +1,4 @@
 
-import 'dart:convert';
-
-InitializePaymentRequest paymentFromJson(String str) => InitializePaymentRequest.fromJson(json.decode(str) as Map<String, dynamic>);
-
-String paymentToJson(InitializePaymentRequest data) => json.encode(data.toJson());
-
-class InitializePaymentRequest {
-
-    InitializePaymentRequest({
-        this.amount,
-        this.email,
-        this.currency,
-        this.callbackUrl,
-    });
-
-    factory InitializePaymentRequest.fromJson(Map<String, dynamic> json) => InitializePaymentRequest(
-        amount: json['amount'] as int?,
-        email: json['email'] as String?,
-        currency: json['currency'] as String?,
-        callbackUrl: json['callback_url'] as String?,
-    );
-    final int? amount;
-    final String? email;
-    final String? currency;
-    final String? callbackUrl;
-
-    Map<String, dynamic> toJson() => {
-        'amount': amount,
-        'email': email,
-        'currency': currency,
-        'callback_url': callbackUrl,
-    };
-}
-
 class PaymentResponse {
 
   PaymentResponse({
@@ -67,7 +33,7 @@ class PaymentVerification {
   });
 
   factory PaymentVerification.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] ?? json; // handle if you pass the outer object
+    final data = json['data'] ?? json; 
     return PaymentVerification(
       id: data['id'] as int?,
       status: data['status'] as String?,

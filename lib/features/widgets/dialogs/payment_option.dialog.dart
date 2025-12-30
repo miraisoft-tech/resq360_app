@@ -90,6 +90,7 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      // log('pressed');
                       Navigator.pop(context);
 
                       widget.onPaymentSelected(selectedPayment!);

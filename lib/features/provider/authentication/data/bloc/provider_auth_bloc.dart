@@ -6,7 +6,9 @@ import 'package:resq360/features/customer/authentication/data/bloc/customer_auth
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
+import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/authentication/data/service/auth_remote.repo.dart';
 
 part 'provider_auth_event.dart';
@@ -16,18 +18,19 @@ final ProviderAuthRemoteRepo providerAuthRemoteRepo = ProviderAuthRemoteRepo();
 
 class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ProviderAuthBloc() : super(ProviderAuthInitial()) {
-
-      on<ProviderLoginWithEmail>(_onLoginWithEmail);
-      on<ProviderSignupWIthEmail>(_onSignupWithEmail);
-      on<ProviderForgotPassword>(_onForgotPassword);
-      on<ProviderResetPassword>(_onResetPassword);
-      on<ProviderverifyEmail>(_onVerifyEmail);
-      on<ProvidergetUserProfile>(_onGetUserProfile);
-      on<ProviderSubmitKyc>(_onSubmitKyc);
-      on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
-      on<ProviderSubmitId>(_onSubmitKycId);
-      on<ProviderGetProividerKycInfo>(_onGetProviderKycInfo);
-      on<ProviderLogout>(_onLogout);
+    on<ProviderLoginWithEmail>(_onLoginWithEmail);
+    on<ProviderSignupWIthEmail>(_onSignupWithEmail);
+    on<ProviderRequestPasswordResetEvent>(_onRequestPasswordReset);
+    on<ProviderValidateResetTokenEvent>(_onValidateResetToken);
+    on<ProviderSetNewPasswordEvent>(_onSetNewPassword);
+    on<ProviderVerifyEmailAddressEvent>(_onVerifyEmailAddress);
+    on<ProviderResendVerificationEmailEvent>(_onResendVerificationEmail);
+    on<ProvidergetUserProfile>(_onGetUserProfile);
+    on<ProviderSubmitKyc>(_onSubmitKyc);
+    on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
+    on<ProviderSubmitId>(_onSubmitKycId);
+    on<ProviderGetProividerKycInfo>(_onGetProviderKycInfo);
+    on<ProviderLogout>(_onLogout);
   }
 
   Future<void> _onLoginWithEmail(
@@ -41,11 +44,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         password: event.password,
       );
       if (result.data != null) {
-        // final userProfile = await providerAuthRemoteRepo.getUserProfile();
-
-        // log('Fetched user profile: $userProfile'); // test line
-
-        emit(ProviderAuthAuthenticatedState(result.data!.user));
+        emit(ProviderAuthLoginSuccessState(result.data!.provider));
       } else {
         log('bloc error ${result.error}');
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
@@ -72,7 +71,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         address: event.address,
       );
       if (result.data != null) {
-        emit(ProviderAuthSignupSuccessState(result.data!.user));
+        emit(ProviderAuthSignupSuccessState(result.data!.provider));
       } else {
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
       }
@@ -82,18 +81,18 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onForgotPassword(
-    ProviderForgotPassword event,
+  Future<void> _onRequestPasswordReset(
+    ProviderRequestPasswordResetEvent event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.forgotPassword(
+      final result = await providerAuthRemoteRepo.requestPasswordReset(
         email: event.email,
       );
-      log('Forgot Password Result: $result'); // Debug line
+      log('Forgot Password Result: $result');
       if (result) {
-        emit(ProviderForgotPasswordSucessState());
+        emit(ProviderPasswordResetEmailSentState());
       } else {
         emit(
           const ProviderAuthFailureState(
@@ -106,17 +105,41 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onResetPassword(
-    ProviderResetPassword event,
+  Future<void> _onValidateResetToken(
+    ProviderValidateResetTokenEvent event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.resetPassword(
+      final result = await providerAuthRemoteRepo.validateResetToken(
+        token: event.token,
+      );
+
+      if (result) {
+        emit(ProviderResetTokenValidatedState());
+      } else {
+        emit(
+          const ProviderAuthFailureState(
+            'Verification failed. Please check your code.',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(ProviderAuthFailureState(e.toString()));
+    }
+  }
+
+  Future<void> _onSetNewPassword(
+    ProviderSetNewPasswordEvent event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    emit(ProviderAuthLoadingState());
+    try {
+      final result = await providerAuthRemoteRepo.setNewPassword(
         password: event.password,
       );
       if (result) {
-        emit(ProviderResetPasswordSuccesStste());
+        emit(ProviderResetPasswordSuccesState());
       } else {
         emit(
           const ProviderAuthFailureState(
@@ -129,13 +152,13 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onVerifyEmail(
-    ProviderverifyEmail event,
+  Future<void> _onVerifyEmailAddress(
+    ProviderVerifyEmailAddressEvent event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.verifyEmail(
+      final result = await providerAuthRemoteRepo.verifyEmailAddress(
         emailVerificationToken: event.emailVerificationToken,
       );
 
@@ -153,7 +176,28 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  // Get user profile
+  Future<void> _onResendVerificationEmail(
+    ProviderResendVerificationEmailEvent event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    emit(ProviderAuthLoadingState());
+    try {
+      final result = await providerAuthRemoteRepo.resendVerificationEmail(
+        event.email,
+      );
+
+      if (result.error != null) {
+        emit(ProviderAuthFailureState(result.error!));
+      } else {
+        final message =
+            result.data?['message'] ?? 'Verification OTP resent successfully';
+        emit(ProviderVerificationEmailResentState(message.toString()));
+      }
+    } on Exception catch (e) {
+      emit(ProviderAuthFailureState('Failed to resend verification OTP: $e'));
+    }
+  }
+
   Future<void> _onGetUserProfile(
     ProvidergetUserProfile event,
     Emitter<ProviderAuthState> emit,
@@ -162,7 +206,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     try {
       final result = await providerAuthRemoteRepo.getUserProfile();
       if (result.data != null) {
-        emit(ProviderProfileLoadedState(result.data!.user));
+        emit(ProviderProfileLoadedState(result.data!));
       } else {
         emit(
           ProviderAuthFailureState(result.error ?? 'Failed to load profile'),
@@ -173,14 +217,11 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  // Logout
   void _onLogout(ProviderLogout event, Emitter<ProviderAuthState> emit) {
-    // Clear user session if needed
     emit(ProviderAuthInitial());
-    
   }
 
-   Future<void> _onSubmitKyc(
+  Future<void> _onSubmitKyc(
     ProviderSubmitKyc event,
     Emitter<ProviderAuthState> emit,
   ) async {
@@ -192,27 +233,31 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       if (result.data != null) {
         emit(ProviderKycSubmitted(result.data!));
       } else {
-        emit(ProviderKycSubmissionFailure(result.error ?? 'KYC submission failed'));
+        emit(
+          ProviderKycSubmissionFailure(result.error ?? 'KYC submission failed'),
+        );
       }
     } on Exception catch (e) {
       emit(ProviderKycSubmissionFailure(e.toString()));
     }
   }
 
-  Future<void> _onGetProviderKycInfo (
+  Future<void> _onGetProviderKycInfo(
     ProviderGetProividerKycInfo event,
-    Emitter<ProviderAuthState> emit
+    Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
-    try{
+    try {
       final result = await authRemoteRepo.getUserKycInfo();
-      if (result.data != null){
+      if (result.data != null) {
         emit(ProviderKycInfoLoaded(result.data!));
       } else {
-        emit(ProviderAuthFailureState(result.error ?? 'Failed to load KYC info'));
+        emit(
+          ProviderAuthFailureState(result.error ?? 'Failed to load KYC info'),
+        );
       }
     } on Exception catch (e) {
-      log( 'ProviderGetUserKycInfo Bloc Get provider KYC Info Error: $e');
+      log('ProviderGetUserKycInfo Bloc Get provider KYC Info Error: $e');
       emit(ProviderAuthFailureState(e.toString()));
     }
   }
@@ -231,7 +276,9 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       if (result) {
         emit(ProviderKycAddressSubmitted());
       } else {
-        emit(ProviderKycSubmissionFailure('$result KYC address submission failed'));
+        emit(
+          ProviderKycSubmissionFailure('$result KYC address submission failed'),
+        );
       }
     } on Exception catch (e) {
       emit(ProviderKycSubmissionFailure(e.toString()));
@@ -249,9 +296,13 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         filePath: event.filePath,
       );
       if (result.data != null) {
-        emit( ProviderIdentitySubmitted(data: result.data!));
+        emit(ProviderIdentitySubmitted(data: result.data!));
       } else {
-        emit(ProviderKycSubmissionFailure(result.error ?? 'KYC ID submission failed'));
+        emit(
+          ProviderKycSubmissionFailure(
+            result.error ?? 'KYC ID submission failed',
+          ),
+        );
       }
     } on Exception catch (e) {
       emit(ProviderKycSubmissionFailure(e.toString()));

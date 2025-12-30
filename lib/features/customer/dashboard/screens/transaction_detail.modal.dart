@@ -1,17 +1,21 @@
 import 'package:resq360/__lib.dart';
 
-class TransactionDetailModal extends ConsumerWidget {
+import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
+
+class TransactionDetailModal extends StatelessWidget {
   const TransactionDetailModal({
+    required this.tx,
     required this.onRetry,
     required this.onSupport,
     super.key,
   });
 
+  final WalletTransaction tx;
   final VoidCallback onRetry;
   final VoidCallback onSupport;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(
@@ -62,51 +66,64 @@ class TransactionDetailModal extends ConsumerWidget {
                 color: appColors.black,
               ),
               20.verticalSpace,
+
+        
               GenText(
-                'Transfer to QuickTow Emergency',
+                tx.title,
                 size: 12,
                 color: appColors.textColor.shade400,
               ),
               4.verticalSpace,
+
               UrbText(
-                '₦15,000.00',
+                '₦${tx.uiAmount}',
                 size: 18,
                 weight: FontWeight.w700,
                 color: appColors.black,
               ),
               4.verticalSpace,
+
+
               GenText(
-                'Failed',
-                color: appColors.error.shade500,
+                tx.status ?? 'UNKNOWN',
+                color: tx.status == 'FAILED'
+                    ? appColors.error.shade500
+                    : appColors.success.shade600,
                 weight: FontWeight.w600,
               ),
               20.verticalSpace,
               Divider(color: appColors.textColor.shade100),
               20.verticalSpace,
-              const _TransactionDetailItem(
+
+            
+              _TransactionDetailItem(
                 label: 'Invoice No.',
-                value: '#INV-238777',
+                value: tx.reference ?? '-',
               ),
-              const _TransactionDetailItem(
+              _TransactionDetailItem(
                 label: 'Description',
-                value: 'Payment for towing van',
+                value: tx.description ?? '-',
               ),
-              const _TransactionDetailItem(
+              _TransactionDetailItem(
                 label: 'Date & Time',
-                value: 'Aug 27, 2025 - 5:16pm',
+                value: tx.uiDate.isNotEmpty ? tx.uiDate : '-',
               ),
-              const _TransactionDetailItem(
+              _TransactionDetailItem(
                 label: 'Service ID',
-                value: 'TXN-20250815-PLUMB123',
+                value: tx.serviceRequestId?.toString() ?? '-',
               ),
-              const _TransactionDetailItem(
+              _TransactionDetailItem(
                 label: 'Payment Method',
-                value: 'Card',
+                value: tx.gatewayReference != null ? 'Card' : '-',
               ),
-              const _TransactionDetailItem(
+
+              _TransactionDetailItem(
                 label: 'Failure Reason',
-                value: 'Network Error',
+                value: tx.status == 'FAILED'
+                    ? 'Transaction failed'
+                    : '-',
               ),
+
               24.verticalSpace,
               Row(
                 children: [
@@ -129,6 +146,7 @@ class TransactionDetailModal extends ConsumerWidget {
                   ),
                 ],
               ),
+              20.verticalSpace,
               WideButton(
                 label: 'Download Receipt',
                 backgroundColor: appColors.primary.shade500,
@@ -142,6 +160,7 @@ class TransactionDetailModal extends ConsumerWidget {
     );
   }
 }
+
 
 class _TransactionDetailItem extends StatelessWidget {
   const _TransactionDetailItem({

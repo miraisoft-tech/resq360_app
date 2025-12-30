@@ -1,11 +1,15 @@
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/theme/static_colors.dart';
-import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 
 class FundWalletConfirmDialog extends StatefulWidget {
-  const FundWalletConfirmDialog({required this.amount, super.key});
+  const FundWalletConfirmDialog({super.key});
 
-  final String amount;
+  // final int amount;
 
   @override
   State<FundWalletConfirmDialog> createState() =>
@@ -16,6 +20,24 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
   final TextEditingController cardNumberController = TextEditingController();
   final TextEditingController expiryController = TextEditingController();
   final TextEditingController cvvController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(getCurrentUser());
+    });
+  }
+
+  late final String? email;
+  late final String? userType;
+
+  Future<LocalUser?> getCurrentUser() async {
+    final user = await AuthLocalRepo.instance.getLocalCredentials();
+    email = user?.userName;
+    userType = user?.userType;
+    return user;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,30 +81,30 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
                 ],
               ),
               14.verticalSpace,
-              Container(
-                width: double.infinity,
-                padding: pad(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.grey,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GenText(
-                      'VISA',
-                      weight: FontWeight.w400,
-                      color: appColors.textColor.shade300,
-                    ),
-                    12.horizontalSpace,
-                    GenText(
-                      '****   ****   ****   1234',
-                      weight: FontWeight.w400,
-                      color: appColors.textColor.shade300,
-                    ),
-                  ],
-                ),
-              ),
+              // Container(
+              //   width: double.infinity,
+              //   padding: pad(horizontal: 16, vertical: 14),
+              //   decoration: BoxDecoration(
+              //     color: AppColors.grey,
+              //     borderRadius: BorderRadius.circular(10.r),
+              //   ),
+              //   child: Row(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       GenText(
+              //         'VISA',
+              //         weight: FontWeight.w400,
+              //         color: appColors.textColor.shade300,
+              //       ),
+              //       12.horizontalSpace,
+              //       GenText(
+              //         '****   ****   ****   1234',
+              //         weight: FontWeight.w400,
+              //         color: appColors.textColor.shade300,
+              //       ),
+              //     ],
+              //   ),
+              // ),
               20.verticalSpace,
               KFormField(
                 label: 'Amount',
@@ -91,20 +113,20 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
                 keyboardType: TextInputType.number,
               ),
               12.verticalSpace,
-              Row(
-                children: [
-                  Expanded(
-                    child: KFormField(
-                      label: 'CVV',
-                      hintText: '123',
-                      controller: cvvController,
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const Spacer(),
-                ],
-              ),
-              24.verticalSpace,
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: KFormField(
+              //         label: 'CVV',
+              //         hintText: '123',
+              //         controller: cvvController,
+              //         keyboardType: TextInputType.number,
+              //       ),
+              //     ),
+              //     const Spacer(),
+              //   ],
+              // ),
+              // 24.verticalSpace,
               Row(
                 children: [
                   Expanded(
@@ -122,11 +144,24 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
-                        Navigator.of(context).pop();
-                        await GeneralDialogs.showCustomDialog(
-                          context,
-                          body: const FundWalletCompleted(),
+                        log('pressed');
+                        Navigator.pop(context);
+                        context.read<CustomerPaymentBloc>().add(
+                          CustomerInitWalletFundingEvent(
+                            amount:
+                                cardNumberController.text.isNotEmpty
+                                    ? int.parse(
+                                      cardNumberController.text,
+                                    )
+                                    : 0, 
+                                    userType: userType ?? 'user',
+
+                          ),
                         );
+                        // await GeneralDialogs.showCustomDialog(
+                        //   context,
+                        //   body: const FundWalletCompleted(),
+                        // );
                       },
                     ),
                   ),

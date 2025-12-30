@@ -1,4 +1,7 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
 import 'package:resq360/features/provider/chat/screens/provider_chat_details_screen.dart';
 import 'package:resq360/features/widgets/chat_tile.dart';
@@ -73,6 +76,12 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    context.read<ChatBloc>().add(GetChatsEvent());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
@@ -114,38 +123,122 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
             ),
             16.verticalSpace,
             Expanded(
-              child:
-                  (chats.isEmpty)
-                      ? const EmptyScreenWidget(
+              child: BlocBuilder<ChatBloc, ChatState>(
+                builder: (context, state) {
+                  if (state is FetchingChatsState) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (state is ChatErrorState) {
+                    return Center(
+                      child: Text(
+                        state.error,
+                        style: TextStyle(color: appColors.textColor),
+                      ),
+                    );
+                  }
+
+                  if (state is ChatListLoadedState) {
+                    final chats = _applyFilter(
+                      state.chats.chats,
+                      selectedFilter,
+                    );
+                    if (chats.isEmpty) {
+                      return const EmptyScreenWidget(
                         imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
                         message: 'No messages yet',
                         subMessage:
                             'Start a conversation with a service provider',
-                      )
-                      : ListView.separated(
-                        itemCount: chats.length,
-                        itemBuilder: (context, index) {
-                          return ChatTile(
-                            chat: chats[index],
-                            onTap: () async {
-                              await pushScreen(
-                                context,
-                                const ProviderChatDetailScreen(),
-                              );
-                            },
-                          );
-                        },
-                        separatorBuilder: (context, index) {
-                          return const ListDivider(
-                            verticalSpacing: 0,
-                          );
-                        },
-                      ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      itemCount: chats.length,
+                      itemBuilder: (context, index) {
+                        final chat = chats[index];
+                        return ChatTile(
+                          chat: Chat(
+                            name: chat.title ?? 'Untitled',
+                            message: chat.lastMessage ?? '',
+                            time:
+                                chat.lastMessageAt != null
+                                    ? _formatTime(chat.lastMessageAt!)
+                                    : '',
+                            avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG
+                          ),
+                          onTap: () async {
+                            await pushScreen(
+                              context,
+                               ProviderChatDetailScreen(chat: chat,),
+                            );
+                          },
+                        );
+                      },
+                      separatorBuilder: (context, index) {
+                        return const ListDivider(
+                          verticalSpacing: 0,
+                        );
+                      },
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // Widget _buildFilterRow() {
+  //   final filters = ['All', 'Unread', 'Appeal'];
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //     children:
+  //         filters.map((f) {
+  //           final isSelected = selectedFilter == f;
+  //           return GestureDetector(
+  //             onTap: () => setState(() => selectedFilter = f),
+  //             child: Chip(
+  //               label: Text(f),
+  //               backgroundColor:
+  //                   isSelected ? context.appColors.primary : Colors.grey[200],
+  //               labelStyle: TextStyle(
+  //                 color: isSelected ? Colors.white : Colors.black87,
+  //               ),
+  //             ),
+  //           );
+  //         }).toList(),
+  //   );
+  // }
+
+  List<ChatResponse> _applyFilter(
+    List<ChatResponse> chats,
+    String selectedFilter,
+  ) {
+    switch (selectedFilter) {
+      case 'Unread':
+        // later use lastReadAt to compute unread
+        return chats;
+      case 'Appeal':
+        return chats
+            .where((c) => c.title?.toLowerCase().contains('appeal') ?? false)
+            .toList();
+      default:
+        return chats;
+    }
+  }
+
+  String _formatTime(DateTime dateTime) {
+    final now = DateTime.now();
+    if (dateTime.day == now.day &&
+        dateTime.month == now.month &&
+        dateTime.year == now.year) {
+      return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+    }
+    return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
   }
 }
 

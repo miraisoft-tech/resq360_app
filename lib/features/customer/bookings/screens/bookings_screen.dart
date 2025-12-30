@@ -1,6 +1,9 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/bookings/data/models/booking_model.dart';
+import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -17,6 +20,37 @@ class _BookingsScreenState extends State<BookingsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchBookingsForTab(0);
+    });
+
+
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      _fetchBookingsForTab(_tabController.index);
+    });
+  }
+
+  void _fetchBookingsForTab(int index) {
+    final bloc = context.read<CustomerBookingBloc>();
+    String status;
+
+    switch (index) {
+      case 0:
+        status = 'PENDING';
+
+      case 1:
+        status = 'COMPLETED';
+
+      case 2:
+        status = 'CANCELLED';
+
+      default:
+        status = 'PENDING';
+    }
+
+    bloc.add(FetchCustomerBookings(status: status),);
   }
 
   @override
@@ -70,35 +104,79 @@ class _BookingList extends StatelessWidget {
   const _BookingList({required this.type});
   final String type;
 
+  String _mapTypeToStatus() {
+    switch (type) {
+      case 'upcoming':
+        return 'ASSIGNED';
+      case 'completed':
+        return 'COMPLETED';
+      case 'cancelled':
+        return 'CANCELLED';
+      default:
+        return 'ASSIGNED';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bookings = [
-      Booking(
-        service: 'QuickTow Emergency',
-        category: 'Towing Service',
-        amount: '₦15,000',
-        date: 'August 02, 2025',
-        start: '12:00 pm',
-        end: '2:00 pm',
-      ),
-      Booking(
-        service: 'QuickTow Emergency',
-        category: 'Towing Service',
-        amount: '₦15,000',
-        date: 'August 03, 2025',
-        start: '9:00 am',
-        end: '10:00 am',
-      ),
-    ];
+    return BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
+      builder: (context, state) {
+        if (state is CustomerServicesLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    return ListView.separated(
-      padding: pad(vertical: 16, horizontal: 16),
-      itemCount: bookings.length,
-      separatorBuilder: (_, _) => 16.verticalSpace,
-      itemBuilder: (_, index) {
-        return BookingCard(
-          data: bookings[index],
-        );
+        if (state is CustomerBookingError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  state.error,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: WideButton(
+                    label: 'Retry',
+                    onPressed: () {
+                      context.read<CustomerBookingBloc>().add(
+                        FetchCustomerBookings(status: _mapTypeToStatus()),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (state is CustomerBookingLoaded) {
+          final bookings = state.bookings;
+          if (bookings.isEmpty) {
+            return const Center(child: GenText('No bookings found.'));
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<CustomerBookingBloc>().add(
+                FetchCustomerBookings(status: _mapTypeToStatus()),
+              );
+            },
+            child: ListView.separated(
+              padding: pad(vertical: 16, horizontal: 16),
+              itemCount: bookings.length,
+              separatorBuilder: (_, _) => 16.verticalSpace,
+              itemBuilder: (_, index) {
+                final booking = bookings[index];
+                return BookingCard(data: booking);
+              },
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
       },
     );
   }
@@ -106,7 +184,7 @@ class _BookingList extends StatelessWidget {
 
 class BookingCard extends StatefulWidget {
   const BookingCard({required this.data, super.key});
-  final Booking data;
+  final Bookings data;
 
   @override
   State<BookingCard> createState() => _BookingCardState();
@@ -126,6 +204,17 @@ class _BookingCardState extends State<BookingCard> {
     final colors = context.appColors;
     final data = widget.data;
 
+    final providerName =
+        data.provider?.companyName ??
+        data.provider?.fullName ??
+        'Unknown Provider';
+    final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
+    final amount = '${data.currency ?? '₦'}${data.amount?.toString() ?? '0'}';
+    final date = data.createdAt?.formatDate ?? 'N/A';
+    final start = data.responseTime?.providerStartedAt?.formatTime ?? '--';
+    final end = data.responseTime?.completedAt?.formatTime ?? '--';
+    final status = data.status?.capitalize ?? 'Unknown';
+
     return Container(
       padding: pad(vertical: 18, horizontal: 14),
       decoration: BoxDecoration(
@@ -136,13 +225,20 @@ class _BookingCardState extends State<BookingCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// --- Header Row
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 25,
-                backgroundImage: NetworkImage(
-                  'https://randomuser.me/api/portraits/men/30.jpg',
-                ),
+                backgroundImage:
+                    data.provider?.companyName != null
+                        ? const NetworkImage(
+                          'https://randomuser.me/api/portraits/men/30.jpg',
+                        )
+                        : const AssetImage(
+                              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+                            )
+                            as ImageProvider,
               ),
               12.horizontalSpace,
               Expanded(
@@ -152,7 +248,7 @@ class _BookingCardState extends State<BookingCard> {
                     Row(
                       children: [
                         GenText(
-                          'QuickTow Emergency',
+                          providerName,
                           height: 24.5,
                           weight: FontWeight.w500,
                           color: colors.black,
@@ -160,7 +256,7 @@ class _BookingCardState extends State<BookingCard> {
                       ],
                     ),
                     GenText(
-                      'Towing Service',
+                      serviceCategory,
                       size: 12,
                       height: 20.5,
                       weight: FontWeight.w500,
@@ -171,7 +267,7 @@ class _BookingCardState extends State<BookingCard> {
                         AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
                         4.horizontalSpace,
                         GenText(
-                          '₦15,000',
+                          amount,
                           size: 12,
                           height: 20.5,
                           weight: FontWeight.w400,
@@ -199,6 +295,7 @@ class _BookingCardState extends State<BookingCard> {
             verticalSpacing: 10,
           ),
 
+          /// --- Expanded Details
           if (expanded)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,21 +305,21 @@ class _BookingCardState extends State<BookingCard> {
                     color: colors.textColor.shade600,
                   ),
                   label: 'Date',
-                  value: data.date ?? 'N/A',
+                  value: date,
                 ),
                 _InfoRow(
                   icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
                     color: colors.textColor.shade600,
                   ),
                   label: 'Time Started',
-                  value: data.start ?? 'N/A',
+                  value: start,
                 ),
                 _InfoRow(
                   icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
                     color: colors.textColor.shade600,
                   ),
                   label: 'Time Completed',
-                  value: data.end ?? 'N/A',
+                  value: end,
                 ),
                 8.verticalSpace,
                 GestureDetector(
@@ -230,13 +327,12 @@ class _BookingCardState extends State<BookingCard> {
                     await GeneralDialogs.showCustomBottomSheet(
                       context,
                       body: BookingReceiptModal(
-                        service: 'Towing Service',
-                        provider: 'QuickTow Emergency',
-                        serviceId: 'TXN-20250815-PLUMB123',
-                        status: 'Completed',
-                        invoice: '#INV-238777',
-                        dateTime:
-                            '${data.date ?? 'N/A'} - ${data.end ?? 'N/A'}',
+                        service: serviceCategory,
+                        provider: providerName,
+                        serviceId: data.requestId ?? 'N/A',
+                        status: status,
+                        invoice: data.payment?.paymentReference ?? 'N/A',
+                        dateTime: '$date - $end',
                         method: 'Card',
                         onDownload: () {},
                       ),

@@ -1,8 +1,10 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/db_keys.local.repo.dart';
 import 'package:resq360/core/services/shared_preferences.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 
 class AuthLocalRepo {
   factory AuthLocalRepo() {
@@ -41,34 +43,52 @@ class AuthLocalRepo {
 
   ////====AUTH DETAILS====////
 
-  Future<bool> storeUserDetails({required AuthResponse authResponse}) async {
+  Future<bool> storeUserDetails({
+    required bool isProvider,
+    ProviderProfileResponse? providerProfileResponse,
+    CustomerProfileResponse? customerProfileResponse,
+  }) async {
     try {
+      final key = isProvider ? DBKeys.providerAuthData : DBKeys.authData;
+      final value =
+          isProvider ? providerProfileResponse?.toJson() : customerProfileResponse?.toJson();
       return await pref.saveMap(
-        key: DBKeys.authData,
-        value: authResponse.toJson(),
+        key: key,
+        value: value!,
       );
     } on Exception catch (e) {
-      log(e);
+      log('storeUserDetails error: $e');
       return false;
     }
   }
 
-  Future<AuthResponse?> getAuthCredentials() async {
+  Future<CustomerProfileResponse?> getAuthCredentials() async {
     try {
       final result =
           await pref.getValue(key: DBKeys.authData) as Map<String, dynamic>?;
-      return result != null ? AuthResponse.fromJson(result) : null;
+      if (result == null) return null;
+      return CustomerProfileResponse.fromJson(result);
     } on Exception catch (e) {
-      log(e);
+      log('getAuthCredentials error: $e');
       return null;
     }
   }
 
-  
+  Future<ProviderProfileResponse?> getProviderCredentials() async {
+    try {
+      final raw = await pref.getValue(key: DBKeys.providerAuthData);
+      if (raw is! Map<String, dynamic>) return null;
+      return ProviderProfileResponse.fromJson(raw);
+    } on Exception catch (e) {
+      log('getProviderCredentials error: $e');
+      return null;
+    }
+  }
 
   Future<bool> clearAuthCredentials() async {
     try {
       await pref.deleteKey(key: DBKeys.authData);
+      await pref.deleteKey(key: DBKeys.providerAuthData);
       return true;
     } on Exception catch (e) {
       log(e);
@@ -77,31 +97,31 @@ class AuthLocalRepo {
   }
 
   Future<bool> storeAccessToken(String token) async {
-  try {
-    return await pref.save(key: DBKeys.accessTokenKey, value: token);
-  } on Exception catch (e) {
-    log(e.toString());
-    return false;
+    try {
+      return await pref.save(key: DBKeys.accessTokenKey, value: token);
+    } on Exception catch (e) {
+      log(e.toString());
+      return false;
+    }
   }
-}
 
-Future<String?> getAccessToken() async {
-  try {
-    return await pref.getValue(key: DBKeys.accessTokenKey) as String?;
-  } on Exception catch (e) {
-    log(e.toString());
-    return null;
+  Future<String?> getAccessToken() async {
+    try {
+      return await pref.getValue(key: DBKeys.accessTokenKey) as String?;
+    } on Exception catch (e) {
+      log(e.toString());
+      return null;
+    }
   }
-}
 
-Future<bool> clearAccessToken() async {
-  try {
-    return await pref.deleteKey(key: DBKeys.accessTokenKey);
-  } on Exception catch (e) {
-    log(e.toString());
-    return false;
+  Future<bool> clearAccessToken() async {
+    try {
+      return await pref.deleteKey(key: DBKeys.accessTokenKey);
+    } on Exception catch (e) {
+      log(e.toString());
+      return false;
+    }
   }
-}
 
   ////////////Username and Password///////////
 
@@ -132,6 +152,30 @@ Future<bool> clearAccessToken() async {
       return (userName != null && password != null)
           ? LocalUser(userName: userName, password: password)
           : null;
+    } on Exception catch (e) {
+      log(e);
+      return null;
+    }
+  }
+
+  ////////////OTP///////////
+  Future<bool> storeForgotPasswordOtp({
+    required String otp,
+  }) async {
+    try {
+      final resultOtp = await pref.save(key: DBKeys.otp, value: otp);
+      return resultOtp;
+    } on Exception catch (e) {
+      log(e);
+      return false;
+    }
+  }
+
+  Future<String?> getForgotPaswwordOtp() async {
+    try {
+      final otp = await pref.getValue(key: DBKeys.otp) as String?;
+
+      return (otp != null) ? otp : null;
     } on Exception catch (e) {
       log(e);
       return null;
@@ -181,6 +225,36 @@ Future<bool> clearAccessToken() async {
       final result =
           await pref.getBool(key: DBKeys.backgroundLocationRequested) as bool?;
       return result ?? false;
+    } on Exception catch (e) {
+      log(e);
+      return false;
+    }
+  }
+
+  ////====USER TYPE====////
+
+  Future<bool> saveUserType(UserType userType) async {
+    try {
+      final value = userType == UserType.customer ? 'user' : 'provider';
+      return await pref.save(key: DBKeys.userTypeKey, value: value);
+    } on Exception catch (e) {
+      log(e);
+      return false;
+    }
+  }
+
+  Future<String?> getUserType() async {
+    try {
+      return await pref.getValue(key: DBKeys.userTypeKey) as String?;
+    } on Exception catch (e) {
+      log(e);
+      return null;
+    }
+  }
+
+  Future<bool> clearUserType() async {
+    try {
+      return await pref.deleteKey(key: DBKeys.userTypeKey);
     } on Exception catch (e) {
       log(e);
       return false;

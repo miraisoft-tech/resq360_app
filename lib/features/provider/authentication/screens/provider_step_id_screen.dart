@@ -37,24 +37,6 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
       ProviderSubmitKyc(filePath: pickedImage!.path),
     );
     }
-
-    // if (context.mounted) {
-    //   await GeneralDialogs.showCustomBottomSheet(
-    //     context,
-    //     body: StepModal(
-    //       title: 'You’re Almost Done!',
-    //       description: 'Just one more step to complete your verification',
-    //       icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
-    //       onContinuePressed: () async {
-    //         await pop(context);
-
-    //         if (context.mounted) {
-    //           await pushScreen(context, const ProviderStepAddressScreen());
-    //         }
-    //       },
-    //     ),
-    //   );
-    // }
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
@@ -16,9 +17,11 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
   CustomerAuthBloc() : super(CustomerAuthInitial()) {
     on<CustomerLoginWithEmail>(_onLoginWithEmail);
     on<CustomerSignupWIthEmail>(_onSignupWithEmail);
-    on<CustomerForgotPassword>(_onForgotPassword);
-    on<CustomerResetPassword>(_onResetPassword);
-    on<CustomerverifyEmail>(_onVerifyEmail);
+on<CustomerRequestPasswordResetEvent>(_onRequestPasswordReset);
+on<CustomerValidateResetTokenEvent>(_onValidateResetToken);
+on<CustomerSetNewPasswordEvent>(_onSetNewPassword);
+on<CustomerVerifyEmailAddressEvent>(_onVerifyEmailAddress);
+on<CustomerResendVerificationEmailEvent>(_onResendVerificationEmail);
     on<CustomergetUserProfile>(_onGetUserProfile);
     on<CustomerLogout>(_onLogout);
     on<CustomerSubmitKyc>(_onSubmitKyc);
@@ -70,76 +73,121 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     }
   }
 
-  Future<void> _onForgotPassword(
-    CustomerForgotPassword event,
-    Emitter<CustomerAuthState> emit,
-  ) async {
-    emit(CustomerAuthLoading());
-    try {
-      final result = await authRemoteRepo.forgotPassword(
-        email: event.email,
+Future<void> _onRequestPasswordReset(
+  CustomerRequestPasswordResetEvent event,
+  Emitter<CustomerAuthState> emit,
+) async {
+  emit(CustomerAuthLoading());
+  try {
+    final result = await authRemoteRepo.requestPasswordReset(
+      email: event.email,
+    );
+    log('Password Reset Request Result: $result');
+    if (result) {
+      emit(CustomerPasswordResetEmailSentState());
+    } else {
+      emit(
+        const CustomerAuthFailure(
+          'Failed to send password reset email. Please try again.',
+        ),
       );
-      log('Forgot Password Result: $result'); // Debug line
-      if (result) {
-        emit(CustomerForgotPasswordSucess());
-      } else {
-        emit(
-          const CustomerAuthFailure(
-            'Failed to send password reset email. Please try again.',
-          ),
-        );
-      }
-    } on Exception catch (e) {
-      emit(CustomerAuthFailure(e.toString()));
     }
+  } on Exception catch (e) {
+    emit(CustomerAuthFailure(e.toString()));
   }
+}
 
-  Future<void> _onResetPassword(
-    CustomerResetPassword event,
-    Emitter<CustomerAuthState> emit,
-  ) async {
-    emit(CustomerAuthLoading());
-    try {
-      final result = await authRemoteRepo.resetPassword(
-        password: event.password,
+Future<void> _onValidateResetToken(
+  CustomerValidateResetTokenEvent event,
+  Emitter<CustomerAuthState> emit,
+) async {
+  emit(CustomerAuthLoading());
+  try {
+    final result = await authRemoteRepo.validateResetToken(
+      token: event.token,
+    );
+
+    if (result) {
+      emit(CustomerResetTokenValidatedState());
+    } else {
+      emit(
+        const CustomerAuthFailure(
+          'Invalid or expired reset token. Please request a new one.',
+        ),
       );
-      if (result) {
-        emit(CustomerPasswordResetSuccess());
-      } else {
-        emit(
-          const CustomerAuthFailure(
-            'Password reset failed. Please check your code and try again.',
-          ),
-        );
-      }
-    } on Exception catch (e) {
-      emit(CustomerAuthFailure(e.toString()));
     }
+  } on Exception catch (e) {
+    emit(CustomerAuthFailure(e.toString()));
   }
+}
 
-  Future<void> _onVerifyEmail(
-    CustomerverifyEmail event,
-    Emitter<CustomerAuthState> emit,
-  ) async {
-    emit(CustomerAuthLoading());
-    try {
-      final result = await authRemoteRepo.verifyEmail(
-        emailVerificationToken: event.emailVerificationToken,
+Future<void> _onSetNewPassword(
+  CustomerSetNewPasswordEvent event,
+  Emitter<CustomerAuthState> emit,
+) async {
+  emit(CustomerAuthLoading());
+  try {
+    final result = await authRemoteRepo.setNewPassword(
+      password: event.password,
+    );
+    if (result) {
+      emit(CustomerPasswordResetSuccessState());
+    } else {
+      emit(
+        const CustomerAuthFailure(
+          'Password reset failed. Please try again.',
+        ),
       );
-
-      if (result) {
-        emit(CustomerEmailVerified());
-      } else {
-        emit(
-          const CustomerAuthFailure(
-            'Verification failed. Please check your code.',
-          ),
-        );
-      }
-    } on Exception catch (e) {
-      emit(CustomerAuthFailure(e.toString()));
     }
+  } on Exception catch (e) {
+    emit(CustomerAuthFailure(e.toString()));
   }
+}
+
+Future<void> _onVerifyEmailAddress(
+  CustomerVerifyEmailAddressEvent event,
+  Emitter<CustomerAuthState> emit,
+) async {
+  emit(CustomerAuthLoading());
+  try {
+    final result = await authRemoteRepo.verifyEmailAddress(
+      emailVerificationToken: event.emailVerificationToken,
+    );
+
+    if (result) {
+      emit(CustomerEmailVerified());
+    } else {
+      emit(
+        const CustomerAuthFailure(
+          'Email verification failed. Please check your verification link.',
+        ),
+      );
+    }
+  } on Exception catch (e) {
+    emit(CustomerAuthFailure(e.toString()));
+  }
+}
+
+Future<void> _onResendVerificationEmail(
+  CustomerResendVerificationEmailEvent event,
+  Emitter<CustomerAuthState> emit,
+) async {
+  emit(CustomerAuthLoading());
+  try {
+    final result = await authRemoteRepo.resendVerificationEmail(event.email);
+
+    if (result.error != null) {
+      emit(CustomerAuthFailure(result.error!));
+    } else {
+      final message = result.data?['message'] ?? 
+        'Verification email resent successfully';
+      emit(CustomerVerificationEmailResentState(message.toString()));
+    }
+  } on Exception catch (e) {
+    emit(CustomerAuthFailure('Failed to resend verification email: $e'));
+  }
+}
+
 
   // Get user profile
   Future<void> _onGetUserProfile(
@@ -150,7 +198,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     try {
       final result = await authRemoteRepo.getUserProfile();
       if (result.data != null) {
-        emit(CustomerProfileLoaded(result.data!.user));
+        emit(CustomerProfileLoaded(result.data!));
       } else {
         emit(CustomerAuthFailure(result.error ?? 'Failed to load profile'));
       }
@@ -161,7 +209,6 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
 
   // Logout
   void _onLogout(CustomerLogout event, Emitter<CustomerAuthState> emit) {
-    // Clear user session if needed
     emit(CustomerAuthInitial());
   }
 

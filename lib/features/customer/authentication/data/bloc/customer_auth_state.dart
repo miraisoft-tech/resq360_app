@@ -6,12 +6,11 @@ sealed class CustomerAuthState extends Equatable {
   @override
   List<Object> get props => [];
 }
-// initial state
+
 final class CustomerAuthInitial extends CustomerAuthState {}
-// loading state
+
 class CustomerAuthLoading extends CustomerAuthState {}
 
-// authenticated state
 class CustomerAuthAuthenticated extends CustomerAuthState {
   const CustomerAuthAuthenticated(this.user);
   final UserModel user;
@@ -21,7 +20,6 @@ class CustomerAuthAuthenticated extends CustomerAuthState {
 }
 
 
-// failure state
 class CustomerAuthFailure extends CustomerAuthState {
   const CustomerAuthFailure(this.error);
   final String error;
@@ -39,7 +37,6 @@ class CustomerKycSubmissionFailure extends CustomerAuthState {
 
 
 
-//  success state
 final class CustomerAuthUnauthenticated extends CustomerAuthState {}
 class CustomerAuthSignupSuccess extends CustomerAuthState {
   const CustomerAuthSignupSuccess(this.userId);
@@ -57,7 +54,17 @@ class CustomerAuthLoginSuccess extends CustomerAuthState {
   List<Object> get props => [user];
 }
 
-class CustomerPasswordResetSuccess extends CustomerAuthState {}
+class CustomerPasswordResetSuccessState extends CustomerAuthState {}
+
+class CustomerPasswordResetEmailSentState extends CustomerAuthState{}
+class CustomerResetTokenValidatedState extends CustomerAuthState{}
+
+class CustomerVerificationEmailResentState extends CustomerAuthState {
+  const CustomerVerificationEmailResentState(this.message);
+  final String message;
+}
+
+
 class CustomerEmailVerified extends CustomerAuthState {}
 class CustomerPasswordResetFailure extends CustomerAuthState {
   const CustomerPasswordResetFailure(this.error);
@@ -69,7 +76,7 @@ class CustomerPasswordResetFailure extends CustomerAuthState {
 class CustomerPasswordResetEmailSent extends CustomerAuthState {}
 class CustomerProfileLoaded extends CustomerAuthState {
   const CustomerProfileLoaded(this.user);
-  final UserModel user;
+  final CustomerProfileResponse user;
 }
 
  class CustomerForgotPasswordSucess extends CustomerAuthState {}

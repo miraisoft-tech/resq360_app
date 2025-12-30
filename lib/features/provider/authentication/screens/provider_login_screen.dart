@@ -1,9 +1,7 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
@@ -51,7 +49,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is ProviderAuthLoadingState) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {
@@ -59,7 +57,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
             Navigator.of(context, rootNavigator: true).pop();
           }
           log(state.error);
-          showSnackBar(context, 'Error', state.error);
+          await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is ProviderAuthLoginSuccessState) {
@@ -68,7 +66,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
           }
           await replaceScreen(
             context,
-            const MainLayoutPage(),
+            const MainLayoutPage(userType: UserType.provider),
           );
         }
       },

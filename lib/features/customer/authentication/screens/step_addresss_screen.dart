@@ -1,11 +1,11 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
+import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/helpers/location_helper.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
@@ -38,6 +38,22 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
       _selectState.value != null;
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(initializeLocation());
+    });
+  }
+
+  Future<void> initializeLocation() async {
+    final locationData = await LocationHelper.getCurrentLocation();
+
+    _streetCtrl.text = (locationData['address'] as String?) ?? '';
+    _cityCtrl.text = (locationData['city'] as String?) ?? '';
+  }
+
+  @override
   void dispose() {
     _streetCtrl.dispose();
     _cityCtrl.dispose();
@@ -52,13 +68,15 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
       listener: (context, state) async {
         if (!context.mounted) return;
         if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is CustomerKycSubmissionFailure) {
-          showSnackBar(context, 'Error', state.error);
+          await showSnackBar(context, 'Error', state.error);
         }
         if (state is CustomerKycAddressSubmitted) {
+          await pop(context);
+
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
@@ -71,8 +89,12 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
                 await pop(context);
 
                 if (context.mounted) {
-                  // Navigate to login
-                  await pushAndReplaceScreen(const LoginScreen(), context: context);
+                  await replaceScreen(
+                    context,
+                    const MainLayoutPage(
+                      userType: UserType.customer,
+                    ),
+                  );
                 }
               },
             ),
@@ -157,28 +179,13 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
                     onPressed:
                         isFormValid
                             ? () async {
-                              // await GeneralDialogs.showCustomBottomSheet(
-                              //   context,
-                              //   body: StepModal(
-                              //     title: 'Verification Complete!',
-                              //     description:
-                              //         'Welcome to ResQ360, Jane! You can now book a service and browse service providers.',
-                              //     icon: AppAssets.ASSETS_LOGO_LOGO_PNG,
-                              //     buttonText: 'Go to Dashboard',
-                              //     onContinuePressed: () async {
-                              //       await pop(context);
-
-                              //       if (context.mounted) {}
-                              //     },
-                              //   ),
-                              // );
                               context.read<CustomerAuthBloc>().add(
-                                    CustomerSubmitKycAddress(
-                                      address: _streetCtrl.text,
-                                      city: _cityCtrl.text,
-                                      state: _selectState.value!,
-                                    ),
-                                  );
+                                CustomerSubmitKycAddress(
+                                  address: _streetCtrl.text,
+                                  city: _cityCtrl.text,
+                                  state: _selectState.value!,
+                                ),
+                              );
                             }
                             : null,
                   ),

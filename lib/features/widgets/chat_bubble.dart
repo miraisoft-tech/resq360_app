@@ -44,13 +44,26 @@ class ChatBubble extends StatelessWidget {
               height: 22,
             ),
             6.verticalSpace,
-            GenText(
-              time,
-              size: 12,
-              color:
-                  isReceived
-                      ? appColors.textColor.shade400
-                      : appColors.whiteColor.withValues(alpha: 0.8),
+            SizedBox(
+              width: 70,
+              child: Row(
+                children: [
+                  GenText(
+                    time,
+                    size: 12,
+                    color:
+                        isReceived
+                            ? appColors.textColor.shade400
+                            : appColors.whiteColor.withValues(alpha: 0.8),
+                  ),
+                  6.horizontalSpace,
+                  if (isReceived) const SizedBox.shrink() else const Icon(
+                        Icons.check,
+                        size: 12,
+                        color: Color(0xFFE9E9E9),
+                      ),
+                ],
+              ),
             ),
           ],
         ),

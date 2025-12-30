@@ -1,14 +1,10 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/main_layout.dart';
+import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
@@ -45,26 +41,19 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
   }
 
   Future<void> onResend() async {
-    // showLoadingDialog();
+    if (controller.isRunning) {
+      return;
+    }
 
-    // final result = await AuthRemoteRepo.instance.resendVerifyEmail(
-    //   email: widget.email,
-    // );
-
-    // if (result is ErrorResponse && mounted) {
-    //   await pop(context);
-    //   await showErrorSnackbar(result.errorMessage);
-    // } else if (result is AuthResponse && mounted) {
-    //   await pop(context);
-
-    //   await showSuccessSnackbar('Verification mail resent successfully!');
-    //   controller.endTime =
-    //       DateTime.now()
-    //           .add(const Duration(seconds: 5 * 60))
-    //           .millisecondsSinceEpoch;
-    //   controller.start();
-    //   setState(() {});
-    // }
+    context.read<CustomerAuthBloc>().add(
+      CustomerResendVerificationEmailEvent(email: widget.email),
+    );
+    controller
+      ..endTime =
+          DateTime.now()
+              .add(const Duration(seconds: 5 * 60))
+              .millisecondsSinceEpoch
+      ..start();
   }
 
   Future<void> onVerify() async {
@@ -72,8 +61,9 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       await showErrorSnackbar(context, 'otp field must be 6 digits');
       return;
     }
+
     context.read<CustomerAuthBloc>().add(
-      CustomerverifyEmail(emailVerificationToken: _otpController1.text),
+      CustomerVerifyEmailAddressEvent(emailVerificationToken: _otpController1.text),
     );
     log('pushing to verification steps');
   }
@@ -86,21 +76,36 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
           log(state.error);
           Navigator.of(context).pop();
-          showErrorSnackbar(context, state.error);
+          await showErrorSnackbar(context, state.error);
+        }
+
+        if (state is CustomerVerificationEmailResentState) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          await showSuccessSnackbar(context, state.message);
+
+          controller
+            ..endTime =
+                DateTime.now()
+                    .add(const Duration(seconds: 5 * 60))
+                    .millisecondsSinceEpoch
+            ..start();
+
+          setState(() {});
         }
 
         if (state is CustomerEmailVerified) {
           log('Email verified');
 
-          Navigator.of(context).pop();
-          // pushScreen(context, const VerificationStepsScreen());
-          pushScreen(context, const MainLayoutPage());
+          await pop(context);
+          await replaceScreen(context, const VerificationStepsScreen());
         }
       },
       child: AppScaffold(
@@ -128,19 +133,17 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
                       widgetBuilder: (_, CurrentRemainingTime? time) {
                         return Column(
                           children: [
-                            InkWell(
-                              onTap: onResend,
-                              child: GenText(
-                                'Didn’t receive code?',
-                                size: 12,
-                                height: 20.5,
-                                color: colors.neutral.shade500,
-                                weight: FontWeight.w400,
-                              ),
+                            GenText(
+                              'Didn’t receive code?',
+                              size: 12,
+                              height: 20.5,
+                              color: colors.neutral.shade500,
+                              weight: FontWeight.w400,
                             ),
                             5.verticalSpace,
                             GoToWidget(
                               ligthText: 'Resend code in ',
+                              onTap: onResend,
                               coloredText:
                                   '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
                             ),
@@ -166,7 +169,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
   }
 }
 
-class GoToWidget extends ConsumerWidget {
+class GoToWidget extends StatelessWidget {
   const GoToWidget({
     required this.ligthText,
     required this.coloredText,
@@ -183,7 +186,7 @@ class GoToWidget extends ConsumerWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return Text.rich(
@@ -199,6 +202,7 @@ class GoToWidget extends ConsumerWidget {
             ligthText,
             color: colors.primary.shade500,
             decoration: TextDecoration.underline,
+            onTap: onTap,
           ),
           circularSTDTextSpan(
             coloredText,

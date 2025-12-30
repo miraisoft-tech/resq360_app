@@ -1,7 +1,3 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,31 +21,12 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
   Future<void> pickCameraPhoto(BuildContext context) async {
     pickedImage = await AppFilePicker.pickImage();
 
-     if (!context.mounted) return;
+    if (!context.mounted) return;
     if (pickedImage != null) {
-      // Dispatch e[vent to Bloc
       context.read<CustomerAuthBloc>().add(
         CustomerSubmitKyc(filePath: pickedImage!.path),
       );
     }
-
-    // if (context.mounted) {
-    //   await GeneralDialogs.showCustomBottomSheet(
-    //     context,
-    //     body: StepModal(
-    //       title: 'Facial Verification Successful!',
-    //       description: 'Let’s confirm your identification',
-    //       icon: AppAssets.ASSETS_IMAGES_STEP_1_PNG,
-    //       onContinuePressed: () async {
-    //         await pop(context);
-
-    //         if (context.mounted) {
-    //           await pushScreen(context, const StepIDScreen());
-    //         }
-    //       },
-    //     ),
-    //   );
-    // }
   }
 
   @override
@@ -59,18 +36,18 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (state is CustomerAuthLoading) {
-          // Optional: show loading overlay
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is CustomerKycSubmissionFailure) {
-          pop(context);
+          await pop(context);
           if (!context.mounted) return;
-          showSnackBar(context, 'Error', state.error);
+          await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerKycSubmitted) {
-          pop(context);
+          await pop(context);
+
           if (!context.mounted) return;
           await GeneralDialogs.showCustomBottomSheet(
             context,

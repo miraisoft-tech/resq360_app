@@ -75,6 +75,7 @@ class _FundMethodDialogState extends State<FundMethodDialog> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      log('pressed');
                       Navigator.pop(context);
 
                       widget.onPaymentSelected(selectedPayment!);

@@ -10,23 +10,18 @@ import 'package:resq360/features/provider/chat/screens/provider_chat_screen.dart
 import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
 
-final dashboardViewModel = ChangeNotifierProvider<DashboardViewModel>(
-  DashboardViewModel.new,
-);
+final dashboardViewModel = DashboardViewModel();
 
 class DashboardViewModel extends ChangeNotifier {
-  DashboardViewModel(this.ref);
-  Ref ref;
-  //
+  DashboardViewModel({this.userType = UserType.customer});
 
-  UserType userType = UserType.customer;
+  UserType userType;
 
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
   final PageController _pageController = PageController();
   PageController get pageController => _pageController;
 
-  // For tab switching
   int tabIndex = 0;
 
   void onChanged(int newIndex, {int newTabIndex = 0}) {

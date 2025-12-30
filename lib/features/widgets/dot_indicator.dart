@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 
-class DotIndicator extends ConsumerWidget {
+class DotIndicator extends StatelessWidget {
   const DotIndicator({
     required this.total,
     required this.currentIndex,
@@ -11,7 +11,7 @@ class DotIndicator extends ConsumerWidget {
   final int currentIndex;
   final Color? color;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appTheme = context.appColors;
 
     return Row(
@@ -37,7 +37,7 @@ class DotIndicator extends ConsumerWidget {
   }
 }
 
-class SmallDotIndicator extends ConsumerWidget {
+class SmallDotIndicator extends StatelessWidget {
   const SmallDotIndicator({
     required this.total,
     required this.currentIndex,
@@ -48,7 +48,7 @@ class SmallDotIndicator extends ConsumerWidget {
   final int currentIndex;
   final Color? color;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appTheme = context.appColors;
 
     return Row(

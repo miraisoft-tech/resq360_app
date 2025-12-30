@@ -1,13 +1,9 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
-import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
+import 'package:resq360/features/customer/authentication/screens/verify_reset_token_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -40,29 +36,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
+        if (state is! CustomerAuthLoading) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        }
         if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         } 
 
         if (state is CustomerAuthFailure) {
-           if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-          showSnackBar(context, 'Error', state.error);
+          await pop(context);
+          Future.delayed(const Duration(seconds: 2), () async{
+             await showSnackBar(context, 'Error', state.error);
+          });
+          log(state.error);
         }
 
-        if (state is CustomerForgotPasswordSucess) {
-           if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
+        if (state is CustomerPasswordResetEmailSentState) {
           if (Navigator.canPop(context)) {
             Navigator.of(context, rootNavigator: true).pop();
           }
           await pushScreen(
             context,
-            VerifyEmailScreen(
+            VerifyResetTokenScreen(
               email: emailController.text,
-              purpose: VerificationPurpose.passwordReset,
             ),
           );
         }
@@ -118,11 +116,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 label: 'Send Reset Code',
                 onPressed: () async {
                   if (emailController.text.isEmpty) {
-                    showErrorSnackbar(context, 'Please enter a valid email.');
+                    await showErrorSnackbar(context, 'Please enter a valid email.');
                     return;
                   } else {
                     context.read<CustomerAuthBloc>().add(
-                      CustomerForgotPassword(
+                      CustomerRequestPasswordResetEvent(
                         email: emailController.text.trim(),
                       ),
                     );

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resq360/core/theme/app_color_theme.dart';
-import 'package:resq360/core/theme/app_theme.providers.dart';
+// import 'package:resq360/core/theme/app_theme.providers.dart';
 
-// Text theme provider
-final textThemeProvider = Provider<AppTextTheme>((ref) {
-  final brightness = ref.watch(currentBrightnessProvider);
-  final colorPalette = ref.watch(colorPaletteProvider);
+// // Text theme provider
+// final textThemeProvider = Provider<AppTextTheme>((ref) {
+//   final brightness = ref.watch(currentBrightnessProvider);
+//   final colorPalette = ref.watch(colorPaletteProvider);
 
-  final baseTextTheme =
-      brightness == Brightness.light
-          ? AppTextTheme.light()
-          : AppTextTheme.dark();
+//   final baseTextTheme =
+//       brightness == Brightness.light
+//           ? AppTextTheme.light()
+//           : AppTextTheme.dark();
 
-  return baseTextTheme.withColors(colorPalette);
-});
+//   return baseTextTheme.withColors(colorPalette);
+// });
 
 class AppTextTheme extends ThemeExtension<AppTextTheme> {
   const AppTextTheme({

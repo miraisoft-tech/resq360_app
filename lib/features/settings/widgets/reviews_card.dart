@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/settings/data/models/reviews_model.dart';
+import 'package:resq360/features/settings/data/models/provider_ratings.dart';
 
 class ReviewCard extends StatelessWidget {
   const ReviewCard({
@@ -7,12 +7,13 @@ class ReviewCard extends StatelessWidget {
     super.key,
   });
 
-  final ReviewModel item;
+  final Review item;
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
+    final user = item.user;
+    final category = item.serviceRequest?.serviceCategory;
     return Container(
       padding: pad(vertical: 20, horizontal: 10),
       decoration: BoxDecoration(
@@ -27,7 +28,7 @@ class ReviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 25.r,
-                backgroundImage: NetworkImage(item.avatar),
+                backgroundImage: NetworkImage(user?.profileImage ?? 'https://randomuser.me/api/portraits/men/30.jpg'),
               ),
               12.horizontalSpace,
               Expanded(
@@ -35,13 +36,13 @@ class ReviewCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GenText(
-                      item.name,
+                      user?.fullName ?? 'N/A',
                       size: 15,
                       weight: FontWeight.w600,
                     ),
                     5.verticalSpace,
                     GenText(
-                      item.category,
+                      category?.name ?? 'General',
                       size: 12,
                       color: appColors.textColor.shade300,
                     ),
@@ -53,7 +54,7 @@ class ReviewCard extends StatelessWidget {
                         ),
                         5.horizontalSpace,
                         GenText(
-                          item.date,
+                          item.ratingDate ?? 'N/A',
                           size: 12,
                           color: appColors.textColor.shade400,
                         ),
@@ -62,24 +63,26 @@ class ReviewCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Row(
-                children: List.generate(
-                  5,
-                  (i) => Icon(
-                    Icons.star,
-                    color:
-                        i < item.rating
-                            ? appColors.primary.shade500
-                            : appColors.textColor.shade100,
-                    size: 16,
+              if (item.overallRating != null) ...[
+                Row(
+                  children: List.generate(
+                    5,
+                    (i) => Icon(
+                      Icons.star,
+                      color:
+                          i < item.overallRating!
+                              ? appColors.primary.shade500
+                              : appColors.textColor.shade100,
+                      size: 16,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
           10.verticalSpace,
           GenText(
-            item.review,
+            item.feedback ?? '',
             size: 12,
             color: appColors.textColor.shade300,
             height: 20,

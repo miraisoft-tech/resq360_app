@@ -95,8 +95,10 @@ class SupportChatScreen extends StatelessWidget {
               ),
             ),
             ChatBoxWidget(
-              onAttachment: () => _showAttachmentMenu(context),
-              onSend: () {},
+              onAttachment:  () async {
+                await _showAttachmentMenu(context);
+              },
+              onSend: (text) {},
             ),
           ],
         ),

@@ -161,7 +161,7 @@ class _ClientServiceCompletedScreenState
   }
 }
 
-class ProviderThankYouModal extends ConsumerWidget {
+class ProviderThankYouModal extends StatelessWidget {
   const ProviderThankYouModal({
     required this.onContinuePressed,
 
@@ -171,7 +171,7 @@ class ProviderThankYouModal extends ConsumerWidget {
   final void Function() onContinuePressed;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(

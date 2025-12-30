@@ -1,13 +1,11 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/forgot_password_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
@@ -52,24 +50,25 @@ class _LoginScreenState extends State<LoginScreen> {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is CustomerAuthLoading) {
-           showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           log(state.error);
-           showSnackBar(context, 'Error', state.error);
+          await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerAuthLoginSuccess) {
-           if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          context.read<ChatBloc>().add(ConnectChatSocketEvent());
           await replaceScreen(
             context,
-            const MainLayoutPage(),
+             const MainLayoutPage(userType: UserType.customer,),
           );
         }
       },
@@ -89,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
-                 validator: Validators.validateEmail,
+                validator: Validators.validateEmail,
               ),
               16.verticalSpace,
               KFormField(
@@ -100,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
-                 validator: Validators.validatePassword,
+                validator: Validators.validatePassword,
               ),
               16.verticalSpace,
               GestureDetector(

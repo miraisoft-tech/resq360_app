@@ -1,11 +1,10 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars) 
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/screens/verify_email_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_verify_email_screen.dart';
 
 class ProviderForgotPasswordScreen extends StatefulWidget {
   const ProviderForgotPasswordScreen({super.key});
@@ -38,31 +37,26 @@ class _ProviderForgotPasswordScreenState
     final colors = context.appColors;
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
-      listener: (context, state) async{
-        if (!mounted) return;
-          if (state is ProviderAuthLoadingState) {
-          showLoadingDialog(context);
-        } 
-
-        if (state is ProviderAuthFailureState) {
-             if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-          showSnackBar(context, 'Error', state.error);
+      listener: (context, state) async {
+        if (state is ProviderAuthLoadingState) {
+          await showLoadingDialog(context);
         }
 
-        if (state is ProviderForgotPasswordSucessState) {
-          // showSuccessSnackbar(context, 'Password reset email sent successfully!');
-             if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-          await pushScreen(
-            context,
-            VerifyEmailScreen(
-              email: emailController.text,
-              purpose: VerificationPurpose.passwordReset,
-            ),
-          );
+       if (state is ProviderAuthFailureState) {
+          await pop(context);
+          Future.delayed(const Duration(seconds: 2), () async{
+             await showSnackBar(context, 'Error', state.error);
+          });
+          log(state.error);
+        }
+
+        if (state is ProviderPasswordResetEmailSentState) {
+          if (context.mounted) {
+            await replaceScreen(
+              context,
+              ProviderVerifyEmailScreen(email: emailController.text),
+            );
+          }
         }
       },
       child: Scaffold(
@@ -114,13 +108,15 @@ class _ProviderForgotPasswordScreenState
               WideButton(
                 label: 'Send Reset Code',
                 onPressed: () async {
-
                   if (emailController.text.isEmpty) {
-                    showErrorSnackbar(context, 'Please enter a valid email.');
+                    await showErrorSnackbar(
+                      context,
+                      'Please enter a valid email.',
+                    );
                     return;
                   } else {
                     context.read<ProviderAuthBloc>().add(
-                      ProviderForgotPassword(email: emailController.text),
+                      ProviderRequestPasswordResetEvent(email: emailController.text),
                     );
                   }
                 },

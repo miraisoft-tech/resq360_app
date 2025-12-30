@@ -1,13 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
+// import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
-import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
+// import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
 
@@ -19,6 +24,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+    context.read<CustomerAdvertisementBloc>().add(CustomerFetchAdvertisement());
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -34,98 +46,17 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, state) {
             if (state is CustomerAuthLoginSuccess) {
               final user = state.user;
-              return Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 19,
-                    backgroundImage:  AssetImage(
-                    AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                  ),
-                  // TODO : replace with network image
-                    // NetworkImage(
-                    //   // user.profilePictureUrl ??
-                    //       AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                    // ),
-                  ),
-                  10.horizontalSpace,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GenText(
-                        'Hello, ${user.fullName} 👋',
-                        size: 12,
-                        height: 20,
-                        weight: FontWeight.w400,
-                        color: colors.neutral.shade500,
-                      ),
+              return _buildHeader(context, user.fullName!);
+            }
 
-                      Row(
-                        children: [
-                          AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
-                          4.horizontalSpace,
-                          GenText(
-                            // user.address ??
-                             'No. 2 Olympia Street',
-                            height: 24,
-                            color: colors.black,
-                            weight: FontWeight.w500,
-                          ),
-                          Icon(
-                            Icons.keyboard_arrow_down,
-                            size: 14,
-                            color: colors.textColor.shade500,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            } else {
-            return
-             Row(
-              children: [
-                const CircleAvatar(
-                  radius: 19,
-                  backgroundImage: AssetImage(
-                    AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                  ),
-                ),
-                10.horizontalSpace,
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GenText(
-                      'Hello, Jane 👋',
-                      size: 12,
-                      height: 20,
-                      weight: FontWeight.w400,
-                      color: colors.neutral.shade500,
-                    ),
-
-                    Row(
-                      children: [
-                        AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
-                        4.horizontalSpace,
-                        GenText(
-                          'No. 2 Olympia Street',
-                          height: 24,
-                          color: colors.black,
-                          weight: FontWeight.w500,
-                        ),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 14,
-                          color: colors.textColor.shade500,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+            return FutureBuilder<CustomerProfileResponse?>(
+              future: AuthLocalRepo.instance.getAuthCredentials(),
+              builder: (context, snapshot) {
+                final userName = snapshot.data?.user.fullName ?? 'user';
+                return _buildHeader(context, userName);
+              },
             );
-          }
-          }
+          },
         ),
         actions: [
           IconButton(
@@ -197,34 +128,37 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           20.verticalSpace,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ServiceCategoryWidget(
-                icon: Icon(
-                  Icons.local_shipping_outlined,
-                  size: 28,
-                  color: colors.primary.shade500,
-                ),
-                label: 'Towing',
-              ),
-              ServiceCategoryWidget(
-                icon: Icon(
-                  Icons.medical_services_outlined,
-                  size: 28,
-                  color: colors.primary.shade500,
-                ),
-                label: 'Ambulance',
-              ),
-              ServiceCategoryWidget(
-                icon: Icon(
-                  Icons.plumbing_outlined,
-                  size: 28,
-                  color: colors.primary.shade500,
-                ),
-                label: 'Plumbing',
-              ),
-            ],
+          BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+            builder: (context, state) {
+              if (state is CustomerServicesLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (state is CustomerServicesLoaded) {
+                final categories = state.services;
+
+                return SizedBox(
+                  height: 130,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 3,
+                    separatorBuilder: (_, _) => 12.horizontalSpace,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return ServiceCategoryWidget(
+                        category: category,
+                      );
+                    },
+                  ),
+                );
+              }
+
+              if (state is CustomerServicesError) {
+                return Center(child: Text(state.error));
+              }
+
+              return const SizedBox.shrink();
+            },
           ),
           30.verticalSpace,
           Row(
@@ -239,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Spacer(),
               GestureDetector(
                 onTap: () async {
-                  await pushScreen(context, const ServiceProvidersScreen());
+                  // await pushScreen(context, const ServiceProvidersScreen());
                 },
                 child: UrbText(
                   'View All',
@@ -252,10 +186,76 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           12.verticalSpace,
-          const RecommendedCard(),
+          BlocBuilder<CustomerAdvertisementBloc, CustomerAdvertisementState>(
+            builder: (context, state) {
+              switch (state) {
+                case CustomerAdvertisementLoading():
+                  return const CircularProgressIndicator();
+                case CustomerAdvertisementInitial():
+                  return const SizedBox.shrink();
+                case CustomerAdvertisementFetched(adverisementList: final ads):
+                  if (ads.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No advertisements available',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }
+                  return RecommendedCard(advertisement: ads.first);
+                case CustomerAdvertisementError(error: final message):
+                  return ErrorMessageAndButton(error: message);
+              }
+            },
+          ),
           30.verticalSpace,
         ],
       ),
     );
   }
+}
+
+Widget _buildHeader(BuildContext context, String name) {
+  final colors = context.appColors;
+
+  return Row(
+    children: [
+      const CircleAvatar(
+        radius: 19,
+        backgroundImage: AssetImage(
+          AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+        ),
+      ),
+      10.horizontalSpace,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GenText(
+            'Hello, $name 👋',
+            size: 12,
+            height: 20,
+            weight: FontWeight.w400,
+            color: colors.neutral.shade500,
+          ),
+          Row(
+            children: [
+              AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
+              4.horizontalSpace,
+              GenText(
+                'No. 2 Olympia Street',
+                height: 24,
+                color: colors.black,
+                weight: FontWeight.w500,
+              ),
+              Icon(
+                Icons.keyboard_arrow_down,
+                size: 14,
+                color: colors.textColor.shade500,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
 }

@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
+import 'package:resq360/features/settings/data/bloc/gallery_bloc/gallery_bloc.dart';
+import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/service_type.enums.dart';
 import 'package:resq360/features/widgets/custom_switch.dart';
 import 'package:resq360/features/widgets/images.widgets.dart';
@@ -18,10 +22,76 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  final descController = TextEditingController();
+  List<File> pickedImages = [];
+  ServiceTypeEnums? selectedServiceType;
+
+  final startTimeController = TextEditingController();
+  final endTimeController = TextEditingController();
+  final workingDays = {
+    'monday': true,
+    'tuesday': true,
+    'wednesday': true,
+    'thursday': true,
+    'friday': true,
+    'saturday': true,
+    'sunday': true,
+  };
+
+  TimeOfDay? startTime;
+  TimeOfDay? endTime;
+
+  void handleToggleDay({required String day, required bool value}) {
+    setState(() {
+      workingDays[day] = value;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+  }
+
+  Future<void> handleUploadGalleryService() async {
+    context.read<GalleryBloc>().add(
+      UpdateServiceEvent(
+        images: pickedImages,
+        caption: descController.text,
+      ),
+    );
+  }
+
+  Future<void> handleUpdateService() async {
+    final bloc = context.read<ProfileUpdateBloc>();
+
+    final selectedDays =
+        workingDays.entries.where((e) => e.value).map((e) => e.key).toList();
+
+    final startDateTime = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+      startTime?.hour ?? 9,
+      startTime?.minute ?? 0,
+    );
+    final endDateTime = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+      endTime?.hour ?? 17,
+      endTime?.minute ?? 0,
+    );
+
+    bloc.add(
+      UpdateProviderInfoEvent(
+        description: descController.text.trim(),
+        workingDays: selectedDays,
+        openingHours: startDateTime,
+        closingHours: endDateTime,
+        filePath: pickedImages.isNotEmpty ? pickedImages.first.path : null,
+      ),
+    );
   }
 
   @override
@@ -60,9 +130,77 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
 
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          ServiceDetailSection(),
-          WorkingHoursSection(),
+        children: [
+          BlocConsumer<GalleryBloc, GalleryState>(
+            listener: (context, state) async {
+              if (state is GalleryLoading) {
+                await showLoadingDialog(context);
+              } else {
+                Navigator.pop(context);
+              }
+
+              if (state is GalleryItemCreated) {
+                unawaited(
+                  showSnackBar(
+                    context,
+                    'Success',
+                    'Service gallery updated successfully',
+                  ),
+                );
+
+                setState(() {
+                  pickedImages.clear();
+                  descController.clear();
+                });
+              } else if (state is GalleryError) {
+                unawaited(showErrorSnackbar(context, state.message));
+              }
+            },
+            builder: (context, state) {
+              return ServiceDetailSection(
+                descController: descController,
+                pickedImages: pickedImages,
+                onImagesPicked:
+                    (images) => setState(() => pickedImages = images),
+                onServiceSelected: (type) => selectedServiceType = type,
+                onSubmit: handleUploadGalleryService,
+              );
+            },
+          ),
+          BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
+            listener: (context, state) async {
+              if (state is ProfileUpdateLoading) {
+                await showLoadingDialog(context);
+              } else {
+                Navigator.pop(context);
+              }
+
+              if (state is ProfileUpdateSuccess) {
+                unawaited(
+                  showSnackBar(
+                    context,
+                    'Success',
+                    'Service updated successfully',
+                  ),
+                );
+              } else if (state is ProfileUpdateError) {
+                unawaited(showErrorSnackbar(context, state.message));
+              }
+            },
+            builder: (context, state) {
+              return WorkingHoursSection(
+                workingDays: workingDays,
+                startTimeController: startTimeController,
+                endTimeController: endTimeController,
+                onTimeSelected: (start, end) {
+                  startTime = start;
+                  endTime = end;
+                },
+                onSubmit: handleUpdateService,
+                onToggleDay: handleToggleDay,
+              );
+            },
+          ),
         ],
       ),
     );
@@ -70,151 +208,232 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
 }
 
 class ServiceDetailSection extends StatefulWidget {
-  const ServiceDetailSection({super.key});
+  const ServiceDetailSection({
+    required this.descController,
+    required this.pickedImages,
+    required this.onImagesPicked,
+    required this.onServiceSelected,
+    required this.onSubmit,
+    super.key,
+  });
+  final TextEditingController descController;
+  final List<File> pickedImages;
+  final ValueChanged<List<File>> onImagesPicked;
+  final ValueChanged<ServiceTypeEnums> onServiceSelected;
+  final Future<void> Function() onSubmit;
 
   @override
   State<ServiceDetailSection> createState() => _ServiceDetailSectionState();
 }
 
 class _ServiceDetailSectionState extends State<ServiceDetailSection> {
-  TextEditingController descController = TextEditingController();
   final selectedIssue = ValueNotifier<ServiceTypeEnums?>(null);
+
+  Future<void> pickCameraPhoto(BuildContext context) async {
+    final images = await AppFilePicker.pickMultiImages() ?? [];
+    if (images.isNotEmpty) widget.onImagesPicked(images);
+  }
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return ListView(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        bottom: 100.h,
-        top: 30.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 30.h),
       children: [
         GenText(
           'You can select multiple service category',
           color: appColors.black,
-          height: 24.5,
         ),
         16.verticalSpace,
         ValueListenableBuilder<ServiceTypeEnums?>(
           valueListenable: selectedIssue,
           builder: (context, selected, _) {
             return Column(
-              children: [
-                IssueRadio(
-                  label: 'Towing',
-                  selected: selected == ServiceTypeEnums.towing,
-                  onTap: () => selectedIssue.value = ServiceTypeEnums.towing,
-                ),
-                IssueRadio(
-                  label: 'Plumbing',
-                  selected: selected == ServiceTypeEnums.plumbing,
-                  onTap: () => selectedIssue.value = ServiceTypeEnums.plumbing,
-                ),
-                IssueRadio(
-                  label: 'Mechanic',
-                  selected: selected == ServiceTypeEnums.mechanic,
-                  onTap: () => selectedIssue.value = ServiceTypeEnums.mechanic,
-                ),
-                IssueRadio(
-                  label: 'Electrician',
-                  selected: selected == ServiceTypeEnums.plumbing,
-                  onTap: () => selectedIssue.value = ServiceTypeEnums.plumbing,
-                ),
-              ],
+              children:
+                  ServiceTypeEnums.values.map((type) {
+                    return IssueRadio(
+                      label: type.name.capitalize,
+                      selected: selected == type,
+                      onTap: () {
+                        selectedIssue.value = type;
+                        widget.onServiceSelected(type);
+                      },
+                    );
+                  }).toList(),
             );
           },
         ),
         30.verticalSpace,
         KFormField(
           label: 'Service Description',
-          controller: descController,
+          controller: widget.descController,
           hintText: 'Describe your service in detail...',
-          maxLines: 10,
-          minLines: 8,
-          onChanged: (value) {
-            setState(() {});
-          },
+          maxLines: 8,
         ),
         30.verticalSpace,
-        Col(
-          children: [
-            GenText(
-              'Service image',
-              color: appColors.black,
-              height: 24.5,
-            ),
-            10.verticalSpace,
-            Wrap(
-              spacing: 10.w,
-              children: [
-                if (pickedImages.isEmpty)
-                  ...[1, 2, 3].map((value) {
-                    return GestureDetector(
-                      onTap: () => pickCameraPhoto(context),
-                      child: Container(
-                        padding: pad(vertical: 25, horizontal: 20),
-                        height: 110,
-                        width: 115,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: appColors.primary.shade500,
-                          ),
+        GenText('Service image', color: appColors.black),
+        10.verticalSpace,
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: widget.pickedImages.length + 1,
+            separatorBuilder: (_, _) => 10.horizontalSpace,
+            itemBuilder: (context, index) {
+              if (index == widget.pickedImages.length) {
+                return GestureDetector(
+                  onTap: () => pickCameraPhoto(context),
+                  child: Container(
+                    height: 110,
+                    width: 115,
+                    padding: pad(vertical: 25, horizontal: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: appColors.primary.shade500),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AppAssets.ASSETS_ICONS_UPLOAD_SVG.svg,
+                        10.verticalSpace,
+                        GenText(
+                          'Add Image',
+                          size: 12,
+                          color: appColors.primary.shade500,
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AppAssets.ASSETS_ICONS_UPLOAD_SVG.svg,
-                            10.verticalSpace,
-                            GenText(
-                              'Add Image',
-                              size: 12,
-                              color: appColors.primary.shade500,
-                              height: 14.5,
-                              weight: FontWeight.w400,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  })
-                else
-                  ...pickedImages.map(
-                    (image) {
-                      return Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          memoryImage(
-                            imgBytes: image.readAsBytesSync(),
-                            height: 110,
-                            width: 115,
-                            fit: BoxFit.cover,
-                          ),
-                          SVGButton(
-                            path: AppAssets.ASSETS_ICONS_DELETE_ICON_SVG,
-                            onTap: () {
-                              setState(() {
-                                pickedImages.remove(image);
-                              });
-                            },
-                          ),
-                        ],
-                      );
-                    },
+                      ],
+                    ),
                   ),
+                );
+              }
+
+              final image = widget.pickedImages[index];
+
+              return Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: memoryImage(
+                      imgBytes: image.readAsBytesSync(),
+                      height: 110,
+                      width: 115,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: SVGButton(
+                      path: AppAssets.ASSETS_ICONS_DELETE_ICON_SVG,
+                      onTap: () {
+                        setState(() {
+                          widget.pickedImages.removeAt(index);
+                          widget.onImagesPicked(widget.pickedImages);
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+
+        10.verticalSpace,
+
+        GenText(
+          'You can upload up to 3 images',
+          textAlign: TextAlign.center,
+          color: appColors.textColor.shade300,
+        ),
+        GenText(
+          'PNG, JPG up to 10mb each',
+          textAlign: TextAlign.center,
+          color: appColors.textColor.shade300,
+        ),
+
+        40.verticalSpace,
+        WideButton(
+          label: 'Update Service',
+          onPressed: widget.onSubmit,
+        ),
+      ],
+    );
+  }
+}
+
+class WorkingHoursSection extends StatelessWidget {
+  const WorkingHoursSection({
+    required this.workingDays,
+    required this.startTimeController,
+    required this.endTimeController,
+    required this.onTimeSelected,
+    required this.onSubmit,
+    required this.onToggleDay,
+    super.key,
+  });
+  final Map<String, bool> workingDays;
+  final TextEditingController startTimeController;
+  final TextEditingController endTimeController;
+  final void Function(TimeOfDay start, TimeOfDay end) onTimeSelected;
+  final Future<void> Function() onSubmit;
+  final void Function({required String day, required bool value}) onToggleDay;
+
+  @override
+  Widget build(BuildContext context) {
+    final appColors = context.appColors;
+
+    return ListView(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 30.h),
+      children: [
+        ...workingDays.keys.map((day) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: 16.h),
+            child: Row(
+              children: [
+                GenText(day.capitalize, color: appColors.neutral.shade400),
+                const Spacer(),
+                CustomSwitchWidget(
+                  value: workingDays[day] ?? false,
+                  onChanged:
+                      ({required value}) => onToggleDay(day: day, value: value),
+                  activeThumbColor: appColors.primary.shade500,
+                  disabledThumbColor: appColors.textColor.shade100,
+                  tapColor: appColors.whiteColor,
+                ),
               ],
             ),
-            10.verticalSpace,
-            Center(
-              child: GenText(
-                'You can upload up to 3 images \n PNG, JPG up to 10mb each',
-                color: appColors.neutral.shade400,
-                size: 12,
-                weight: FontWeight.w400,
-                height: 24.5,
+          );
+        }),
+
+        30.verticalSpace,
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _selectTime(context, true),
+                child: AbsorbPointer(
+                  child: KFormField(
+                    label: 'Start Time',
+                    controller: startTimeController,
+                    hintText: '00:00',
+                  ),
+                ),
+              ),
+            ),
+            50.horizontalSpace,
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _selectTime(context, false),
+                child: AbsorbPointer(
+                  child: KFormField(
+                    label: 'End Time',
+                    controller: endTimeController,
+                    hintText: '00:00',
+                  ),
+                ),
               ),
             ),
           ],
@@ -223,298 +442,35 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
         40.verticalSpace,
         WideButton(
           label: 'Update Service',
-          onPressed: () {},
+          onPressed: onSubmit,
         ),
       ],
     );
   }
 
-  List<File> pickedImages = [];
-
-  Future<void> pickCameraPhoto(BuildContext context) async {
-    pickedImages = await AppFilePicker.pickMultiImages() ?? [];
-
-    if (pickedImages.isNotEmpty) {
-      setState(() {});
-    }
-
-    if (context.mounted) {}
-  }
-}
-
-class WorkingHoursSection extends StatefulWidget {
-  const WorkingHoursSection({super.key});
-
-  @override
-  State<WorkingHoursSection> createState() => _WorkingHoursSectionState();
-}
-
-class _WorkingHoursSectionState extends State<WorkingHoursSection> {
-  TextEditingController startTimeController = TextEditingController();
-  TextEditingController endTimeController = TextEditingController();
-
-  ValueNotifier<bool> monday = ValueNotifier(true);
-  ValueNotifier<bool> tuesday = ValueNotifier(true);
-  ValueNotifier<bool> wednesday = ValueNotifier(true);
-  ValueNotifier<bool> thursday = ValueNotifier(true);
-  ValueNotifier<bool> friday = ValueNotifier(true);
-  ValueNotifier<bool> saturday = ValueNotifier(true);
-  ValueNotifier<bool> sunday = ValueNotifier(true);
-
-  TimeOfDay? startTime;
-  TimeOfDay? endTime;
-
-  Future<void> _selectTime(BuildContext context, bool isStartTime) async {
+  Future<void> _selectTime(BuildContext context, bool isStart) async {
     final picked = await showTimePicker(
       context: context,
-      initialTime:
-          isStartTime
-              ? (startTime ?? TimeOfDay.now())
-              : (endTime ?? TimeOfDay.now()),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: context.appColors.primary.shade500,
-              onSurface: context.appColors.black,
+      initialTime: TimeOfDay.now(),
+      builder:
+          (context, child) => Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: context.appColors.primary.shade500,
+              ),
             ),
+            child: child!,
           ),
-          child: child!,
-        );
-      },
     );
 
     if (picked != null) {
-      setState(() {
-        if (isStartTime) {
-          startTime = picked;
-          startTimeController.text = picked.format(context);
-        } else {
-          endTime = picked;
-          endTimeController.text = picked.format(context);
-        }
-      });
+      if (isStart) {
+        startTimeController.text = picked.format(context);
+        onTimeSelected(picked, TimeOfDay.now());
+      } else {
+        endTimeController.text = picked.format(context);
+        onTimeSelected(TimeOfDay.now(), picked);
+      }
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final appColors = context.appColors;
-
-    return ListView(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        bottom: 100.h,
-        top: 30.h,
-      ),
-      children: [
-        GenText(
-          'Working Hours',
-          color: appColors.black,
-          height: 24.5,
-        ),
-        16.verticalSpace,
-        Row(
-          children: [
-            GenText(
-              'Monday',
-              color: appColors.neutral.shade400,
-              height: 24.5,
-            ),
-            const Spacer(),
-            CustomSwitchWidget(
-              value: monday.value,
-              onChanged: ({required value}) {
-                monday.value = value;
-                setState(() {});
-              },
-              activeThumbColor: appColors.primary.shade500,
-              disabledThumbColor: appColors.textColor.shade100,
-              tapColor: appColors.whiteColor,
-            ),
-          ],
-        ),
-        16.verticalSpace,
-        Row(
-          children: [
-            GenText(
-              'Tuesday',
-              color: appColors.neutral.shade400,
-              height: 24.5,
-            ),
-            const Spacer(),
-            CustomSwitchWidget(
-              value: tuesday.value,
-              onChanged: ({required value}) {
-                tuesday.value = value;
-                setState(() {});
-              },
-              activeThumbColor: appColors.primary.shade500,
-              disabledThumbColor: appColors.textColor.shade100,
-              tapColor: appColors.whiteColor,
-            ),
-          ],
-        ),
-        16.verticalSpace,
-        Row(
-          children: [
-            GenText(
-              'Wednesday',
-              color: appColors.neutral.shade400,
-              height: 24.5,
-            ),
-            const Spacer(),
-            CustomSwitchWidget(
-              value: wednesday.value,
-              onChanged: ({required value}) {
-                wednesday.value = value;
-                setState(() {});
-              },
-              activeThumbColor: appColors.primary.shade500,
-              disabledThumbColor: appColors.textColor.shade100,
-              tapColor: appColors.whiteColor,
-            ),
-          ],
-        ),
-        16.verticalSpace,
-        Row(
-          children: [
-            GenText(
-              'Thursday',
-              color: appColors.neutral.shade400,
-              height: 24.5,
-            ),
-            const Spacer(),
-            CustomSwitchWidget(
-              value: thursday.value,
-              onChanged: ({required value}) {
-                thursday.value = value;
-                setState(() {});
-              },
-              activeThumbColor: appColors.primary.shade500,
-              disabledThumbColor: appColors.textColor.shade100,
-              tapColor: appColors.whiteColor,
-            ),
-          ],
-        ),
-        16.verticalSpace,
-        Row(
-          children: [
-            GenText(
-              'Friday',
-              color: appColors.neutral.shade400,
-              height: 24.5,
-            ),
-            const Spacer(),
-            CustomSwitchWidget(
-              value: friday.value,
-              onChanged: ({required value}) {
-                friday.value = value;
-                setState(() {});
-              },
-              activeThumbColor: appColors.primary.shade500,
-              disabledThumbColor: appColors.textColor.shade100,
-              tapColor: appColors.whiteColor,
-            ),
-          ],
-        ),
-        16.verticalSpace,
-        Row(
-          children: [
-            GenText(
-              'Saturday',
-              color: appColors.neutral.shade400,
-              height: 24.5,
-            ),
-            const Spacer(),
-            CustomSwitchWidget(
-              value: saturday.value,
-              onChanged: ({required value}) {
-                saturday.value = value;
-                setState(() {});
-              },
-              activeThumbColor: appColors.primary.shade500,
-              disabledThumbColor: appColors.textColor.shade100,
-              tapColor: appColors.whiteColor,
-            ),
-          ],
-        ),
-        16.verticalSpace,
-        Row(
-          children: [
-            GenText(
-              'Sunday',
-              color: appColors.neutral.shade400,
-              height: 24.5,
-            ),
-            const Spacer(),
-            CustomSwitchWidget(
-              value: sunday.value,
-              onChanged: ({required value}) {
-                sunday.value = value;
-                setState(() {});
-              },
-              activeThumbColor: appColors.primary.shade500,
-              disabledThumbColor: appColors.textColor.shade100,
-              tapColor: appColors.whiteColor,
-            ),
-          ],
-        ),
-
-        30.verticalSpace,
-        Col(
-          children: [
-            GenText(
-              'Time',
-              color: appColors.black,
-              height: 24.5,
-            ),
-            20.verticalSpace,
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectTime(context, true),
-                    child: AbsorbPointer(
-                      child: KFormField(
-                        label: 'Start Time',
-                        controller: startTimeController,
-                        hintText: '00:00',
-                        onChanged: (value) {
-                          setState(() {});
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                90.horizontalSpace,
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectTime(context, false),
-                    child: AbsorbPointer(
-                      child: KFormField(
-                        label: 'End Time',
-                        controller: endTimeController,
-                        hintText: '00:00',
-                        onChanged: (value) {
-                          setState(() {});
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        40.verticalSpace,
-        WideButton(
-          label: 'Update Service',
-          onPressed: () {},
-        ),
-      ],
-    );
   }
 }

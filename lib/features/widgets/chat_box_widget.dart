@@ -1,14 +1,43 @@
 import 'package:resq360/__lib.dart';
 
-class ChatBoxWidget extends StatelessWidget {
+
+class ChatBoxWidget extends StatefulWidget {
   const ChatBoxWidget({
     required this.onSend,
     required this.onAttachment,
     super.key,
   });
 
-  final void Function() onSend;
-  final void Function() onAttachment;
+  final void Function(String message) onSend; // now sends the message text
+  final VoidCallback onAttachment;
+
+
+  @override
+  State<ChatBoxWidget> createState() => _ChatBoxWidgetState();
+}
+
+class _ChatBoxWidgetState extends State<ChatBoxWidget> {
+  final TextEditingController _controller = TextEditingController();
+
+  void _handleSend() {
+    final text = _controller.text.trim();
+    if (text.isNotEmpty) {
+      widget.onSend(text);
+      _controller.clear(); 
+    }
+  }
+
+  //   Future<void> _pickAttachment() async {
+  //   final result = await FilePicker.platform.pickFiles();
+
+  //   if (result != null && result.files.isNotEmpty) {
+  //     final file = File(result.files.single.path!);
+  //     final fileName = result.files.single.name;
+  //     final mimeType = result.files.single.extension ?? 'unknown';
+  //     // widget.onAttachment(file, fileName, mimeType);
+  //   }
+  // }
+
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +55,12 @@ class ChatBoxWidget extends StatelessWidget {
         children: [
           SVGButton(
             path: AppAssets.ASSETS_ICONS_ATTACHMENT_ICON_SVG,
-            onTap: onAttachment,
+            onTap: widget.onAttachment,
           ),
           6.horizontalSpace,
           Expanded(
             child: TextField(
+              controller: _controller,
               decoration: InputDecoration(
                 hintText: 'Type your message...',
                 hintStyle: TextStyle(
@@ -61,12 +91,13 @@ class ChatBoxWidget extends StatelessWidget {
                   ),
                 ),
               ),
+              onSubmitted: (_) => _handleSend(),
             ),
           ),
           6.horizontalSpace,
           SVGButton(
             path: AppAssets.ASSETS_ICONS_SEND_ICON_SVG,
-            onTap: onSend,
+            onTap: _handleSend,
           ),
         ],
       ),

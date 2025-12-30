@@ -1,141 +1,309 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
+import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
+import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
-import 'package:resq360/features/widgets/dialogs/fund_method.dialog.dart';
+import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_confirm.dialog.dart';
-import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
-class WalletScreen extends StatelessWidget {
+class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
+
+  @override
+  State<WalletScreen> createState() => _WalletScreenState();
+}
+
+class _WalletScreenState extends State<WalletScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<WalletBloc>().add(FetchWalletInfo());
+    context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
+  }
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final transactions = [
-      const WalletTransaction(
-        title: 'QuickTow Emergency',
-        date: 'Aug 15th, 5:16pm',
-        amount: 7500,
-        isCredit: true,
-      ),
-      const WalletTransaction(
-        title: 'QuickTow Emergency',
-        date: 'Aug 15th, 2:00pm',
-        amount: -15000,
-        isCredit: false,
-      ),
-      const WalletTransaction(
-        title: 'QuickTow Emergency',
-        date: 'Aug 15th, 2:00pm',
-        amount: 7500,
-        isCredit: true,
-      ),
-      const WalletTransaction(
-        title: 'QuickTow Emergency',
-        date: 'Aug 15th, 2:00pm',
-        amount: -15000,
-        isCredit: false,
-      ),
-    ];
+    
+    // final transactions = [
+    //   const WalletTransaction(
+    //     title: 'QuickTow Emergency',
+    //     date: 'Aug 15th, 5:16pm',
+    //     amount: 7500,
+    //     isCredit: true,
+    //   ),
+    //   const WalletTransaction(
+    //     title: 'QuickTow Emergency',
+    //     date: 'Aug 15th, 2:00pm',
+    //     amount: -15000,
+    //     isCredit: false,
+    //   ),
+    //   const WalletTransaction(
+    //     title: 'QuickTow Emergency',
+    //     date: 'Aug 15th, 2:00pm',
+    //     amount: 7500,
+    //     isCredit: true,
+    //   ),
+    //   const WalletTransaction(
+    //     title: 'QuickTow Emergency',
+    //     date: 'Aug 15th, 2:00pm',
+    //     amount: -15000,
+    //     isCredit: false,
+    //   ),
+    // ];
+    var isLoadingDialogShown = false;
 
-    return Scaffold(
-      backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: appColors.whiteColor,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: appColors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: UrbText(
-          'My Wallet',
-          color: appColors.black,
-          size: 22,
-          height: 28.5,
-          weight: FontWeight.w700,
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: pad(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            WalletBalanceCard(
-              balance: 45000,
-              onAddFunds: () async {
-                await GeneralDialogs.showCustomDialog(
-                  context,
-                  body: FundMethodDialog(
-                    onPaymentSelected: (PaymentMethod p1) async {
-                      await GeneralDialogs.showCustomDialog(
-                        context,
-                        body: const FundWalletConfirmDialog(
-                          amount: '₦20,000',
-                        ),
-                      );
-                    },
+    return BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
+      listener: (context, state) async {
+        if (state is WalletFundingLoadingState) {
+          if (!isLoadingDialogShown) {
+            isLoadingDialogShown = true;
+            await showLoadingDialog(context);
+            log(isLoadingDialogShown);
+          }
+          return;
+        }
+
+        if (isLoadingDialogShown) {
+          isLoadingDialogShown = false;
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+
+        if (state is WalletFundingInitiatedState) {
+          log('heyyyyy');
+          final url = state.payment.authorizationUrl;
+          final reference = state.payment.reference;
+          if (!mounted) return;
+          final finished = await Navigator.of(
+            context,
+            rootNavigator: true,
+          ).push<bool>(
+            MaterialPageRoute(
+              builder:
+                  (_) => PaystackWebViewPage(
+                    authorizationUrl: url,
+                    reference: reference,
+                    callbackUrl: 'https://example.com/callback',
                   ),
-                );
-              },
             ),
-            12.verticalSpace,
-            GenText(
-              'Your ₦15,000 payment is currently on hold until the service is completed.',
-              size: 12,
-              color: appColors.textColor.shade400,
-            ),
-            28.verticalSpace,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GenText(
-                  'Transaction History',
-                  size: 18,
-                  weight: FontWeight.w700,
-                  color: appColors.black,
-                ),
-                GenText(
-                  'View All',
-                  size: 12,
-                  weight: FontWeight.w400,
-                  color: appColors.primary.shade500,
-                ),
-              ],
-            ),
-            16.verticalSpace,
-            if (transactions.isEmpty)
-              const EmptyScreenWidget(
-                imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
-                message: 'No Transactions Yet',
-                subMessage:
-                    'Your wallet history will appear here after yourfirst payment or credit',
-              )
-            else
-              ListView.separated(
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  final tx = transactions[index];
-                  return WalletTransactionTile(
-                    tx: tx,
-                    onTap: () async {
-                      await GeneralDialogs.showCustomBottomSheet(
-                        context,
-                        body: TransactionDetailModal(
-                          onRetry: () {},
-                          onSupport: () {},
-                        ),
+          );
+
+          log(finished.toString());
+
+          if (!mounted) return;
+
+          if (finished ?? false) {
+            context.read<CustomerPaymentBloc>().add(
+              CustomerVerifyWalletFundingEvent(reference),
+            );
+          } else {
+            await showErrorSnackbar(context, 'Payment cancelled');
+          }
+        }
+
+        if (state is WalletFundingVerifiedState) {
+          await GeneralDialogs.showCustomDialog(
+            context,
+            body: const FundWalletCompleted(),
+          );
+          context.read<WalletBloc>().add(FetchWalletInfo());
+        }
+
+        if (state is WalletFundingFailureState) {
+          await showErrorSnackbar(context, state.error);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: appColors.whiteColor,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: appColors.whiteColor,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: appColors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: UrbText(
+            'My Wallet',
+            color: appColors.black,
+            size: 22,
+            height: 28.5,
+            weight: FontWeight.w700,
+          ),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: pad(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              BlocBuilder<WalletBloc, WalletState>(
+                builder: (context, state) {
+                  if (state is FetchWalletLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is FetchingWalletInfoError) {
+                    return Center(
+                      child: ErrorMessageAndButton(
+                        error: 'failed to fetch balance',
+                        onPressed: () {
+                          context.read<WalletBloc>().add(FetchWalletInfo());
+                        },
+                      ),
+                    );
+                  }
+                  if (state is FetchedWalletInfo) {
+                    final balance = state.wallet.balance;
+                    return WalletBalanceCard(
+                      balance: balance!.toInt(),
+                      onAddFunds: () async {
+                        await GeneralDialogs.showCustomDialog(
+                          context,
+                          body: const FundWalletConfirmDialog(
+                            // amount: 20000,
+                          ),
+                          //  FundMethodDialog(
+                          //   onPaymentSelected: (PaymentMethod p1) async {
+                          //     await GeneralDialogs.showCustomDialog(
+                          //       context,
+                          //       body: const FundWalletConfirmDialog(
+                          //         // amount: 20000,
+                          //       ),
+                          //     );
+                          //   },
+                          // ),
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              12.verticalSpace,
+              GenText(
+                'Your ₦15,000 payment is currently on hold until the service is completed.',
+                size: 12,
+                color: appColors.textColor.shade400,
+              ),
+              28.verticalSpace,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      context.read<WalletTransactionsBloc>().add(
+                        LoadMoreWalletTransactions(),
                       );
                     },
-                  );
-                },
-                separatorBuilder: (context, index) => 16.verticalSpace,
-                itemCount: transactions.length,
+
+                    child: GenText(
+                      'Transaction History',
+                      size: 18,
+                      weight: FontWeight.w700,
+                      color: appColors.black,
+                    ),
+                  ),
+                  GenText(
+                    'View All',
+                    size: 12,
+                    weight: FontWeight.w400,
+                    color: appColors.primary.shade500,
+                  ),
+                ],
               ),
-          ],
+              16.verticalSpace,
+              BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
+                builder: (context, state) {
+                  if (state is WalletTransactionsLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (state is WalletTransactionsError) {
+                    return ErrorMessageAndButton(
+                      error: state.error,
+                      onPressed: () {
+                        context.read<WalletTransactionsBloc>().add(
+                          FetchWalletTransactions(),
+                        );
+                      },
+                    );
+                  }
+
+                  if (state is WalletTransactionsLoaded) {
+                    final transactions = state.transactions;
+
+                    if (transactions.isEmpty) {
+                      return const EmptyScreenWidget(
+                        imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
+                        message: 'No Transactions Yet',
+                        subMessage:
+                            'Your wallet history will appear here after your first payment or credit',
+                      );
+                    }
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: transactions.length,
+                      separatorBuilder: (_, _) => 16.verticalSpace,
+                      itemBuilder: (context, index) {
+                        final tx = transactions[index];
+
+                        return WalletTransactionTile(
+                          tx: tx,
+                          onTap: () async {
+                            await GeneralDialogs.showCustomBottomSheet(
+                              context,
+                              body: TransactionDetailModal(
+                                onRetry: () {},
+                                onSupport: () {},
+                                tx:tx
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  }
+
+                  return const SizedBox.shrink();
+                },
+              ),
+
+              // if (transactions.isEmpty)
+              //   const EmptyScreenWidget(
+              //     imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
+              //     message: 'No Transactions Yet',
+              //     subMessage:
+              //         'Your wallet history will appear here after yourfirst payment or credit',
+              //   )
+              // else
+              //   ListView.separated(
+              //     shrinkWrap: true,
+              //     itemBuilder: (context, index) {
+              //       final tx = transactions[index];
+              //       return WalletTransactionTile(
+              //         tx: tx,
+              //         onTap: () async {
+              //           await GeneralDialogs.showCustomBottomSheet(
+              //             context,
+              //             body: TransactionDetailModal(
+              //               onRetry: () {},
+              //               onSupport: () {},
+              //             ),
+              //           );
+              //         },
+              //       );
+              //     },
+              //     separatorBuilder: (context, index) => 16.verticalSpace,
+              //     itemCount: transactions.length,
+              //   ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resq360/__lib.dart';
 
-class FilterSearchFormField extends ConsumerStatefulWidget {
+class FilterSearchFormField extends StatefulWidget {
   const FilterSearchFormField({
     required this.prefixIconPath,
     required this.controller,
@@ -37,11 +37,10 @@ class FilterSearchFormField extends ConsumerStatefulWidget {
   final bool enabled;
 
   @override
-  ConsumerState<FilterSearchFormField> createState() =>
-      _FilterSearchFormFieldState();
+  State<FilterSearchFormField> createState() => _FilterSearchFormFieldState();
 }
 
-class _FilterSearchFormFieldState extends ConsumerState<FilterSearchFormField> {
+class _FilterSearchFormFieldState extends State<FilterSearchFormField> {
   late FocusNode _focusNode;
   late ValueNotifier<bool> _obscureNotier;
 
@@ -110,7 +109,7 @@ class _FilterSearchFormFieldState extends ConsumerState<FilterSearchFormField> {
                         child: Padding(
                           padding: const EdgeInsets.only(right: 5),
                           child: Transform.scale(
-                            scale: 0.5,
+                            scale: 1,
                             child: Icon(
                               Icons.close,
                               color: appTheme.textColor.shade300,

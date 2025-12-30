@@ -4,8 +4,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/validators.dart';
+import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
-import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
@@ -40,47 +40,52 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ProviderAuthBloc, ProviderAuthState>(
+    return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
-          if (state is ProviderAuthLoadingState) {
+        if (state is! CustomerAuthLoading) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        }
+        if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
-        } 
+          return; 
+        }
 
-        if (state is ProviderAuthFailureState) {
-             if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
+        if (state is CustomerAuthFailure) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           showSnackBar(context, 'Error', state.error);
         }
 
-        if (state is ProviderResetPasswordSuccesStste) {
+        if (state is CustomerPasswordResetSuccessState) {
           // showSuccessSnackbar(context, 'Password reset email sent successfully!');
-             if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           if (context.mounted) {
-                    await GeneralDialogs.showCustomBottomSheet(
-                      context,
-                      body: StepModal(
-                        title: 'Successful!',
-                        description: 'Your password has been changed',
-                        buttonText: 'Log in',
-                        icon:
-                            AppAssets.ASSETS_IMAGES_PASSWORD_RESET_SUCCESS_PNG,
-                        onContinuePressed: () async {
-                          await pop(context);
+            await GeneralDialogs.showCustomBottomSheet(
+              context,
+              body: StepModal(
+                title: 'Successful!',
+                description: 'Your password has been changed',
+                buttonText: 'Log in',
+                icon: AppAssets.ASSETS_IMAGES_PASSWORD_RESET_SUCCESS_PNG,
+                onContinuePressed: () async {
+                  await pop(context);
 
-                          if (context.mounted) {
-                            await replaceScreen(
-                              context,
-                              const LoginScreen(),
-                            );
-                          }
-                        },
-                      ),
+                  if (context.mounted) {
+                    await replaceScreen(
+                      context,
+                      const LoginScreen(),
                     );
                   }
+                },
+              ),
+            );
+          }
         }
       },
       child: AppScaffold(
@@ -119,8 +124,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 label: 'Reset Password',
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    if (newPasswordController.text !=
-                        passwordController.text) {
+                    if (newPasswordController.text != passwordController.text) {
                       showSnackBar(
                         context,
                         'Error',
@@ -129,11 +133,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       return;
                     }
 
-                    context.read<ProviderAuthBloc>().add(
-                          ProviderResetPassword(
-                            password: newPasswordController.text, 
-                          ),
-                        );
+                    context.read<CustomerAuthBloc>().add(
+                      CustomerSetNewPasswordEvent(
+                        password: newPasswordController.text,
+                      ),
+                    );
                   }
                 },
               ),

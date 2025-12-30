@@ -3,7 +3,7 @@ class Validators {
   static final RegExp emailRegex =
       RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
-  // Password regex (example: at least 6 chars, can customize further)
+  // Password regex (example: at least 6 chars
   static final RegExp passwordRegex =
       RegExp(r'^.{6,}$'); // minimum 6 characters
 
