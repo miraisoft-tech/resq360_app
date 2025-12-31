@@ -76,8 +76,8 @@ class _ServiceProviderDetailsScreenState
     //   ],
     // );
 
-   final providerServiceId= widget.provider.providerServiceId;
-   if (providerServiceId == null) return;
+    final providerServiceId = widget.provider.providerServiceId;
+    if (providerServiceId == null) return;
 
     context.read<CustomerServicesBloc>().add(
       CustomerCreateServiceRequest(providerServiceId: providerServiceId),
@@ -93,7 +93,11 @@ class _ServiceProviderDetailsScreenState
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final provider = widget.provider;
+    final providerServices = provider.providerServices;
+    // final primaryProviderService =
+    //     providerServices.isNotEmpty ? providerServices.first : null;
 
+    // final service = primaryProviderService?.service;
     return BlocListener<CustomerServicesBloc, CustomerServicesState>(
       listener: (context, state) async {
         if (state is CustomerServicesLoading) {
@@ -120,7 +124,6 @@ class _ServiceProviderDetailsScreenState
             Expanded(
               child: CustomScrollView(
                 slivers: [
-                  /// ---------- HEADER ----------
                   SliverAppBar(
                     pinned: true,
                     expandedHeight: 260,
@@ -168,7 +171,6 @@ class _ServiceProviderDetailsScreenState
                     ),
                   ),
 
-                 
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: pad(horizontal: 16, vertical: 16),
@@ -206,8 +208,7 @@ class _ServiceProviderDetailsScreenState
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     UrbText(
-                                      provider.companyName ??
-                                          'Unknown Provider',
+                                      provider.companyName,
                                       height: 24.5,
                                       weight: FontWeight.w700,
                                       color: colors.black,
@@ -267,14 +268,15 @@ class _ServiceProviderDetailsScreenState
 
                           20.verticalSpace,
 
-                          
-                           Wrap(
+                          Wrap(
                             spacing: 8,
-                            children: [
-                              ChipWidget(label:  provider.serviceName ??'service' ),
-                              // ChipWidget(label: 'Mechanic'),
-                              // ChipWidget(label: 'Locksmith'),
-                            ],
+                            children:
+                                providerServices
+                                    .map(
+                                      (ps) =>
+                                          ChipWidget(label: ps.service.name),
+                                    )
+                                    .toList(),
                           ),
 
                           30.verticalSpace,
@@ -302,9 +304,8 @@ class _ServiceProviderDetailsScreenState
                               AppAssets.ASSETS_ICONS_CALENDER_SVG.svg,
                               8.horizontalSpace,
                               GenText(
-                                provider.workingDays != null &&
-                                        provider.workingDays!.isNotEmpty
-                                    ? '${provider.workingDays!.first.capitalize} - ${provider.workingDays!.last.capitalize}'
+                                provider.workingDays.isNotEmpty
+                                    ? '${provider.workingDays.first.capitalize} - ${provider.workingDays.last.capitalize}'
                                     : 'Days unavailable',
                                 size: 13,
                                 color: colors.black,

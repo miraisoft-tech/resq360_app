@@ -349,8 +349,8 @@ class _ProviderList extends StatelessWidget {
               await pushScreen(
                 context,
                 ServiceProviderDetailsScreen(
-                  providerId: provider.id!,
-                  providerName: provider.companyName!,
+                  providerId: provider.id,
+                  providerName: provider.companyName,
                   provider: provider,
                 ),
               );
@@ -399,7 +399,7 @@ class _ProviderCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         UrbText(
-                          provider.companyName ?? '',
+                          provider.companyName,
                           height: 24.5,
                           weight: FontWeight.w600,
                           color: colors.black,
