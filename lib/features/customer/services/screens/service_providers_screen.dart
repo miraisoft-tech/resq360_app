@@ -1,5 +1,6 @@
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
@@ -371,6 +372,8 @@ class _ProviderCard extends StatelessWidget {
     final colors = context.appColors;
 
     final isOnline = provider.activityStatus?.toLowerCase() == 'online';
+     final distanceInMeters = provider.distance ?? 0.0;
+
 
     return GestureDetector(
       onTap: onTap,
@@ -429,7 +432,7 @@ class _ProviderCard extends StatelessWidget {
                             ),
                             2.horizontalSpace,
                             GenText(
-                              '1.2km',
+                              AppTextUtil.formatDistance(distanceInMeters),
                               size: 12,
                               color: colors.neutral.shade300,
                             ),

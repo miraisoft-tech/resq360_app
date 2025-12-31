@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/upload_service.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/upload_response.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/settings/data/service/update_user_repo.dart';
