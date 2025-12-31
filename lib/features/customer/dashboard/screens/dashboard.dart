@@ -10,9 +10,7 @@ import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
-// import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
-// import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
 
@@ -37,179 +35,181 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: colors.whiteColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: colors.whiteColor,
-        forceMaterialTransparency: true,
-        automaticallyImplyLeading: false,
-        title: BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
-          builder: (context, state) {
-            if (state is CustomerAuthLoginSuccess) {
-              final user = state.user;
-              return _buildHeader(context, user.fullName!);
-            }
+      body: SafeArea(
+        child: ListView(
+          padding: EdgeInsets.only(
+            left: 16.w,
+            right: 16.w,
+            top: 10.h,
+            bottom: 50.h,
+          ),
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
+                  builder: (context, state) {
+                    if (state is CustomerAuthLoginSuccess) {
+                      final user = state.user;
+                      return _buildHeader(context, user.fullName!);
+                    }
 
-            return FutureBuilder<CustomerProfileResponse?>(
-              future: AuthLocalRepo.instance.getAuthCredentials(),
-              builder: (context, snapshot) {
-                final userName = snapshot.data?.user.fullName ?? 'user';
-                return _buildHeader(context, userName);
-              },
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: AppAssets.ASSETS_ICONS_WALLET_SVG.svg,
-            onPressed: () async {
-              await pushScreen(context, const WalletScreen());
-            },
-          ),
-          IconButton(
-            icon: AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg,
-            onPressed: () async {
-              await pushScreen(context, const NotificationScreen());
-            },
-          ),
-          10.horizontalSpace,
-        ],
-      ),
-      body: ListView(
-        padding: EdgeInsets.only(
-          left: 16.w,
-          right: 16.w,
-          top: 10.h,
-          bottom: 50.h,
-        ),
-        children: [
-          10.verticalSpace,
-          FilterSearchFormField(
-            controller: TextEditingController(),
-            hintText: 'Search for services',
-            onTapSuffix: () {},
-            onChanged: (value) {},
-            prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
-          ),
-          20.verticalSpace,
-          const PromoCardWidget(),
-          20.verticalSpace,
-          UrbText(
-            'Ongoing Service',
-            size: 18,
-            height: 28.5,
-            weight: FontWeight.w700,
-            color: colors.black,
-          ),
-          12.verticalSpace,
-          const OngoingServiceCard(),
-          20.verticalSpace,
-          Row(
-            children: [
-              UrbText(
-                'What service do you need?',
-                size: 18,
-                height: 28.5,
-                weight: FontWeight.w700,
-                color: colors.black,
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () async {
-                  await pushScreen(context, const ServiceCategoryScreen());
-                },
-                child: UrbText(
-                  'View All',
-                  size: 12,
-                  height: 20.5,
-                  weight: FontWeight.w400,
-                  color: colors.primary.shade500,
-                ),
-              ),
-            ],
-          ),
-          20.verticalSpace,
-          BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
-            builder: (context, state) {
-              if (state is CustomerServicesLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (state is CustomerServicesLoaded) {
-                final categories = state.services;
-
-                return SizedBox(
-                  height: 130,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 3,
-                    separatorBuilder: (_, _) => 12.horizontalSpace,
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
-                      return ServiceCategoryWidget(
-                        category: category,
-                      );
-                    },
-                  ),
-                );
-              }
-
-              if (state is CustomerServicesError) {
-                return Center(child: Text(state.error));
-              }
-
-              return const SizedBox.shrink();
-            },
-          ),
-          30.verticalSpace,
-          Row(
-            children: [
-              UrbText(
-                'Recommended for You',
-                size: 18,
-                height: 28.5,
-                weight: FontWeight.w700,
-                color: colors.black,
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () async {
-                  // await pushScreen(context, const ServiceProvidersScreen());
-                },
-                child: UrbText(
-                  'View All',
-                  size: 12,
-                  height: 20.5,
-                  weight: FontWeight.w400,
-                  color: colors.primary.shade500,
-                ),
-              ),
-            ],
-          ),
-          12.verticalSpace,
-          BlocBuilder<CustomerAdvertisementBloc, CustomerAdvertisementState>(
-            builder: (context, state) {
-              switch (state) {
-                case CustomerAdvertisementLoading():
-                  return const CircularProgressIndicator();
-                case CustomerAdvertisementInitial():
-                  return const SizedBox.shrink();
-                case CustomerAdvertisementFetched(adverisementList: final ads):
-                  if (ads.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No advertisements available',
-                        style: TextStyle(fontSize: 14),
-                      ),
+                    return FutureBuilder<CustomerProfileResponse?>(
+                      future: AuthLocalRepo.instance.getAuthCredentials(),
+                      builder: (context, snapshot) {
+                        final userName = snapshot.data?.user.fullName ?? 'user';
+                        return _buildHeader(context, userName);
+                      },
                     );
-                  }
-                  return RecommendedCard(advertisement: ads.first);
-                case CustomerAdvertisementError(error: final message):
-                  return ErrorMessageAndButton(error: message);
-              }
-            },
-          ),
-          30.verticalSpace,
-        ],
+                  },
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: AppAssets.ASSETS_ICONS_WALLET_SVG.svg,
+                  onPressed: () async {
+                    await pushScreen(context, const WalletScreen());
+                  },
+                ),
+                IconButton(
+                  icon: AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg,
+                  onPressed: () async {
+                    await pushScreen(context, const NotificationScreen());
+                  },
+                ),
+                10.horizontalSpace,
+              ],
+            ),
+            10.verticalSpace,
+            FilterSearchFormField(
+              controller: TextEditingController(),
+              hintText: 'Search for services',
+              onTapSuffix: () {},
+              onChanged: (value) {},
+              prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
+            ),
+            20.verticalSpace,
+            const PromoCardWidget(),
+            20.verticalSpace,
+            UrbText(
+              'Ongoing Service',
+              size: 18,
+              height: 28.5,
+              weight: FontWeight.w700,
+              color: colors.black,
+            ),
+            12.verticalSpace,
+            const OngoingServiceCard(),
+            20.verticalSpace,
+            Row(
+              children: [
+                UrbText(
+                  'What service do you need?',
+                  size: 18,
+                  height: 28.5,
+                  weight: FontWeight.w700,
+                  color: colors.black,
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () async {
+                    await pushScreen(context, const ServiceCategoryScreen());
+                  },
+                  child: UrbText(
+                    'View All',
+                    size: 12,
+                    height: 20.5,
+                    weight: FontWeight.w400,
+                    color: colors.primary.shade500,
+                  ),
+                ),
+              ],
+            ),
+            20.verticalSpace,
+            BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+              builder: (context, state) {
+                if (state is CustomerServicesLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is CustomerServicesLoaded) {
+                  final categories = state.services;
+
+                  return SizedBox(
+                    height: 130,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 3,
+                      separatorBuilder: (_, _) => 12.horizontalSpace,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return ServiceCategoryWidget(
+                          category: category,
+                        );
+                      },
+                    ),
+                  );
+                }
+
+                if (state is CustomerServicesError) {
+                  return Center(child: Text(state.error));
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
+            30.verticalSpace,
+            Row(
+              children: [
+                UrbText(
+                  'Recommended for You',
+                  size: 18,
+                  height: 28.5,
+                  weight: FontWeight.w700,
+                  color: colors.black,
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () async {
+                    // await pushScreen(context, const ServiceProvidersScreen());
+                  },
+                  child: UrbText(
+                    'View All',
+                    size: 12,
+                    height: 20.5,
+                    weight: FontWeight.w400,
+                    color: colors.primary.shade500,
+                  ),
+                ),
+              ],
+            ),
+            12.verticalSpace,
+            BlocBuilder<CustomerAdvertisementBloc, CustomerAdvertisementState>(
+              builder: (context, state) {
+                switch (state) {
+                  case CustomerAdvertisementLoading():
+                    return const CircularProgressIndicator();
+                  case CustomerAdvertisementInitial():
+                    return const SizedBox.shrink();
+                  case CustomerAdvertisementFetched(
+                    adverisementList: final ads,
+                  ):
+                    if (ads.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No advertisements available',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                      );
+                    }
+                    return RecommendedCard(advertisement: ads.first);
+                  case CustomerAdvertisementError(error: final message):
+                    return ErrorMessageAndButton(error: message);
+                }
+              },
+            ),
+            30.verticalSpace,
+          ],
+        ),
       ),
     );
   }

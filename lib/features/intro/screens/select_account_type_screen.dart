@@ -67,6 +67,7 @@ class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
               AppAssets.ASSETS_IMAGES_CREATE_ACCOUNT_TYPE_PNG.imageAsset(
                 height: 170,
                 width: 200,
+                fit: BoxFit.contain,
               ),
               30.verticalSpace,
               UrbText(

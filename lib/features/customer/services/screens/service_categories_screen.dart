@@ -142,7 +142,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                       crossAxisCount: 3,
                                       mainAxisSpacing: 16,
                                       crossAxisSpacing: 16,
-                                      mainAxisExtent: 150,
+                                      mainAxisExtent: 160,
                                     ),
                                 itemBuilder: (context, index) {
                                   final service = filteredServices[index];
