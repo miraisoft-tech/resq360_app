@@ -23,7 +23,7 @@ class UpdateUserRepo extends BaseAPI {
       log('Status: ${res.statusCode}');
       log('Response: ${res.data}');
 
-      if (res.statusCode == 200 && res.statusCode == 201 && res.data != null) {
+      if (res.statusCode == 200 || res.statusCode == 201 && res.data != null) {
         return ApiResult(data: res.data);
       }
 
@@ -39,8 +39,8 @@ class UpdateUserRepo extends BaseAPI {
   }
 
   Future<ApiResult<dynamic>> updateUserInformation({
-    required String fullName,
-    required String phoneNumber,
+     String? fullName,
+     String? phoneNumber,
     String? profileImageUrl,
     String? profileImageId,
   }) async {
@@ -61,16 +61,17 @@ class UpdateUserRepo extends BaseAPI {
   }
 
   Future<ApiResult<dynamic>> updateProviderInformation({
-    required String fullName,
-    required String phoneNumber,
-    required String companyName,
-    required String description,
-    required List<String> workingDays,
-    required DateTime openingHours,
-    required DateTime closingHours,
-    required String activityStatus,
+     String? fullName,
+     String? phoneNumber,
+     String? companyName,
+     String? description,
+     List<String>? workingDays,
+     DateTime? openingHours,
+     DateTime? closingHours,
+     String? activityStatus,
     String? profileImageUrl,
     String? profileImageId,
+    List<String>? images,
   }) async {
     const endpoint = '/user/provider';
 
@@ -82,9 +83,10 @@ class UpdateUserRepo extends BaseAPI {
       'companyName': companyName,
       'description': description,
       'workingDays': workingDays,
-      'openingHours': openingHours.toIso8601String(),
-      'closingHours': closingHours.toIso8601String(),
+      'openingHours': openingHours?.toIso8601String(),
+      'closingHours': closingHours?.toIso8601String(),
       'activityStatus': activityStatus,
+      'images': images
     }..removeWhere((_, value) => value == null);
 
     return _updateData(
@@ -93,6 +95,32 @@ class UpdateUserRepo extends BaseAPI {
       logTag: 'Provider Info Update',
     );
   }
+  Future<ApiResult<dynamic>> updateProviderService({
+    required bool isActive,
+    required int serviceCategoryId,
+     required List<String> minorServices, 
+     String? customServiceName,
+  }) async {
+    const endpoint = '/user/provider/services';
+
+    final data = {
+  'services': [
+    {
+      'isActive': isActive,
+      'serviceCategoryId': serviceCategoryId,
+      'customServiceName': customServiceName,
+      'minorServices': minorServices
+    }
+  ]
+};
+
+    return _updateData(
+      endpoint: endpoint,
+      data: data,
+      logTag: 'Provider service Update',
+    );
+  }
+
 
   Future<ApiResult<dynamic>> updateProviderAddress({
     required Map<String, dynamic> addressData,

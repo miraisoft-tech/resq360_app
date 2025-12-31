@@ -10,13 +10,13 @@ sealed class ProfileUpdateEvent extends Equatable {
 
 final class UpdateUserInfoEvent extends ProfileUpdateEvent {
   const UpdateUserInfoEvent({
-    required this.fullName,
-    required this.phoneNumber,
+     this.fullName,
+     this.phoneNumber,
     this.profileImageUrl,
     this.profileImageId,
   });
-  final String fullName;
-  final String phoneNumber;
+  final String? fullName;
+  final String? phoneNumber;
   final String? profileImageUrl;
   final String? profileImageId;
 
@@ -30,11 +30,11 @@ final class UpdateUserInfoEvent extends ProfileUpdateEvent {
 }
 
 final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
-  const UpdateProviderInfoEvent({
-    required this.description,
-    required this.workingDays,
-    required this.openingHours,
-    required this.closingHours,
+  const UpdateProviderInfoEvent( {
+     this.description,
+     this.workingDays,
+     this.openingHours,
+     this.closingHours,
     this.activityStatus,
     this.fullName,
     this.phoneNumber,
@@ -42,18 +42,21 @@ final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
     this.filePath,
     this.profileImageUrl,
     this.profileImageId,
+    this.images,
   });
   final String? fullName;
   final String? phoneNumber;
   final String? companyName;
-  final String description;
-  final List<String> workingDays;
-  final DateTime openingHours;
-  final DateTime closingHours;
+  final String? description;
+  final List<String>? workingDays;
+  final DateTime? openingHours;
+  final DateTime? closingHours;
   final String? activityStatus;
   final String? filePath;
   final String? profileImageUrl;
   final String? profileImageId;
+  final List<File>? images;
+
 
   @override
   List<Object?> get props => [
@@ -69,6 +72,29 @@ final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
     profileImageId,
   ];
 }
+
+class UpdateProfileImageEvent extends ProfileUpdateEvent {
+  const UpdateProfileImageEvent({required this.filePath});
+  final String filePath;
+}
+
+
+final class UpdateProviderServiceEvent extends ProfileUpdateEvent {
+  const UpdateProviderServiceEvent({
+  required this.isActive,
+  required this.serviceCategoryId,
+   this.customServiceName,
+   this.minorServices, 
+  });
+   final bool isActive;
+    final int serviceCategoryId;
+    final String? customServiceName;
+    final List<String>? minorServices;
+
+  @override
+  List<Object?> get props => [isActive, serviceCategoryId, customServiceName, minorServices];
+}
+
 
 final class UpdateProviderAddressEvent extends ProfileUpdateEvent {
   const UpdateProviderAddressEvent({

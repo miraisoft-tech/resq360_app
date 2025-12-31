@@ -43,8 +43,10 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
 
             final provider = asyncSnapshot.data!;
             final fullName = provider.user.fullName?.trim();
+            final address = provider.user.address?.city ?? 'N/A';
+
             log('provider dashboard $fullName');
-            return _buildHeader(context, fullName!);
+            return _buildHeader(context, fullName!, address);
           },
         ),
         actions: [
@@ -185,7 +187,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   }
 }
 
-Widget _buildHeader(BuildContext context, String name) {
+Widget _buildHeader(BuildContext context, String name, String address) {
   final colors = context.appColors;
   return Row(
     children: [
@@ -211,7 +213,7 @@ Widget _buildHeader(BuildContext context, String name) {
               AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
               4.horizontalSpace,
               GenText(
-                'No. 2 Olympia Street',
+                address,
                 height: 24,
                 color: colors.black,
                 weight: FontWeight.w500,
