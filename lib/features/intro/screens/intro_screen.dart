@@ -108,7 +108,7 @@ class _IntroScreenState extends State<IntroScreen> {
                   ),
                 ),
               ),
-              50.verticalSpace,
+
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -124,10 +124,11 @@ class _IntroScreenState extends State<IntroScreen> {
                           child: Column(
                             children: [
                               e.imagePath.imageAsset(
-                                height: 300,
-                                width: 300,
+                                height: 350,
+                                width: 350,
+                                fit: BoxFit.contain,
                               ),
-                              40.verticalSpace,
+                              20.verticalSpace,
                               UrbText(
                                 e.title,
                                 size: 26,
@@ -150,6 +151,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       }).toList(),
                 ),
               ),
+              20.verticalSpace,
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -159,7 +161,7 @@ class _IntroScreenState extends State<IntroScreen> {
                   ),
                 ],
               ),
-              30.verticalSpace,
+              25.verticalSpace,
               Padding(
                 padding: pad(horizontal: 16, vertical: 20),
                 child: WideButton(

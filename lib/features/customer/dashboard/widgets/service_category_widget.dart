@@ -43,7 +43,7 @@ class ServiceCategoryWidget extends StatelessWidget {
                 size: 12,
                 weight: FontWeight.w400,
                 textAlign: TextAlign.center,
-                maxLines: 2,
+                maxLines: 1,
               ),
             ),
           ],
