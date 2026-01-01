@@ -8,6 +8,6 @@ sealed class ProviderServiceEvent extends Equatable {
 }
 
 class ProviderFetchBookings extends ProviderServiceEvent {
-   const ProviderFetchBookings({required this.status});
-  final String status;
+   const ProviderFetchBookings({this.status});
+  final String? status;
 }

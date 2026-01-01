@@ -202,15 +202,26 @@ class ServiceRepo extends BaseAPI {
 
   // TODOrefactor
   Future<ApiResult<ServiceBookingsResponse>> getServiceBookings({
-    required String status,
-    int? limit,
-    int? page,
+    String? status,
+    int limit = 10 ,
+    int page = 1,
   }) async {
-    final url = '/services/bookings?status=$status&limit=10&page=1';
+    final queryParams = <String, dynamic>{
+      'limit': limit,
+      'page': page,
+    };
+
+    if (status != null) {
+      queryParams['status'] = status;
+    }
+
+    const url = '/services/bookings';
     try {
       final res = await dio().get<Map<String, dynamic>>(
         url,
+        queryParameters: queryParams,
       );
+
       log('POST $url => ${res.statusCode}');
 
       if (res.statusCode == 200 && res.data != null) {

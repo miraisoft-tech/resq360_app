@@ -20,7 +20,7 @@ class CustomerBookingBloc extends Bloc<CustomerBookingEvent, CustomerBookingStat
   emit(CustomerBookingLoading());
   try {
     final result = await serviceRepo.getServiceBookings(
-       status: event.status!,
+       status: event.status,
     );
 
     if (result.data != null) {

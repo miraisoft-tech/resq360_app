@@ -1,5 +1,6 @@
-import 'package:bloc/bloc.dart';
+
 import 'package:equatable/equatable.dart';
+import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/service_repo.dart';
 
@@ -19,8 +20,8 @@ class ProviderServiceBloc
     Emitter<ProviderServiceState> emit,
   ) async {
     emit(ProviderServicesLoading());
-    final result = await serviceRepo.getServiceBookings(status: event.status);
-
+    
+ final result = await serviceRepo.getServiceBookings(status: event.status);
     if (result.data != null) {
       emit(ProviderBookingsLoaded(result.data!.data!));
     } else {

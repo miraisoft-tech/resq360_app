@@ -1,14 +1,23 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 
 import 'package:resq360/features/provider/bookings/screens/client_service_completed_screen.dart';
 
-class ProviderServiceDetailScreen extends StatelessWidget {
-  const ProviderServiceDetailScreen({super.key});
+class ProviderServiceDetailScreen extends StatefulWidget {
+  const ProviderServiceDetailScreen({ required this.booking, super.key});
 
+final Bookings booking;
+  @override
+  State<ProviderServiceDetailScreen> createState() => _ProviderServiceDetailScreenState();
+}
+
+class _ProviderServiceDetailScreenState extends State<ProviderServiceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    final companyName = widget.booking.provider?.companyName ?? '';
+
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -71,7 +80,7 @@ class ProviderServiceDetailScreen extends StatelessWidget {
             ),
             16.verticalSpace,
             _ServiceCard(
-              name: 'QuickTow Emergency',
+              name: companyName,
               subtitle: 'Towing Service',
               rating: '4.9',
               reviewCount: '(347 reviews)',

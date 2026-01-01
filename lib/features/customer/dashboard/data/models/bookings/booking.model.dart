@@ -263,7 +263,7 @@ class Provider {
       Provider.fromJson(json.decode(str) as Map<String, dynamic>);
 
   factory Provider.fromJson(Map<String, dynamic> json) => Provider(
-    id: json['id'] as int?,
+    id: json['id'] as int,
     email: json['email'] as String?,
     fullName: json['fullName'] as String?,
     companyName: json['companyName'] as String?,

@@ -173,8 +173,8 @@ class _BookingList extends StatelessWidget {
                   onTap: () async {
                     await pushScreen(
                       context,
-                      const ProviderServiceDetailScreen(
-                        // booking: booking,
+                       ProviderServiceDetailScreen(
+                        booking: booking,
                       ),
                     );
                   },
