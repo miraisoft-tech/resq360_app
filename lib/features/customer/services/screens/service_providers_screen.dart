@@ -20,42 +20,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
 
   final TextEditingController _searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> providers = [
-    {
-      'name': 'QuickTow Emergency',
-      'service': 'Towing Service',
-      'rating': 4.9,
-      'reviews': 347,
-      'distance': '1.0km',
-      'description':
-          'With over 8 years experience we provide prompt and professional towing service.',
-      'status': 'Online',
-      'image': 'https://randomuser.me/api/portraits/men/32.jpg',
-    },
-    {
-      'name': 'Homify',
-      'service': 'Cleaning Service',
-      'rating': 4.9,
-      'reviews': 347,
-      'distance': '1.0km',
-      'description':
-          'With over 10 years experience we provide prompt and professional cleaning service.',
-      'status': 'Online',
-      'image': 'https://randomuser.me/api/portraits/women/44.jpg',
-    },
-    {
-      'name': 'QuickTow Emergency',
-      'service': 'Towing Service',
-      'rating': 4.9,
-      'reviews': 347,
-      'distance': '1.0km',
-      'description':
-          'With over 8 years experience we provide prompt and professional towing service.',
-      'status': 'Offline',
-      'image': 'https://randomuser.me/api/portraits/men/32.jpg',
-    },
-  ];
-
+  List<ServiceProvider> providers = [];
   @override
   void initState() {
     super.initState();
@@ -101,10 +66,11 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
   }
 
   void _pingProviders() {
-    const event = PingServiceProviders(serviceCategoryId: 1);
+    final event = PingServiceProviders(
+      serviceCategoryId: widget.serviceProviderId,
+    );
     context.read<ServiceProviderBloc>().add(event);
-    debugPrint(event.runtimeType.toString());
-    _fetchProviders();
+    // _fetchProviders();
   }
 
   // void _toggleProximity() {
@@ -181,25 +147,53 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                   size: 13,
                   color: colors.textColor.shade500,
                 ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary.shade500,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  onPressed: () {
-                    log('Ping Providers pressed');
-                    _pingProviders();
+                BlocConsumer<ServiceProviderBloc, ServiceProviderState>(
+                  listener: (context, state) {
+                    if (state is ServiceProvidersError) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        await showErrorSnackbar(
+                          context,
+                          ' ping providers failed',
+                        );
+                      });
+                    }
+
+                    if (state is PingProvidersSuccess) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        await showSuccessSnackbar(
+                          context,
+                          'Providers pinged successfully',
+                        );
+                      });
+                    }
                   },
-                  icon: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG.svg,
-                  label: GenText(
-                    'Ping Providers',
-                    size: 12,
-                    height: 20,
-                    weight: FontWeight.w400,
-                    color: colors.whiteColor,
-                  ),
+                  builder: (context, state) {
+                    if (state is PingProvidersLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    return ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary.shade500,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      onPressed: () {
+                        log('Ping Providers pressed');
+                        _pingProviders();
+                      },
+                      icon: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG.svg,
+                      label: GenText(
+                        'Ping Providers',
+                        size: 12,
+                        height: 20,
+                        weight: FontWeight.w400,
+                        color: colors.whiteColor,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -233,30 +227,8 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                   );
                 }
 
-                if (state is ServiceProvidersError) {
-                  return ErrorMessageAndButton(
-                    error: state.error,
-                    onPressed:
-                        () => context.read<ServiceProviderBloc>().add(
-                          FetchServiceProviders(
-                            categoryId: widget.serviceProviderId,
-                            nearYou: _sortByProximity,
-                          ),
-                        ),
-                  );
-                }
-
-                if (state is PingProvidersSuccess) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    await showSuccessSnackbar(
-                      context,
-                      'Providers pinged successfully',
-                    );
-                  });
-                }
-
                 if (state is ServiceProvidersLoaded) {
-                  final providers = state.providers;
+                  providers = state.providers;
                   if (providers.isNotEmpty) {
                     return TabBarView(
                       controller: _tabController,
@@ -288,6 +260,27 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                     );
                   }
                 }
+                if (providers.isNotEmpty) {
+                  return TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _ProviderList(providers: providers),
+                      _ProviderList(
+                        providers:
+                            providers
+                                .where((p) => p.activityStatus == 'online')
+                                .toList(),
+                      ),
+                      _ProviderList(
+                        providers:
+                            providers
+                                .where((p) => p.activityStatus == 'offline')
+                                .toList(),
+                      ),
+                    ],
+                  );
+                }
+
                 return const SizedBox.shrink();
               },
             ),

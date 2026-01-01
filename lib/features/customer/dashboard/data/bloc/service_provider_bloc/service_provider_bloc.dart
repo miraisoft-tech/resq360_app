@@ -44,13 +44,14 @@ class ServiceProviderBloc extends Bloc<ServiceProviderEvent, ServiceProviderStat
     PingServiceProviders event,
     Emitter<ServiceProviderState> emit,
   ) async {
-    emit( ServiceProvidersLoading());
+    emit( PingProvidersLoading());
     try {
       final result = await serviceRepo.pingProviders(
         serviceCategoryId: event.serviceCategoryId,
       );
       if (result.data != null) {
       emit(PingProvidersSuccess());
+      
       } else {
         emit(
           ServiceProvidersError(
