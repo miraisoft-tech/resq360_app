@@ -47,7 +47,7 @@ class _ProviderGenerateInvoiceDialogState
 
     priceController = TextEditingController();
     serviceController = TextEditingController();
-    currentUserId = auth?.user.id;
+    currentUserId = auth?.id;
   }
 
   Future<void> initializeLocation() async {
@@ -80,7 +80,7 @@ class _ProviderGenerateInvoiceDialogState
 
   bool isProcessing = false;
 
-  final ProviderProfileResponse? auth = ProviderAuthProvider.instance.authInfo;
+  final ProviderModel? auth = ProviderAuthProvider.instance.authInfo;
 
   @override
   Widget build(BuildContext context) {

@@ -101,7 +101,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         );
         final userProfileResult = await getUserProfile();
 
-        final name = userProfileResult.data?.user.fullName;
+        final name = userProfileResult.data?.fullName;
         log(
           'Fetched user profile: $name',
         );
@@ -369,7 +369,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<ProviderProfileResponse>> getUserProfile() async {
+  Future<ApiResult<ProviderModel>> getUserProfile() async {
     try {
       const url = '/auth/profile/provider';
 
@@ -382,8 +382,8 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
 
         if (success) {
-          final providerProfileResponse = ProviderProfileResponse.fromJson(
-            res.data!,
+          final providerProfileResponse = ProviderModel.fromJson(
+            res.data!['data'] as Map<String, dynamic>,
           );
           await AuthLocalRepo.instance.storeUserDetails(
             isProvider: true,

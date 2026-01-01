@@ -244,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (context, state) {
                   if (state is ProviderProfileLoadedState) {}
                   if (state is ProviderProfileLoadedState) {
-                    final status = state.user.user.activityStatus ?? 'UNKNOWN';
+                    final status = state.user.activityStatus ?? 'UNKNOWN';
 
                     return GestureDetector(
                       onTap: () async {
@@ -407,7 +407,7 @@ class _ProfileSection extends StatelessWidget {
       return BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
         builder: (context, state) {
           if (state is ProviderProfileLoadedState) {
-            final fullName = state.user.user.fullName?.trim();
+            final fullName = state.user.fullName?.trim();
             final name =
                 (fullName != null && fullName.isNotEmpty)
                     ? fullName
@@ -415,7 +415,7 @@ class _ProfileSection extends StatelessWidget {
 
             return ProfileView(
               name: name,
-              imageUrl: state.user.user.profileImage,
+              imageUrl: state.user.profileImage,
               onPickImage: onPickImage,
             );
           }

@@ -1,38 +1,5 @@
-import 'dart:convert';
-
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
-
-class ProviderProfileResponse {
-  ProviderProfileResponse({
-    required this.user,
-    required this.message,
-    required this.success,
-  });
-
-  factory ProviderProfileResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>? ?? {};
-    return ProviderProfileResponse(
-      user: ProviderModel.fromJson(data),
-      message: json['message'] as String? ?? '',
-      success: json['success'] as bool? ?? false,
-    );
-  }
-
-  final ProviderModel user;
-  final String message;
-  final bool success;
-
-  Map<String, dynamic> toJson() => {
-    'message': message,
-    'success': success,
-    'data': user.toJson(),
-  };
-
-  @override
-  String toString() => jsonEncode(toJson());
-}
-
 
 class ProviderModel {
   ProviderModel({

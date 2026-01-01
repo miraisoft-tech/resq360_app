@@ -459,7 +459,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
   final ScrollController _scrollController = ScrollController();
 
   int? get _currentUserId =>
-      ProviderAuthProvider.instance.authInfo?.user.id;
+      ProviderAuthProvider.instance.authInfo?.id;
 
   @override
   void dispose() {

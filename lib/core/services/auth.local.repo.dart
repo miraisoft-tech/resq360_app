@@ -45,7 +45,7 @@ class AuthLocalRepo {
 
   Future<bool> storeUserDetails({
     required bool isProvider,
-    ProviderProfileResponse? providerProfileResponse,
+    ProviderModel? providerProfileResponse,
     CustomerUserModel? customerProfileResponse,
   }) async {
     try {
@@ -74,11 +74,11 @@ class AuthLocalRepo {
     }
   }
 
-  Future<ProviderProfileResponse?> getProviderCredentials() async {
+  Future<ProviderModel?> getProviderCredentials() async {
     try {
       final raw = await pref.getValue(key: DBKeys.providerAuthData);
       if (raw is! Map<String, dynamic>) return null;
-      return ProviderProfileResponse.fromJson(raw);
+      return ProviderModel.fromJson(raw);
     } on Exception catch (e) {
       log('getProviderCredentials error: $e');
       return null;

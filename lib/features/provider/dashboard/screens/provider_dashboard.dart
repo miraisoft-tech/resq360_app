@@ -30,7 +30,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         backgroundColor: colors.whiteColor,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: FutureBuilder<ProviderProfileResponse?>(
+        title: FutureBuilder<ProviderModel?>(
           future: AuthLocalRepo.instance.getProviderCredentials(),
           builder: (context, asyncSnapshot) {
             if (asyncSnapshot.hasError) {
@@ -42,8 +42,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
             }
 
             final provider = asyncSnapshot.data!;
-            final fullName = provider.user.fullName?.trim();
-            final address = provider.user.address?.city ?? 'N/A';
+            final fullName = provider.fullName?.trim();
+            final address = provider.address?.city ?? 'N/A';
 
             log('provider dashboard $fullName');
             return _buildHeader(context, fullName!, address);

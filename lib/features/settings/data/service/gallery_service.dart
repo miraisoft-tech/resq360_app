@@ -8,8 +8,8 @@ import 'package:resq360/features/provider/authentication/view_models/auth_vm.dar
 import 'package:resq360/features/settings/data/models/gallery.model.dart';
 
 final UploadService uploadService = UploadService.instance;
-final ProviderProfileResponse? auth = ProviderAuthProvider.instance.authInfo;
-final int? providerId = auth?.user.id;
+final ProviderModel? auth = ProviderAuthProvider.instance.authInfo;
+final int? providerId = auth?.id;
 
 class GalleryRepo extends BaseAPI {
   Future<ApiResult<List<Gallery>>> fetchAllGalleryItemsForAprovider(

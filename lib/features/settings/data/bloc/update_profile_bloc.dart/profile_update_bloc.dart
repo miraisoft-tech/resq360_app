@@ -83,9 +83,9 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
       }
 
       final result = await updateUserRepo.updateProviderInformation(
-        fullName: provider.user.fullName,
-        phoneNumber: provider.user.phoneNumber,
-        companyName: provider.user.companyName,
+        fullName: provider.fullName,
+        phoneNumber: provider.phoneNumber,
+        companyName: provider.companyName,
         description: event.description,
         workingDays: event.workingDays,
         openingHours: event.openingHours,

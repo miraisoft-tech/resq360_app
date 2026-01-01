@@ -116,7 +116,7 @@ class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
       final upload = uploads[i];
 
       final result = await galleryRepo.createNewGalleryItem(
-        providerId: provider.user.id!,
+        providerId: provider.id!,
         imageUrl: upload.url,
         imageId: upload.id,
         caption: event.caption,
