@@ -13,6 +13,18 @@ class FetchCustomerRatings extends RatingsEvent {}
 
 class FetchProviderRatings extends RatingsEvent {}
 
+class FetchProviderRatingsById extends RatingsEvent {
+   const FetchProviderRatingsById({
+    required this.providerId,
+  });
+
+  final int providerId;
+
+  @override
+  List<Object?> get props => [providerId];
+}
+
+
 
 class RateProviderEvent extends RatingsEvent {
 
