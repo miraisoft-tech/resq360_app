@@ -1,4 +1,3 @@
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
@@ -235,11 +234,15 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                 }
 
                 if (state is ServiceProvidersError) {
-                  return Center(
-                    child: Text(
-                      state.error,
-                      style: const TextStyle(color: Colors.red),
-                    ),
+                  return ErrorMessageAndButton(
+                    error: state.error,
+                    onPressed:
+                        () => context.read<ServiceProviderBloc>().add(
+                          FetchServiceProviders(
+                            categoryId: widget.serviceProviderId,
+                            nearYou: _sortByProximity,
+                          ),
+                        ),
                   );
                 }
 
@@ -372,8 +375,7 @@ class _ProviderCard extends StatelessWidget {
     final colors = context.appColors;
 
     final isOnline = provider.activityStatus?.toLowerCase() == 'online';
-     final distanceInMeters = provider.distance ?? 0.0;
-
+    final distanceInMeters = provider.distance ?? 0.0;
 
     return GestureDetector(
       onTap: onTap,

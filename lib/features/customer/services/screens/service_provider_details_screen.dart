@@ -31,13 +31,7 @@ class ServiceProviderDetailsScreen extends StatefulWidget {
 class _ServiceProviderDetailsScreenState
     extends State<ServiceProviderDetailsScreen> {
   int currentIndex = 0;
-
-  final List<String> gallery = [
-    'https://images.pexels.com/photos/6065924/pexels-photo-6065924.jpeg',
-    'https://images.pexels.com/photos/4488662/pexels-photo-4488662.jpeg',
-    'https://images.pexels.com/photos/4489730/pexels-photo-4489730.jpeg',
-  ];
-
+  
   final List<Map<String, dynamic>> reviews = [
     {
       'name': 'Maria Okoro',
@@ -50,31 +44,6 @@ class _ServiceProviderDetailsScreenState
   ];
 
   Future<void> _createServiceRequest() async {
-    // log('Statrted');
-    // final provider = CustomerAuthProvider.instance;
-    // if (provider.authInfo == null) {
-    //   await provider.init();
-    // }
-
-    // final auth = provider.authInfo;
-
-    // final userId = auth?.user.id;
-    // final providerId = widget.providerId;
-
-    // final chatRequest = CreateChatRequest(
-    //   title: widget.providerName,
-    //   type: 'PRIVATE',
-    //   participants: [
-    //     ChatParticipant(
-    //       participantType: 'USER',
-    //       participantId: userId!,
-    //     ),
-    //     ChatParticipant(
-    //       participantType: 'PROVIDER',
-    //       participantId: providerId,
-    //     ),
-    //   ],
-    // );
 
     final providerServiceId = widget.provider.providerServiceId;
     if (providerServiceId == null) return;
@@ -94,10 +63,19 @@ class _ServiceProviderDetailsScreenState
     final colors = context.appColors;
     final provider = widget.provider;
     final providerServices = provider.providerServices;
-    // final primaryProviderService =
-    //     providerServices.isNotEmpty ? providerServices.first : null;
+    final serviceGallery = provider.images;
+    final serviceGroups = providerServices
+    .map(
+      (service) => _ServiceGroup(
+        title: service.name,
+        items: [
+          service.service.name,
+        ],
+      ),
+    )
+    .toList();
+  
 
-    // final service = primaryProviderService?.service;
     return BlocListener<CustomerServicesBloc, CustomerServicesState>(
       listener: (context, state) async {
         if (state is CustomerServicesLoading) {
@@ -138,13 +116,13 @@ class _ServiceProviderDetailsScreenState
                         alignment: Alignment.bottomCenter,
                         children: [
                           PageView.builder(
-                            itemCount: gallery.length,
+                            itemCount: serviceGallery.length,
                             onPageChanged: (i) {
                               setState(() => currentIndex = i);
                             },
                             itemBuilder: (_, index) {
                               return Image.network(
-                                gallery[index],
+                                serviceGallery[index],
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 errorBuilder:
@@ -161,7 +139,7 @@ class _ServiceProviderDetailsScreenState
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: GenText(
-                                '${currentIndex + 1}/${gallery.length}',
+                                '${currentIndex + 1}/${serviceGallery.length}',
                                 color: colors.whiteColor,
                               ),
                             ),
@@ -251,7 +229,6 @@ class _ServiceProviderDetailsScreenState
                                 ),
                               ),
 
-                              /// CHAT + CALL
                               SVGButton(
                                 path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
                                 onTap: () async {
@@ -332,24 +309,8 @@ class _ServiceProviderDetailsScreenState
                             color: colors.black,
                           ),
                           12.verticalSpace,
-                          const _ServiceGroup(
-                            title: 'Towing',
-                            items: ['Emergency Roadside Tow'],
-                          ),
-                          const ListDivider(verticalSpacing: 10),
-                          const _ServiceGroup(
-                            title: 'Mechanic',
-                            items: ['Car Facelifting', 'Wheel Balancing'],
-                          ),
-                          const ListDivider(verticalSpacing: 10),
-                          const _ServiceGroup(
-                            title: 'Locksmith',
-                            items: [
-                              'Car Key Replacement',
-                              'Lock Installation',
-                              'Smart Lock Setup',
-                            ],
-                          ),
+
+                         ...serviceGroups,
 
                           20.verticalSpace,
 
@@ -425,6 +386,7 @@ class _ServiceGroup extends StatelessWidget {
             ),
           ),
         ),
+        const ListDivider(verticalSpacing: 10),
       ],
     );
   }
