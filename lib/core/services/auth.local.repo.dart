@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/db_keys.local.repo.dart';
 import 'package:resq360/core/services/shared_preferences.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
@@ -46,7 +46,7 @@ class AuthLocalRepo {
   Future<bool> storeUserDetails({
     required bool isProvider,
     ProviderProfileResponse? providerProfileResponse,
-    CustomerProfileResponse? customerProfileResponse,
+    CustomerUserModel? customerProfileResponse,
   }) async {
     try {
       final key = isProvider ? DBKeys.providerAuthData : DBKeys.authData;
@@ -62,12 +62,12 @@ class AuthLocalRepo {
     }
   }
 
-  Future<CustomerProfileResponse?> getAuthCredentials() async {
+  Future<CustomerUserModel?> getAuthCredentials() async {
     try {
       final result =
           await pref.getValue(key: DBKeys.authData) as Map<String, dynamic>?;
       if (result == null) return null;
-      return CustomerProfileResponse.fromJson(result);
+      return CustomerUserModel.fromJson(result);
     } on Exception catch (e) {
       log('getAuthCredentials error: $e');
       return null;

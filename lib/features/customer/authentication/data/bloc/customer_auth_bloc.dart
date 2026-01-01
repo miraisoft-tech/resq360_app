@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';

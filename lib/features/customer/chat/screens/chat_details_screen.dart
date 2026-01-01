@@ -38,7 +38,7 @@ class _ChatDetailView extends StatefulWidget {
 class _ChatDetailViewState extends State<_ChatDetailView> {
   final ScrollController _scrollController = ScrollController();
 
-  int? get _currentUserId => CustomerAuthProvider.instance.authInfo?.user.id;
+  int? get _currentUserId => CustomerAuthProvider.instance.authInfo?.id;
 
   @override
   void dispose() {

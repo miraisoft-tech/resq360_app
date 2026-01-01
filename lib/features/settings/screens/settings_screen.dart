@@ -432,7 +432,7 @@ class _ProfileSection extends StatelessWidget {
     return BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
       builder: (context, state) {
         if (state is CustomerProfileLoaded) {
-          final fullName = state.user.user.fullName?.trim();
+          final fullName = state.user.fullName?.trim();
           final name =
               (fullName != null && fullName.isNotEmpty)
                   ? fullName
@@ -440,7 +440,7 @@ class _ProfileSection extends StatelessWidget {
 
           return ProfileView(
             name: name,
-            imageUrl: state.user.user.profileImage,
+            imageUrl: state.user.profileImage,
             onPickImage: onPickImage,
           );
         }
