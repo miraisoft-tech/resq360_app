@@ -1,4 +1,3 @@
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
@@ -25,7 +24,6 @@ class _BookingsScreenState extends State<BookingsScreen>
       _fetchBookingsForTab(0);
     });
 
-
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
       _fetchBookingsForTab(_tabController.index);
@@ -50,7 +48,9 @@ class _BookingsScreenState extends State<BookingsScreen>
         status = 'PENDING';
     }
 
-    bloc.add(FetchCustomerBookings(status: status),);
+    bloc.add(
+      FetchCustomerBookings(status: status),
+    );
   }
 
   @override
@@ -107,13 +107,13 @@ class _BookingList extends StatelessWidget {
   String _mapTypeToStatus() {
     switch (type) {
       case 'upcoming':
-        return 'ASSIGNED';
+        return 'PENDING';
       case 'completed':
         return 'COMPLETED';
       case 'cancelled':
         return 'CANCELLED';
       default:
-        return 'ASSIGNED';
+        return 'PENDING';
     }
   }
 
@@ -204,15 +204,15 @@ class _BookingCardState extends State<BookingCard> {
     final colors = context.appColors;
     final data = widget.data;
 
-    final providerName =
-        data.provider?.companyName ??
-        data.provider?.fullName ??
-        'Unknown Provider';
+    final providerName = data.assignedProvider?.fullName ?? 'Unknown Provider';
+
     final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
-    final amount = '${data.currency ?? '₦'}${data.amount?.toString() ?? '0'}';
+    const amount = 'To be billed';
+
     final date = data.createdAt?.formatDate ?? 'N/A';
-    final start = data.responseTime?.providerStartedAt?.formatTime ?? '--';
-    final end = data.responseTime?.completedAt?.formatTime ?? '--';
+    final start = data.providerStartedAt?.formatTime ?? '--';
+    final end = data.completedAt?.formatTime ?? '--';
+
     final status = data.status?.capitalize ?? 'Unknown';
 
     return Container(
@@ -231,14 +231,15 @@ class _BookingCardState extends State<BookingCard> {
               CircleAvatar(
                 radius: 25,
                 backgroundImage:
-                    data.provider?.companyName != null
-                        ? const NetworkImage(
+                    data.assignedProvider?.profileImage != null
+                        ? NetworkImage(data.assignedProvider!.profileImage!)
+                        : const NetworkImage(
                           'https://randomuser.me/api/portraits/men/30.jpg',
-                        )
-                        : const AssetImage(
-                              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                            )
-                            as ImageProvider,
+                        ),
+                // : const AssetImage(
+                //       AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+                //     )
+                //     as ImageProvider,
               ),
               12.horizontalSpace,
               Expanded(
@@ -295,7 +296,6 @@ class _BookingCardState extends State<BookingCard> {
             verticalSpacing: 10,
           ),
 
-          /// --- Expanded Details
           if (expanded)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,7 +331,7 @@ class _BookingCardState extends State<BookingCard> {
                         provider: providerName,
                         serviceId: data.requestId ?? 'N/A',
                         status: status,
-                        invoice: data.payment?.paymentReference ?? 'N/A',
+                        invoice: 'N/A',
                         dateTime: '$date - $end',
                         method: 'Card',
                         onDownload: () {},

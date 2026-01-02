@@ -23,7 +23,7 @@ class ProviderServiceBloc
     
  final result = await serviceRepo.getServiceBookings(status: event.status);
     if (result.data != null) {
-      emit(ProviderBookingsLoaded(result.data!.data!));
+      emit(ProviderBookingsLoaded(result.data!));
     } else {
       emit(
         ProviderServicesError(

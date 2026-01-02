@@ -201,9 +201,9 @@ class ServiceRepo extends BaseAPI {
   }
 
   // TODOrefactor
-  Future<ApiResult<ServiceBookingsResponse>> getServiceBookings({
+  Future<ApiResult<List<Bookings>>> getServiceBookings({
     String? status,
-    int limit = 10 ,
+    int limit = 10,
     int page = 1,
   }) async {
     final queryParams = <String, dynamic>{
@@ -225,12 +225,19 @@ class ServiceRepo extends BaseAPI {
       log('POST $url => ${res.statusCode}');
 
       if (res.statusCode == 200 && res.data != null) {
-        log('Bookings API response: ${res.data}');
-        return ApiResult(data: ServiceBookingsResponse.fromJson(res.data!));
-      } else {
-        return ApiResult(
-          error: res.data?['message']?.toString() ?? 'Failed to book service',
-        );
+        final raw = res.data!;
+        final services =
+            raw['data']?['data']?['services'] as List<dynamic>? ?? [];
+
+        final bookings =
+            services
+                .map((e) => Bookings.fromJson(e as Map<String, dynamic>))
+                .toList();
+
+        return ApiResult(data: bookings);
+      } else{
+        final error = res.data!['message'];
+        return ApiResult(error: error.toString());
       }
     } on DioException catch (e) {
       return handleDioError(e);
@@ -240,7 +247,7 @@ class ServiceRepo extends BaseAPI {
   }
 
   Future<ApiResult<void>> startServiceBooking(int serviceRequestId) async {
-    final url = '/services/bookings/$ServiceBookingsResponse/start';
+    final url = '/services/bookings/$serviceRequestId/start';
     try {
       final res = await dio().post<Map<String, dynamic>>(url);
       log('POST $url => ${res.statusCode}');

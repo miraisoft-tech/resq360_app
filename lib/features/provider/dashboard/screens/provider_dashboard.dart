@@ -20,7 +20,7 @@ class ProviderHomeScreen extends StatefulWidget {
   State<ProviderHomeScreen> createState() => _ProviderHomeScreenState();
 }
 
- String revenue = '';
+ String revenue = '-';
  bool isAproved = false;
  bool profileNotDone = false;
 class _ProviderHomeScreenState extends State<ProviderHomeScreen> {

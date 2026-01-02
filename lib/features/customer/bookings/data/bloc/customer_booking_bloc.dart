@@ -24,7 +24,7 @@ class CustomerBookingBloc extends Bloc<CustomerBookingEvent, CustomerBookingStat
     );
 
     if (result.data != null) {
-      emit(CustomerBookingLoaded( result.data!.data ?? []));
+      emit(CustomerBookingLoaded( result.data ?? []));
     } else {
       emit(CustomerBookingError(
         error: result.error ?? 'Failed to book service',

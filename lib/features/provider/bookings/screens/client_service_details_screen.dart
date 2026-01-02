@@ -1,23 +1,27 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
+import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 
 import 'package:resq360/features/provider/bookings/screens/client_service_completed_screen.dart';
 
 class ProviderServiceDetailScreen extends StatefulWidget {
-  const ProviderServiceDetailScreen({ required this.booking, super.key});
+  const ProviderServiceDetailScreen({required this.booking, super.key});
 
-final Bookings booking;
+  final Bookings booking;
   @override
-  State<ProviderServiceDetailScreen> createState() => _ProviderServiceDetailScreenState();
+  State<ProviderServiceDetailScreen> createState() =>
+      _ProviderServiceDetailScreenState();
 }
 
-class _ProviderServiceDetailScreenState extends State<ProviderServiceDetailScreen> {
+class _ProviderServiceDetailScreenState
+    extends State<ProviderServiceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final companyName = widget.booking.provider?.companyName ?? '';
-
+    final companyName = widget.booking.assignedProvider?.fullName ?? '';
+    final clientName = widget.booking.user?.fullName ?? '';
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -89,7 +93,7 @@ class _ProviderServiceDetailScreenState extends State<ProviderServiceDetailScree
             ),
             12.verticalSpace,
             _ServiceCard(
-              name: 'Jane Doe',
+              name: clientName,
               subtitle: '1.0km away',
               rating: '4.8',
               reviewCount: '(50 reviews)',
@@ -175,12 +179,14 @@ class _ProviderServiceDetailScreenState extends State<ProviderServiceDetailScree
                     backgroundColor: appColors.primary.shade500,
                     textColor: appColors.whiteColor,
                     onPressed: () async {
-                      //  await pushScreen(context, const ServiceCompletedScreen());
+                       await pushScreen(context, const ServiceCompletedScreen());
                     },
                   ),
                 ),
               ],
             ),
+            12.verticalSpace,
+
             Row(
               children: [
                 Expanded(
@@ -189,10 +195,10 @@ class _ProviderServiceDetailScreenState extends State<ProviderServiceDetailScree
                     backgroundColor: appColors.primary.shade50,
                     textColor: appColors.primary.shade500,
                     onPressed: () async {
-                      // await GeneralDialogs.showCustomDialog(
-                      //   context,
-                      //   body: const PaymentAppealDialog(),
-                      // );
+                      await GeneralDialogs.showCustomDialog(
+                        context,
+                        body: const PaymentAppealDialog(),
+                      );
                     },
                   ),
                 ),
