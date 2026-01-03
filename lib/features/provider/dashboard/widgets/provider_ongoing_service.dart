@@ -1,8 +1,22 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
+import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 
-class ProviderOngoingService extends StatelessWidget {
+class ProviderOngoingService extends StatefulWidget {
   const ProviderOngoingService({super.key});
+
+  @override
+  State<ProviderOngoingService> createState() => _ProviderOngoingServiceState();
+}
+
+class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProviderServiceBloc>().add(
+      const ProviderFetchBookings(status: 'pending'),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,24 +38,27 @@ class ProviderOngoingService extends StatelessWidget {
             border: Border.all(color: colors.textColor.shade100),
           ),
           child: BlocListener<ProviderServiceBloc, ProviderServiceState>(
-            listener: (context, state) {
+            listener: (context, state) async {
               // if (state is ProviderServiceBookingCancelled) {
-              //   context.showSuccess('Booking cancelled successfully');
+              //  await showErrorSnackbar(context, 'Booking cancelled successfully');
               //   context.read<ProviderServiceBloc>().add(
-              //         const FetchProviderBookings(),
+              //         const ProviderFetchBookings(),
               //       );
               // }
 
-              // if (state is ProviderServiceBookingCompleted) {
-              //   context.showSuccess('Service completed successfully');
-              //   context.read<ProviderServiceBloc>().add(
-              //         const FetchProviderBookings(),
-              //       );
-              // }
+              if (state is ProviderServiceBookingStarted) {
+                await showSuccessSnackbar(
+                  context,
+                  'Service started successfully',
+                );
+                context.read<ProviderServiceBloc>().add(
+                  const ProviderFetchBookings(status: 'pending'),
+                );
+              }
 
-              // if (state is ProviderServicesError) {
-              //   context.showError(state.error);
-              // }
+              if (state is ProviderServicesError) {
+                await showErrorSnackbar(context, state.error);
+              }
             },
             child: BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
               builder: (context, state) {
@@ -97,7 +114,7 @@ class ProviderOngoingService extends StatelessWidget {
                                   ),
                                   2.horizontalSpace,
                                   GenText(
-                                   'Unknown location',
+                                    'Unknown location',
                                     height: 24.5,
                                     weight: FontWeight.w400,
                                     color: colors.neutral.shade400,
@@ -122,14 +139,13 @@ class ProviderOngoingService extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                               ),
-                              onPressed: () {
-                                context.read<ProviderServiceBloc>().add(
-                                      ProviderCancelServiceBooking(
-                                        serviceRequestId: int.parse(booking.requestId!),
-                                        cancellationReason:
-                                            'Cancelled by provider',
-                                      ),
-                                    );
+                              onPressed: () async {
+                                await pushScreen(
+                                  context,
+                                  CancelSlientServiceScreen(
+                                    serviceRequestId: booking.requestId!,
+                                  ),
+                                );
                               },
                               child: GenText(
                                 'Cancel',
@@ -144,10 +160,10 @@ class ProviderOngoingService extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: () {
                                 context.read<ProviderServiceBloc>().add(
-                                       ProviderStartServiceBooking(
-                                        int.parse(booking.requestId!)
-                                      ),
-                                    );
+                                  ProviderStartServiceBooking(
+                                    int.parse(booking.requestId!),
+                                  ),
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colors.primary.shade500,
