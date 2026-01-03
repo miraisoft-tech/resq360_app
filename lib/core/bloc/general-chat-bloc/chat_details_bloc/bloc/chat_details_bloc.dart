@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/send_message_request.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
@@ -19,7 +20,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   })  : _repo = chatRepo ?? ChatRepo(),
         _socket = socket ?? ChatSocketService.instance,
         super(ChatDetailInitial()) {
-    on<OpenChatDetail>(_onOpenChat);
+    on<OpenChatDetail>(_onOpenChatDetail);
     on<SendTextMessage>(_onSendMessage);
     on<RefreshMessages>(_onRefreshMessages);
     on<_IncomingMessage>(_onIncomingMessage);
@@ -30,35 +31,28 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   final ChatSocketService _socket;
   StreamSubscription<dynamic> ? _socketSub;
 
-  Future<void> _onOpenChat(
+  Future<void> _onOpenChatDetail(
     OpenChatDetail event,
     Emitter<ChatDetailState> emit,
   ) async {
     emit(ChatDetailLoading());
 
-    try {
-      final chatResult = await _repo.getChatById(chatId);
-      final messagesResult = await _repo.getChatMessages(chatId);
+    final result = await _repo.getChatById(event.chatId);
 
-      if (chatResult.data == null || messagesResult.data == null) {
-        emit(
-          ChatDetailFailure(
-            chatResult.error ?? 'Failed to load chat',
-          ),
-        );
-        return;
-      }
-
-      await _connectSocket();
-
-      emit(
-        ChatDetailReady(
-          messages: messagesResult.data!.messages, chatId: chatResult.data!.id!, title: chatResult.data!.title!,
-        ),
-      );
-    } on Exception catch (e) {
-      emit(ChatDetailFailure(e.toString()));
+    if (result.data == null) {
+      emit(ChatDetailFailure(result.error ?? 'Failed to load chat'));
+      return;
     }
+
+    await _connectSocket();
+
+    final chat = result.data!;
+    emit(
+      ChatDetailReady(
+        chat: chat,
+        messages: chat.messages ?? [],
+      ),
+    );
   }
 
   Future<void> _connectSocket() async {

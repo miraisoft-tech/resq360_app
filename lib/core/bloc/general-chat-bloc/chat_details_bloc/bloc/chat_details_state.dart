@@ -21,29 +21,28 @@ class ChatDetailInitial extends ChatDetailState {}
 class ChatDetailLoading extends ChatDetailState {}
 
 class ChatDetailReady extends ChatDetailState {
-
   const ChatDetailReady({
-    required this.chatId,
-    required this.title,
+    required this.chat,
     required this.messages,
   });
-  final int chatId;
-  final String title;
-  final List<MessageResponse> messages;
+
+  final ChatResponse chat;                
+  final List<MessageResponse> messages;    
 
   ChatDetailReady copyWith({
+    ChatResponse? chat,
     List<MessageResponse>? messages,
   }) {
     return ChatDetailReady(
-      chatId: chatId,
-      title: title,
+      chat: chat ?? this.chat,
       messages: messages ?? this.messages,
     );
   }
 
   @override
-  List<Object?> get props => [chatId, title, messages];
+  List<Object?> get props => [chat, messages];
 }
+
 
 
 class ChatDetailFailure extends ChatDetailState {

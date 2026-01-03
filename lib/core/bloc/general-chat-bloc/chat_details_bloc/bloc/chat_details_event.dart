@@ -31,7 +31,6 @@ class SendTextMessage extends ChatDetailEvent {
 
 class RefreshMessages extends ChatDetailEvent {}
 
-/// INTERNAL (socket only)
 class _IncomingMessage extends ChatDetailEvent {
   const _IncomingMessage(this.message);
   final MessageResponse message;
