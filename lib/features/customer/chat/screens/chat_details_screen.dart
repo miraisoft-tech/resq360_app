@@ -79,7 +79,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(state.title),
+            appBar: _buildAppBar(state.chat.title!),
             body: SafeArea(
               child: Column(
                 children: [

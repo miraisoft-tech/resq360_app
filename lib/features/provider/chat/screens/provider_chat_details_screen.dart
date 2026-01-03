@@ -494,7 +494,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
 
         return Scaffold(
           backgroundColor: appColors.whiteColor,
-          appBar: _buildAppBar(state.title),
+          appBar: _buildAppBar(state.chat.title!),
           body: SafeArea(
             child: Column(
               children: [
@@ -504,11 +504,11 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
                     controller: _scrollController,
                     messages: state.messages,
                     currentUserId: _currentUserId,
-                    chatId: state.chatId,
+                    chatId: state.chat.id!,
                   ),
                 ),
                 ChatBoxWidget(
-                  onAttachment: () => _showAttachmentMenu(context, state.chatId),
+                  onAttachment: () => _showAttachmentMenu(context,state.chat.id!),
                   onSend: (text) {
                     if (text.trim().isNotEmpty) {
                       context
