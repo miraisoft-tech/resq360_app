@@ -235,7 +235,7 @@ class ServiceRepo extends BaseAPI {
                 .toList();
 
         return ApiResult(data: bookings);
-      } else{
+      } else {
         final error = res.data!['message'];
         return ApiResult(error: error.toString());
       }
@@ -268,10 +268,12 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<void>> cancelServiceBooking(int serviceRequestId) async {
+  Future<ApiResult<void>> cancelServiceBooking({ required int serviceRequestId, required String cancellationReason}) async {
     final url = '/services/bookings/$serviceRequestId/cancel';
+
+    final body = {'cancellationReason': cancellationReason};
     try {
-      final res = await dio().post<Map<String, dynamic>>(url);
+      final res = await dio().post<Map<String, dynamic>>(url, data: body);
       log('POST $url => ${res.statusCode}');
 
       if (res.statusCode == 200) {
@@ -292,7 +294,7 @@ class ServiceRepo extends BaseAPI {
 
   Future<ApiResult<void>> completeServiceBooking(
     int serviceRequestId, {
-    required String ratings,
+    required double ratings,
     required String review,
   }) async {
     final url = '/services/bookings/$serviceRequestId/complete';

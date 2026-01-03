@@ -22,6 +22,7 @@ class _ProviderServiceDetailScreenState
     final appColors = context.appColors;
     final companyName = widget.booking.assignedProvider?.fullName ?? '';
     final clientName = widget.booking.user?.fullName ?? '';
+    final serviceRequestId =widget.booking.requestId;
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -165,9 +166,10 @@ class _ProviderServiceDetailScreenState
                     backgroundColor: appColors.primary.shade50,
                     textColor: appColors.primary.shade500,
                     onPressed: () async {
+                      if (serviceRequestId == null) return;
                       await pushScreen(
                         context,
-                        const CancelSlientServiceScreen(),
+                         CancelSlientServiceScreen(serviceRequestId: serviceRequestId),
                       );
                     },
                   ),
@@ -209,9 +211,11 @@ class _ProviderServiceDetailScreenState
                     backgroundColor: appColors.primary.shade500,
                     textColor: appColors.whiteColor,
                     onPressed: () async {
+                      if (serviceRequestId == null) return;
+
                       await pushScreen(
                         context,
-                        const ClientServiceCompletedScreen(),
+                         ClientServiceCompletedScreen(serviceRequestId: serviceRequestId,),
                       );
                     },
                   ),

@@ -62,6 +62,6 @@ class CustomerCompleteServiceBooking extends CustomerServicesEvent {
     required this.review,
   });
   final int serviceRequestId;
-  final String ratings;
+  final double ratings;
   final String review;
 }

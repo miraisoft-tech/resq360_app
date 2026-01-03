@@ -11,3 +11,25 @@ class ProviderFetchBookings extends ProviderServiceEvent {
    const ProviderFetchBookings({this.status});
   final String? status;
 }
+
+class ProviderStartServiceBooking extends ProviderServiceEvent {
+  const ProviderStartServiceBooking(this.serviceRequestId);
+  final int serviceRequestId;
+}
+
+class ProviderCancelServiceBooking extends ProviderServiceEvent {
+  const ProviderCancelServiceBooking({required this.serviceRequestId, required this.cancellationReason});
+  final int serviceRequestId;
+  final String cancellationReason;
+}
+
+class ProviderCompleteServiceBooking extends ProviderServiceEvent {
+  const ProviderCompleteServiceBooking({
+    required this.serviceRequestId,
+    required this.ratings,
+    required this.review,
+  });
+  final int serviceRequestId;
+  final double ratings;
+  final String review;
+}

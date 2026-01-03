@@ -1,12 +1,13 @@
 // ignore_for_file: deprecated_member_use, document_ignores
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/provider_cancel_enums.dart';
 import 'package:resq360/features/widgets/dialogs/cancelled.modal.dart';
 
 class CancelSlientServiceScreen extends StatefulWidget {
-  const CancelSlientServiceScreen({super.key});
-
+  const CancelSlientServiceScreen({required this.serviceRequestId, super.key});
+  final String serviceRequestId;
   @override
   State<CancelSlientServiceScreen> createState() =>
       _CancelSlientServiceScreenState();
@@ -208,28 +209,49 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                 ),
                 12.horizontalSpace,
                 Expanded(
-                  child: WideButton(
-                    label: 'Confirm',
-                    backgroundColor: appColors.error,
-                    textColor: appColors.whiteColor,
-                    onPressed:
-                        reasonController.text.isNotEmpty ||
-                                selectedReason != null
-                            ? () async {
-                              await GeneralDialogs.showCustomBottomSheet(
-                                context,
-                                body: CancelledModal(
-                                  onContinuePressed: () async {
-                                    if (context.mounted) await pop(context);
-                                    if (context.mounted) await pop(context);
-                                    if (context.mounted) await pop(context);
-                                    if (context.mounted) await pop(context);
-                                  },
-                                ),
-                              );
-                            }
-                            : null,
-                  ),
+                  child:
+                      BlocConsumer<ProviderServiceBloc, ProviderServiceState>(
+                        builder: (context, state) {
+                          return WideButton(
+                            label: 'Confirm',
+                            backgroundColor: appColors.error,
+                            textColor: appColors.whiteColor,
+                            loading: state is ProviderServicesLoading,
+                            onPressed:
+                               canSubmit ? () async {
+                                      final data = int.parse(
+                                        widget.serviceRequestId,
+                                      );
+                                      context.read<ProviderServiceBloc>().add(
+                                        ProviderCancelServiceBooking(
+                                          cancellationReason: cancellationReason!,
+                                          serviceRequestId: data,
+                                        ),
+                                      );
+                                    }
+                                    : null,
+                          );
+                        },
+                        listener: (
+                          BuildContext context,
+                          ProviderServiceState state,
+                        ) async {
+                          if (state is ProviderServiceBookingCancelled) {
+                            await GeneralDialogs.showCustomBottomSheet(
+                              context,
+                              body: CancelledModal(
+                                onContinuePressed: () async {
+                                  if (context.mounted) await pop(context);
+                                },
+                              ),
+                            );
+                          }
+
+                          if (state is ProviderServicesError) {
+                            await showErrorSnackbar(context, state.error);
+                          }
+                        },
+                      ),
                 ),
               ],
             ),
@@ -237,7 +259,31 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
         ),
       ),
     );
+    
   }
+
+  String? get cancellationReason {
+  if (selectedReason == null) return null;
+
+  if (selectedReason == CancelReasonEnum.other) {
+    return reasonController.text.trim().isEmpty
+        ? null
+        : reasonController.text.trim();
+  }
+
+  return selectedReason!.name; // or map to backend value
+}
+
+bool get canSubmit {
+  if (selectedReason == null) return false;
+
+  if (selectedReason == CancelReasonEnum.other) {
+    return reasonController.text.trim().isNotEmpty;
+  }
+
+  return true;
+}
+
 
   String _reasonText(CancelReasonEnum reason) {
     switch (reason) {

@@ -16,6 +16,10 @@ class ProviderBookingsLoaded extends ProviderServiceState {
   final List<Bookings> bookings;
 }
 class ProviderServicesError extends ProviderServiceState {
-  const ProviderServicesError(this.error);
+  const ProviderServicesError({required this.error});
   final String error;
 }
+class ProviderServiceBookingStarted extends ProviderServiceState {}
+
+class ProviderServiceBookingCompleted extends ProviderServiceState {}
+class ProviderServiceBookingCancelled extends ProviderServiceState {}

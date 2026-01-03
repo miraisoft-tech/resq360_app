@@ -13,6 +13,11 @@ class ProviderServiceBloc
     extends Bloc<ProviderServiceEvent, ProviderServiceState> {
   ProviderServiceBloc() : super(ProviderServiceInitial()) {
     on<ProviderFetchBookings>(_onFetch);
+    on<ProviderStartServiceBooking>(_onStartBooking);
+  
+    on<ProviderCompleteServiceBooking>(_onCompleteBooking);
+    on<ProviderCancelServiceBooking>(_onCancelBooking);
+
   }
 
   Future<void> _onFetch(
@@ -27,9 +32,76 @@ class ProviderServiceBloc
     } else {
       emit(
         ProviderServicesError(
-          result.error ?? 'Failed to book service',
+          error: result.error ?? 'Failed to book service',
         ),
       );
     }
   }
+
+  Future<void> _onCancelBooking(
+  ProviderCancelServiceBooking event,
+  Emitter<ProviderServiceState> emit,
+) async {
+  emit(ProviderServicesLoading());
+  try {
+    final result = await serviceRepo.cancelServiceBooking(serviceRequestId: event.serviceRequestId, cancellationReason: event.cancellationReason);
+
+    if (!result.isSuccess) {
+      emit(ProviderServicesError(
+        error: result.error ?? 'Failed to cancel booking',
+      ));
+    } else {
+      emit(ProviderServiceBookingCancelled());
+    }
+  } on Exception catch (e) {
+    emit(ProviderServicesError(error: e.toString()));
+  }
 }
+
+Future<void> _onStartBooking(
+  ProviderStartServiceBooking event,
+  Emitter<ProviderServiceState> emit,
+) async {
+  emit(ProviderServicesLoading());
+  try {
+    final result = await serviceRepo.startServiceBooking(
+      event.serviceRequestId,
+    );
+
+    if (!result.isSuccess) {
+      emit(ProviderServicesError(
+        error: result.error ?? 'Failed to start service',
+      ));
+    } else {
+      emit(ProviderServiceBookingStarted());
+    }
+  } on Exception catch (e) {
+    emit(ProviderServicesError(error: e.toString()));
+  }
+}
+
+
+Future<void> _onCompleteBooking(
+  ProviderCompleteServiceBooking event,
+  Emitter<ProviderServiceState> emit,
+) async {
+  emit(ProviderServicesLoading());
+  try {
+    final result = await serviceRepo.completeServiceBooking(
+      event.serviceRequestId,
+      ratings: event.ratings,
+      review: event.review,
+    );
+
+    if (!result.isSuccess) {
+      emit(ProviderServicesError(
+        error: result.error ?? 'Failed to complete booking',
+      ));
+    } else {
+      emit(ProviderServiceBookingCompleted());
+    }
+  } on Exception catch (e) {
+    emit(ProviderServicesError(error: e.toString()));
+  }
+}
+    }
