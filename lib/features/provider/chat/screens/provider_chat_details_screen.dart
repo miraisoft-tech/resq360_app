@@ -443,14 +443,15 @@ class ProviderChatDetailScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => ChatDetailBloc(chatId: chatId)
         ..add(OpenChatDetail(chatId)),
-      child: const _ProviderChatDetailView(),
+      child: _ProviderChatDetailView(chatId),
     );
   }
 }
 
 class _ProviderChatDetailView extends StatefulWidget {
-  const _ProviderChatDetailView();
+  const _ProviderChatDetailView(this.chatId);
 
+  final int chatId;
   @override
   State<_ProviderChatDetailView> createState() => _ProviderChatDetailViewState();
 }
@@ -484,7 +485,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
         if (state is ChatDetailFailure) {
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            body: ErrorMessageAndButton(error: state.error),
+            body: ErrorMessageAndButton(error: state.error, onPressed: ()=> context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chatId),),),
           );
         }
 
@@ -504,11 +505,11 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
                     controller: _scrollController,
                     messages: state.messages,
                     currentUserId: _currentUserId,
-                    chatId: state.chat.id!,
+                    chat: state.chat,
                   ),
                 ),
                 ChatBoxWidget(
-                  onAttachment: () => _showAttachmentMenu(context,state.chat.id!),
+                  onAttachment: () => _showAttachmentMenu(context,state.chat),
                   onSend: (text) {
                     if (text.trim().isNotEmpty) {
                       context
@@ -578,9 +579,10 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
     if (state is ChatDetailReady) {
       _scrollToBottom();
     }
+    // if(state is MessageSent ){}
   }
 
-  Future<void> _showAttachmentMenu(BuildContext context, int chatId) async {
+  Future<void> _showAttachmentMenu(BuildContext context, ChatResponse chat) async {
     final button = context.findRenderObject()! as RenderBox;
     final overlay =
         Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
@@ -653,7 +655,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
           case 'document':
             _onDocumentTap();
           case 'invoice':
-            await _onInvoiceTap(context, chatId);
+            await _onInvoiceTap(context, chat);
         }
       }
     });
@@ -668,11 +670,14 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
   void _onDocumentTap() {
   }
 
-  Future<void> _onInvoiceTap(BuildContext context, int chatId) async {
+  Future<void> _onInvoiceTap(BuildContext context, ChatResponse chat) async {
     await GeneralDialogs.showCustomDialog(
       context,
-      body: ProviderGenerateInvoiceDialog(
-        chatId: chatId,
+      body: BlocProvider.value(
+        value: context.read<ChatDetailBloc>(),
+        child: ProviderGenerateInvoiceDialog(
+          chat: chat,
+        ),
       ),
     );
   }
@@ -695,13 +700,13 @@ class _MessageList extends StatelessWidget {
     required this.controller,
     required this.messages,
     required this.currentUserId,
-    required this.chatId,
+    required this.chat,
   });
 
   final ScrollController controller;
   final List<MessageResponse> messages;
   final int? currentUserId;
-  final int chatId;
+  final ChatResponse chat;
 
   @override
   Widget build(BuildContext context) {
@@ -721,8 +726,10 @@ class _MessageList extends StatelessWidget {
             children: [
               ProviderChatInvoiceCardWidget(
                 metadata: message.metadata!,
+                message: message,
+                chat: chat,
                 messageCreatedAt: _formatTime(message.createdAt!),
-                paymentStatus: PaymentStatus.paid,
+                paymentStatus: chat.paymentStatus == PaymentStatus.paid.name ? PaymentStatus.paid :PaymentStatus.pending  ,
                 onTapPay: () => _handleInvoicePayment(context, message),
               ),
               20.verticalSpace,

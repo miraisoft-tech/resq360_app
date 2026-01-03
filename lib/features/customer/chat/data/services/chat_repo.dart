@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
 
 class ChatRepo extends BaseAPI {
   factory ChatRepo() => _instance;

@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/metadata.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 
 enum PaymentStatus {
   pending,
@@ -9,13 +9,15 @@ enum PaymentStatus {
 class ProviderChatInvoiceCardWidget extends StatelessWidget {
   const ProviderChatInvoiceCardWidget({
     required this.onTapPay,
-    required this.paymentStatus, required this.metadata, required this.messageCreatedAt, super.key,
+    required this.paymentStatus, required this.metadata, required this.message, required this.chat, required this.messageCreatedAt, super.key,
 
   });
 
   final void Function() onTapPay;
   final PaymentStatus paymentStatus;
   final Metadata metadata;
+  final ChatResponse chat;
+  final MessageResponse message;
   final String messageCreatedAt;
   @override
   Widget build(BuildContext context) {
@@ -65,7 +67,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         4.verticalSpace,
                         GenText(
-                          metadata.invoiceNo ?? '—',
+                          metadata.invoiceId ?? '—',
                           weight: FontWeight.w400,
                           color:
                               paymentStatus == PaymentStatus.paid
@@ -89,8 +91,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                          metadata.date ?? '8/27/2025',
-                          // '8/27/2025',
+                          message.createdAt?.formatDate ?? '',
                           weight: FontWeight.w400,
                           color:
                               paymentStatus == PaymentStatus.paid
@@ -118,7 +119,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                          metadata.serviceCategory ?? '-',
+                           chat.serviceName ?? '-',
                           size: 12,
                           weight: FontWeight.w400,
                           color:
@@ -141,7 +142,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                          metadata.clientName ?? '-',
+                         chat.user?.fullName ?? '',
                           size: 12,
                           weight: FontWeight.w400,
                           color:

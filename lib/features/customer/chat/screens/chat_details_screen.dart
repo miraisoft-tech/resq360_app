@@ -89,6 +89,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                       controller: _scrollController,
                       messages: state.messages,
                       currentUserId: _currentUserId,
+                       chat: state.chat,
                     ),
                   ),
                   ChatBoxWidget(
@@ -322,12 +323,14 @@ class _MessageList extends StatelessWidget {
   const _MessageList({
     required this.controller,
     required this.messages,
-    required this.currentUserId,
+    required this.currentUserId, 
+    required this.chat,
   });
 
   final ScrollController controller;
   final List<MessageResponse> messages;
   final int? currentUserId;
+  final ChatResponse chat;
 
   @override
   Widget build(BuildContext context) {
@@ -345,6 +348,8 @@ class _MessageList extends StatelessWidget {
 
         if (message.messageType == 'SYSTEM') {
           return ChatInvoiceCardWidget(
+             message: message, 
+             chat: chat,
             metadata: message.metadata!,
             messageCreatedAt: _formatTime(message.createdAt!),
             onTapPay: () async {
@@ -357,7 +362,7 @@ class _MessageList extends StatelessWidget {
                       body: ClientPaymentConfirmDialog(
                         amount: int.parse(amount),
                         title: 'Quick Tow Emergency',
-                        invoiceNumber: message.metadata!.invoiceNo!,
+                        invoiceNumber: message.metadata!.invoiceId!,
                       ),
                     );
                   },

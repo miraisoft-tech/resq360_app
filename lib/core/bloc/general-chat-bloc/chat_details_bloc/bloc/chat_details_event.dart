@@ -28,6 +28,14 @@ class SendTextMessage extends ChatDetailEvent {
   @override
   List<Object?> get props => [content];
 }
+class SendInvoiceMessage extends ChatDetailEvent {
+  const SendInvoiceMessage(this.invoice);
+
+  final SendInvoice invoice;
+
+  @override
+  List<Object?> get props => [invoice];
+}
 
 class RefreshMessages extends ChatDetailEvent {}
 

@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/send_message_request.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 
@@ -22,6 +23,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
         super(ChatDetailInitial()) {
     on<OpenChatDetail>(_onOpenChatDetail);
     on<SendTextMessage>(_onSendMessage);
+    on<SendInvoiceMessage>(_onSendInvoiceMessage);
     on<RefreshMessages>(_onRefreshMessages);
     on<_IncomingMessage>(_onIncomingMessage);
   }
@@ -71,6 +73,65 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       },
     );
   }
+  Future<void> _onSendInvoiceMessage(
+  SendInvoiceMessage event,
+  Emitter<ChatDetailState> emit,
+) async {
+  final current = state;
+  if (current is! ChatDetailReady) return;
+
+  // 1️⃣ Optimistic invoice message
+  // final optimisticMessage = MessageResponse(
+  //   id: DateTime.now().millisecondsSinceEpoch * -1,
+  //   chatId: current.chat.id,
+  //   senderType: 'PROVIDER',
+  //   messageType: 'SYSTEM',
+  //   content: event.invoice.description ?? 'Invoice',
+  //   createdAt: DateTime.now(),
+  //   metadata: Metadata(
+  //     type: 'INVOICE',
+  //     amount: event.invoice.amount,
+  //     currency: event.invoice.currency,
+  //     invoiceId: event.invoice.invoiceId,
+  //     description: event.invoice.description,
+  //   ),
+  // );
+
+  // emit(
+  //   current.copyWith(
+  //     messages: [
+  //       optimisticMessage,
+  //       ...current.messages,
+  //     ],
+  //   ),
+  // );
+
+ 
+  final result = await _repo.sendInvoice(
+    invoiceRequest: event.invoice,
+  );
+
+  if (result.data == null) {
+    emit(
+      current.copyWith(
+        messages: current.messages,
+      ),
+    );
+    return;
+  }
+
+  emit(
+    current.copyWith(
+      messages: [
+        result.data!,
+        // ...current.messages.where(
+        //   (m) => m.id != optimisticMessage.id,
+        // ),
+      ],
+    ),
+  );
+}
+
 
   Future<void> _onSendMessage(
     SendTextMessage event,
