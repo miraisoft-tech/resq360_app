@@ -181,7 +181,7 @@ class _ProviderServiceDetailScreenState
                     backgroundColor: appColors.primary.shade500,
                     textColor: appColors.whiteColor,
                     onPressed: () async {
-                       await pushScreen(context, const ServiceCompletedScreen());
+                       await pushScreen(context,   ServiceCompletedScreen(serviceRequestId: int.parse(serviceRequestId!),));
                     },
                   ),
                 ),
@@ -212,7 +212,6 @@ class _ProviderServiceDetailScreenState
                     textColor: appColors.whiteColor,
                     onPressed: () async {
                       if (serviceRequestId == null) return;
-
                       await pushScreen(
                         context,
                          ClientServiceCompletedScreen(serviceRequestId: serviceRequestId,),

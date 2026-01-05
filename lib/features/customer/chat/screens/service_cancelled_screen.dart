@@ -180,6 +180,9 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
                               body: CancelledModal(
                                 onContinuePressed: () async {
                                   if (context.mounted) await pop(context);
+                                  if (context.mounted) await pop(context);
+                                  if (context.mounted) await pop(context);
+                                  if (context.mounted) await pop(context);
                                 },
                               ),
                             );
@@ -194,6 +197,8 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
                         label: 'Confirm',
                         backgroundColor: appColors.error,
                         textColor: appColors.whiteColor,
+                            loading: state is CustomerServicesLoading,
+
                         onPressed:
                             canSubmit ? () async {
                                       context.read<CustomerServicesBloc>().add(

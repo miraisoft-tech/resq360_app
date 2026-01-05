@@ -96,7 +96,7 @@ Future<void> _onRefresh() async {
                     return ListView.separated(
                       itemCount: chats.length,
                       separatorBuilder: (_, _) =>
-                          const Divider(height: 1),
+                          const ListDivider( verticalSpacing: 0),
                       itemBuilder: (context, index) {
                         final chat = chats[index];
           

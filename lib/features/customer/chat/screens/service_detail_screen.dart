@@ -182,7 +182,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     backgroundColor: appColors.primary.shade500,
                     textColor: appColors.whiteColor,
                     onPressed: () async {
-                      await pushScreen(context, const ServiceCompletedScreen());
+                      if (serviceRequestId == null) return;
+                      await pushScreen(context,  ServiceCompletedScreen(serviceRequestId: serviceRequestId,));
                     },
                   ),
                 ),

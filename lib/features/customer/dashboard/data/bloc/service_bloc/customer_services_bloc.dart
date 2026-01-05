@@ -1,5 +1,6 @@
-import 'package:bloc/bloc.dart';
+
 import 'package:equatable/equatable.dart';
+import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/service_repo.dart';
@@ -15,9 +16,6 @@ class CustomerServicesBloc
     on<CustomerFetchServices>(_onFetchCustomerServices);
     on<CustomerFetchServiceInfo>(_onFetchServiceInfo);
     on<CustomerCreateService>(_onCreateCustomerService);
-    // on<CustomerFetchBookings>(_onFetchBookings);
-    // on<CustomerFetchBookings>(_onGetServiceBookings);
-
     on<CustomerCreateServiceRequest>(_createServiceRequest);
     on<CustomerStartServiceBooking>(_onStartBooking);
     on<CustomerCancelServiceBooking>(_onCancelBooking);
@@ -181,7 +179,7 @@ Future<void> _onCancelBooking(
   emit(CustomerServicesLoading());
   try {
     final result = await serviceRepo.cancelServiceBooking(serviceRequestId: event.serviceRequestId, cancellationReason: event.cancellationReason);
-
+  log(result);
     if (!result.isSuccess) {
       emit(CustomerServicesError(
         error: result.error ?? 'Failed to cancel booking',

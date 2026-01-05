@@ -3,8 +3,8 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/screens/thank_you.modal.dart';
 
 class ServiceCompletedScreen extends StatefulWidget {
-  const ServiceCompletedScreen({super.key});
-
+  const ServiceCompletedScreen({required this.serviceRequestId, super.key});
+final int serviceRequestId;
   @override
   State<ServiceCompletedScreen> createState() => _ServiceCompletedScreenState();
 }
