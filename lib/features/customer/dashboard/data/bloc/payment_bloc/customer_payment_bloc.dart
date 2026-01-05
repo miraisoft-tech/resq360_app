@@ -9,12 +9,13 @@ part 'customer_payment_state.dart';
 class CustomerPaymentBloc
     extends Bloc<CustomerPaymentEvent, CustomerPaymentState> {
   CustomerPaymentBloc({PaymentRepo? repo})
-      : _repo = repo ?? PaymentRepo(),
-        super(CustomerPaymentInitialState()) {
+    : _repo = repo ?? PaymentRepo(),
+      super(CustomerPaymentInitialState()) {
     on<CustomerInitWalletFundingEvent>(_initWalletFunding);
     on<CustomerVerifyWalletFundingEvent>(_verifyWalletFunding);
-
     on<CustomerInitServicePaymentEvent>(_initServicePayment);
+    on<CustomerInitServiceRequestPaymentEvent>(_initServiceRequestPayment);
+
     on<CustomerVerifyServicePaymentEvent>(_verifyServicePayment);
   }
 
@@ -35,9 +36,11 @@ class CustomerPaymentBloc
       emit(WalletFundingInitiatedState(result.data!));
     } else {
       log(result.error);
-      emit(WalletFundingFailureState(
-        result.error ?? 'Wallet funding failed',
-      ));
+      emit(
+        WalletFundingFailureState(
+          result.error ?? 'Wallet funding failed',
+        ),
+      );
     }
   }
 
@@ -52,12 +55,13 @@ class CustomerPaymentBloc
     if (result.isSuccess && result.data != null) {
       emit(WalletFundingVerifiedState(result.data!));
     } else {
-      emit(WalletFundingFailureState(
-        result.error ?? 'Wallet funding verification failed',
-      ));
+      emit(
+        WalletFundingFailureState(
+          result.error ?? 'Wallet funding verification failed',
+        ),
+      );
     }
   }
-
 
   Future<void> _initServicePayment(
     CustomerInitServicePaymentEvent event,
@@ -75,9 +79,35 @@ class CustomerPaymentBloc
     if (result.data != null) {
       emit(ServicePaymentInitiatedState(result.data!));
     } else {
-      emit(ServicePaymentFailureState(
-        result.error ?? 'Service payment initiation failed',
-      ));
+      emit(
+        ServicePaymentFailureState(
+          result.error ?? 'Service payment initiation failed',
+        ),
+      );
+    }
+  }
+
+  Future<void> _initServiceRequestPayment(
+    CustomerInitServiceRequestPaymentEvent event,
+    Emitter<CustomerPaymentState> emit,
+  ) async {
+    emit(ServicePaymentLoadingState());
+
+    final result = await _repo.initiatePaymentForAServiceRequest(
+      chatId: event.chatId,
+      invoiceMessageId: event.invoiceMessageId,
+      paymentMethod: event.paymentMethod,
+    );
+
+    if (result.data != null) {
+      emit(ServicePaymentInitiatedState(result.data!));
+    } else {
+      log(result.error);
+      emit(
+        const ServicePaymentFailureState(
+           'Service payment initiation failed',
+        ),
+      );
     }
   }
 
@@ -92,9 +122,11 @@ class CustomerPaymentBloc
     if (result.isSuccess && result.data != null) {
       emit(ServicePaymentVerifiedState(result.data!));
     } else {
-      emit(ServicePaymentFailureState(
-        result.error ?? 'Service payment verification failed',
-      ));
+      emit(
+        ServicePaymentFailureState(
+          result.error ?? 'Service payment verification failed',
+        ),
+      );
     }
   }
 }

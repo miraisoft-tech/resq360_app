@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/metadata.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/send_message_request.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
@@ -12,15 +13,14 @@ import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 part 'chat_details_event.dart';
 part 'chat_details_state.dart';
 
-
 class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   ChatDetailBloc({
     required this.chatId,
     ChatRepo? chatRepo,
     ChatSocketService? socket,
-  })  : _repo = chatRepo ?? ChatRepo(),
-        _socket = socket ?? ChatSocketService.instance,
-        super(ChatDetailInitial()) {
+  }) : _repo = chatRepo ?? ChatRepo(),
+       _socket = socket ?? ChatSocketService.instance,
+       super(ChatDetailInitial()) {
     on<OpenChatDetail>(_onOpenChatDetail);
     on<SendTextMessage>(_onSendMessage);
     on<SendInvoiceMessage>(_onSendInvoiceMessage);
@@ -31,7 +31,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   final int chatId;
   final ChatRepo _repo;
   final ChatSocketService _socket;
-  StreamSubscription<dynamic> ? _socketSub;
+  StreamSubscription<dynamic>? _socketSub;
 
   Future<void> _onOpenChatDetail(
     OpenChatDetail event,
@@ -73,71 +73,87 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       },
     );
   }
+
   Future<void> _onSendInvoiceMessage(
-  SendInvoiceMessage event,
-  Emitter<ChatDetailState> emit,
-) async {
-  final current = state;
-  if (current is! ChatDetailReady) return;
+    SendInvoiceMessage event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    final current = state;
+    if (current is! ChatDetailReady) return;
 
-  // 1️⃣ Optimistic invoice message
-  // final optimisticMessage = MessageResponse(
-  //   id: DateTime.now().millisecondsSinceEpoch * -1,
-  //   chatId: current.chat.id,
-  //   senderType: 'PROVIDER',
-  //   messageType: 'SYSTEM',
-  //   content: event.invoice.description ?? 'Invoice',
-  //   createdAt: DateTime.now(),
-  //   metadata: Metadata(
-  //     type: 'INVOICE',
-  //     amount: event.invoice.amount,
-  //     currency: event.invoice.currency,
-  //     invoiceId: event.invoice.invoiceId,
-  //     description: event.invoice.description,
-  //   ),
-  // );
-
-  // emit(
-  //   current.copyWith(
-  //     messages: [
-  //       optimisticMessage,
-  //       ...current.messages,
-  //     ],
-  //   ),
-  // );
-
- 
-  final result = await _repo.sendInvoice(
-    invoiceRequest: event.invoice,
-  );
-
-  if (result.data == null) {
-    emit(
-      current.copyWith(
-        messages: current.messages,
+    final optimisticMessage = MessageResponse(
+      id: DateTime.now().millisecondsSinceEpoch * -1,
+      chatId: current.chat.id,
+      senderType: 'PROVIDER',
+      messageType: 'SYSTEM',
+      content: event.invoice.description ?? 'Invoice',
+      createdAt: DateTime.now(),
+      metadata: Metadata(
+        type: 'INVOICE',
+        amount: event.invoice.amount,
+        currency: event.invoice.currency,
+        invoiceId: event.invoice.invoiceId,
+        description: event.invoice.description,
       ),
     );
-    return;
+
+    emit(
+      current.copyWith(
+        messages: [
+          optimisticMessage,
+          ...current.messages,
+        ],
+      ),
+    );
+
+    final result = await _repo.sendInvoice(
+      invoiceRequest: event.invoice,
+    );
+
+    if (result.data == null) {
+      emit(
+        current.copyWith(
+          messages: current.messages,
+        ),
+      );
+      return;
+    }
+
+    emit(
+      current.copyWith(
+        messages: [
+          result.data!,
+          ...current.messages.where(
+            (m) => m.id != optimisticMessage.id,
+          ),
+        ],
+      ),
+    );
   }
-
-  emit(
-    current.copyWith(
-      messages: [
-        result.data!,
-        // ...current.messages.where(
-        //   (m) => m.id != optimisticMessage.id,
-        // ),
-      ],
-    ),
-  );
-}
-
 
   Future<void> _onSendMessage(
     SendTextMessage event,
     Emitter<ChatDetailState> emit,
   ) async {
     if (state is! ChatDetailReady) return;
+
+    final current = state as ChatDetailReady;
+
+    final optimisticMessage = MessageResponse(
+      id: DateTime.now().millisecondsSinceEpoch * -1,
+      chatId: chatId,
+      senderType: 'USER',
+      senderId: event.senderid,
+      messageType: 'TEXT',
+      content: event.content,
+      createdAt: DateTime.now(),
+    );
+
+    emit(
+      current.copyWith(
+        messages: [optimisticMessage, ...current.messages],
+      ),
+    );
 
     _socket.sendMessage(
       SendMessageRequest(
@@ -156,9 +172,12 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final current = state as ChatDetailReady;
 
+    final confirmedMessages =
+        current.messages.where((m) => m.id == null || m.id! > 0).toList();
+
     emit(
       current.copyWith(
-        messages: [event.message, ...current.messages],
+        messages: [event.message, ...confirmedMessages],
       ),
     );
   }

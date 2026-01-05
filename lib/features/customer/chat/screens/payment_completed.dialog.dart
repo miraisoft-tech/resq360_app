@@ -1,8 +1,7 @@
 import 'package:resq360/__lib.dart';
 
 class PaymentCompleted extends StatelessWidget {
-  const PaymentCompleted({super.key});
-
+  const PaymentCompleted({ super.key});
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -32,7 +31,7 @@ class PaymentCompleted extends StatelessWidget {
               ),
               4.verticalSpace,
               UrbText(
-                'QuickTow has been notified and your driver is being assigned.',
+                'provider has been notified',
                 height: 24.5,
                 color: appColors.textColor.shade300,
                 textAlign: TextAlign.center,

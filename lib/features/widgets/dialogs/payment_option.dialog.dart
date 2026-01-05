@@ -3,7 +3,9 @@ import 'package:resq360/__lib.dart';
 enum PaymentMethod {
   wallet,
   existingCard,
-  newCard,
+  //how it is from BE
+// ignore_for_file: constant_identifier_names
+  new_card,
 }
 
 class PaymentOptionDialog extends StatefulWidget {
@@ -69,20 +71,20 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
                 onTap: () => _selectPayment(PaymentMethod.wallet),
               ),
               12.verticalSpace,
-              PaymentOption(
-                icon: AppAssets.ASSETS_ICONS_PAYMENT_EXISTING_CARD_SVG.svg,
-                title: 'Pay with Existing Card',
-                subtitle: '**** **** **** 1234',
-                isSelected: selectedPayment == PaymentMethod.existingCard,
-                onTap: () => _selectPayment(PaymentMethod.existingCard),
-              ),
-              12.verticalSpace,
+              // PaymentOption(
+              //   icon: AppAssets.ASSETS_ICONS_PAYMENT_EXISTING_CARD_SVG.svg,
+              //   title: 'Pay with Existing Card',
+              //   subtitle: '**** **** **** 1234',
+              //   isSelected: selectedPayment == PaymentMethod.existingCard,
+              //   onTap: () => _selectPayment(PaymentMethod.existingCard),
+              // ),
+              // 12.verticalSpace,
               PaymentOption(
                 icon: AppAssets.ASSETS_ICONS_PAYMENT_CARD_SVG.svg,
-                title: 'Pay with New Card',
+                title: 'Pay with Card',
                 bordered: true,
-                isSelected: selectedPayment == PaymentMethod.newCard,
-                onTap: () => _selectPayment(PaymentMethod.newCard),
+                isSelected: selectedPayment == PaymentMethod.new_card,
+                onTap: () => _selectPayment(PaymentMethod.new_card),
               ),
               if (selectedPayment != null) ...[
                 20.verticalSpace,

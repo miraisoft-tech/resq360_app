@@ -51,8 +51,9 @@ class CustomerStartServiceBooking extends CustomerServicesEvent {
 }
 
 class CustomerCancelServiceBooking extends CustomerServicesEvent {
-  const CustomerCancelServiceBooking(this.serviceRequestId);
+  const CustomerCancelServiceBooking(this.serviceRequestId, this.cancellationReason);
   final int serviceRequestId;
+  final String cancellationReason;
 }
 
 class CustomerCompleteServiceBooking extends CustomerServicesEvent {

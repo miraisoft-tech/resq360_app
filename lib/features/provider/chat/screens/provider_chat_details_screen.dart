@@ -468,63 +468,97 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final appColors = context.appColors;
+@override
+Widget build(BuildContext context) {
+  final appColors = context.appColors;
 
-    return BlocConsumer<ChatDetailBloc, ChatDetailState>(
-      listener: _onChatStateChanged,
-      builder: (context, state) {
-        if (state is ChatDetailLoading) {
-          return Scaffold(
-            backgroundColor: appColors.whiteColor,
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (state is ChatDetailFailure) {
-          return Scaffold(
-            backgroundColor: appColors.whiteColor,
-            body: ErrorMessageAndButton(error: state.error, onPressed: ()=> context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chatId),),),
-          );
-        }
-
-        if (state is! ChatDetailReady) {
-          return const SizedBox.shrink();
-        }
-
-        return Scaffold(
-          backgroundColor: appColors.whiteColor,
-          appBar: _buildAppBar(state.chat.title!),
-          body: SafeArea(
-            child: Column(
-              children: [
-                const ListDivider(),
-                Expanded(
-                  child: _MessageList(
-                    controller: _scrollController,
-                    messages: state.messages,
-                    currentUserId: _currentUserId,
-                    chat: state.chat,
+  return BlocConsumer<ChatDetailBloc, ChatDetailState>(
+    listener: _onChatStateChanged,
+    builder: (context, state) {
+      return Scaffold(
+        backgroundColor: appColors.whiteColor,
+        appBar: _buildAppBar(
+          state is ChatDetailReady 
+              ? (state.chat.title ?? 'Chat')
+              : 'Chat',
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              const ListDivider(),
+              Expanded(
+                child: _buildChatContent(state),
+              ),
+              IgnorePointer(
+                ignoring: state is! ChatDetailReady,
+                child: Opacity(
+                  opacity: state is ChatDetailReady ? 1.0 : 0.5,
+                  child: ChatBoxWidget(
+                    onAttachment: () async {
+                      if (state is ChatDetailReady) {
+                        await _showAttachmentMenu(context, state.chat);
+                      }
+                    },
+                    onSend: (text) {
+                      final userid = _currentUserId;
+                      if (text.trim().isNotEmpty && 
+                          userid != null && 
+                          state is ChatDetailReady) {
+                        context.read<ChatDetailBloc>().add(
+                          SendTextMessage(text, userid),
+                        );
+                      }
+                    },
                   ),
                 ),
-                ChatBoxWidget(
-                  onAttachment: () => _showAttachmentMenu(context,state.chat),
-                  onSend: (text) {
-                    if (text.trim().isNotEmpty) {
-                      context
-                          .read<ChatDetailBloc>()
-                          .add(SendTextMessage(text));
-                    }
-                  },
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildChatContent(ChatDetailState state) {
+  final appColors = context.appColors;
+  
+  if (state is ChatDetailLoading) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          16.verticalSpace,
+          GenText(
+            'Loading messages...',
+            color: appColors.neutral.shade400,
+          ),
+        ],
+      ),
     );
   }
+
+  if (state is ChatDetailFailure) {
+    return ErrorMessageAndButton(
+      error: state.error,
+      onPressed: () => context.read<ChatDetailBloc>().add(
+        OpenChatDetail(widget.chatId),
+      ),
+    );
+  }
+
+  if (state is ChatDetailReady) {
+    return _MessageList(
+      controller: _scrollController,
+      messages: state.messages,
+      currentUserId: _currentUserId,
+      chat: state.chat,
+    );
+  }
+
+  return const SizedBox.shrink();
+}
 
   PreferredSizeWidget _buildAppBar(String title) {
     final appColors = context.appColors;
@@ -728,7 +762,6 @@ class _MessageList extends StatelessWidget {
                 metadata: message.metadata!,
                 message: message,
                 chat: chat,
-                messageCreatedAt: _formatTime(message.createdAt!),
                 paymentStatus: chat.paymentStatus == PaymentStatus.paid.name ? PaymentStatus.paid :PaymentStatus.pending  ,
                 onTapPay: () => _handleInvoicePayment(context, message),
               ),

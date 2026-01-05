@@ -54,6 +54,7 @@ late final formattedDate =
   // }
 
   Future<void> sendInvoice() async {
+    log('sent');
   final request = SendInvoice(
     chatId: widget.invoice['chatId'] as int,
     amount: widget.invoice['price'] as int,

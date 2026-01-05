@@ -5,6 +5,7 @@ import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
+import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
 import 'package:resq360/features/customer/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
@@ -40,6 +41,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
   int? get _currentUserId => CustomerAuthProvider.instance.authInfo?.id;
 
+  bool canShowDetails = false;
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -59,67 +62,63 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       child: BlocConsumer<ChatDetailBloc, ChatDetailState>(
         listener: _onChatStateChanged,
         builder: (context, state) {
-          if (state is ChatDetailLoading) {
-            return Scaffold(
-              backgroundColor: appColors.whiteColor,
-              body: const Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (state is ChatDetailFailure) {
-            return Scaffold(
-              backgroundColor: appColors.whiteColor,
-              body: ErrorMessageAndButton(error: state.error),
-            );
-          }
-
-          if (state is! ChatDetailReady) {
-            return const SizedBox.shrink();
-          }
-
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(state.chat.title!),
+            appBar: _buildAppBar(
+              state is ChatDetailReady ? (state.chat.title ?? 'Chat') : 'Chat',
+            ),
             body: SafeArea(
               child: Column(
                 children: [
                   const ListDivider(),
                   Expanded(
-                    child: _MessageList(
-                      controller: _scrollController,
-                      messages: state.messages,
-                      currentUserId: _currentUserId,
-                       chat: state.chat,
+                    child: _buildChatContent(state),
+                  ),
+                  // if (canShowDetails)
+                    GestureDetector(
+                      onTap: () async {
+                        if (state is ChatDetailReady ) {
+                          final serviceMessage = state.messages
+    .firstWhere(
+      (m) => m.messageType == 'SYSTEM' && m.metadata != null,
+    );
+
+                          await pushScreen(
+                          context,
+                           ServiceDetailScreen(chat:  state.chat, message:serviceMessage,),
+                        );
+                        }
+                      },
+                      child: GenText(
+                        'View Service details',
+                        weight: FontWeight.w500,
+                        color: appColors.primary.shade500,
+                        decoration: TextDecoration.underline,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  30.verticalSpace,
+                  IgnorePointer(
+                    ignoring: state is! ChatDetailReady,
+                    child: Opacity(
+                      opacity: state is ChatDetailReady ? 1.0 : 0.5,
+                      child: ChatBoxWidget(
+                        onAttachment: () {
+                          unawaited(_showAttachmentMenu(context));
+                        },
+                        onSend: (text) {
+                          final userId = _currentUserId;
+                          if (text.trim().isNotEmpty &&
+                              userId != null &&
+                              state is ChatDetailReady) {
+                            context.read<ChatDetailBloc>().add(
+                              SendTextMessage(text, userId),
+                            );
+                          }
+                        },
+                      ),
                     ),
                   ),
-                  ChatBoxWidget(
-                    onAttachment: () {
-                      unawaited(_showAttachmentMenu(context));
-                    },
-                    onSend: (text) {
-                      if (text.trim().isNotEmpty) {
-                        context.read<ChatDetailBloc>().add(
-                          SendTextMessage(text),
-                        );
-                      }
-                    },
-                  ),
-
-                  //  GestureDetector(
-                  //             onTap: () async {
-                  //               await pushScreen(
-                  //                 context,
-                  //                 const ServiceDetailScreen(),
-                  //               );
-                  //             },
-                  //             child: GenText(
-                  //               'View Service details',
-                  //               weight: FontWeight.w500,
-                  //               color: appColors.primary.shade500,
-                  //               decoration: TextDecoration.underline,
-                  //               textAlign: TextAlign.center,
-                  //             ),
-                  //           ),
                 ],
               ),
             ),
@@ -127,6 +126,41 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         },
       ),
     );
+  }
+
+  Widget _buildChatContent(ChatDetailState state) {
+    final appColors = context.appColors;
+
+    if (state is ChatDetailLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            16.verticalSpace,
+            GenText(
+              'Loading messages...',
+              color: appColors.neutral.shade400,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state is ChatDetailFailure) {
+      return ErrorMessageAndButton(error: state.error);
+    }
+
+    if (state is ChatDetailReady) {
+      return _MessageList(
+        controller: _scrollController,
+        messages: state.messages,
+        currentUserId: _currentUserId,
+        chat: state.chat,
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   PreferredSizeWidget _buildAppBar(String title) {
@@ -167,16 +201,11 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         ],
       ),
       actions: [
-  SizedBox(
-    width: 35.w,
-    height: 35.h,
-    child: IconButton(
-      onPressed: () {},
-      icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
-    ),
-  ),
-  
-],
+        IconButton(
+          onPressed: () {},
+          icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
+        ),
+      ],
     );
   }
 
@@ -223,12 +252,20 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
     if (state is ServicePaymentVerifiedState) {
       Navigator.pop(context);
-      await GeneralDialogs.showCustomDialog(
-        context,
-        body: const PaymentCompleted(),
-      );
-
-      context.read<ChatDetailBloc>().add(RefreshMessages());
+      if (state.verification.gatewayResponse == 'Successful') {
+        await GeneralDialogs.showCustomDialog(
+          context,
+          body: const PaymentCompleted(),
+        );
+        canShowDetails = true;
+        context.read<ChatDetailBloc>().add(RefreshMessages());
+      } else {
+        await showErrorSnackbar(context, 'Payment unsuccessful');
+      }
+      // await GeneralDialogs.showCustomDialog(
+      //   context,
+      //   body: const PaymentCompleted(),
+      // );
     }
 
     if (state is ServicePaymentFailureState) {
@@ -323,7 +360,7 @@ class _MessageList extends StatelessWidget {
   const _MessageList({
     required this.controller,
     required this.messages,
-    required this.currentUserId, 
+    required this.currentUserId,
     required this.chat,
   });
 
@@ -341,41 +378,45 @@ class _MessageList extends StatelessWidget {
       itemCount: messages.length,
       itemBuilder: (_, index) {
         final message = messages[index];
-        final amount =  message.metadata?.amount?.toString() ?? '';
-
+        final amount = message.metadata?.amount?.toString() ?? '';
         final isMine =
             message.senderType == 'USER' && message.senderId == currentUserId;
 
-        if (message.messageType == 'SYSTEM') {
-          return ChatInvoiceCardWidget(
-             message: message, 
-             chat: chat,
-            metadata: message.metadata!,
-            messageCreatedAt: _formatTime(message.createdAt!),
-            onTapPay: () async {
-              await GeneralDialogs.showCustomDialog(
-                context,
-                body: PaymentOptionDialog(
-                  onPaymentSelected: (option) async {
-                    await GeneralDialogs.showCustomDialog(
-                      context,
-                      body: ClientPaymentConfirmDialog(
-                        amount: int.parse(amount),
-                        title: 'Quick Tow Emergency',
-                        invoiceNumber: message.metadata!.invoiceId!,
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          );
-        }
-
-        return ChatBubble(
-          type: isMine ? MessageType.sent : MessageType.received,
-          message: message.content ?? '',
-          time: _formatTime(message.createdAt!),
+        return Padding(
+          padding: EdgeInsets.only(bottom: 8.h),
+          child:
+              message.messageType == 'SYSTEM'
+                  ? ChatInvoiceCardWidget(
+                    message: message,
+                    chat: chat,
+                    metadata: message.metadata!,
+                    messageCreatedAt: _formatTime(message.createdAt!),
+                    onTapPay: () async {
+                      await GeneralDialogs.showCustomDialog(
+                        context,
+                        body: PaymentOptionDialog(
+                          onPaymentSelected: (option) async {
+                            await GeneralDialogs.showCustomDialog(
+                              context,
+                              body: ClientPaymentConfirmDialog(
+                                amount: int.parse(amount),
+                                title: chat.serviceName ?? '',
+                                invoiceNumber: message.metadata!.invoiceId!,
+                                message: message,
+                                chatId: chat.id!,
+                                paymentMethod: option.name,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  )
+                  : ChatBubble(
+                    type: isMine ? MessageType.sent : MessageType.received,
+                    message: message.content ?? '',
+                    time: _formatTime(message.createdAt!),
+                  ),
         );
       },
     );
@@ -384,6 +425,7 @@ class _MessageList extends StatelessWidget {
   String _formatTime(DateTime dt) =>
       '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
 }
+  
 
 
 

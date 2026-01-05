@@ -17,10 +17,10 @@ class Metadata {
         description: json['description'] as String?,
       );
 
-  final String? type;        // e.g. INVOICE
-  final int? amount;         // 233
-  final String? currency;    // NGN
-  final String? invoiceId;   // INV-441
+  final String? type;      
+  final int? amount;         
+  final String? currency;   
+  final String? invoiceId;   
   final String? description;
 
   Map<String, dynamic> toJson() => {

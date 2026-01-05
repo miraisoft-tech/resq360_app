@@ -1,14 +1,30 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
 
-class ServiceDetailScreen extends StatelessWidget {
-  const ServiceDetailScreen({super.key});
+class ServiceDetailScreen extends StatefulWidget {
+  const ServiceDetailScreen({required this.chat, required this.message, super.key});
+  final ChatResponse chat;
+  final MessageResponse message;
 
+  @override
+  State<ServiceDetailScreen> createState() => _ServiceDetailScreenState();
+}
+
+class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    final companyName = widget.chat.provider?.fullName ?? '';
+    final clientName = widget.chat.user?.fullName ?? '';
+    final serviceRequestId =widget.chat.serviceRequestId;
+    final serviceCategory =widget.chat.serviceName ?? 'service';
+    final metadata = widget.message.metadata; 
+    final invoiceId = metadata?.invoiceId ?? 'N/A';
+    final price = metadata?.amount ?? 0;
+    // final location = widget.message.
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -37,42 +53,42 @@ class ServiceDetailScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: pad(horizontal: 10, vertical: 20),
-              decoration: BoxDecoration(
-                color: appColors.whiteColor,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: appColors.textColor.shade100),
-              ),
-              child: Row(
-                children: [
-                  AppAssets.ASSETS_ICONS_SEVICE_CONFIRMED_SVG.svg,
-                  12.horizontalSpace,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      GenText(
-                        'Service Confirmed',
-                        weight: FontWeight.w500,
-                        color: appColors.black,
-                      ),
-                      2.verticalSpace,
-                      GenText(
-                        'The driver is preparing to depart...',
-                        color: appColors.textColor.shade400,
-                        size: 12,
-                        height: 20.5,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   width: double.infinity,
+            //   padding: pad(horizontal: 10, vertical: 20),
+            //   decoration: BoxDecoration(
+            //     color: appColors.whiteColor,
+            //     borderRadius: BorderRadius.circular(12.r),
+            //     border: Border.all(color: appColors.textColor.shade100),
+            //   ),
+            //   child: Row(
+            //     children: [
+            //       AppAssets.ASSETS_ICONS_SEVICE_CONFIRMED_SVG.svg,
+            //       12.horizontalSpace,
+                  // Column(
+                  //   crossAxisAlignment: CrossAxisAlignment.start,
+                  //   children: [
+                  //     GenText(
+                  //       'Service Confirmed',
+                  //       weight: FontWeight.w500,
+                  //       color: appColors.black,
+                  //     ),
+                  //     2.verticalSpace,
+                  //     GenText(
+                  //       'The driver is preparing to depart...',
+                  //       color: appColors.textColor.shade400,
+                  //       size: 12,
+                  //       height: 20.5,
+                  //     ),
+                  //   ],
+                  // ),
+              //   ],
+              // ),
+            // ),
             16.verticalSpace,
             _ServiceCard(
-              name: 'QuickTow Emergency',
-              subtitle: 'Towing Service',
+              name: companyName,
+              subtitle: serviceCategory,
               rating: '4.9',
               reviewCount: '(347 reviews)',
               avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG.imageAsset(),
@@ -80,7 +96,7 @@ class ServiceDetailScreen extends StatelessWidget {
             ),
             12.verticalSpace,
             _ServiceCard(
-              name: 'Jane Doe',
+              name: clientName,
               subtitle: '1.0km away',
               rating: '4.8',
               reviewCount: '(50 reviews)',
@@ -117,29 +133,29 @@ class ServiceDetailScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GenText(
-                        '#INV-238777',
+                        invoiceId,
                         color: appColors.black,
                         weight: FontWeight.w500,
                       ),
                       GenText(
-                        '₦15,000',
+                        price.toString(),
                         color: appColors.black,
                         weight: FontWeight.w500,
                       ),
                     ],
                   ),
-                  12.verticalSpace,
-                  GenText(
-                    'Location Detail',
-                    color: appColors.textColor.shade400,
-                    size: 13,
-                  ),
-                  2.verticalSpace,
-                  GenText(
-                    'Gwarimpa highway - Olympia Street',
-                    color: appColors.black,
-                    weight: FontWeight.w500,
-                  ),
+                  // 12.verticalSpace,
+                  // GenText(
+                  //   'Location Detail',
+                  //   color: appColors.textColor.shade400,
+                  //   size: 13,
+                  // ),
+                  // 2.verticalSpace,
+                  // GenText(
+                  //   'Gwarimpa highway - Olympia Street',
+                  //   color: appColors.black,
+                  //   weight: FontWeight.w500,
+                  // ),
                 ],
               ),
             ),
@@ -178,7 +194,8 @@ class ServiceDetailScreen extends StatelessWidget {
               backgroundColor: appColors.primary.shade50,
               textColor: appColors.primary.shade500,
               onPressed: () async {
-                await pushScreen(context, const ServiceCancelledScreen());
+                if (serviceRequestId == null) return;
+                await pushScreen(context,  ServiceCancelledScreen(serviceRequestId: serviceRequestId,));
               },
             ),
           ],

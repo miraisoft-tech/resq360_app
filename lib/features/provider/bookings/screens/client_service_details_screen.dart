@@ -143,17 +143,17 @@ class _ProviderServiceDetailScreenState
                     ],
                   ),
                   12.verticalSpace,
-                  GenText(
-                    'Location Detail',
-                    color: appColors.textColor.shade400,
-                    size: 13,
-                  ),
-                  2.verticalSpace,
-                  GenText(
-                    'Gwarimpa highway - Olympia Street',
-                    color: appColors.black,
-                    weight: FontWeight.w500,
-                  ),
+                  // GenText(
+                  //   'Location Detail',
+                  //   color: appColors.textColor.shade400,
+                  //   size: 13,
+                  // ),
+                  // 2.verticalSpace,
+                  // GenText(
+                  //   'Gwarimpa highway - Olympia Street',
+                  //   color: appColors.black,
+                  //   weight: FontWeight.w500,
+                  // ),
                 ],
               ),
             ),

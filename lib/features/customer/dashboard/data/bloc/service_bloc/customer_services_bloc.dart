@@ -180,7 +180,7 @@ Future<void> _onCancelBooking(
 ) async {
   emit(CustomerServicesLoading());
   try {
-    final result = await serviceRepo.cancelServiceBooking(serviceRequestId: event.serviceRequestId, cancellationReason: '');
+    final result = await serviceRepo.cancelServiceBooking(serviceRequestId: event.serviceRequestId, cancellationReason: event.cancellationReason);
 
     if (!result.isSuccess) {
       emit(CustomerServicesError(

@@ -1,10 +1,10 @@
 import 'dart:async';
 
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 
@@ -164,13 +164,19 @@ class ClientPaymentConfirmDialog extends StatefulWidget {
   const ClientPaymentConfirmDialog({
     required this.title,
     required this.amount,
-    required this.invoiceNumber,
+    required this.invoiceNumber, 
+    required this.message,
+     required this.chatId,
+     required this.paymentMethod,
     super.key,
   });
 
   final String title;
   final int amount;
   final String invoiceNumber;
+  final MessageResponse message;
+  final int chatId;
+  final String paymentMethod;
 
   @override
   State<ClientPaymentConfirmDialog> createState() =>
@@ -275,13 +281,12 @@ class _ClientPaymentConfirmDialogState
                       textColor: appColors.whiteColor,
                       onPressed: () {
                         Navigator.pop(context);
-
+                          
                         context.read<CustomerPaymentBloc>().add(
-                          CustomerInitServicePaymentEvent(
-                            amount: widget.amount,
-                            email: email!,
-                            currency: 'NGN',
-                            callbackUrl: 'https://example.com/callback',
+                          CustomerInitServiceRequestPaymentEvent(
+                            chatId: widget.chatId,
+                            invoiceMessageId: widget.message.id!,
+                            paymentMethod: widget.paymentMethod,
                           ),
                         );
                       },

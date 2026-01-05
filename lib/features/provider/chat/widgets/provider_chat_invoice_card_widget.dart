@@ -9,8 +9,11 @@ enum PaymentStatus {
 class ProviderChatInvoiceCardWidget extends StatelessWidget {
   const ProviderChatInvoiceCardWidget({
     required this.onTapPay,
-    required this.paymentStatus, required this.metadata, required this.message, required this.chat, required this.messageCreatedAt, super.key,
-
+    required this.paymentStatus,
+    required this.metadata,
+    required this.message,
+    required this.chat,
+    super.key,
   });
 
   final void Function() onTapPay;
@@ -18,10 +21,20 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
   final Metadata metadata;
   final ChatResponse chat;
   final MessageResponse message;
-  final String messageCreatedAt;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    final createdAt = message.createdAt;
+    final time = message.createdAt != null
+    ? message.createdAt!.formatDate
+    : '';
+
+
+    if (message.messageType != 'SYSTEM' ||
+        metadata.type != 'INVOICE' ||
+        metadata.amount == null) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       width: double.infinity,
@@ -91,7 +104,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                          message.createdAt?.formatDate ?? '',
+                           createdAt != null ? createdAt.formatDate : '',
                           weight: FontWeight.w400,
                           color:
                               paymentStatus == PaymentStatus.paid
@@ -119,7 +132,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                           chat.serviceName ?? '-',
+                          chat.serviceName ?? '-',
                           size: 12,
                           weight: FontWeight.w400,
                           color:
@@ -142,7 +155,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         2.verticalSpace,
                         GenText(
-                         chat.user?.fullName ?? '',
+                          chat.user?.fullName ?? '',
                           size: 12,
                           weight: FontWeight.w400,
                           color:
@@ -219,7 +232,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
           ),
           6.verticalSpace,
           GenText(
-          messageCreatedAt,
+            time,
             size: 12,
             color:
                 paymentStatus == PaymentStatus.paid

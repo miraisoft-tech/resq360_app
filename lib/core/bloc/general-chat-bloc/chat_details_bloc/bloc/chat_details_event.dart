@@ -22,8 +22,9 @@ class OpenChatDetail extends ChatDetailEvent {
 }
 
 class SendTextMessage extends ChatDetailEvent {
-  const SendTextMessage(this.content);
+  const SendTextMessage(this.content, this.senderid);
   final String content;
+  final int senderid;
 
   @override
   List<Object?> get props => [content];

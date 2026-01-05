@@ -45,6 +45,21 @@ final class CustomerInitServicePaymentEvent extends CustomerPaymentEvent {
   List<Object?> get props => [amount, email, currency, callbackUrl];
 }
 
+final class CustomerInitServiceRequestPaymentEvent extends CustomerPaymentEvent {
+  const CustomerInitServiceRequestPaymentEvent({
+    required this.chatId,
+    required this.invoiceMessageId,
+    required this.paymentMethod,
+  });
+
+  final int chatId;
+  final int invoiceMessageId;
+  final String paymentMethod;
+
+  @override
+  List<Object?> get props => [chatId, invoiceMessageId, paymentMethod,];
+}
+
 final class CustomerVerifyServicePaymentEvent extends CustomerPaymentEvent {
   const CustomerVerifyServicePaymentEvent(this.reference);
   final String reference;
