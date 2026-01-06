@@ -1,11 +1,24 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/settings/data/models/ticket.model.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
-  const ServiceDetailScreen({required this.chat, required this.message, super.key});
+  const ServiceDetailScreen({
+    required this.chat,
+    required this.message,
+    super.key,
+  });
   final ChatResponse chat;
   final MessageResponse message;
 
@@ -13,15 +26,46 @@ class ServiceDetailScreen extends StatefulWidget {
   State<ServiceDetailScreen> createState() => _ServiceDetailScreenState();
 }
 
+late String userType;
+dynamic currentUser;
+bool userReady = false;
+
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _setupUser();
+    });
+  }
+
+  Future<void> _setupUser() async {
+    final type = await AuthLocalRepo.instance.getUserType();
+    if (type == null) return;
+
+    userType = type;
+
+    if (type == 'user') {
+      currentUser = CustomerAuthProvider.instance.authInfo;
+    } else if (type == UserType.provider.name) {
+      currentUser = ProviderAuthProvider.instance.authInfo;
+    }
+
+    if (mounted) {
+      setState(() {
+        userReady = currentUser != null;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
     final companyName = widget.chat.provider?.fullName ?? '';
     final clientName = widget.chat.user?.fullName ?? '';
-    final serviceRequestId =widget.chat.serviceRequestId;
-    final serviceCategory =widget.chat.serviceName ?? 'service';
-    final metadata = widget.message.metadata; 
+    final serviceRequestId = widget.chat.serviceRequestId;
+    final serviceCategory = widget.chat.serviceName ?? 'service';
+    final metadata = widget.message.metadata;
     final invoiceId = metadata?.invoiceId ?? 'N/A';
     final price = metadata?.amount ?? 0;
     // final location = widget.message.
@@ -65,25 +109,25 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             //     children: [
             //       AppAssets.ASSETS_ICONS_SEVICE_CONFIRMED_SVG.svg,
             //       12.horizontalSpace,
-                  // Column(
-                  //   crossAxisAlignment: CrossAxisAlignment.start,
-                  //   children: [
-                  //     GenText(
-                  //       'Service Confirmed',
-                  //       weight: FontWeight.w500,
-                  //       color: appColors.black,
-                  //     ),
-                  //     2.verticalSpace,
-                  //     GenText(
-                  //       'The driver is preparing to depart...',
-                  //       color: appColors.textColor.shade400,
-                  //       size: 12,
-                  //       height: 20.5,
-                  //     ),
-                  //   ],
-                  // ),
-              //   ],
-              // ),
+            // Column(
+            //   crossAxisAlignment: CrossAxisAlignment.start,
+            //   children: [
+            //     GenText(
+            //       'Service Confirmed',
+            //       weight: FontWeight.w500,
+            //       color: appColors.black,
+            //     ),
+            //     2.verticalSpace,
+            //     GenText(
+            //       'The driver is preparing to depart...',
+            //       color: appColors.textColor.shade400,
+            //       size: 12,
+            //       height: 20.5,
+            //     ),
+            //   ],
+            // ),
+            //   ],
+            // ),
             // ),
             16.verticalSpace,
             _ServiceCard(
@@ -168,9 +212,74 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     backgroundColor: appColors.primary.shade50,
                     textColor: appColors.primary.shade500,
                     onPressed: () async {
-                      await GeneralDialogs.showCustomDialog(
+                      if (!userReady) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('User not ready')),
+                        );
+                        return;
+                      }
+
+                      final shouldProceed =
+                          await GeneralDialogs.showCustomDialog<bool>(
+                            context,
+                            body: const PaymentAppealDialog(),
+                          );
+
+                      unawaited(
+                        showDialog<void>(
+                          context: context,
+                          barrierDismissible: false,
+                          builder:
+                              (context) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                        ),
+                      );
+                      final existingTicketId = await findExistingAppealTicketId(
+                        serviceCategoryId: widget.chat.serviceCategoryId!,
+                        providerId: widget.chat.provider!.id!,
+                      );
+
+                      if (existingTicketId != null) {
+                        await pushScreen(
+                          context,
+                          SupportChatScreen(
+                            ticketId: existingTicketId.toString(),
+                          ),
+                        );
+                        return;
+                      }
+                      if (shouldProceed != true) return;
+                      final contactEmail = currentUser.email;
+                      final contactPhone = currentUser.phoneNumber;
+                      final res = await SupportRepo.instance.createTicket(
+                        subject: 'Service Appeal',
+                        description:
+                            'User opened an appeal for $serviceCategory service.',
+                        category: 'GENERAL_INQUIRY',
+                        priority: 'LOW',
+                        contactEmail: contactEmail.toString(),
+                        contactPhone: contactPhone.toString(),
+                        serviceCategory: widget.chat.serviceCategoryId,
+                        relatedServiceProviderId: widget.chat.provider?.id,
+                      );
+
+                      if (!context.mounted) return;
+
+                      Navigator.of(context).pop();
+                      final error = res.error;
+                      if (error != null) {
+                        if (error.isNotEmpty) {
+                          await showErrorSnackbar(context, res.error!);
+                          return;
+                        }
+                      }
+
+                      final ticketId = res.data!['data']['ticketId'].toString();
+
+                      await pushScreen(
                         context,
-                        body: const PaymentAppealDialog(),
+                        SupportChatScreen(ticketId: ticketId),
                       );
                     },
                   ),
@@ -183,7 +292,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     textColor: appColors.whiteColor,
                     onPressed: () async {
                       if (serviceRequestId == null) return;
-                      await pushScreen(context,  ServiceCompletedScreen(serviceRequestId: serviceRequestId,));
+                      await pushScreen(
+                        context,
+                        ServiceCompletedScreen(
+                          serviceRequestId: serviceRequestId,
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -196,7 +310,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               textColor: appColors.primary.shade500,
               onPressed: () async {
                 if (serviceRequestId == null) return;
-                await pushScreen(context,  ServiceCancelledScreen(serviceRequestId: serviceRequestId,));
+                await pushScreen(
+                  context,
+                  ServiceCancelledScreen(
+                    serviceRequestId: serviceRequestId,
+                  ),
+                );
               },
             ),
           ],
@@ -204,6 +323,32 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       ),
     );
   }
+}
+
+Future<int?> findExistingAppealTicketId({
+  required int serviceCategoryId,
+  required int providerId,
+}) async {
+  final res = await SupportRepo.instance.getTickets();
+  final error = res.error;
+  if (error != null && error.isNotEmpty) return null;
+
+  final tickets = res.data!['data'] as List<dynamic>;
+
+  for (final ticketJson in tickets) {
+    final ticket = Ticket.fromJson(ticketJson as Map<String, dynamic>);
+
+    final isOpen = ticket.status == 'OPEN';
+    final matchesService = ticket.category == 'GENERAL_INQUIRY';
+    final matchesProvider =
+        ticketJson['relatedServiceProviderId'] == providerId;
+
+    if (isOpen && matchesService && matchesProvider) {
+      return ticket.id;
+    }
+  }
+
+  return null;
 }
 
 class _ServiceCard extends StatelessWidget {

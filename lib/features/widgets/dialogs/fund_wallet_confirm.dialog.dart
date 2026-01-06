@@ -158,7 +158,7 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
 
                           ),
                         );
-                        // await GeneralDialogs.showCustomDialog(
+                        // await GeneralDialogs.showCustomDialog<void>(
                         //   context,
                         //   body: const FundWalletCompleted(),
                         // );

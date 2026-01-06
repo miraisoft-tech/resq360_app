@@ -160,13 +160,13 @@ class _PromoteServiceReviewScreenState
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: PaymentOptionDialog(
                             onPaymentSelected: (
                               PaymentMethod paymentMethod,
                             ) async {
-                              await GeneralDialogs.showCustomDialog(
+                              await GeneralDialogs.showCustomDialog<void>(
                                 context,
                                 body: const FinishPaymentDialog(
                                   amount: '₦15,000',
@@ -344,7 +344,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                       textColor: appColors.whiteColor,
                       onPressed: () async {
                         Navigator.of(context).pop();
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: PaymentFinished(
                             onTap: () async {

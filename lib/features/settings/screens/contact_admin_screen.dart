@@ -1,5 +1,4 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/widgets/issue_radio_widget.dart';
 
@@ -100,7 +99,7 @@ class ContactAdminScreen extends StatelessWidget {
                 label: 'Continue',
                 backgroundColor: appColors.primary.shade500,
                 onPressed: () async {
-                  await pushScreen(context, const SupportChatScreen());
+                  // await pushScreen(context, const SupportChatScreen());
                 },
               ),
             ],

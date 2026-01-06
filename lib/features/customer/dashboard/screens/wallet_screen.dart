@@ -107,7 +107,7 @@ class _WalletScreenState extends State<WalletScreen> {
         }
 
         if (state is WalletFundingVerifiedState) {
-          await GeneralDialogs.showCustomDialog(
+          await GeneralDialogs.showCustomDialog<void>(
             context,
             body: const FundWalletCompleted(),
           );
@@ -161,14 +161,14 @@ class _WalletScreenState extends State<WalletScreen> {
                     return WalletBalanceCard(
                       balance: balance!.toInt(),
                       onAddFunds: () async {
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: const FundWalletConfirmDialog(
                             // amount: 20000,
                           ),
                           //  FundMethodDialog(
                           //   onPaymentSelected: (PaymentMethod p1) async {
-                          //     await GeneralDialogs.showCustomDialog(
+                          //     await GeneralDialogs.showCustomDialog<void>(
                           //       context,
                           //       body: const FundWalletConfirmDialog(
                           //         // amount: 20000,

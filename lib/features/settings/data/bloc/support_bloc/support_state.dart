@@ -1,35 +1,35 @@
-part of 'support_bloc.dart';
+// part of 'support_bloc.dart';
 
-sealed class SupportState extends Equatable {
-  const SupportState();
+// sealed class SupportState extends Equatable {
+//   const SupportState();
   
-  @override
-  List<Object?> get props => [];
-}
+//   @override
+//   List<Object?> get props => [];
+// }
 
-final class SupportInitial extends SupportState {}
+// final class SupportInitial extends SupportState {}
 
 
-class SupportLoading extends SupportState {}
+// class SupportLoading extends SupportState {}
 
-class SupportSuccess extends SupportState {
+// class SupportSuccess extends SupportState {
 
-  const SupportSuccess({
-    required this.ticketId,
-    required this.message,
-  });
-  final String ticketId;
-  final String message;
+//   const SupportSuccess({
+//     required this.ticketId,
+//     required this.message,
+//   });
+//   final String ticketId;
+//   final String message;
 
-  @override
-  List<Object?> get props => [ticketId, message];
-}
+//   @override
+//   List<Object?> get props => [ticketId, message];
+// }
 
-class SupportError extends SupportState {
+// class SupportError extends SupportState {
 
-  const SupportError(this.error);
-  final String error;
+//   const SupportError(this.error);
+//   final String error;
 
-  @override
-  List<Object?> get props => [error];
-}
+//   @override
+//   List<Object?> get props => [error];
+// }

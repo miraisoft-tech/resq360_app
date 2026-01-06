@@ -1,5 +1,4 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 
 class PaymentAppealDialog extends StatelessWidget {
   const PaymentAppealDialog({super.key});
@@ -44,7 +43,7 @@ class PaymentAppealDialog extends StatelessWidget {
                       label: 'Cancel',
                       backgroundColor: appColors.primary.shade50,
                       textColor: appColors.primary.shade500,
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(context, false),
                     ),
                   ),
                   12.horizontalSpace,
@@ -54,9 +53,7 @@ class PaymentAppealDialog extends StatelessWidget {
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
-                        Navigator.pop(context);
-
-                        await pushScreen(context, const SupportChatScreen());
+                        Navigator.pop(context, true);
                       },
                     ),
                   ),

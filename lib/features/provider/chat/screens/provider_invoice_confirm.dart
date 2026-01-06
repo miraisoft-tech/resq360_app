@@ -44,7 +44,7 @@ late final formattedDate =
   //   context.read<ChatBloc>().add(
   //     SendMessageEvent(messageRequest: request),
   //   );
-  //   // await GeneralDialogs.showCustomDialog(
+  //   // await GeneralDialogs.showCustomDialog<void>(
   //   //   context,
   //   //   body: const PaymentCompleted(),
   //   // );

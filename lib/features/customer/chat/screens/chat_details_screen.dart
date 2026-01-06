@@ -62,11 +62,17 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       child: BlocConsumer<ChatDetailBloc, ChatDetailState>(
         listener: _onChatStateChanged,
         builder: (context, state) {
+          var title = '';
+          var isActive = false;
+
+          if (state is ChatDetailReady) {
+            final chat = state.chat;
+            title = chat.title ?? 'Chat';
+            isActive = chat.isActive ?? false;
+          }
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(
-              state is ChatDetailReady ? (state.chat.title ?? 'Chat') : 'Chat',
-            ),
+            appBar: _buildAppBar(title, isActive),
             body: SafeArea(
               child: Column(
                 children: [
@@ -74,19 +80,22 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   Expanded(
                     child: _buildChatContent(state),
                   ),
-                  // if (canShowDetails)
+                  if (canShowDetails)
                     GestureDetector(
                       onTap: () async {
-                        if (state is ChatDetailReady ) {
-                          final serviceMessage = state.messages
-    .firstWhere(
-      (m) => m.messageType == 'SYSTEM' && m.metadata != null,
-    );
+                        if (state is ChatDetailReady) {
+                          final serviceMessage = state.messages.firstWhere(
+                            (m) =>
+                                m.messageType == 'SYSTEM' && m.metadata != null,
+                          );
 
                           await pushScreen(
-                          context,
-                           ServiceDetailScreen(chat:  state.chat, message:serviceMessage,),
-                        );
+                            context,
+                            ServiceDetailScreen(
+                              chat: state.chat,
+                              message: serviceMessage,
+                            ),
+                          );
                         }
                       },
                       child: GenText(
@@ -163,7 +172,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     return const SizedBox.shrink();
   }
 
-  PreferredSizeWidget _buildAppBar(String title) {
+  PreferredSizeWidget _buildAppBar(String title, bool isActive) {
     final appColors = context.appColors;
 
     return AppBar(
@@ -192,18 +201,24 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                 color: appColors.black,
               ),
               GenText(
-                'Online',
+                isActive ? 'Online' : 'Offline',
                 size: 13,
-                color: appColors.success.shade600,
+                color:
+                    isActive
+                        ? appColors.success.shade600
+                        : appColors.error.shade600,
               ),
             ],
           ),
         ],
       ),
       actions: [
-        IconButton(
-          onPressed: () {},
-          icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
+        SizedBox(
+          width: 35.w,
+          child: IconButton(
+            onPressed: () {},
+            icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
+          ),
         ),
       ],
     );
@@ -253,7 +268,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     if (state is ServicePaymentVerifiedState) {
       Navigator.pop(context);
       if (state.verification.gatewayResponse == 'Successful') {
-        await GeneralDialogs.showCustomDialog(
+        await GeneralDialogs.showCustomDialog<void>(
           context,
           body: const PaymentCompleted(),
         );
@@ -262,7 +277,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       } else {
         await showErrorSnackbar(context, 'Payment unsuccessful');
       }
-      // await GeneralDialogs.showCustomDialog(
+      // await GeneralDialogs.showCustomDialog<void>(
       //   context,
       //   body: const PaymentCompleted(),
       // );
@@ -392,11 +407,11 @@ class _MessageList extends StatelessWidget {
                     metadata: message.metadata!,
                     messageCreatedAt: _formatTime(message.createdAt!),
                     onTapPay: () async {
-                      await GeneralDialogs.showCustomDialog(
+                      await GeneralDialogs.showCustomDialog<void>(
                         context,
                         body: PaymentOptionDialog(
                           onPaymentSelected: (option) async {
-                            await GeneralDialogs.showCustomDialog(
+                            await GeneralDialogs.showCustomDialog<void>(
                               context,
                               body: ClientPaymentConfirmDialog(
                                 amount: int.parse(amount),
@@ -523,7 +538,7 @@ class _MessageList extends StatelessWidget {
 //         if (state is ServicePaymentVerifiedState) {
 //           Navigator.of(context, rootNavigator: true).pop();
 
-//           await GeneralDialogs.showCustomDialog(
+//           await GeneralDialogs.showCustomDialog<void>(
 //             context,
 //             body: const PaymentCompleted(),
 //           );
@@ -662,11 +677,11 @@ class _MessageList extends StatelessWidget {
 //                                 else if (message.messageType == 'SYSTEM')
 //                                   ChatInvoiceCardWidget(
 //                                     onTapPay: () async {
-//                                       await GeneralDialogs.showCustomDialog(
+//                                       await GeneralDialogs.showCustomDialog<void>(
 //                                         context,
 //                                         body: PaymentOptionDialog(
 //                                           onPaymentSelected: (option) async {
-//                                             await GeneralDialogs.showCustomDialog(
+//                                             await GeneralDialogs.showCustomDialog<void>(
 //                                               context,
 //                                               body: ClientPaymentConfirmDialog(
 //                                                 amount: int.parse(amount),
@@ -694,11 +709,11 @@ class _MessageList extends StatelessWidget {
 //                           // children: [
 //                           //   ChatInvoiceCardWidget(
 //                           //     onTapPay: () async {
-//                           //       await GeneralDialogs.showCustomDialog(
+//                           //       await GeneralDialogs.showCustomDialog<void>(
 //                           //         context,
 //                           //         body: PaymentOptionDialog(
 //                           //           onPaymentSelected: (option) async {
-//                           //             await GeneralDialogs.showCustomDialog(
+//                           //             await GeneralDialogs.showCustomDialog<void>(
 //                           //               context,
 //                           //               body: const CompletePaymentDialog(
 //                           //                 amount: '₦15,0000',

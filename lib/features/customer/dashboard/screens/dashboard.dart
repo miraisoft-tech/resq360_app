@@ -1,8 +1,8 @@
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
+import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
@@ -26,6 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     context.read<CustomerServicesBloc>().add(CustomerFetchServices());
     context.read<CustomerAdvertisementBloc>().add(CustomerFetchAdvertisement());
+    context.read<CustomerBookingBloc>().add(
+      const FetchCustomerBookings(status: 'PENDING'),
+    );
     super.initState();
   }
 
@@ -98,7 +101,31 @@ class _HomeScreenState extends State<HomeScreen> {
               color: colors.black,
             ),
             12.verticalSpace,
-            const OngoingServiceCard(),
+            BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
+              builder: (context, state) {
+                if (state is CustomerBookingLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is CustomerBookingLoaded) {
+                  if (state.bookings.isEmpty) {
+                    return const GenText('No ongoing service');
+                  }
+
+                  if (state.bookings.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final ongoingBooking = state.bookings.first;
+
+                  return OngoingServiceCard(
+                    booking: ongoingBooking,
+                  );
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
             20.verticalSpace,
             Row(
               children: [

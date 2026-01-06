@@ -141,7 +141,7 @@ class _UpdateSMSModalState extends State<UpdateSMSModal> {
                 textColor: appColors.whiteColor,
                 onPressed: () async {
                   Navigator.pop(context);
-                  await GeneralDialogs.showCustomDialog(
+                  await GeneralDialogs.showCustomDialog<void>(
                     context,
                     body: const UpdatePhoneSuccessModal(),
                   );

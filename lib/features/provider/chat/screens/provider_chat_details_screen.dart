@@ -183,11 +183,11 @@
 //                           else if (message.messageType == 'SYSTEM')
 //                             ProviderChatInvoiceCardWidget(
 //                               onTapPay: () async {
-//                                 await GeneralDialogs.showCustomDialog(
+//                                 await GeneralDialogs.showCustomDialog<void>(
 //                                   context,
 //                                   body: PaymentOptionDialog(
 //                                     onPaymentSelected: (option) async {
-//                                       await GeneralDialogs.showCustomDialog(
+//                                       await GeneralDialogs.showCustomDialog<void>(
 //                                         context,
 //                                         body: CompletePaymentDialog(
 //                                           amount: amount,
@@ -208,11 +208,11 @@
 //                     // children: [
 //                     //   ProviderChatInvoiceCardWidget(
 //                     //     onTapPay: () async {
-//                     //       await GeneralDialogs.showCustomDialog(
+//                     //       await GeneralDialogs.showCustomDialog<void>(
 //                     //         context,
 //                     //         body: PaymentOptionDialog(
 //                     //           onPaymentSelected: (option) async {
-//                     //             await GeneralDialogs.showCustomDialog(
+//                     //             await GeneralDialogs.showCustomDialog<void>(
 //                     //               context,
 //                     //               body: const CompletePaymentDialog(
 //                     //                 amount: '₦15,0000',
@@ -379,7 +379,7 @@
 //   void _onDocumentTap() {}
 
 //   Future<void> _onInvoiceTap(BuildContext context, ChatResponse chat) async {
-//     await GeneralDialogs.showCustomDialog(
+//     await GeneralDialogs.showCustomDialog<void>(
 //       context,
 //       body: ProviderGenerateInvoiceDialog(
 //         chat: chat,
@@ -705,7 +705,7 @@ Widget _buildChatContent(ChatDetailState state) {
   }
 
   Future<void> _onInvoiceTap(BuildContext context, ChatResponse chat) async {
-    await GeneralDialogs.showCustomDialog(
+    await GeneralDialogs.showCustomDialog<void>(
       context,
       body: BlocProvider.value(
         value: context.read<ChatDetailBloc>(),
@@ -789,11 +789,11 @@ class _MessageList extends StatelessWidget {
   Future<void> _handleInvoicePayment(BuildContext context, MessageResponse message) async {
     final amount = message.metadata?.amount?.toString() ?? '';
     
-    await GeneralDialogs.showCustomDialog(
+    await GeneralDialogs.showCustomDialog<void>(
       context,
       body: PaymentOptionDialog(
         onPaymentSelected: (option) async {
-          await GeneralDialogs.showCustomDialog(
+          await GeneralDialogs.showCustomDialog<void>(
             context,
             body: CompletePaymentDialog(
               amount: amount,

@@ -1,110 +1,152 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/settings/data/cubits/cubit/support_ticket_cubit.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 
 class SupportChatScreen extends StatelessWidget {
-  const SupportChatScreen({super.key});
+  const SupportChatScreen({required this.ticketId, super.key});
 
+  final String ticketId;
+  @override
+  Widget build(BuildContext context) {
+    log(  ticketId);
+    return BlocProvider(
+  create: (_) {
+    final cubit = SupportTicketCubit(SupportRepo.instance);
+    unawaited(cubit.loadTicket(ticketId));
+    return cubit;
+  },
+  child: _SupportChatView(),
+);
+  }
+}
+class _SupportChatView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: appColors.whiteColor,
-        forceMaterialTransparency: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: appColors.black),
-          onPressed: () => pop(context),
-        ),
-        title: Row(
-          children: [
-            const CircleAvatar(
-              backgroundImage: AssetImage(
-                AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-              ),
-              radius: 25,
-            ),
-            8.horizontalSpace,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GenText(
-                  'You, Admin, QuickTow ',
-                  weight: FontWeight.w500,
-                  color: appColors.black,
-                ),
-                GenText(
-                  'Online',
-                  size: 13,
-                  color: appColors.success.shade600,
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(context),
       body: SafeArea(
-        child: Column(
-          children: [
-            const ListDivider(),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.only(
-                  left: 16.w,
-                  right: 16.w,
-                  bottom: 50.h,
-                  top: 10.h,
-                ),
-                children: [
-                  const ChatBubble(
-                    type: MessageType.received,
-                    message:
-                        '''Hello Jane, we have received your appeal. Please describe the issue and attach photos or evidence''',
-                    time: '2:50 pm',
-                  ),
-                  20.verticalSpace,
-                  const ChatBubble(
-                    type: MessageType.sent,
-                    message:
-                        '''The service was not completed as agreed. They towed my vehicle only halfway through.''',
-                    time: '2:50 pm',
-                  ),
-                  30.verticalSpace,
-                  GestureDetector(
-                    onTap: () async {
-                      if (context.mounted) await pop(context);
-                    },
-                    child: GenText(
-                      'Return to dashboard',
-                      weight: FontWeight.w500,
-                      color: appColors.primary.shade500,
-                      decoration: TextDecoration.underline,
-                      textAlign: TextAlign.center,
+        child: BlocConsumer<SupportTicketCubit, SupportTicketState>(
+          listener: (context, state) {
+            if (state.error != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.error!)),
+              );
+              context.read<SupportTicketCubit>().clearError();
+            }
+          },
+          builder: (context, state) {
+            if (state.loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return Column(
+              children: [
+                const ListDivider(),
+
+                Expanded(
+                  child: ListView.builder(
+                    reverse: true,
+                    padding: EdgeInsets.only(
+                      left: 16.w,
+                      right: 16.w,
+                      bottom: 50.h,
+                      top: 10.h,
                     ),
+                    itemCount: state.messages.length,
+                    itemBuilder: (_, index) {
+                      final message = state.messages[index];
+
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 20.h),
+                        child: ChatBubble(
+                          type: message.isFromUser
+                              ? MessageType.sent
+                              : MessageType.received,
+                          message: message.message,
+                          time: message.createdAt.formatDate,
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
-            ),
-            ChatBoxWidget(
-              onAttachment: () async {
-                 await _showAttachmentMenu(context);
-              },
-              onSend: (text) {},
-            ),
-          ],
+                ),
+
+                if (state.isClosed)
+                  Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: GenText(
+                      'Appeal closed',
+                      color: appColors.textColor.shade400,
+                    ),
+                  )
+                else
+                  ChatBoxWidget(
+                    onAttachment: () async {
+                      await _showAttachmentMenu(context);
+                    },
+                    onSend: (text) async {
+                      await context.read<SupportTicketCubit>().sendMessage(text);
+                    },
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
+}
+
+PreferredSizeWidget _buildAppBar(BuildContext context) {
+  final appColors = context.appColors;
+
+  return AppBar(
+    elevation: 0,
+    backgroundColor: appColors.whiteColor,
+    forceMaterialTransparency: true,
+    leading: IconButton(
+      icon: Icon(Icons.arrow_back, color: appColors.black),
+      onPressed: () => pop(context),
+    ),
+    title: Row(
+      children: [
+        const CircleAvatar(
+          backgroundImage:
+              AssetImage(AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG),
+          radius: 25,
+        ),
+        8.horizontalSpace,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GenText(
+              'You, Admin',
+              weight: FontWeight.w500,
+              color: appColors.black,
+            ),
+            GenText(
+              'Online',
+              size: 13,
+              color: appColors.success.shade600,
+            ),
+          ],
+        ),
+      ],
+    ),
+    actions: [
+      IconButton(
+        onPressed: () {},
+        icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
+      ),
+    ],
+  );
+}
 
   Future<void> _showAttachmentMenu(BuildContext context) async {
     final button = context.findRenderObject()! as RenderBox;
@@ -176,4 +218,3 @@ class SupportChatScreen extends StatelessWidget {
   void _onLocationTap() {}
 
   void _onDocumentTap() {}
-}

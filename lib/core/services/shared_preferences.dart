@@ -19,7 +19,6 @@ class AppLocalPref {
     return true;
   }
 
-  //
   Future<bool> saveBool({required String key, required bool value}) async {
     if (_prefs == null) {
       await initPref();
@@ -38,7 +37,6 @@ class AppLocalPref {
     return value;
   }
 
-  //
   Future<bool> save({required String key, required String value}) async {
     if (_prefs == null) {
       await initPref();
@@ -84,16 +82,13 @@ class AppLocalPref {
   if (value.isEmpty) return null;
 
   try {
-    // Try to decode (works for JSON strings or maps)
     return jsonDecode(value);
   } on Exception catch (_) {
-    // If it's not valid JSON, just return the raw string
     return value;
   }
 }
 
-
-  //
+  
   Future<dynamic> getBoolNotifications({required String key}) async {
     if (_prefs == null) {
       await initPref();

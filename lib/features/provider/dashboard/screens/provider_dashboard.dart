@@ -204,7 +204,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   onPressed: () async {
                     await pushScreen(context, const PromoteServiceScreen());
 
-                    // await GeneralDialogs.showCustomDialog(
+                    // await GeneralDialogs.showCustomDialog<void>(
                     //   context,
                     //   body: const ServiceRequestNotification(),
                     // );

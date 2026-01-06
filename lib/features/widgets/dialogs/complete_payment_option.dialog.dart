@@ -143,7 +143,7 @@ class _CompletePaymentDialogState extends State<CompletePaymentDialog> {
                       textColor: appColors.whiteColor,
                       onPressed: () async {
                         Navigator.of(context).pop();
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: const PaymentCompleted(),
                         );

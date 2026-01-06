@@ -197,7 +197,7 @@ class _ProviderServiceDetailScreenState
                     backgroundColor: appColors.primary.shade50,
                     textColor: appColors.primary.shade500,
                     onPressed: () async {
-                      await GeneralDialogs.showCustomDialog(
+                      await GeneralDialogs.showCustomDialog<void>(
                         context,
                         body: const PaymentAppealDialog(),
                       );

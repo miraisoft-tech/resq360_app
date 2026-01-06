@@ -256,7 +256,7 @@ class _ProviderGenerateInvoiceDialogState
                         };
 
                        
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: BlocProvider.value(
                             value: context.read<ChatDetailBloc>(),

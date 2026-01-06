@@ -248,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     return GestureDetector(
                       onTap: () async {
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: AccountStatusDialog(
                             onTap: () async {
@@ -357,7 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             30.verticalSpace,
             GestureDetector(
               onTap: () async {
-                await GeneralDialogs.showCustomDialog(
+                await GeneralDialogs.showCustomDialog<void>(
                   context,
                   body: const LogoutDialog(),
                 );

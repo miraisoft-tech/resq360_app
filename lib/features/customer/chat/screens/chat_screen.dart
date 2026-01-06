@@ -54,7 +54,6 @@ Future<void> _onRefresh() async {
                 hintText: 'Search',
               ),
               const SizedBox(height: 12),
-              // _buildFilterRow(),
                ChatFilterTabs(
               selectedFilter: selectedFilter,
               onFilterSelected:

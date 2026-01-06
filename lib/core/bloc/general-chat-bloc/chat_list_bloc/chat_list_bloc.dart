@@ -47,10 +47,14 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     final newChats =
         response.chats.map(_mapToSummary).toList();
 
+        final isFirstPage = state.page == 1;
+
     emit(
       state.copyWith(
         isLoading: false,
-        chats: [...state.chats, ...newChats],
+        chats: isFirstPage
+          ? newChats
+          : [...state.chats, ...newChats],
         page: response.page,
         totalPages: response.totalPages,
       ),

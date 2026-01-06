@@ -70,7 +70,6 @@ class ThemeCubit extends Cubit<ThemeState> {
       extensions: <ThemeExtension<dynamic>>[colors, textTheme],
           progressIndicatorTheme: ProgressIndicatorThemeData(
       color: AppColorPalette.dark().primary.shade600,
-      // circularTrackColor: Colors.grey,
     ),
 
     );
