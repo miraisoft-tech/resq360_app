@@ -55,78 +55,76 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
     }
   }
 
-Future<void> _handleAppeal(BuildContext context) async {
-  if (!userReady) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('User not ready')),
+  Future<void> _handleAppeal(BuildContext context) async {
+    if (!userReady) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not ready')),
+      );
+      return;
+    }
+
+    final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
+      context,
+      body: const PaymentAppealDialog(),
     );
-    return;
-  }
 
+    if (shouldProceed != true) return;
 
-  final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
-    context,
-    body: const PaymentAppealDialog(),
-  );
+    final existingTicketId = await findExistingOpenAppealTicketId();
 
-  if (shouldProceed != true) return;
+    if (!context.mounted) return;
 
+    if (existingTicketId != null) {
+      await pushScreen(
+        context,
+        SupportChatScreen(ticketId: existingTicketId),
+      );
+      return;
+    }
 
-  final existingTicketId = await findExistingOpenAppealTicketId();
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (_) => const Center(
+              child: CircularProgressIndicator(),
+            ),
+      ),
+    );
 
-  if (!context.mounted) return;
+    final serviceName = widget.booking.serviceCategory?.name ?? 'service';
+    final contactEmail = currentUser.email;
+    final contactPhone = currentUser.phoneNumber;
 
-  if (existingTicketId != null) {
+    final res = await SupportRepo.instance.createTicket(
+      subject: 'Service Appeal',
+      description: 'User opened an appeal for $serviceName service.',
+      category: 'GENERAL_INQUIRY',
+      priority: 'LOW',
+      contactEmail: contactEmail.toString(),
+      contactPhone: contactPhone.toString(),
+      serviceCategory: widget.booking.serviceCategory?.id,
+      relatedServiceProviderId: widget.booking.assignedProvider?.id,
+    );
+
+    if (!context.mounted) return;
+
+    Navigator.of(context).pop();
+
+    final error = res.error;
+    if (error != null && error.isNotEmpty) {
+      await showErrorSnackbar(context, error);
+      return;
+    }
+
+    final ticketId = res.data!['data']['ticketId'].toString();
+
     await pushScreen(
       context,
-      SupportChatScreen(ticketId: existingTicketId),
+      SupportChatScreen(ticketId: ticketId),
     );
-    return;
   }
-
-  showDialog<void>(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const Center(
-      child: CircularProgressIndicator(),
-    ),
-  );
-
-  final serviceName =
-      widget.booking.serviceCategory?.name ?? 'service';
-  final contactEmail = currentUser.email;
-  final contactPhone = currentUser.phoneNumber;
-
-  final res = await SupportRepo.instance.createTicket(
-    subject: 'Service Appeal',
-    description: 'User opened an appeal for $serviceName service.',
-    category: 'GENERAL_INQUIRY',
-    priority: 'LOW',
-    contactEmail: contactEmail.toString(),
-    contactPhone: contactPhone.toString(),
-    serviceCategory: widget.booking.serviceCategory?.id,
-    relatedServiceProviderId:
-        widget.booking.assignedProvider?.id,
-  );
-
-  if (!context.mounted) return;
-
-  Navigator.of(context).pop();
-
-  final error = res.error;
-  if (error != null && error.isNotEmpty) {
-    await showErrorSnackbar(context, error);
-    return;
-  }
-
-  final ticketId =
-      res.data!['data']['ticketId'].toString();
-
-  await pushScreen(
-    context,
-    SupportChatScreen(ticketId: ticketId),
-  );
-}
 
   @override
   Widget build(BuildContext context) {
