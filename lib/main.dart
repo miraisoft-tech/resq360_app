@@ -35,11 +35,7 @@ import 'package:resq360/features/settings/data/service/ratings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('UNCAUGHT ERROR: $error');
-    debugPrintStack(stackTrace: stack);
-    return true;
-  };
+  
   late final AuthBloc globalAuthBloc;
 
   globalAuthBloc = AuthBloc();
