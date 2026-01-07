@@ -194,7 +194,7 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
               WideButton(
                 label: 'Withdraw',
                 onPressed: () async {
-                  await GeneralDialogs.showCustomDialog(
+                  await GeneralDialogs.showCustomDialog<void>(
                     context,
                     body: const WithdrawalCompletedModal(),
                   );

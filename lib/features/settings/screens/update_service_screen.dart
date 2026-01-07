@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
-import 'package:resq360/features/settings/data/bloc/gallery_bloc/gallery_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/service_type.enums.dart';
 import 'package:resq360/features/widgets/custom_switch.dart';
@@ -53,15 +51,6 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
     _tabController = TabController(length: 2, vsync: this);
   }
 
-  Future<void> handleUploadGalleryService() async {
-    context.read<GalleryBloc>().add(
-      UpdateServiceEvent(
-        images: pickedImages,
-        caption: descController.text,
-      ),
-    );
-  }
-
   Future<void> handleUpdateService() async {
     final bloc = context.read<ProfileUpdateBloc>();
 
@@ -90,6 +79,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
         openingHours: startDateTime,
         closingHours: endDateTime,
         filePath: pickedImages.isNotEmpty ? pickedImages.first.path : null,
+        images: pickedImages,
       ),
     );
   }
@@ -98,97 +88,77 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return Scaffold(
-      backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        forceMaterialTransparency: true,
-        title: const GenText(
-          'Update Service',
-          size: 18,
-          weight: FontWeight.w700,
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: appColors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: appColors.whiteColor,
-        foregroundColor: appColors.black,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: appColors.primary,
-          labelColor: appColors.primary,
-          unselectedLabelColor: appColors.textColor.shade500,
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'Service Detail'),
-            Tab(text: 'Working Hours'),
-          ],
-        ),
-      ),
+    return BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
+      listener: (context, state) async {
+        if (state is ProfileUpdateLoading) {
+          await showLoadingDialog(context);
+        } else {
+          Navigator.pop(context);
+        }
 
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          BlocConsumer<GalleryBloc, GalleryState>(
-            listener: (context, state) async {
-              if (state is GalleryLoading) {
-                await showLoadingDialog(context);
-              } else {
-                Navigator.pop(context);
-              }
+        if (state is ProfileUpdateSuccess) {
+          unawaited(
+            showSnackBar(
+              context,
+              'Success',
+              'Service updated successfully',
+            ),
+          );
 
-              if (state is GalleryItemCreated) {
-                unawaited(
-                  showSnackBar(
-                    context,
-                    'Success',
-                    'Service gallery updated successfully',
-                  ),
-                );
-
-                setState(() {
-                  pickedImages.clear();
-                  descController.clear();
-                });
-              } else if (state is GalleryError) {
-                unawaited(showErrorSnackbar(context, state.message));
-              }
-            },
-            builder: (context, state) {
-              return ServiceDetailSection(
+          setState(() {
+            pickedImages.clear();
+            descController.clear();
+            startTimeController.clear();
+            endTimeController.clear();
+            startTime = null;
+            endTime = null;
+            selectedServiceType = null;
+          });
+        } else if (state is ProfileUpdateError) {
+          unawaited(showErrorSnackbar(context, state.message));
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: appColors.whiteColor,
+          appBar: AppBar(
+            forceMaterialTransparency: true,
+            title: const GenText(
+              'Update Service',
+              size: 18,
+              weight: FontWeight.w700,
+            ),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: appColors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+            centerTitle: true,
+            elevation: 0,
+            backgroundColor: appColors.whiteColor,
+            foregroundColor: appColors.black,
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: appColors.primary,
+              labelColor: appColors.primary,
+              unselectedLabelColor: appColors.textColor.shade500,
+              indicatorSize: TabBarIndicatorSize.tab,
+              tabs: const [
+                Tab(text: 'Service Detail'),
+                Tab(text: 'Working Hours'),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              ServiceDetailSection(
                 descController: descController,
                 pickedImages: pickedImages,
-                onImagesPicked:
-                    (images) => setState(() => pickedImages = images),
+                onImagesPicked: (images) => setState(() => pickedImages = images),
                 onServiceSelected: (type) => selectedServiceType = type,
-                onSubmit: handleUploadGalleryService,
-              );
-            },
-          ),
-          BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
-            listener: (context, state) async {
-              if (state is ProfileUpdateLoading) {
-                await showLoadingDialog(context);
-              } else {
-                Navigator.pop(context);
-              }
-
-              if (state is ProfileUpdateSuccess) {
-                unawaited(
-                  showSnackBar(
-                    context,
-                    'Success',
-                    'Service updated successfully',
-                  ),
-                );
-              } else if (state is ProfileUpdateError) {
-                unawaited(showErrorSnackbar(context, state.message));
-              }
-            },
-            builder: (context, state) {
-              return WorkingHoursSection(
+                onSubmit: handleUpdateService,
+              ),
+              WorkingHoursSection(
                 workingDays: workingDays,
                 startTimeController: startTimeController,
                 endTimeController: endTimeController,
@@ -198,11 +168,11 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
                 },
                 onSubmit: handleUpdateService,
                 onToggleDay: handleToggleDay,
-              );
-            },
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -250,17 +220,16 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
           valueListenable: selectedIssue,
           builder: (context, selected, _) {
             return Column(
-              children:
-                  ServiceTypeEnums.values.map((type) {
-                    return IssueRadio(
-                      label: type.name.capitalize,
-                      selected: selected == type,
-                      onTap: () {
-                        selectedIssue.value = type;
-                        widget.onServiceSelected(type);
-                      },
-                    );
-                  }).toList(),
+              children: ServiceTypeEnums.values.map((type) {
+                return IssueRadio(
+                  label: type.name.capitalize,
+                  selected: selected == type,
+                  onTap: () {
+                    selectedIssue.value = type;
+                    widget.onServiceSelected(type);
+                  },
+                );
+              }).toList(),
             );
           },
         ),
@@ -340,9 +309,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
             },
           ),
         ),
-
         10.verticalSpace,
-
         GenText(
           'You can upload up to 3 images',
           textAlign: TextAlign.center,
@@ -353,7 +320,6 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
           textAlign: TextAlign.center,
           color: appColors.textColor.shade300,
         ),
-
         40.verticalSpace,
         WideButton(
           label: 'Update Service',
@@ -397,8 +363,7 @@ class WorkingHoursSection extends StatelessWidget {
                 const Spacer(),
                 CustomSwitchWidget(
                   value: workingDays[day] ?? false,
-                  onChanged:
-                      ({required value}) => onToggleDay(day: day, value: value),
+                  onChanged: ({required value}) => onToggleDay(day: day, value: value),
                   activeThumbColor: appColors.primary.shade500,
                   disabledThumbColor: appColors.textColor.shade100,
                   tapColor: appColors.whiteColor,
@@ -407,7 +372,6 @@ class WorkingHoursSection extends StatelessWidget {
             ),
           );
         }),
-
         30.verticalSpace,
         Row(
           children: [
@@ -438,7 +402,6 @@ class WorkingHoursSection extends StatelessWidget {
             ),
           ],
         ),
-
         40.verticalSpace,
         WideButton(
           label: 'Update Service',
@@ -452,15 +415,14 @@ class WorkingHoursSection extends StatelessWidget {
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-      builder:
-          (context, child) => Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: ColorScheme.light(
-                primary: context.appColors.primary.shade500,
-              ),
-            ),
-            child: child!,
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.light(
+            primary: context.appColors.primary.shade500,
           ),
+        ),
+        child: child!,
+      ),
     );
 
     if (picked != null) {

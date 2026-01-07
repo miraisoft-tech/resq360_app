@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
 
 class GeneralDialogs {
-  static Future<Object?> showCustomDialog(
+  static Future<T?> showCustomDialog<T>(
     BuildContext context, {
     required Widget body,
     void Function()? onTapYes,

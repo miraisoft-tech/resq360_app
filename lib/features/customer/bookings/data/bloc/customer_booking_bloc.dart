@@ -20,11 +20,11 @@ class CustomerBookingBloc extends Bloc<CustomerBookingEvent, CustomerBookingStat
   emit(CustomerBookingLoading());
   try {
     final result = await serviceRepo.getServiceBookings(
-       status: event.status!,
+       status: event.status,
     );
 
     if (result.data != null) {
-      emit(CustomerBookingLoaded( result.data!.data ?? []));
+      emit(CustomerBookingLoaded( result.data ?? []));
     } else {
       emit(CustomerBookingError(
         error: result.error ?? 'Failed to book service',

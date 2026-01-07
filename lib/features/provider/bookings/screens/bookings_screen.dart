@@ -1,4 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
@@ -173,8 +173,8 @@ class _BookingList extends StatelessWidget {
                   onTap: () async {
                     await pushScreen(
                       context,
-                      const ProviderServiceDetailScreen(
-                        // booking: booking,
+                       ProviderServiceDetailScreen(
+                        booking: booking,
                       ),
                     );
                   },
@@ -215,10 +215,11 @@ class _BookingCardState extends State<BookingCard> {
 
     final clientName = data.user?.fullName ?? 'Unknown Client';
     final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
-    final amount = '${data.currency ?? '₦'}${data.amount ?? '0'}';
+    const amount = 'To be billed';
     final date = data.createdAt?.formatDate ?? 'N/A';
-    final start = data.responseTime?.providerStartedAt?.formatTime ?? '--';
-    final end = data.responseTime?.completedAt?.formatTime ?? '--';
+final start = data.providerStartedAt?.formatTime ?? '--';
+final end = data.completedAt?.formatTime ?? '--';
+
     final status = data.status?.capitalize ?? 'Unknown';
 
     return GestureDetector(
@@ -236,14 +237,16 @@ class _BookingCardState extends State<BookingCard> {
             /// --- Header Row
             Row(
               children: [
-                const CircleAvatar(
+                 CircleAvatar(
                   radius: 25,
                   backgroundImage: 
-                  // data.client?.profileImage != null
-                  //     ? NetworkImage(data.client!.profileImage!)
-                  //     : 
-                      AssetImage(AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG)
-                          as ImageProvider,
+                  data.user?.profileImage != null
+                        ? NetworkImage(data.user!.profileImage!)
+                        : const NetworkImage(
+                          'https://randomuser.me/api/portraits/men/30.jpg',
+                        ),
+                      // AssetImage(AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG)
+                      //     as ImageProvider,
                 ),
                 12.horizontalSpace,
                 Expanded(
@@ -328,7 +331,7 @@ class _BookingCardState extends State<BookingCard> {
                           service: serviceCategory,
                           provider: clientName,
                           status: status,
-                          invoice: data.payment?.paymentReference ?? 'N/A',
+                          invoice:  data.requestId ?? 'N/A',
                           dateTime: '$date - $end',
                           method: 'Card',
                           onDownload: () {},

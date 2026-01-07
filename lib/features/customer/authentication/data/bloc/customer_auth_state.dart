@@ -76,7 +76,7 @@ class CustomerPasswordResetFailure extends CustomerAuthState {
 class CustomerPasswordResetEmailSent extends CustomerAuthState {}
 class CustomerProfileLoaded extends CustomerAuthState {
   const CustomerProfileLoaded(this.user);
-  final CustomerProfileResponse user;
+  final CustomerUserModel user;
 }
 
  class CustomerForgotPasswordSucess extends CustomerAuthState {}

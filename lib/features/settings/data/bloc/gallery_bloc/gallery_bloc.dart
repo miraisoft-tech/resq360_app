@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
@@ -117,7 +116,7 @@ class GalleryBloc extends Bloc<GalleryEvent, GalleryState> {
       final upload = uploads[i];
 
       final result = await galleryRepo.createNewGalleryItem(
-        providerId: provider.user.id!,
+        providerId: provider.id!,
         imageUrl: upload.url,
         imageId: upload.id,
         caption: event.caption,

@@ -39,7 +39,7 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
     notifyListeners();
   }
 
-  ProviderProfileResponse? authInfo;
+  ProviderModel? authInfo;
 
   Future<void> init() async {
     final authData = await AuthLocalRepo.instance.getProviderCredentials();

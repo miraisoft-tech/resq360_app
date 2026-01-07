@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
@@ -49,7 +49,7 @@ class _ProviderGenerateInvoiceDialogState
 
     priceController = TextEditingController();
     serviceController = TextEditingController();
-    currentUserId = auth?.user.id;
+    currentUserId = auth?.id;
   }
 
   Future<void> initializeLocation() async {
@@ -82,7 +82,7 @@ class _ProviderGenerateInvoiceDialogState
 
   bool isProcessing = false;
 
-  final ProviderProfileResponse? auth = ProviderAuthProvider.instance.authInfo;
+  final ProviderModel? auth = ProviderAuthProvider.instance.authInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -255,11 +255,15 @@ class _ProviderGenerateInvoiceDialogState
                           'description': serviceController.text,
                         };
 
-                        Navigator.of(context).pop();
-                        await GeneralDialogs.showCustomDialog(
+                       
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
-                          body: ProviderInvoiceConfirmDialog(
-                            invoice: invoice,
+                          body: BlocProvider.value(
+                            value: context.read<ChatDetailBloc>(),
+                            child: ProviderInvoiceConfirmDialog(
+                              invoice: invoice,
+                              chat: widget.chat,
+                            ),
                           ),
                         );
                       },

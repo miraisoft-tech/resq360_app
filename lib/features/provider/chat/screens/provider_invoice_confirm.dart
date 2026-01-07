@@ -1,13 +1,15 @@
 
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
 
 class ProviderInvoiceConfirmDialog extends StatefulWidget {
-  const ProviderInvoiceConfirmDialog({required this.invoice, super.key});
+  const ProviderInvoiceConfirmDialog({required this.invoice, required this.chat, super.key});
 
   final Map<String, dynamic> invoice;
+  final ChatResponse chat;
 
   @override
   State<ProviderInvoiceConfirmDialog> createState() =>
@@ -42,7 +44,7 @@ late final formattedDate =
   //   context.read<ChatBloc>().add(
   //     SendMessageEvent(messageRequest: request),
   //   );
-  //   // await GeneralDialogs.showCustomDialog(
+  //   // await GeneralDialogs.showCustomDialog<void>(
   //   //   context,
   //   //   body: const PaymentCompleted(),
   //   // );
@@ -52,20 +54,24 @@ late final formattedDate =
   // }
 
   Future<void> sendInvoice() async {
+    log('sent');
   final request = SendInvoice(
     chatId: widget.invoice['chatId'] as int,
     amount: widget.invoice['price'] as int,
     currency: 'NGN',
     description: widget.invoice['description'] as String,
     invoiceId: widget.invoice['invoiceNo'] as String,
+    fileName: '',
+    fileUrl: '',
+    fileSize: 0,
+    mimeType: ''
   );
 
-  context.read<ChatBloc>().add(
-    SendInvoiceEvent(messageRequest: request),
+  context.read<ChatDetailBloc>().add(
+    SendInvoiceMessage(request),
   );
 
   Navigator.of(context).pop();
-  await showSuccessSnackbar(context, 'Invoice sent successfully');
 }
 
 
@@ -192,7 +198,7 @@ late final formattedDate =
                             ),
                             2.verticalSpace,
                             GenText(
-                              'Jane Doe',
+                              widget.chat.user?.fullName ?? '',
                               size: 12,
                               weight: FontWeight.w400,
                               color: appColors.textColor.shade300,

@@ -2,6 +2,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
@@ -9,16 +10,26 @@ import 'package:resq360/features/provider/dashboard/widgets/provider_ongoing_ser
 import 'package:resq360/features/provider/dashboard/widgets/provider_stats_card.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_todo.dart';
 import 'package:resq360/features/provider/dashboard/widgets/service_requests.dart';
+import 'package:resq360/features/settings/screens/settings_screen.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
-
+  
   @override
   State<ProviderHomeScreen> createState() => _ProviderHomeScreenState();
 }
 
+ String revenue = '-';
+ bool isAproved = false;
+ bool profileNotDone = false;
 class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+  context.read<ProviderServiceBloc>().add(const ProviderFetchBookings());
+    
+  }
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -30,7 +41,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         backgroundColor: colors.whiteColor,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: FutureBuilder<ProviderProfileResponse?>(
+        title: FutureBuilder<ProviderModel?>(
           future: AuthLocalRepo.instance.getProviderCredentials(),
           builder: (context, asyncSnapshot) {
             if (asyncSnapshot.hasError) {
@@ -42,9 +53,30 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
             }
 
             final provider = asyncSnapshot.data!;
-            final fullName = provider.user.fullName?.trim();
+            final fullName = provider.fullName?.trim();
+            final address = provider.address?.city ?? 'N/A';
+            final balance = provider.wallet?.balance.toString();
+            final description = provider.description;
+            final profileImage = provider.profileImage;
+
+            if (balance != null){
+              revenue = balance;
+            }
+            final kyc = provider.kycStatus;
+            if (kyc == 'APPROVED') {
+              isAproved = true;
+            } else {
+              isAproved = false;
+            }
+
+              if (description != null && profileImage != null) {
+                 if(description.isEmpty || profileImage.isEmpty){
+              profileNotDone = true;
+            }
+              }
+           
             log('provider dashboard $fullName');
-            return _buildHeader(context, fullName!);
+            return _buildHeader(context, fullName!, address);
           },
         ),
         actions: [
@@ -74,15 +106,40 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const ProviderStatsCard(
-                title: 'Engagement',
-                value: '246',
-                icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
+              BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
+                builder: (context, state) {
+                  // if (state is ProviderServicesLoading) {
+                  //   return const Center(child: CircularProgressIndicator());
+                  // }
+
+                  if (state is ProviderServicesError) {
+                   const ProviderStatsCard(
+                      title: 'Engagement',
+                      value: '-',
+                      icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
+                    );
+                  }
+
+                  if (state is ProviderBookingsLoaded) {
+                    final bookings = state.bookings;
+                    return  ProviderStatsCard(
+                      title: 'Engagement',
+                      value: bookings.length.toString(),
+                      icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
+                    );
+                  }
+                  return const ProviderStatsCard(
+                      title: 'Engagement',
+                      value: '-',
+                      icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
+                    );
+                },
               ),
+
               16.horizontalSpace,
-              const ProviderStatsCard(
+               ProviderStatsCard(
                 title: 'Revenue',
-                value: '₦12,000',
+                value: revenue,
                 icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
               ),
             ],
@@ -90,10 +147,19 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           20.verticalSpace,
           const PromoCardWidget(),
           30.verticalSpace,
-          const ProviderAccountProgress(),
-          30.verticalSpace,
-          const ToDoSection(),
-          30.verticalSpace,
+          if(!isAproved)...[
+            const ProviderAccountProgress(),
+             30.verticalSpace,
+          ],
+
+          if(profileNotDone)...[
+            GestureDetector(
+              onTap: () => pushScreen(context, const SettingsScreen()),
+              child: const ToDoSection()),
+            30.verticalSpace,
+          ],
+          
+          
           const ProviderOngoingService(),
           30.verticalSpace,
           Container(
@@ -138,7 +204,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   onPressed: () async {
                     await pushScreen(context, const PromoteServiceScreen());
 
-                    // await GeneralDialogs.showCustomDialog(
+                    // await GeneralDialogs.showCustomDialog<void>(
                     //   context,
                     //   body: const ServiceRequestNotification(),
                     // );
@@ -185,7 +251,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   }
 }
 
-Widget _buildHeader(BuildContext context, String name) {
+Widget _buildHeader(BuildContext context, String name, String address) {
   final colors = context.appColors;
   return Row(
     children: [
@@ -211,7 +277,7 @@ Widget _buildHeader(BuildContext context, String name) {
               AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
               4.horizontalSpace,
               GenText(
-                'No. 2 Olympia Street',
+                address,
                 height: 24,
                 color: colors.black,
                 weight: FontWeight.w500,

@@ -170,7 +170,7 @@ class _SubscribeConfirmDialogState extends State<SubscribeConfirmDialog> {
                       onPressed: () async {
                         Navigator.of(context).pop();
 
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: PaymentFinished(
                             onTap: () async {

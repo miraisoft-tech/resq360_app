@@ -10,6 +10,8 @@ sealed class ServiceProviderState extends Equatable {
 final class ServiceProviderInitial extends ServiceProviderState {}
 
 class ServiceProvidersLoading extends ServiceProviderState {}
+class PingProvidersLoading extends ServiceProviderState {}
+
 
 class ServiceProvidersLoaded extends ServiceProviderState {
 

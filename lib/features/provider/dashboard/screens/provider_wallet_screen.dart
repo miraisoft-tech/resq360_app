@@ -1,4 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
@@ -105,11 +105,11 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                   return ProviderWalletBalanceCard(
                     balance: balance!.toInt(),
                     onAddFunds: () async {
-                      await GeneralDialogs.showCustomDialog(
+                      await GeneralDialogs.showCustomDialog<void>(
                         context,
                         body: FundMethodDialog(
                           onPaymentSelected: (PaymentMethod p1) async {
-                            await GeneralDialogs.showCustomDialog(
+                            await GeneralDialogs.showCustomDialog<void>(
                               context,
                               body: const FundWalletConfirmDialog(
                                 // amount: '₦20,000',

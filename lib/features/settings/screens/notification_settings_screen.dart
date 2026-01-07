@@ -98,11 +98,11 @@ class _NotificationSettingsScreenState
                         renewSMSNotification.value = value;
                       });
 
-                      await GeneralDialogs.showCustomDialog(
+                      await GeneralDialogs.showCustomDialog<void>(
                         context,
                         body: PaymentOptionDialog(
                           onPaymentSelected: (method) async {
-                            await GeneralDialogs.showCustomDialog(
+                            await GeneralDialogs.showCustomDialog<void>(
                               context,
                               body: const SubscribeConfirmDialog(
                                 amount: '₦15,0000',
@@ -116,7 +116,7 @@ class _NotificationSettingsScreenState
                   20.verticalSpace,
                   GestureDetector(
                     onTap: () async {
-                      await GeneralDialogs.showCustomDialog(
+                      await GeneralDialogs.showCustomDialog<void>(
                         context,
                         body: const UpdatePhoneModal(),
                       );

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:resq360/__lib.dart';
+
 import 'package:resq360/core/services/wallet.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 

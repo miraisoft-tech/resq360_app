@@ -6,4 +6,5 @@ export 'create_chat_request.dart';
 export 'message_response.dart';
 export 'metadata.dart';
 export 'participant.dart';
+export 'send_invoice_request.dart';
 export 'send_message_request.dart';

@@ -3,7 +3,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/location_service.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
@@ -36,7 +36,7 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
     notifyListeners();
   }
 
-  CustomerProfileResponse? authInfo;
+  CustomerUserModel? authInfo;
 
   Future<void> init() async {
     final authData = await AuthLocalRepo.instance.getAuthCredentials();

@@ -1,12 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
@@ -34,13 +31,7 @@ class ServiceProviderDetailsScreen extends StatefulWidget {
 class _ServiceProviderDetailsScreenState
     extends State<ServiceProviderDetailsScreen> {
   int currentIndex = 0;
-
-  final List<String> gallery = [
-    'https://images.pexels.com/photos/6065924/pexels-photo-6065924.jpeg',
-    'https://images.pexels.com/photos/4488662/pexels-photo-4488662.jpeg',
-    'https://images.pexels.com/photos/4489730/pexels-photo-4489730.jpeg',
-  ];
-
+  
   final List<Map<String, dynamic>> reviews = [
     {
       'name': 'Maria Okoro',
@@ -52,35 +43,13 @@ class _ServiceProviderDetailsScreenState
     },
   ];
 
-  Future<void> _createChat() async {
-    log('Statrted');
-    final provider = CustomerAuthProvider.instance;
-    if (provider.authInfo == null) {
-      await provider.init();
-    }
+  Future<void> _createServiceRequest() async {
 
-    final auth = provider.authInfo;
+    final providerServiceId = widget.provider.providerServiceId;
+    if (providerServiceId == null) return;
 
-    final userId = auth?.user.id;
-    final providerId = widget.providerId;
-
-    final chatRequest = CreateChatRequest(
-      title: widget.providerName,
-      type: 'PRIVATE',
-      participants: [
-        ChatParticipant(
-          participantType: 'USER',
-          participantId: userId!,
-        ),
-        ChatParticipant(
-          participantType: 'PROVIDER',
-          participantId: providerId,
-        ),
-      ],
-    );
-
-    context.read<ChatBloc>().add(
-      CreateChatEvent(chatRequest: chatRequest),
+    context.read<CustomerServicesBloc>().add(
+      CustomerCreateServiceRequest(providerServiceId: providerServiceId),
     );
   }
 
@@ -93,22 +62,35 @@ class _ServiceProviderDetailsScreenState
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final provider = widget.provider;
+    final providerServices = provider.providerServices;
+    final serviceGallery = provider.images;
+    final serviceGroups = providerServices
+    .map(
+      (service) => _ServiceGroup(
+        title: service.name,
+        items: [
+          service.service.name,
+        ],
+      ),
+    )
+    .toList();
+  
 
-    return BlocListener<ChatBloc, ChatState>(
+    return BlocListener<CustomerServicesBloc, CustomerServicesState>(
       listener: (context, state) async {
-        if (state is FetchingChatsState) {
+        if (state is CustomerServicesLoading) {
           await showLoadingDialog(
             context,
           );
         }
 
-        if (state is ChatLoadedState) {
+        if (state is CustomerServiceRequestCreated) {
           await pop(context);
           await pushScreen(
             context,
-            ChatDetailScreen(chat: state.chat),
+            ChatDetailScreen(chatId: state.chatId),
           );
-        } else if (state is ChatErrorState) {
+        } else if (state is CustomerServicesError) {
           await pop(context);
           await showSnackBar(context, 'Error', state.error);
         }
@@ -120,7 +102,6 @@ class _ServiceProviderDetailsScreenState
             Expanded(
               child: CustomScrollView(
                 slivers: [
-                  /// ---------- HEADER ----------
                   SliverAppBar(
                     pinned: true,
                     expandedHeight: 260,
@@ -135,13 +116,13 @@ class _ServiceProviderDetailsScreenState
                         alignment: Alignment.bottomCenter,
                         children: [
                           PageView.builder(
-                            itemCount: gallery.length,
+                            itemCount: serviceGallery.length,
                             onPageChanged: (i) {
                               setState(() => currentIndex = i);
                             },
                             itemBuilder: (_, index) {
                               return Image.network(
-                                gallery[index],
+                                serviceGallery[index],
                                 fit: BoxFit.cover,
                                 width: double.infinity,
                                 errorBuilder:
@@ -158,7 +139,7 @@ class _ServiceProviderDetailsScreenState
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: GenText(
-                                '${currentIndex + 1}/${gallery.length}',
+                                '${currentIndex + 1}/${serviceGallery.length}',
                                 color: colors.whiteColor,
                               ),
                             ),
@@ -168,7 +149,6 @@ class _ServiceProviderDetailsScreenState
                     ),
                   ),
 
-                 
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: pad(horizontal: 16, vertical: 16),
@@ -206,8 +186,7 @@ class _ServiceProviderDetailsScreenState
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     UrbText(
-                                      provider.companyName ??
-                                          'Unknown Provider',
+                                      provider.companyName,
                                       height: 24.5,
                                       weight: FontWeight.w700,
                                       color: colors.black,
@@ -250,11 +229,10 @@ class _ServiceProviderDetailsScreenState
                                 ),
                               ),
 
-                              /// CHAT + CALL
                               SVGButton(
                                 path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
                                 onTap: () async {
-                                  await _createChat();
+                                  // ChatDetailScreen(chatId: state.chatId),
                                 },
                               ),
                               15.horizontalSpace,
@@ -267,14 +245,15 @@ class _ServiceProviderDetailsScreenState
 
                           20.verticalSpace,
 
-                          
-                           Wrap(
+                          Wrap(
                             spacing: 8,
-                            children: [
-                              ChipWidget(label:  provider.serviceName ??'service' ),
-                              // ChipWidget(label: 'Mechanic'),
-                              // ChipWidget(label: 'Locksmith'),
-                            ],
+                            children:
+                                providerServices
+                                    .map(
+                                      (ps) =>
+                                          ChipWidget(label: ps.service.name),
+                                    )
+                                    .toList(),
                           ),
 
                           30.verticalSpace,
@@ -302,9 +281,8 @@ class _ServiceProviderDetailsScreenState
                               AppAssets.ASSETS_ICONS_CALENDER_SVG.svg,
                               8.horizontalSpace,
                               GenText(
-                                provider.workingDays != null &&
-                                        provider.workingDays!.isNotEmpty
-                                    ? '${provider.workingDays!.first.capitalize} - ${provider.workingDays!.last.capitalize}'
+                                provider.workingDays.isNotEmpty
+                                    ? '${provider.workingDays.first.capitalize} - ${provider.workingDays.last.capitalize}'
                                     : 'Days unavailable',
                                 size: 13,
                                 color: colors.black,
@@ -331,24 +309,8 @@ class _ServiceProviderDetailsScreenState
                             color: colors.black,
                           ),
                           12.verticalSpace,
-                          const _ServiceGroup(
-                            title: 'Towing',
-                            items: ['Emergency Roadside Tow'],
-                          ),
-                          const ListDivider(verticalSpacing: 10),
-                          const _ServiceGroup(
-                            title: 'Mechanic',
-                            items: ['Car Facelifting', 'Wheel Balancing'],
-                          ),
-                          const ListDivider(verticalSpacing: 10),
-                          const _ServiceGroup(
-                            title: 'Locksmith',
-                            items: [
-                              'Car Key Replacement',
-                              'Lock Installation',
-                              'Smart Lock Setup',
-                            ],
-                          ),
+
+                         ...serviceGroups,
 
                           20.verticalSpace,
 
@@ -379,7 +341,7 @@ class _ServiceProviderDetailsScreenState
                 child: WideButton(
                   label: 'Book Now',
                   onPressed: () async {
-                    await _createChat();
+                    await _createServiceRequest();
                   },
                 ),
               ),
@@ -424,6 +386,7 @@ class _ServiceGroup extends StatelessWidget {
             ),
           ),
         ),
+        const ListDivider(verticalSpacing: 10),
       ],
     );
   }

@@ -66,8 +66,8 @@ class _FundMethodDialogState extends State<FundMethodDialog> {
               PaymentOption(
                 icon: AppAssets.ASSETS_ICONS_PAYMENT_CARD_SVG.svg,
                 title: 'Pay with New Card',
-                isSelected: selectedPayment == PaymentMethod.newCard,
-                onTap: () => _selectPayment(PaymentMethod.newCard),
+                isSelected: selectedPayment == PaymentMethod.new_card,
+                onTap: () => _selectPayment(PaymentMethod.new_card),
               ),
               if (selectedPayment != null) ...[
                 20.verticalSpace,

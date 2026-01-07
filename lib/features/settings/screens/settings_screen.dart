@@ -1,11 +1,12 @@
+import 'dart:io';
+
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
+import 'package:resq360/core/utils/app_file_picker.dart';
+import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-import 'package:resq360/features/provider/authentication/data/service/auth_remote.repo.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
 import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
@@ -26,20 +27,50 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  File? pickedImage;
 
   Future<void> _refreshProfile() async {
-  try {
     if (dashboardViewModel.userType == UserType.provider) {
-      await AuthRemoteRepo.instance.getUserProfile();
+      context.read<ProviderAuthBloc>().add(const ProvidergetUserProfile());
     } else {
-       await ProviderAuthRemoteRepo.instance.getUserProfile();
+      context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
     }
-
-    setState(() {}); 
-  } on Exception catch (e) {
-    debugPrint('Refresh failed: $e');
   }
-}
+
+  Future<void> _pickProfileImage(BuildContext context) async {
+    final image = await AppFilePicker.pickImage();
+    if (image == null) return;
+
+    pickedImage = image;
+
+    if (dashboardViewModel.userType == UserType.provider) {
+      context.read<ProfileUpdateBloc>().add(
+        UpdateProfileImageEvent(
+          filePath: image.path,
+        ),
+      );
+    } else {
+      context.read<ProfileUpdateBloc>().add(
+        UpdateProfileImageEvent(
+          filePath: image.path,
+        ),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (dashboardViewModel.userType == UserType.provider) {
+        context.read<ProviderAuthBloc>().add(const ProvidergetUserProfile());
+      } else {
+        context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
+      }
+    });
+  }
+
   @override
   Widget build(
     BuildContext context,
@@ -53,7 +84,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_RATINGS_SVG.svg,
         title: 'Rating',
         onTap: () async {
-          await pushScreen(context, RatingScreen(isProvider: isProvider,));
+          await pushScreen(
+            context,
+            RatingScreen(
+              isProvider: isProvider,
+            ),
+          );
         },
       ),
       SettingsItem(
@@ -96,7 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_RATINGS_SVG.svg,
         title: 'Rating',
         onTap: () async {
-          await pushScreen(context,  RatingScreen(isProvider: isProvider));
+          await pushScreen(context, RatingScreen(isProvider: isProvider));
         },
       ),
       SettingsItem(
@@ -180,49 +216,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           children: [
             10.verticalSpace,
-            _ProfileSection(
-              isProvider: isProvider,
+            BlocListener<ProfileUpdateBloc, ProfileUpdateState>(
+              listener: (context, state) async {
+
+                if (state is ProfileUpdateLoading) {
+                  await showLoadingDialog(context);
+                }
+                if (state is ProfileUpdateSuccess) {
+                  Navigator.pop(context);
+                  await _refreshProfile();
+                }
+
+                 if (state is ProfileUpdateError) {
+                  Navigator.pop(context);
+                  await showErrorSnackbar(context, state.message);
+                }
+              },
+              child: _ProfileSection(
+                isProvider: isProvider,
+                refreshProfile: _refreshProfile,
+                onPickImage: () => _pickProfileImage(context),
+              ),
             ),
             10.verticalSpace,
             if (isProvider)
-              FutureBuilder(
-                future: AuthLocalRepo.instance.getProviderCredentials(),
-                builder: (context, asyncSnapshot) {
-                        if (!asyncSnapshot.hasData) return const SizedBox();
-        
-        final provider = asyncSnapshot.data!;
-        final status = provider.user.activityStatus ?? 'UNKNOWN';
-                  return GestureDetector(
-                    onTap: () async {
-                      await GeneralDialogs.showCustomDialog(
-                        context,
-                        body: AccountStatusDialog(
-                          onTap: () async {
-                            Navigator.pop(context);
-                  
-                            await pushScreen(context, const ContactAdminScreen());
-                          },
-                        ),
-                      );
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GenText(
-                          'Account Status: $status',
-                          height: 24.5,
-                          color: appColors.success.shade700,
-                          weight: FontWeight.w500,
-                        ),
-                        4.horizontalSpace,
-                        AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
-                          color: appColors.success.shade700,
-                        ),
-                      ],
-                    ),
-                  );
+              BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+                builder: (context, state) {
+                  if (state is ProviderProfileLoadedState) {}
+                  if (state is ProviderProfileLoadedState) {
+                    final status = state.user.activityStatus ?? 'UNKNOWN';
+
+                    return GestureDetector(
+                      onTap: () async {
+                        await GeneralDialogs.showCustomDialog<void>(
+                          context,
+                          body: AccountStatusDialog(
+                            onTap: () async {
+                              Navigator.pop(context);
+                              await pushScreen(
+                                context,
+                                const ContactAdminScreen(),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GenText(
+                            'Account Status: $status',
+                            height: 24.5,
+                            color: appColors.success.shade700,
+                            weight: FontWeight.w500,
+                          ),
+                          4.horizontalSpace,
+                          AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
+                            color: appColors.success.shade700,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return const SizedBox.shrink();
                 },
               ),
+
             20.verticalSpace,
             if (isProvider)
               Container(
@@ -249,7 +309,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             onTap: item.onTap,
                           ),
-                          Divider(height: 5, color: appColors.textColor.shade100),
+                          Divider(
+                            height: 5,
+                            color: appColors.textColor.shade100,
+                          ),
                         ],
                       ),
                     ),
@@ -281,7 +344,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             onTap: item.onTap,
                           ),
-                          Divider(height: 5, color: appColors.textColor.shade100),
+                          Divider(
+                            height: 5,
+                            color: appColors.textColor.shade100,
+                          ),
                         ],
                       ),
                     ),
@@ -291,7 +357,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             30.verticalSpace,
             GestureDetector(
               onTap: () async {
-                await GeneralDialogs.showCustomDialog(
+                await GeneralDialogs.showCustomDialog<void>(
                   context,
                   body: const LogoutDialog(),
                 );
@@ -325,86 +391,133 @@ class _SettingsScreenState extends State<SettingsScreen> {
 }
 
 class _ProfileSection extends StatelessWidget {
-  const _ProfileSection({required this.isProvider});
+  const _ProfileSection({
+    required this.isProvider,
+    required this.refreshProfile,
+    required this.onPickImage,
+  });
+
   final bool isProvider;
+  final void Function()? refreshProfile;
+  final void Function() onPickImage;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isProvider) {
+      return BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+        builder: (context, state) {
+          if (state is ProviderProfileLoadedState) {
+            final fullName = state.user.fullName?.trim();
+            final name =
+                (fullName != null && fullName.isNotEmpty)
+                    ? fullName
+                    : 'Provider User';
+
+            return ProfileView(
+              name: name,
+              imageUrl: state.user.profileImage,
+              onPickImage: onPickImage,
+            );
+          }
+
+          if (state is ProviderAuthLoadingState) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return const SizedBox.shrink();
+        },
+      );
+    }
+
+    return BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
+      builder: (context, state) {
+        if (state is CustomerProfileLoaded) {
+          final fullName = state.user.fullName?.trim();
+          final name =
+              (fullName != null && fullName.isNotEmpty)
+                  ? fullName
+                  : 'Customer User';
+
+          return ProfileView(
+            name: name,
+            imageUrl: state.user.profileImage,
+            onPickImage: onPickImage,
+          );
+        }
+
+        if (state is CustomerAuthLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is CustomerAuthFailure) {
+          return ErrorMessageAndButton(
+            error: state.error,
+            onPressed: refreshProfile,
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+class ProfileView extends StatelessWidget {
+  const ProfileView({
+    required this.name,
+    required this.imageUrl,
+    required this.onPickImage,
+    super.key,
+  });
+
+  final String name;
+  final String? imageUrl;
+  final VoidCallback onPickImage;
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return FutureBuilder(
-      future:
-          isProvider
-              ? AuthLocalRepo.instance.getProviderCredentials()
-              : AuthLocalRepo.instance.getAuthCredentials(),
-      builder: (context, asyncSnapshot) {
-        if (asyncSnapshot.hasError) {
-          return Center(child: Text('Error: ${asyncSnapshot.error}'));
-        }
-
-        if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
-          return const Center(child: Text('No user found'));
-        }
-
-        String name;
-        String? imageUrl;
-
-        if (isProvider) {
-          final provider = asyncSnapshot.data! as ProviderProfileResponse;
-          final fullName = provider.user.fullName?.trim();
-          name =
-              (fullName != null && fullName.isNotEmpty)
-                  ? fullName
-                  : 'Provider User';
-           imageUrl = provider.user.profileImage;
-        } else {
-          final user = asyncSnapshot.data! as CustomerProfileResponse;
-          final fullName = user.user.fullName?.trim();
-          name =
-              (fullName != null && fullName.isNotEmpty)
-                  ? fullName
-                  : 'Customer User';
-           imageUrl = user.user.profileImage;
-        }
-
-        return Column(
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.bottomRight,
           children: [
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                CircleAvatar(
-                  radius: 45.r,
-                  backgroundImage: NetworkImage(
-                    imageUrl ?? 'https://randomuser.me/api/portraits/men/30.jpg',
-                  ),
-                ),
-                Positioned(
-                  bottom: 2,
-                  right: 2,
-                  child: Container(
-                    padding: pad(vertical: 4, horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: appColors.primary.shade500,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.camera_alt,
-                      color: appColors.whiteColor,
-                      size: 16,
-                    ),
-                  ),
-                ),
-              ],
+            CircleAvatar(
+              radius: 45.r,
+              backgroundImage: NetworkImage(
+                imageUrl ?? 'https://randomuser.me/api/portraits/men/30.jpg',
+              ),
             ),
-            15.verticalSpace,
-            UrbText(
-              name,
-              size: 16,
-              weight: FontWeight.w700,
-              color: appColors.black,
+            Positioned(
+              bottom: 2,
+              right: 2,
+              child: GestureDetector(
+                onTap: onPickImage,
+                child: Container(
+                  padding: pad(vertical: 4, horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: appColors.primary.shade500,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.camera_alt,
+                    color: appColors.whiteColor,
+                    size: 16,
+                  ),
+                ),
+              ),
             ),
           ],
-        );
-      },
+        ),
+        15.verticalSpace,
+        UrbText(
+          name,
+          size: 16,
+          weight: FontWeight.w700,
+          color: appColors.black,
+        ),
+      ],
     );
   }
 }

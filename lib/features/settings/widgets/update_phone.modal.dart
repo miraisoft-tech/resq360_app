@@ -77,7 +77,7 @@ class _UpdatePhoneModalState extends State<UpdatePhoneModal> {
                         ? null
                         : () async {
                           Navigator.pop(context);
-                          await GeneralDialogs.showCustomDialog(
+                          await GeneralDialogs.showCustomDialog<void>(
                             context,
                             body: const UpdateSMSModal(),
                           );

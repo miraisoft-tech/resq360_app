@@ -5,7 +5,7 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/customer_profile_response.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
@@ -385,7 +385,7 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<CustomerProfileResponse>> getUserProfile() async {
+  Future<ApiResult<CustomerUserModel>> getUserProfile() async {
     try {
       const url = '/auth/profile/user';
 
@@ -397,10 +397,10 @@ class AuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
 
         if (success) {
-          final customerProfileResponse = CustomerProfileResponse.fromJson(
-            res.data!,
+          final customerProfileResponse = CustomerUserModel.fromJson(
+            res.data!['data'] as Map<String, dynamic>,
           );
-          log('User profile fetched: ${customerProfileResponse.user.fullName}');
+          log('User profile fetched: ${customerProfileResponse.fullName}');
 
           await AuthLocalRepo.instance.storeUserDetails(
             customerProfileResponse: customerProfileResponse,

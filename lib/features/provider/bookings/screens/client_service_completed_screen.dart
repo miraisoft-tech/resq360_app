@@ -1,9 +1,10 @@
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 
 class ClientServiceCompletedScreen extends StatefulWidget {
-  const ClientServiceCompletedScreen({super.key});
-
+  const ClientServiceCompletedScreen({required this.serviceRequestId, super.key});
+  final String serviceRequestId;
   @override
   State<ClientServiceCompletedScreen> createState() =>
       _ClientServiceCompletedScreenState();
@@ -135,24 +136,43 @@ class _ClientServiceCompletedScreenState
               },
             ),
             40.verticalSpace,
-            WideButton(
-              label: 'Submit',
-              backgroundColor: appColors.primary.shade500,
-              onPressed:
-                  reviewController.text.isNotEmpty && rating > 0
-                      ? () async {
-                        await GeneralDialogs.showCustomBottomSheet(
-                          context,
-                          body: ProviderThankYouModal(
-                            onContinuePressed: () async {
-                              if (context.mounted) await pop(context);
-                              if (context.mounted) await pop(context);
-                              if (context.mounted) await pop(context);
-                            },
-                          ),
-                        );
-                      }
-                      : null,
+            BlocConsumer<ProviderServiceBloc, ProviderServiceState>(
+              listener: (context, state) async {
+                if (state is ProviderServiceBookingCompleted) {
+                  await GeneralDialogs.showCustomBottomSheet(
+                    context,
+                    body: ProviderThankYouModal(
+                      onContinuePressed: () async {
+                        if (context.mounted) await pop(context);
+                        if (context.mounted) await pop(context);
+                        if (context.mounted) await pop(context);
+                      },
+                    ),
+                  );
+                }
+                if (state is ProviderServicesError) {
+                  await showErrorSnackbar(context, state.error);
+                }
+              },
+              builder: (context, state) {
+                return WideButton(
+                  label: 'Submit',
+                  backgroundColor: appColors.primary.shade500,
+                  loading: state is ProviderServicesLoading,
+                  onPressed:
+                      reviewController.text.isNotEmpty && rating > 0
+                          ? () async {
+                            context.read<ProviderServiceBloc>().add(
+                              ProviderCompleteServiceBooking(
+                                serviceRequestId: int.parse(widget.serviceRequestId),
+                                ratings: rating,
+                                review: reviewController.text,
+                              ),
+                            );
+                          }
+                          : null,
+                );
+              },
             ),
           ],
         ),

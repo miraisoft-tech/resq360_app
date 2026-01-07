@@ -41,14 +41,19 @@ class CustomerFetchBookings extends CustomerServicesEvent {
 //   final String? status;
 // }
 
+class CustomerCreateServiceRequest extends CustomerServicesEvent {
+  const CustomerCreateServiceRequest({required this.providerServiceId});
+  final int providerServiceId;
+}
 class CustomerStartServiceBooking extends CustomerServicesEvent {
   const CustomerStartServiceBooking(this.serviceRequestId);
   final int serviceRequestId;
 }
 
 class CustomerCancelServiceBooking extends CustomerServicesEvent {
-  const CustomerCancelServiceBooking(this.serviceRequestId);
+  const CustomerCancelServiceBooking(this.serviceRequestId, this.cancellationReason);
   final int serviceRequestId;
+  final String cancellationReason;
 }
 
 class CustomerCompleteServiceBooking extends CustomerServicesEvent {
@@ -58,6 +63,6 @@ class CustomerCompleteServiceBooking extends CustomerServicesEvent {
     required this.review,
   });
   final int serviceRequestId;
-  final String ratings;
+  final double ratings;
   final String review;
 }

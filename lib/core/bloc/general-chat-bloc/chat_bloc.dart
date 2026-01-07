@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 
 part 'chat_event.dart';
@@ -24,9 +22,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<JoinChatEvent>(_onJoinChat);
     on<SendInvoiceEvent>(_onSendInvoice);
 
-    // ChatSocketService.instance.messageStream.listen((message) {
-    //   add(NewMessageReceivedEvent(message));
-    // });
+    ChatSocketService.instance.messageStream.listen((message) {
+      add(NewMessageReceivedEvent(message));
+    });
   }
 
   final ChatRepo _chatRepo = ChatRepo();

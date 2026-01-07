@@ -49,46 +49,99 @@ class Service {
 
 class ServiceProvider {
   ServiceProvider({
-    this.companyName,
-    this.id,
-    this.activityStatus,
-    this.openingHours,
-    this.closingHours,
-    this.workingDays,
-    this.description,
-    this.providerServiceId,
-    this.serviceName,
-    this.distance,
+    required this.id,
+    required this.companyName,
+    required this.activityStatus,
+    required this.openingHours,
+    required this.closingHours,
+    required this.workingDays,
+    required this.description,
+    required this.images,
+    required this.distance,
+    required this.providerServices,
+    required this.serviceName,
+    required this.providerServiceId,
   });
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
     return ServiceProvider(
-      companyName: json['companyName'] as String?,
-      id: json['id'] as int?,
-      activityStatus: json['activityStatus'] as String?,
+      id: json['id'] as int,
+      companyName: json['companyName']?.toString() ?? '',
+      activityStatus: json['activityStatus']?.toString(),
       openingHours: json['openingHours']?.toString(),
       closingHours: json['closingHours']?.toString(),
       workingDays:
-          json['workingDays'] == null
-              ? <String>[]
-              : List<String>.from(
-                (json['workingDays'] as List).map((x) => x.toString()),
-              ),
-      description: json['description'] as String?,
+          (json['workingDays'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      description: json['description']?.toString(),
+      images:
+          (json['images'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      distance: (json['distance'] as num?)?.toDouble(),
+      providerServices:
+          (json['ProviderService'] as List?)
+              ?.map(
+                (e) =>
+                    ProviderService.fromJson(e as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
+      serviceName: json['serviceName']?.toString(),
       providerServiceId: json['providerServiceId'] as int?,
-      serviceName: json['serviceName'] as String?,
-      distance: json['distance'] as double?,
     );
   }
 
-  final String? companyName;
-  final int? id;
+  final int id;
+  final String companyName;
   final String? activityStatus;
   final String? openingHours;
   final String? closingHours;
-  final List<String>? workingDays;
+  final List<String> workingDays;
   final String? description;
-  final int? providerServiceId;
-  final String? serviceName;
+  final List<String> images;
   final double? distance;
+  final List<ProviderService> providerServices;
+  final String? serviceName;
+  final int? providerServiceId;
+}
+
+
+
+class ProviderService {
+  ProviderService({
+    required this.id,
+    required this.name,
+    required this.isActive,
+    required this.serviceId,
+    required this.providerId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.service,
+  });
+
+  factory ProviderService.fromJson(Map<String, dynamic> json) {
+    return ProviderService(
+      id: json['id'] as int,
+      name: json['name']?.toString() ?? '',
+      isActive: json['isActive'] as bool? ?? false,
+      serviceId: json['serviceId'] as int,
+      providerId: json['providerId'] as int,
+      createdAt: json['createdAt']?.toString() ?? '',
+      updatedAt: json['updatedAt']?.toString() ?? '',
+      service: Service.fromJson(json['service'] as Map<String, dynamic>),
+    );
+  }
+
+  final int id;
+  final String name;
+  final bool isActive;
+  final int serviceId;
+  final int providerId;
+  final String createdAt;
+  final String updatedAt;
+  final Service service;
 }

@@ -1,19 +1,27 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
+import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/metadata.dart';
 
 class ChatInvoiceCardWidget extends StatelessWidget {
-  const ChatInvoiceCardWidget({required this.onTapPay, required this.metadata, required this.messageCreatedAt, super.key});
+  const ChatInvoiceCardWidget({
+    required this.onTapPay,
+    required this.metadata,
+    required this.messageCreatedAt,
+    required this.message, 
+    required this.chat,
+    super.key, 
+  });
 
   final void Function() onTapPay;
-    final Metadata metadata;
+  final Metadata metadata;
+  final MessageResponse message;
+  final ChatResponse chat;
   final String messageCreatedAt;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    
-// if (metadata.type != 'INVOICE' || metadata.amount == null) {
-//     return const SizedBox.shrink();
-//   }
+
     return Container(
       width: double.infinity,
       padding: pad(horizontal: 14, vertical: 14),
@@ -40,7 +48,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   4.verticalSpace,
                   GenText(
-                    metadata.invoiceNo  ?? '—',
+                    metadata.invoiceId ?? '—',
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
                   ),
@@ -58,7 +66,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    metadata.date ?? '—',
+                    chat.createdAt?.formatDate ?? '—',
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
                   ),
@@ -80,7 +88,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    metadata.serviceCategory ?? '—',
+                    chat.serviceName ?? '—',
                     size: 12,
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
@@ -97,7 +105,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    'Jane Doe',
+                   chat.user?.fullName ?? '',
                     size: 12,
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,

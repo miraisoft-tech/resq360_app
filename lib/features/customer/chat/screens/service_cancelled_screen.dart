@@ -2,11 +2,13 @@
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/models/cancel_reason_enum.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/widgets/dialogs/cancelled.modal.dart';
 
 class ServiceCancelledScreen extends StatefulWidget {
-  const ServiceCancelledScreen({super.key});
+  const ServiceCancelledScreen({required this.serviceRequestId, super.key});
 
+  final int serviceRequestId;
   @override
   State<ServiceCancelledScreen> createState() => _ServiceCancelledScreenState();
 }
@@ -170,27 +172,45 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
                 ),
                 12.horizontalSpace,
                 Expanded(
-                  child: WideButton(
-                    label: 'Confirm',
-                    backgroundColor: appColors.error,
-                    textColor: appColors.whiteColor,
-                    onPressed:
-                        reasonController.text.isNotEmpty ||
-                                selectedReason != null
-                            ? () async {
-                              await GeneralDialogs.showCustomBottomSheet(
-                                context,
-                                body: CancelledModal(
-                                  onContinuePressed: () async {
-                                    if (context.mounted) await pop(context);
-                                    if (context.mounted) await pop(context);
-                                    if (context.mounted) await pop(context);
-                                    if (context.mounted) await pop(context);
-                                  },
-                                ),
-                              );
-                            }
-                            : null,
+                  child: BlocConsumer<CustomerServicesBloc, CustomerServicesState>(
+                    listener: (context, state) async {
+                       if (state is ServiceBookingCancelled) {
+                            await GeneralDialogs.showCustomBottomSheet(
+                              context,
+                              body: CancelledModal(
+                                onContinuePressed: () async {
+                                  if (context.mounted) await pop(context);
+                                  if (context.mounted) await pop(context);
+                                  if (context.mounted) await pop(context);
+                                  if (context.mounted) await pop(context);
+                                },
+                              ),
+                            );
+                          }
+
+                          if (state is CustomerServicesError) {
+                            await showErrorSnackbar(context, state.error);
+                          }
+                    },
+                    builder: (context, state) {
+                      return WideButton(
+                        label: 'Confirm',
+                        backgroundColor: appColors.error,
+                        textColor: appColors.whiteColor,
+                            loading: state is CustomerServicesLoading,
+
+                        onPressed:
+                            canSubmit ? () async {
+                                      context.read<CustomerServicesBloc>().add(
+                                        CustomerCancelServiceBooking(
+                                        widget.serviceRequestId, cancellationReason!
+                                        ),
+                                      );
+                                 
+                                }
+                                : null,
+                      );
+                    },
                   ),
                 ),
               ],
@@ -199,6 +219,28 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
         ),
       ),
     );
+  }
+
+  String? get cancellationReason {
+    if (selectedReason == null) return null;
+
+    if (selectedReason == CancelReason.other) {
+      return reasonController.text.trim().isEmpty
+          ? null
+          : reasonController.text.trim();
+    }
+
+    return selectedReason!.name;
+  }
+
+  bool get canSubmit {
+    if (selectedReason == null) return false;
+
+    if (selectedReason == CancelReason.other) {
+      return reasonController.text.trim().isNotEmpty;
+    }
+
+    return true;
   }
 
   String _reasonText(CancelReason reason) {

@@ -70,10 +70,7 @@ class BaseAPI {
           final data = res.data?.toString() ?? '';
 
           if (statusCode == 401 ||
-              (statusCode == 200 && data.contains('Unauthorized'))) {
-            log(' 401 detected force logout');
-                
-            log(' 401 detected force logout');
+              (statusCode == 200 && data.contains('Unauthorized') || data.contains('DOCTYPE'))) {
             final authBloc = BlocRegistry.authBloc;
             if (authBloc == null) return handler.next(res);
             authBloc.add(ForceLogoutEvent());

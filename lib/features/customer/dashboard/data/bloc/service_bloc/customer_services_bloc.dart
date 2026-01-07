@@ -1,5 +1,6 @@
-import 'package:bloc/bloc.dart';
+
 import 'package:equatable/equatable.dart';
+import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/service_repo.dart';
@@ -15,8 +16,7 @@ class CustomerServicesBloc
     on<CustomerFetchServices>(_onFetchCustomerServices);
     on<CustomerFetchServiceInfo>(_onFetchServiceInfo);
     on<CustomerCreateService>(_onCreateCustomerService);
-    // on<CustomerFetchBookings>(_onFetchBookings);
-    // on<CustomerFetchBookings>(_onGetServiceBookings);
+    on<CustomerCreateServiceRequest>(_createServiceRequest);
     on<CustomerStartServiceBooking>(_onStartBooking);
     on<CustomerCancelServiceBooking>(_onCancelBooking);
     on<CustomerCompleteServiceBooking>(_onCompleteBooking);
@@ -129,7 +129,6 @@ class CustomerServicesBloc
 //   }
 // }
 
-
 Future<void> _onStartBooking(
   CustomerStartServiceBooking event,
   Emitter<CustomerServicesState> emit,
@@ -150,14 +149,37 @@ Future<void> _onStartBooking(
   }
 }
 
+Future<void> _createServiceRequest(
+  CustomerCreateServiceRequest event,
+  Emitter<CustomerServicesState> emit,
+) async {
+  emit(CustomerServicesLoading());
+  try {
+    final result = await serviceRepo.createServiceRequest(providerServiceId: event.providerServiceId);
+
+    if (result.error != null) {
+      emit(CustomerServicesError(
+        error: result.error!,
+      ));
+    } else {
+      final chatId = result.data?['chatId'] as int;
+      final serviceRequestId = result.data?['serviceRequestId'] as int;
+
+      emit(CustomerServiceRequestCreated(chatId: chatId, serviceRequestId: serviceRequestId));
+    }
+  } on Exception catch (e) {
+    emit(CustomerServicesError(error: e.toString()));
+  }
+}
+
 Future<void> _onCancelBooking(
   CustomerCancelServiceBooking event,
   Emitter<CustomerServicesState> emit,
 ) async {
   emit(CustomerServicesLoading());
   try {
-    final result = await serviceRepo.cancelServiceBooking(event.serviceRequestId);
-
+    final result = await serviceRepo.cancelServiceBooking(serviceRequestId: event.serviceRequestId, cancellationReason: event.cancellationReason);
+  log(result);
     if (!result.isSuccess) {
       emit(CustomerServicesError(
         error: result.error ?? 'Failed to cancel booking',

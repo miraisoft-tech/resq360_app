@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
@@ -158,7 +158,7 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
 
                           ),
                         );
-                        // await GeneralDialogs.showCustomDialog(
+                        // await GeneralDialogs.showCustomDialog<void>(
                         //   context,
                         //   body: const FundWalletCompleted(),
                         // );
