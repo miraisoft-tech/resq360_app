@@ -108,7 +108,7 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                   right: 0,
                   child: Container(
                     padding: pad(horizontal: 8),
-                    height: (75 + 10).h,
+                    height: (75 + 20).h,
                     decoration: BoxDecoration(
                       color: appColors.whiteColor,
                       borderRadius: const BorderRadius.all(Radius.circular(6)),

@@ -84,7 +84,7 @@ class OngoingServiceCard extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    padding: pad(horizontal: 14),
+                    padding: pad(horizontal: 14, vertical: 10),
                     elevation: 0,
                     backgroundColor: colors.error.shade50,
                     foregroundColor: colors.primary.shade500,
@@ -106,6 +106,7 @@ class OngoingServiceCard extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
+                    padding: pad(horizontal: 14, vertical: 10),
                     backgroundColor: colors.primary.shade500,
                     foregroundColor: colors.whiteColor,
                     shape: RoundedRectangleBorder(
