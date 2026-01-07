@@ -7,8 +7,6 @@ import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
-// import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
 
@@ -99,7 +97,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
           email: email,
           password: password,
         );
-        final userProfileResult = await getUserProfile();
+        final userProfileResult = await getProviderProfile();
 
         final name = userProfileResult.data?.fullName;
         log(
@@ -179,7 +177,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
       if (res.statusCode == 201 && res.data != null) {
         final success = res.data!['success'] == true;
-        final userProfileResult = await getUserProfile();
+        final userProfileResult = await getProviderProfile();
 
         if (userProfileResult.error != null) {
           return ApiResult(
@@ -308,7 +306,9 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> verifyEmailAddress({required String emailVerificationToken}) async {
+  Future<bool> verifyEmailAddress({
+    required String emailVerificationToken,
+  }) async {
     try {
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
@@ -369,7 +369,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<ProviderModel>> getUserProfile() async {
+  Future<ApiResult<ProviderModel>> getProviderProfile() async {
     try {
       const url = '/auth/profile/provider';
 
@@ -389,11 +389,13 @@ class ProviderAuthRemoteRepo extends BaseAPI {
             isProvider: true,
             providerProfileResponse: providerProfileResponse,
           );
-          await ProviderAuthProvider.instance.init();
+
           return ApiResult(data: providerProfileResponse);
-        } 
+        }
       }
-      return ApiResult(error:  res.data!['message']?.toString() ?? 'Failed to fetch profile');
+      return ApiResult(
+        error: res.data!['message']?.toString() ?? 'Failed to fetch profile',
+      );
     } on DioException catch (e) {
       if (e.response?.statusCode == 403) {
         return ApiResult(error: 'PROVIDER_NOT_APPROVED');
