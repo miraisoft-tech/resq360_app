@@ -68,7 +68,7 @@ class WalletTransactionsBloc
       final data = result.data!;
 
       _transactions.addAll(data.transactions);
-      _hasNextPage = data.pagination.hasNextPage;
+      _hasNextPage = data.pagination.hasNextPage?? false;
 
       emit(
         WalletTransactionsLoaded(
