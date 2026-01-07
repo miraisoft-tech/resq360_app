@@ -505,7 +505,7 @@ Widget build(BuildContext context) {
                           userid != null && 
                           state is ChatDetailReady) {
                         context.read<ChatDetailBloc>().add(
-                          SendTextMessage(text, userid),
+                          SendTextMessage(text, userid, 'PROVIDER'),
                         );
                       }
                     },

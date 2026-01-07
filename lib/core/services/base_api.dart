@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:resq360/core/bloc/bloc/auth_bloc.dart';
-import 'package:resq360/core/bloc/bloc/auth_bloc_registry.dart';
+import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc.dart';
+import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc_registry.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';

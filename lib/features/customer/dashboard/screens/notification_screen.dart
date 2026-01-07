@@ -1,9 +1,9 @@
 import 'dart:async';
 
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/notification/notification_response.model.dart'
     as notif;
+import 'package:resq360/core/theme/app_color_theme.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/notification_bloc/notification_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/notification_model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/notification_tile.dart';
@@ -22,6 +22,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   int _offset = 0;
   final int _limit = 20;
   bool _isLoadingMore = false;
+  int unreadCount = 0;
 
   @override
   void initState() {
@@ -32,12 +33,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   void _fetchInitial() {
     _offset = 0;
+      context.read<NotificationBloc>().add(
+      FetchUnreadCount()
+    );
     context.read<NotificationBloc>().add(
       FetchRecentNotifications(
         offset: _offset,
         limit: _limit,
       ),
     );
+   
   }
 
   void _onScroll() {
@@ -60,19 +65,21 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
     );
   }
-Future<void> _onRefresh() async {
-  _offset = 0;
-  _isLoadingMore = false;
 
-  context.read<NotificationBloc>().add(
-    FetchRecentNotifications(
-      offset: _offset,
-      limit: _limit,
-    ),
-  );
+  Future<void> _onRefresh() async {
+    _offset = 0;
+    _isLoadingMore = false;
 
-  await Future<void>.delayed(const Duration(milliseconds: 300));
-}
+    context.read<NotificationBloc>().add(
+      FetchRecentNotifications(
+        offset: _offset,
+        limit: _limit,
+      ),
+    );
+
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -82,42 +89,6 @@ Future<void> _onRefresh() async {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
-    // final notifications = [
-    //   NotificationModel(
-    //     title: 'Booking Confirmed',
-    //     message:
-    //         'Your house cleaning service is confirmed for tomorrow at 2:00 pm',
-    //     time: '30 minutes ago',
-    //     isUnread: true,
-    //     group: 'Today',
-    //     icon: AppAssets.ASSETS_ICONS_NOTIFICATION_B_SVG.svg,
-    //   ),
-    //   NotificationModel(
-    //     title: 'Service Reminder',
-    //     message: 'Your electrician will is on the way.',
-    //     time: '2 hours ago',
-    //     isUnread: true,
-    //     group: 'Today',
-    //     icon: AppAssets.ASSETS_ICONS_NOTIFICATION_R_SVG.svg,
-    //   ),
-    //   NotificationModel(
-    //     title: 'Special Offer',
-    //     message: 'Get 20% off your cleaning service today!!',
-    //     time: '1 day ago',
-    //     group: 'Today',
-    //     icon: AppAssets.ASSETS_ICONS_NOTIFICATION_S_SVG.svg,
-    //   ),
-    //   NotificationModel(
-    //     title: 'Booking Confirmed',
-    //     message:
-    //         'Your house cleaning service is confirmed for tomorrow at 2:00 pm',
-    //     time: '26 hours ago',
-    //     group: 'Yesterday',
-    //     icon: AppAssets.ASSETS_ICONS_NOTIFICATION_B_SVG.svg,
-    //   ),
-    // ];
-
     // final grouped = _groupNotifications(notifications);
 
     return Scaffold(
@@ -148,7 +119,9 @@ Future<void> _onRefresh() async {
           if (state is NotificationLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-
+           if (state is UnreadCountLoaded) {
+            unreadCount = state.count;
+          }
           if (state is NotificationLoaded) {
             final notifications = state.notifications;
             _isLoadingMore = false;
@@ -163,6 +136,7 @@ Future<void> _onRefresh() async {
 
             final uiList = state.notifications.map(mapToUi).toList();
             final grouped = _groupNotifications(uiList);
+
             return RefreshIndicator(
               onRefresh: _onRefresh,
               child: Padding(
@@ -170,23 +144,10 @@ Future<void> _onRefresh() async {
                 child: ListView(
                   controller: _scrollController,
                   children: [
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     GenText(
-                    //       '2 new notifications',
-                    //       color: appColors.black,
-                    //       weight: FontWeight.w600,
-                    //     ),
-                    //     GenText(
-                    //       'Mark all as read',
-                    //       size: 13,
-                    //       color: appColors.primary.shade500,
-                    //       weight: FontWeight.w500,
-                    //     ),
-                    //   ],
-                    // ),
-                    _HeaderRow(),
+                    if (unreadCount > 0) _HeaderRow(
+                      count: unreadCount,
+                      color: appColors,
+                    ) else SizedBox.fromSize(),
                     20.verticalSpace,
                     if (grouped.isEmpty)
                       const Center(
@@ -215,11 +176,13 @@ Future<void> _onRefresh() async {
                               (n) => NotificationTile(notification: n),
                             ),
                             20.verticalSpace,
-              
+
                             if (_isLoadingMore)
                               const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 16),
-                                child: Center(child: CircularProgressIndicator()),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
                               ),
                           ],
                         ),
@@ -239,21 +202,21 @@ Future<void> _onRefresh() async {
               },
             );
           }
-
           return const SizedBox.shrink();
         },
         listener: (BuildContext context, NotificationState state) {
           if (state is NotificationActionSuccess) {
+              context.read<NotificationBloc>().add(
+                  const FetchRecentNotifications(),
+                );
             unawaited(showSuccessSnackbar(context, state.message));
+          
           }
 
           if (state is NotificationError) {
             unawaited(showErrorSnackbar(context, state.message));
           }
 
-          if (state is NotificationError) {
-            unawaited(showErrorSnackbar(context, state.message));
-          }
         },
       ),
     );
@@ -271,6 +234,10 @@ Future<void> _onRefresh() async {
 }
 
 class _HeaderRow extends StatelessWidget {
+  const _HeaderRow({required this.count, required this.color});
+
+  final int count;
+  final AppColorPalette color;
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<NotificationBloc>();
@@ -278,16 +245,20 @@ class _HeaderRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text('New notifications'),
+        GenText(
+          '$count new notification${count == 1 ? '' : 's'}',
+          color: color.black,
+          weight: FontWeight.w600,
+        ),
         GestureDetector(
           onTap: () {
             bloc.add(MarkAllAsRead());
           },
-          child: Text(
+          child: GenText(
             'Mark all as read',
-            style: TextStyle(
-              color: context.appColors.primary.shade500,
-            ),
+            size: 13,
+            color: color.primary.shade500,
+            weight: FontWeight.w500,
           ),
         ),
       ],

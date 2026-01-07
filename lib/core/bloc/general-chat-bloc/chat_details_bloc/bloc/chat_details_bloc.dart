@@ -142,13 +142,13 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     final optimisticMessage = MessageResponse(
       id: DateTime.now().millisecondsSinceEpoch * -1,
       chatId: chatId,
-      senderType: 'USER',
+      senderType: event.userType,
       senderId: event.senderid,
       messageType: 'TEXT',
       content: event.content,
       createdAt: DateTime.now(),
     );
-
+  print(optimisticMessage.id);
     emit(
       current.copyWith(
         messages: [optimisticMessage, ...current.messages],

@@ -95,7 +95,7 @@ Future<void> _onFetchRecentNotifications(
     try {
       final result = await _notificationRepo.markAllNotificationsAsRead();
       if (result.data != null) {
-        // emit(const NotificationActionSuccess('All notifications marked as read'));
+        emit(const NotificationActionSuccess('All notifications marked as read'));
       } else {
         emit(NotificationError(result.error ?? 'Unknown error'));
       }
@@ -128,7 +128,7 @@ Future<void> _onFetchRecentNotifications(
       throw Exception(result.error ?? 'Archive failed');
     }
 
-    // emit(const NotificationActionSuccess('Notification archived'));
+    emit(const NotificationActionSuccess('Notification archived'));
   } on Exception catch (e) {
     emit(current.copyWith(notifications: previousList));
     emit(NotificationError(e.toString()));
