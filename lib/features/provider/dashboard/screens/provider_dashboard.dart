@@ -15,21 +15,22 @@ import 'package:resq360/features/widgets/promo_card_widget.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
-  
+
   @override
   State<ProviderHomeScreen> createState() => _ProviderHomeScreenState();
 }
 
- String revenue = '-';
- bool isAproved = false;
- bool profileNotDone = false;
+String revenue = '-';
+bool isAproved = false;
+bool profileNotDone = false;
+
 class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   @override
   void initState() {
     super.initState();
-  context.read<ProviderServiceBloc>().add(const ProviderFetchBookings());
-    
+    context.read<ProviderServiceBloc>().add(const ProviderFetchBookings());
   }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -59,7 +60,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
             final description = provider.description;
             final profileImage = provider.profileImage;
 
-            if (balance != null){
+            if (balance != null) {
               revenue = balance;
             }
             final kyc = provider.kycStatus;
@@ -69,12 +70,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               isAproved = false;
             }
 
-              if (description != null && profileImage != null) {
-                 if(description.isEmpty || profileImage.isEmpty){
-              profileNotDone = true;
-            }
+            if (description != null && profileImage != null) {
+              if (description.isEmpty || profileImage.isEmpty) {
+                profileNotDone = true;
               }
-           
+            }
+
             log('provider dashboard $fullName');
             return _buildHeader(context, fullName!, address);
           },
@@ -95,157 +96,166 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           10.horizontalSpace,
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.only(
-          top: 20.h,
-          left: 16.w,
-          right: 16.w,
-          bottom: 100.h,
-        ),
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
-                builder: (context, state) {
-                  // if (state is ProviderServicesLoading) {
-                  //   return const Center(child: CircularProgressIndicator());
-                  // }
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<ProviderServiceBloc>().add(
+            const ProviderFetchBookings(),
+          );
+        },
 
-                  if (state is ProviderServicesError) {
-                   const ProviderStatsCard(
-                      title: 'Engagement',
-                      value: '-',
-                      icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
-                    );
-                  }
-
-                  if (state is ProviderBookingsLoaded) {
-                    final bookings = state.bookings;
-                    return  ProviderStatsCard(
-                      title: 'Engagement',
-                      value: bookings.length.toString(),
-                      icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
-                    );
-                  }
-                  return const ProviderStatsCard(
-                      title: 'Engagement',
-                      value: '-',
-                      icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
-                    );
-                },
-              ),
-
-              16.horizontalSpace,
-               ProviderStatsCard(
-                title: 'Revenue',
-                value: revenue,
-                icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
-              ),
-            ],
+        color: colors.primary.shade500,
+        child: ListView(
+          padding: EdgeInsets.only(
+            top: 20.h,
+            left: 16.w,
+            right: 16.w,
+            bottom: 100.h,
           ),
-          20.verticalSpace,
-          const PromoCardWidget(),
-          30.verticalSpace,
-          if(!isAproved)...[
-            const ProviderAccountProgress(),
-             30.verticalSpace,
-          ],
-
-          if(profileNotDone)...[
-            GestureDetector(
-              onTap: () => pushScreen(context, const SettingsScreen()),
-              child: const ToDoSection()),
-            30.verticalSpace,
-          ],
-          
-          
-          const ProviderOngoingService(),
-          30.verticalSpace,
-          Container(
-            padding: pad(horizontal: 10, vertical: 10),
-            decoration: BoxDecoration(
-              color: colors.error.shade50,
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: UrbText(
-              '⏳ Promotion ends in 6hrs-45mins',
-              color: colors.black,
-              weight: FontWeight.w700,
-              size: 16,
-            ),
-          ),
-          30.verticalSpace,
-          const ServiceRequests(),
-          20.verticalSpace,
-          Container(
-            padding: pad(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: colors.error.shade50,
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                GenText(
-                  'You can reach more clients if you promote your page, your page will be displayed to all clients for 24hrs.',
-                  height: 24.5,
-                  color: colors.black,
-                ),
-                10.verticalSpace,
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary.shade500,
-                    padding: pad(horizontal: 14, vertical: 4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  onPressed: () async {
-                    await pushScreen(context, const PromoteServiceScreen());
+                BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
+                  builder: (context, state) {
+                    // if (state is ProviderServicesLoading) {
+                    //   return const Center(child: CircularProgressIndicator());
+                    // }
 
-                    // await GeneralDialogs.showCustomDialog<void>(
-                    //   context,
-                    //   body: const ServiceRequestNotification(),
-                    // );
+                    if (state is ProviderServicesError) {
+                      const ProviderStatsCard(
+                        title: 'Engagement',
+                        value: '-',
+                        icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
+                      );
+                    }
+
+                    if (state is ProviderBookingsLoaded) {
+                      final bookings = state.bookings;
+                      return ProviderStatsCard(
+                        title: 'Engagement',
+                        value: bookings.length.toString(),
+                        icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
+                      );
+                    }
+                    return const ProviderStatsCard(
+                      title: 'Engagement',
+                      value: '-',
+                      icon: AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
+                    );
                   },
-                  child: const GenText(
-                    'Promote Page',
-                    color: Colors.white,
-                    weight: FontWeight.w500,
-                  ),
+                ),
+
+                16.horizontalSpace,
+                ProviderStatsCard(
+                  title: 'Revenue',
+                  value: revenue,
+                  icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
                 ),
               ],
             ),
-          ),
-          20.verticalSpace,
-          Container(
-            padding: pad(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              border: Border.all(color: colors.primary.shade500),
-              borderRadius: BorderRadius.circular(12.r),
+            20.verticalSpace,
+            const PromoCardWidget(),
+            30.verticalSpace,
+            if (!isAproved) ...[
+              const ProviderAccountProgress(),
+              30.verticalSpace,
+            ],
+
+            if (profileNotDone) ...[
+              GestureDetector(
+                onTap: () => pushScreen(context, const SettingsScreen()),
+                child: const ToDoSection(),
+              ),
+              30.verticalSpace,
+            ],
+
+            const ProviderOngoingService(),
+            30.verticalSpace,
+            Container(
+              padding: pad(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.error.shade50,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: UrbText(
+                '⏳ Promotion ends in 6hrs-45mins',
+                color: colors.black,
+                weight: FontWeight.w700,
+                size: 16,
+              ),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: GenText(
-                    'Boost your visibility and attract more clients with our 10% off promotion package. Don’t miss this chance to grow your business',
-                    size: 12,
-                    height: 20.5,
+            30.verticalSpace,
+            const ServiceRequests(),
+            20.verticalSpace,
+            Container(
+              padding: pad(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: colors.error.shade50,
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GenText(
+                    'You can reach more clients if you promote your page, your page will be displayed to all clients for 24hrs.',
+                    height: 24.5,
                     color: colors.black,
                   ),
-                ),
-                8.horizontalSpace,
-                AppAssets.ASSETS_IMAGES_SPEAKER_ICON_PNG.imageAsset(
-                  width: 120.w,
-                  height: 80.h,
-                  fit: BoxFit.contain,
-                ),
-              ],
+                  10.verticalSpace,
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primary.shade500,
+                      padding: pad(horizontal: 14, vertical: 4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                    onPressed: () async {
+                      await pushScreen(context, const PromoteServiceScreen());
+
+                      // await GeneralDialogs.showCustomDialog<void>(
+                      //   context,
+                      //   body: const ServiceRequestNotification(),
+                      // );
+                    },
+                    child: const GenText(
+                      'Promote Page',
+                      color: Colors.white,
+                      weight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            20.verticalSpace,
+            Container(
+              padding: pad(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                border: Border.all(color: colors.primary.shade500),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: GenText(
+                      'Boost your visibility and attract more clients with our 10% off promotion package. Don’t miss this chance to grow your business',
+                      size: 12,
+                      height: 20.5,
+                      color: colors.black,
+                    ),
+                  ),
+                  8.horizontalSpace,
+                  AppAssets.ASSETS_IMAGES_SPEAKER_ICON_PNG.imageAsset(
+                    width: 120.w,
+                    height: 80.h,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

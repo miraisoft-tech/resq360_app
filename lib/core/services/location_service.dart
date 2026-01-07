@@ -15,7 +15,9 @@ abstract class BaseViewModel extends ChangeNotifier {
 
 mixin LocationMixin on BaseViewModel {
   geo.Position? currentPosition;
-   Placemark? currentPlacemark;
+  Placemark? currentPlacemark;
+  bool _isRequestingPermission = false;
+  bool _isInitializing = false;
 
   @override
   Future<void> onInit() async {
@@ -23,71 +25,99 @@ mixin LocationMixin on BaseViewModel {
     await _initLocation();
   }
 
-
   Future<void> _initLocation() async {
-    final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
-
-    if (!serviceEnabled) {
-      await geo.Geolocator.openLocationSettings();
+    if (_isInitializing) {
+      log('Location initialization already in progress');
       return;
     }
 
-    
+    _isInitializing = true;
+    try {
+      final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
 
-    var permission = await geo.Geolocator.checkPermission();
-    if (permission == geo.LocationPermission.denied) {
-      permission = await geo.Geolocator.requestPermission();
+      if (!serviceEnabled) {
+        await geo.Geolocator.openLocationSettings();
+        return;
+      }
+
+      var permission = await geo.Geolocator.checkPermission();
+
+      if (permission == geo.LocationPermission.denied) {
+        if (_isRequestingPermission) {
+          log('Permission request already in progress');
+          return;
+        }
+        _isRequestingPermission = true;
+        try {
+          permission = await geo.Geolocator.requestPermission();
+        } finally {
+          _isRequestingPermission = false;
+        }
+      }
+
+      if (permission == geo.LocationPermission.deniedForever) {
+        return;
+      }
+
+      if (permission != geo.LocationPermission.always &&
+          permission != geo.LocationPermission.whileInUse) {
+        return;
+      }
+
+      const settings = geo.LocationSettings(
+        accuracy: geo.LocationAccuracy.high,
+        distanceFilter: 100,
+      );
+
+      currentPosition = await geo.Geolocator.getCurrentPosition(
+        locationSettings: settings,
+      );
+      currentPlacemark = await _getAddressFromCoords();
+      log('Location fetched successfully!');
+
+      notifyListeners();
+      onLocationUpdated();
+    } on Exception catch (e) {
+      log('Error fetching location: $e');
+    } finally {
+      _isInitializing = false;
     }
-    if (permission == geo.LocationPermission.deniedForever) {
-      return;
-    }
-
-    if (permission != geo.LocationPermission.always &&
-        permission != geo.LocationPermission.whileInUse) {
-      return;
-    }
-
-    const settings = geo.LocationSettings(
-      accuracy: geo.LocationAccuracy.high,
-      distanceFilter: 100,
-    );
-
-    currentPosition = await geo.Geolocator.getCurrentPosition(
-      locationSettings: settings,
-    );
-    currentPlacemark = await _getAddressFromCoords();
-    log('Location fetched successfully!');
-
-    notifyListeners();
-    onLocationUpdated();
   }
 
   Future<Placemark?> _getAddressFromCoords() async {
-  if (currentPosition == null) {
-    throw Exception('Current position is null');
-  }
-  log('Lat: ${currentPosition!.latitude}, Lng: ${currentPosition!.longitude}');
-  await AppLocalPref().save(key: 'latitude', value: currentPosition!.latitude.toString());
-  await AppLocalPref().save(key: 'longitude', value: currentPosition!.longitude.toString());
+    if (currentPosition == null) {
+      throw Exception('Current position is null');
+    }
+    log(
+      'Lat: ${currentPosition!.latitude}, Lng: ${currentPosition!.longitude}',
+    );
+    await AppLocalPref().save(
+      key: 'latitude',
+      value: currentPosition!.latitude.toString(),
+    );
+    await AppLocalPref().save(
+      key: 'longitude',
+      value: currentPosition!.longitude.toString(),
+    );
 
-  try {
-    final placemarks = await placemarkFromCoordinates(
-      currentPosition!.latitude,
-      currentPosition!.longitude,
-    ).timeout(const Duration(seconds: 5)); // prevent long hangs
+    try {
+      final placemarks = await placemarkFromCoordinates(
+        currentPosition!.latitude,
+        currentPosition!.longitude,
+      ).timeout(const Duration(seconds: 5)); // prevent long hangs
 
-    final place = placemarks.first;
-    log('Address: ${place.street}, ${place.locality}, ${place.country}');
-    notifyListeners();
-    return place;
-  } on TimeoutException catch (_) {
-    log('Reverse geocoding timed out');
-    return null;
-  } on Exception catch (e) {
-    log('Geocoding failed: $e');
-    return null;
+      final place = placemarks.first;
+      log('Address: ${place.street}, ${place.locality}, ${place.country}');
+      notifyListeners();
+      return place;
+    } on TimeoutException catch (_) {
+      log('Reverse geocoding timed out');
+      return null;
+    } on Exception catch (e) {
+      log('Geocoding failed: $e');
+      return null;
+    }
   }
-}
 
   @protected
   void onLocationUpdated() {}

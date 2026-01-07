@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
+import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/bookings_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/customer_details_screen.dart';
 
@@ -14,10 +15,12 @@ class _ServiceRequestsState extends State<ServiceRequests> {
   @override
   void initState() {
     super.initState();
-   context.read<ProviderServiceBloc>().add(
-      const ProviderFetchBookings(status: 'pending'),
+
+    context.read<ProviderServiceBloc>().add(
+      ProviderFetchBookings(status: BookingStatus.pending.value),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -56,7 +59,9 @@ class _ServiceRequestsState extends State<ServiceRequests> {
                   // ),
                   const Spacer(),
                   GestureDetector(
-                    onTap: ()=> pushScreen(context, const ProviderBookingsScreen()),
+                    onTap:
+                        () =>
+                            pushScreen(context, const ProviderBookingsScreen()),
                     child: GenText(
                       'View All',
                       size: 13,

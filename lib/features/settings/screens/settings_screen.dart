@@ -218,7 +218,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             10.verticalSpace,
             BlocListener<ProfileUpdateBloc, ProfileUpdateState>(
               listener: (context, state) async {
-
                 if (state is ProfileUpdateLoading) {
                   await showLoadingDialog(context);
                 }
@@ -227,7 +226,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   await _refreshProfile();
                 }
 
-                 if (state is ProfileUpdateError) {
+                if (state is ProfileUpdateError) {
                   Navigator.pop(context);
                   await showErrorSnackbar(context, state.message);
                 }
@@ -410,11 +409,11 @@ class _ProfileSection extends StatelessWidget {
             final fullName = state.user.fullName?.trim();
             final name =
                 (fullName != null && fullName.isNotEmpty)
-                    ? fullName
+                    ? fullName.capitalize
                     : 'Provider User';
 
             return ProfileView(
-              name: name,
+              name: name.capitalize,
               imageUrl: state.user.profileImage,
               onPickImage: onPickImage,
             );
@@ -435,11 +434,11 @@ class _ProfileSection extends StatelessWidget {
           final fullName = state.user.fullName?.trim();
           final name =
               (fullName != null && fullName.isNotEmpty)
-                  ? fullName
+                  ? fullName.capitalize
                   : 'Customer User';
 
           return ProfileView(
-            name: name,
+            name: name.capitalize,
             imageUrl: state.user.profileImage,
             onPickImage: onPickImage,
           );
