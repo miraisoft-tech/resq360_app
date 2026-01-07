@@ -16,7 +16,7 @@ class LogoutDialog extends StatelessWidget {
       await AuthLocalRepo.instance.clearLocalCred();
       await AuthLocalRepo.instance.clearUserType();
 
-      log('🧹 Cleared all local auth data successfully');
+      log(' Cleared all local auth data successfully');
 
       if (Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -26,7 +26,6 @@ class LogoutDialog extends StatelessWidget {
         await replaceScreen(context, const SelectAccountTypeScreen());
       }
     } on Exception catch (e) {
-
       if (Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
       }

@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
+import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 
 class ProviderOngoingService extends StatefulWidget {
@@ -13,8 +14,9 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
   @override
   void initState() {
     super.initState();
+
     context.read<ProviderServiceBloc>().add(
-      const ProviderFetchBookings(status: 'pending'),
+      ProviderFetchBookings(status: BookingStatus.pending.value),
     );
   }
 
@@ -67,7 +69,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                 }
 
                 if (state is ProviderBookingsLoaded) {
-                  final booking = state.bookings[0];
+                  final booking = state.bookings.firstOrNull;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,12 +97,12 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                               Row(
                                 children: [
                                   GenText(
-                                    booking.user?.fullName ?? 'Unknown User',
+                                    booking?.user?.fullName ?? 'Unknown User',
                                     height: 24.5,
                                     weight: FontWeight.w500,
                                   ),
                                   GenText(
-                                    ' (${booking.serviceCategory?.name ?? 'Service'})',
+                                    ' (${booking?.serviceCategory?.name ?? 'Service'})',
                                     height: 24.5,
                                     weight: FontWeight.w400,
                                     color: colors.neutral.shade400,
@@ -143,7 +145,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                                 await pushScreen(
                                   context,
                                   CancelSlientServiceScreen(
-                                    serviceRequestId: booking.requestId!,
+                                    serviceRequestId: booking?.requestId ?? '',
                                   ),
                                 );
                               },
@@ -161,7 +163,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                               onPressed: () {
                                 context.read<ProviderServiceBloc>().add(
                                   ProviderStartServiceBooking(
-                                    int.parse(booking.requestId!),
+                                    int.parse(booking?.requestId ?? ''),
                                   ),
                                 );
                               },

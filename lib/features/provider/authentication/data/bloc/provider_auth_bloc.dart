@@ -204,7 +204,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.getUserProfile();
+      final result = await providerAuthRemoteRepo.getProviderProfile();
       if (result.data != null) {
         emit(ProviderProfileLoadedState(result.data!));
       } else {

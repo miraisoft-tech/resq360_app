@@ -1,4 +1,3 @@
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/core/utils/validators.dart';
@@ -68,7 +67,9 @@ class _LoginScreenState extends State<LoginScreen> {
           context.read<ChatBloc>().add(ConnectChatSocketEvent());
           await replaceScreen(
             context,
-             const MainLayoutPage(userType: UserType.customer,),
+            const MainLayoutPage(
+              userType: UserType.customer,
+            ),
           );
         }
       },

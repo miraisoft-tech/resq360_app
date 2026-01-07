@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
@@ -18,10 +20,8 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   Future<void> _goToNext() async {
     try {
-      await Future.wait([
-        CustomerAuthProvider.instance.init(),
-        ProviderAuthProvider.instance.init(),
-      ]);
+      unawaited(CustomerAuthProvider.instance.init());
+      unawaited(ProviderAuthProvider.instance.init());
 
       final isIntroCompleted =
           await AuthLocalRepo.instance.getIsIntroCompleted();

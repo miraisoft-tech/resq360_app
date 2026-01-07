@@ -54,14 +54,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (context, state) {
                     if (state is CustomerAuthLoginSuccess) {
                       final user = state.user;
-                      return _buildHeader(context, user.fullName!);
+                      return HeaderWidget(
+                        name: user.fullName?.capitalize ?? 'user',
+                        location: 'N/A',
+                      );
                     }
 
                     return FutureBuilder<CustomerUserModel?>(
                       future: AuthLocalRepo.instance.getAuthCredentials(),
                       builder: (context, snapshot) {
                         final userName = snapshot.data?.fullName ?? 'user';
-                        return _buildHeader(context, userName);
+                        return HeaderWidget(
+                          name: userName.capitalize,
+                          location: 'N/A',
+                        );
                       },
                     );
                   },
@@ -242,47 +248,55 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-Widget _buildHeader(BuildContext context, String name) {
-  final colors = context.appColors;
+class HeaderWidget extends StatelessWidget {
+  const HeaderWidget({required this.name, required this.location, super.key});
 
-  return Row(
-    children: [
-      const CircleAvatar(
-        radius: 19,
-        backgroundImage: AssetImage(
-          AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+  final String name;
+  final String location;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+
+    return Row(
+      children: [
+        const CircleAvatar(
+          radius: 19,
+          backgroundImage: AssetImage(
+            AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+          ),
         ),
-      ),
-      10.horizontalSpace,
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GenText(
-            'Hello, $name 👋',
-            size: 12,
-            height: 20,
-            weight: FontWeight.w400,
-            color: colors.neutral.shade500,
-          ),
-          Row(
-            children: [
-              AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
-              4.horizontalSpace,
-              GenText(
-                'No. 2 Olympia Street',
-                height: 24,
-                color: colors.black,
-                weight: FontWeight.w500,
-              ),
-              Icon(
-                Icons.keyboard_arrow_down,
-                size: 14,
-                color: colors.textColor.shade500,
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
-  );
+        10.horizontalSpace,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GenText(
+              'Hello, $name 👋',
+              size: 12,
+              height: 20,
+              weight: FontWeight.w400,
+              color: colors.neutral.shade500,
+            ),
+            Row(
+              children: [
+                AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
+                4.horizontalSpace,
+                GenText(
+                  location,
+                  height: 24,
+                  color: colors.black,
+                  weight: FontWeight.w500,
+                ),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 14,
+                  color: colors.textColor.shade500,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }

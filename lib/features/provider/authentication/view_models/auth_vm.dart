@@ -4,21 +4,19 @@ import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/location_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/authentication/data/service/auth_remote.repo.dart';
 
 class ProviderAuthProvider extends BaseViewModel with LocationMixin {
   ProviderAuthProvider._internal({required this.authRemoteRepo});
-  static final ProviderAuthProvider instance =
-      ProviderAuthProvider._internal(authRemoteRepo: AuthRemoteRepo.instance);
+  static final ProviderAuthProvider instance = ProviderAuthProvider._internal(
+    authRemoteRepo: ProviderAuthRemoteRepo.instance,
+  );
 
-  final AuthRemoteRepo authRemoteRepo;
+  final ProviderAuthRemoteRepo authRemoteRepo;
 
   BuildContext get context => AppNavigator.navKey.currentContext!;
-
-
-
 
   ////======================LOCATION=========================////
 
@@ -49,10 +47,11 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
       authInfo = authData;
     } else {
       log('No saved AuthResponse for provider — user not logged in');
-       authInfo = null;
+      authInfo = null;
     }
 
     await initLocalRepo();
+    unawaited(authRemoteRepo.getProviderProfile());
     notifyListeners();
   }
 
