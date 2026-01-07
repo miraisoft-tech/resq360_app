@@ -55,49 +55,38 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
     }
   }
 
-  Future<void> _handleAppeal(BuildContext context) async {
-    if (!userReady) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not ready')),
-      );
-      return;
-    }
+Future<void> _handleAppeal(BuildContext context) async {
+  final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
+    context,
+    body: const PaymentAppealDialog(),
+  );
 
-    final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
+  if (shouldProceed != true) return;
+
+  final existingTicketId = await findExistingOpenAppealTicketId();
+
+  if (!context.mounted) {
+    return;
+  }
+
+  if (existingTicketId != null) {
+
+    if (currentUser != null) {
+       await pushScreen(
       context,
-      body: const PaymentAppealDialog(),
+      SupportChatScreen(ticketId: existingTicketId, providerName: widget.booking.assignedProvider?.fullName ?? 'Assigned Provider')
     );
-
-    if (shouldProceed != true) return;
-
-    final existingTicketId = await findExistingOpenAppealTicketId();
-
-    if (!context.mounted) return;
-
-    if (existingTicketId != null) {
-      await pushScreen(
-        context,
-        SupportChatScreen(ticketId: existingTicketId),
-      );
-      return;
     }
+   
 
-    unawaited(
-      showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder:
-            (_) => const Center(
-              child: CircularProgressIndicator(),
-            ),
-      ),
-    );
+    return;
+  }
 
-    final serviceName = widget.booking.serviceCategory?.name ?? 'service';
+   final serviceName = widget.booking.serviceCategory?.name ?? 'service';
     final contactEmail = currentUser.email;
     final contactPhone = currentUser.phoneNumber;
 
-    final res = await SupportRepo.instance.createTicket(
+   final res = await SupportRepo.instance.createTicket(
       subject: 'Service Appeal',
       description: 'User opened an appeal for $serviceName service.',
       category: 'GENERAL_INQUIRY',
@@ -108,23 +97,24 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
       relatedServiceProviderId: widget.booking.assignedProvider?.id,
     );
 
-    if (!context.mounted) return;
 
-    Navigator.of(context).pop();
+  if (!context.mounted) return;
 
-    final error = res.error;
-    if (error != null && error.isNotEmpty) {
-      await showErrorSnackbar(context, error);
-      return;
-    }
-
-    final ticketId = res.data!['data']['ticketId'].toString();
-
-    await pushScreen(
-      context,
-      SupportChatScreen(ticketId: ticketId),
-    );
+  if (res.error != null) {
+    await showErrorSnackbar(context, res.error!);
+    return;
   }
+
+  final ticketId = res.data!['data']['ticketId'].toString();
+
+  await pushScreen(
+    context,
+    SupportChatScreen(ticketId: ticketId, providerName: 
+        widget.booking.assignedProvider?.fullName ?? 'Assigned Provider'),
+  );
+
+  debugPrint('🔟 Navigation completed');
+}
 
   @override
   Widget build(BuildContext context) {

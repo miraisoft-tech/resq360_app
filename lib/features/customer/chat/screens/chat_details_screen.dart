@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
+import 'package:resq360/core/utils/dailer_util.dart';
 import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
@@ -64,15 +65,18 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         builder: (context, state) {
           var title = '';
           var isActive = false;
+          var phone = '';
 
           if (state is ChatDetailReady) {
             final chat = state.chat;
             title = chat.title ?? 'Chat';
+            // no phone data in chat
+            phone = '00242323'; 
             isActive = chat.isActive ?? false;
           }
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(title, isActive),
+            appBar: _buildAppBar(title, isActive, phone ),
             body: SafeArea(
               child: Column(
                 children: [
@@ -172,7 +176,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     return const SizedBox.shrink();
   }
 
-  PreferredSizeWidget _buildAppBar(String title, bool isActive) {
+  PreferredSizeWidget _buildAppBar(String title, bool isActive, String phoneNumber) {
     final appColors = context.appColors;
 
     return AppBar(
@@ -216,7 +220,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         SizedBox(
           width: 35.w,
           child: IconButton(
-            onPressed: () {},
+            onPressed: () async {
+              await DialerUtil.open(phoneNumber);
+            },
             icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
           ),
         ),

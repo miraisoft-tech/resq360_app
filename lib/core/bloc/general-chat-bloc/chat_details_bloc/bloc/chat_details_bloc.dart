@@ -148,7 +148,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       content: event.content,
       createdAt: DateTime.now(),
     );
-  print(optimisticMessage.id);
     emit(
       current.copyWith(
         messages: [optimisticMessage, ...current.messages],

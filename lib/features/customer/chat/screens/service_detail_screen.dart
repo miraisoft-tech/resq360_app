@@ -219,6 +219,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         providerId: widget.chat.provider?.id,
                         contactEmail: currentUser.email.toString(),
                         contactPhone: currentUser.phoneNumber.toString(),
+                        providerName:companyName
                       );
                     },
                   ),
@@ -379,6 +380,7 @@ Future<void> handleServiceAppeal({
   required int? providerId,
   required String contactEmail,
   required String contactPhone,
+  required String providerName,
 }) async {
   if (!userReady) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -401,7 +403,7 @@ Future<void> handleServiceAppeal({
   if (existingTicketId != null) {
     await pushScreen(
       context,
-      SupportChatScreen(ticketId: existingTicketId),
+      SupportChatScreen(ticketId: existingTicketId, providerName: providerName,),
     );
     return;
   }
@@ -443,6 +445,6 @@ Future<void> handleServiceAppeal({
 
   await pushScreen(
     context,
-    SupportChatScreen(ticketId: ticketId),
+    SupportChatScreen(ticketId: ticketId, providerName: providerName,),
   );
 }

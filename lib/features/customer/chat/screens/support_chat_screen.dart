@@ -8,10 +8,10 @@ import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 
 class SupportChatScreen extends StatelessWidget {
-  const SupportChatScreen({required this.ticketId, super.key});
+  const SupportChatScreen({required this.ticketId,  this.providerName, super.key});
 
   final String ticketId;
-  
+  final String? providerName;
   @override
   Widget build(BuildContext context) {
     log(ticketId);
@@ -39,18 +39,7 @@ class _SupportChatView extends StatelessWidget {
       body: SafeArea(
         child: BlocConsumer<SupportTicketCubit, SupportTicketState>(
           listener: (context, state) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error!),
-                action: SnackBarAction(
-                  label: 'Dismiss',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  },
-                ),
-              ),
-            );
-            context.read<SupportTicketCubit>().clearError();
+           
                     },
           builder: (context, state) {
             if (state.loading && state.messages.isEmpty) {
@@ -61,8 +50,7 @@ class _SupportChatView extends StatelessWidget {
               children: [
                 const ListDivider(),
                 Expanded(
-                  child: ListView.builder(
-                    reverse: true,
+                  child: ListView.builder(  
                     padding: EdgeInsets.only(
                       left: 16.w,
                       right: 16.w,
