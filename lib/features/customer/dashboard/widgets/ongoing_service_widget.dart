@@ -9,7 +9,6 @@ import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart'
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
-import 'package:resq360/features/settings/data/models/ticket.model.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
 
 class OngoingServiceCard extends StatefulWidget {
@@ -56,68 +55,78 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
     }
   }
 
-  Future<void> _handleAppeal(BuildContext context) async {
-    if (!userReady) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not ready')),
-      );
-      return;
-    }
-
-    final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
-      context,
-      body: const PaymentAppealDialog(),
+Future<void> _handleAppeal(BuildContext context) async {
+  if (!userReady) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('User not ready')),
     );
+    return;
+  }
 
-    if (shouldProceed != true) return;
 
-     unawaited(showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (context) => const Center(
-            child: CircularProgressIndicator(),
-          ),
-    ));
+  final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
+    context,
+    body: const PaymentAppealDialog(),
+  );
 
-    // final existingTicketId = await findExistingAppealTicketId(
-    //                     serviceCategoryId: widget.chat.serviceCategoryId!,
-    //                     providerId: widget.chat.provider!.id!,
-    //                   );
+  if (shouldProceed != true) return;
 
-    final serviceName = widget.booking.serviceCategory?.name ?? 'service';
-    final contactEmail = currentUser.email;
-    final contactPhone = currentUser.phoneNumber;
 
-    final res = await SupportRepo.instance.createTicket(
-      subject: 'Service Appeal',
-      description: 'User opened an appeal for $serviceName service.',
-      category: 'GENERAL_INQUIRY',
-      priority: 'LOW',
-      contactEmail: contactEmail.toString(),
-      contactPhone: contactPhone.toString(),
-      serviceCategory: widget.booking.serviceCategory?.id,
-      relatedServiceProviderId: widget.booking.assignedProvider?.id,
-    );
+  final existingTicketId = await findExistingOpenAppealTicketId();
 
-    if (!context.mounted) return;
+  if (!context.mounted) return;
 
-    Navigator.of(context).pop();
-
-    final error = res.error;
-    if (error != null && error.isNotEmpty) {
-      await showErrorSnackbar(context, res.error!);
-
-      return;
-    }
-
-    final ticketId = res.data!['data']['ticketId'].toString();
-
+  if (existingTicketId != null) {
     await pushScreen(
       context,
-      SupportChatScreen(ticketId: ticketId),
+      SupportChatScreen(ticketId: existingTicketId),
     );
+    return;
   }
+
+  showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const Center(
+      child: CircularProgressIndicator(),
+    ),
+  );
+
+  final serviceName =
+      widget.booking.serviceCategory?.name ?? 'service';
+  final contactEmail = currentUser.email;
+  final contactPhone = currentUser.phoneNumber;
+
+  final res = await SupportRepo.instance.createTicket(
+    subject: 'Service Appeal',
+    description: 'User opened an appeal for $serviceName service.',
+    category: 'GENERAL_INQUIRY',
+    priority: 'LOW',
+    contactEmail: contactEmail.toString(),
+    contactPhone: contactPhone.toString(),
+    serviceCategory: widget.booking.serviceCategory?.id,
+    relatedServiceProviderId:
+        widget.booking.assignedProvider?.id,
+  );
+
+  if (!context.mounted) return;
+
+  Navigator.of(context).pop();
+
+  final error = res.error;
+  if (error != null && error.isNotEmpty) {
+    await showErrorSnackbar(context, error);
+    return;
+  }
+
+  final ticketId =
+      res.data!['data']['ticketId'].toString();
+
+  await pushScreen(
+    context,
+    SupportChatScreen(ticketId: ticketId),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -268,27 +277,24 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
     );
   }
 }
-Future<int?> findExistingAppealTicketId({
-  required int serviceCategoryId,
-  required int providerId,
-}) async {
+
+Future<String?> findExistingOpenAppealTicketId() async {
   final res = await SupportRepo.instance.getTickets();
-  final error = res.error;
-  if (error != null && error.isNotEmpty) return null;
 
-  final tickets = res.data!['data'] as List<dynamic>;
+  if (res.error != null && res.error!.isNotEmpty) {
+    return null;
+  }
 
-  for (final ticketJson in tickets) {
-    final ticket = Ticket.fromJson(ticketJson as Map<String, dynamic>);
+  final tickets = res.data;
+  if (tickets == null || tickets.isEmpty) return null;
 
+  for (final ticket in tickets) {
     final isOpen = ticket.status == 'OPEN';
-    final matchesService =
-        ticket.category == 'GENERAL_INQUIRY';
-    final matchesProvider =
-        ticketJson['relatedServiceProviderId'] == providerId;
+    final isAppeal = ticket.subject == 'Service Appeal';
+    final isGeneralInquiry = ticket.category == 'GENERAL_INQUIRY';
 
-    if (isOpen && matchesService && matchesProvider) {
-      return ticket.id;
+    if (isOpen && isAppeal && isGeneralInquiry) {
+      return ticket.ticketId;
     }
   }
 

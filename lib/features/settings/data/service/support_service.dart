@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
+import 'package:resq360/features/settings/data/models/ticket.model.dart';
 
 class SupportRepo extends BaseAPI {
   factory SupportRepo() => instance;
@@ -50,14 +51,23 @@ class SupportRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<Map<String, dynamic>>> getTickets() async {
+  Future<ApiResult<List<Ticket>>> getTickets() async {
     const endpoint = '/support/tickets';
 
     try {
       final res = await dio().get<Map<String, dynamic>>(endpoint);
 
       if (res.statusCode == 200 && res.data != null) {
-        return ApiResult(data: res.data);
+         final ticketsJson = res.data!['data']?['tickets'] as List<dynamic>?;
+
+      if (ticketsJson == null) {
+        return ApiResult(error: 'No tickets found');
+      }
+
+      final tickets = ticketsJson
+          .map((e) => Ticket.fromJson(e as Map<String, dynamic>))
+          .toList();
+        return ApiResult(data: tickets);
       }
 
       return ApiResult(

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/settings/data/cubits/cubit/support_ticket_cubit.dart';
+import 'package:resq360/features/settings/data/models/ticket_message.model.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
@@ -10,20 +11,24 @@ class SupportChatScreen extends StatelessWidget {
   const SupportChatScreen({required this.ticketId, super.key});
 
   final String ticketId;
+  
   @override
   Widget build(BuildContext context) {
-    log(  ticketId);
+    log(ticketId);
     return BlocProvider(
-  create: (_) {
-    final cubit = SupportTicketCubit(SupportRepo.instance);
-    unawaited(cubit.loadTicket(ticketId));
-    return cubit;
-  },
-  child: _SupportChatView(),
-);
+      create: (_) {
+        final cubit = SupportTicketCubit(SupportRepo.instance);
+        unawaited(cubit.loadTicket(ticketId));
+        return cubit;
+      },
+      child: const _SupportChatView(),
+    );
   }
 }
+
 class _SupportChatView extends StatelessWidget {
+  const _SupportChatView();
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -34,22 +39,27 @@ class _SupportChatView extends StatelessWidget {
       body: SafeArea(
         child: BlocConsumer<SupportTicketCubit, SupportTicketState>(
           listener: (context, state) {
-            if (state.error != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.error!)),
-              );
-              context.read<SupportTicketCubit>().clearError();
-            }
-          },
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error!),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  },
+                ),
+              ),
+            );
+            context.read<SupportTicketCubit>().clearError();
+                    },
           builder: (context, state) {
-            if (state.loading) {
+            if (state.loading && state.messages.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
 
             return Column(
               children: [
                 const ListDivider(),
-
                 Expanded(
                   child: ListView.builder(
                     reverse: true,
@@ -62,6 +72,7 @@ class _SupportChatView extends StatelessWidget {
                     itemCount: state.messages.length,
                     itemBuilder: (_, index) {
                       final message = state.messages[index];
+                      final cubit = context.read<SupportTicketCubit>();
 
                       return Padding(
                         padding: EdgeInsets.only(bottom: 20.h),
@@ -71,12 +82,18 @@ class _SupportChatView extends StatelessWidget {
                               : MessageType.received,
                           message: message.message,
                           time: message.createdAt.formatDate,
+                          status: message.status,
+                          onRetry: message.status == MessageStatus.failed
+                              ? () => cubit.retryMessage(message)
+                              : null,
+                          onDelete: message.status == MessageStatus.failed
+                              ? () => cubit.deleteFailedMessage(message)
+                              : null,
                         ),
                       );
                     },
                   ),
                 ),
-
                 if (state.isClosed)
                   Padding(
                     padding: EdgeInsets.all(16.w),
@@ -101,52 +118,51 @@ class _SupportChatView extends StatelessWidget {
       ),
     );
   }
-}
 
-PreferredSizeWidget _buildAppBar(BuildContext context) {
-  final appColors = context.appColors;
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final appColors = context.appColors;
 
-  return AppBar(
-    elevation: 0,
-    backgroundColor: appColors.whiteColor,
-    forceMaterialTransparency: true,
-    leading: IconButton(
-      icon: Icon(Icons.arrow_back, color: appColors.black),
-      onPressed: () => pop(context),
-    ),
-    title: Row(
-      children: [
-        const CircleAvatar(
-          backgroundImage:
-              AssetImage(AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG),
-          radius: 25,
-        ),
-        8.horizontalSpace,
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GenText(
-              'You, Admin',
-              weight: FontWeight.w500,
-              color: appColors.black,
-            ),
-            GenText(
-              'Online',
-              size: 13,
-              color: appColors.success.shade600,
-            ),
-          ],
+    return AppBar(
+      elevation: 0,
+      backgroundColor: appColors.whiteColor,
+      forceMaterialTransparency: true,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, color: appColors.black),
+        onPressed: () => pop(context),
+      ),
+      title: Row(
+        children: [
+          const CircleAvatar(
+            backgroundImage:
+                AssetImage(AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG),
+            radius: 25,
+          ),
+          8.horizontalSpace,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GenText(
+                'You, Admin',
+                weight: FontWeight.w500,
+                color: appColors.black,
+              ),
+              GenText(
+                'Online',
+                size: 13,
+                color: appColors.success.shade600,
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
         ),
       ],
-    ),
-    actions: [
-      IconButton(
-        onPressed: () {},
-        icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
-      ),
-    ],
-  );
-}
+    );
+  }
 
   Future<void> _showAttachmentMenu(BuildContext context) async {
     final button = context.findRenderObject()! as RenderBox;
@@ -218,3 +234,4 @@ PreferredSizeWidget _buildAppBar(BuildContext context) {
   void _onLocationTap() {}
 
   void _onDocumentTap() {}
+}
