@@ -4,6 +4,8 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
+import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/provider/chat/screens/provider_generate_invoice.dialog.dart';
 import 'package:resq360/features/provider/chat/widgets/provider_chat_invoice_card_widget.dart';
@@ -40,7 +42,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
   final ScrollController _scrollController = ScrollController();
 
   int? get _currentUserId => ProviderAuthProvider.instance.authInfo?.id;
-
+  bool canShowDetails = false;
   @override
   void dispose() {
     _scrollController.dispose();
@@ -50,7 +52,6 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
     return BlocConsumer<ChatDetailBloc, ChatDetailState>(
       listener: _onChatStateChanged,
       builder: (context, state) {
@@ -74,6 +75,32 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
                 Expanded(
                   child: _buildChatContent(state),
                 ),
+                // if (canShowDetails)
+                  GestureDetector(
+                    onTap: () async {
+                      if (state is ChatDetailReady) {
+                        final serviceMessage = state.messages.firstWhere(
+                          (m) =>
+                              m.messageType == 'SYSTEM' && m.metadata != null,
+                        );
+
+                        await pushScreen(
+                          context,
+                          ServiceDetailScreen(
+                            chat: state.chat,
+                            message: serviceMessage,
+                          ),
+                        );
+                      }
+                    },
+                    child: GenText(
+                      'View Service details',
+                      weight: FontWeight.w500,
+                      color: appColors.primary.shade500,
+                      decoration: TextDecoration.underline,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 IgnorePointer(
                   ignoring: state is! ChatDetailReady,
                   child: Opacity(
@@ -135,6 +162,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
     }
 
     if (state is ChatDetailReady) {
+      log('${state.messages[0].senderId} and $_currentUserId');
       return _MessageList(
         controller: _scrollController,
         messages: state.messages,
@@ -344,9 +372,9 @@ class _MessageList extends StatelessWidget {
       itemBuilder: (_, index) {
         final message = messages[index];
         final isMine =
-            message.senderType == 'PROVIDER' &&
-            message.senderId == currentUserId;
-
+            message.senderType == 'PROVIDER';
+            //  && message.senderId == currentUserId;
+    
         if (message.messageType == 'SYSTEM') {
           return Column(
             children: [

@@ -9,6 +9,7 @@ import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart'
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
+import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
 
@@ -228,7 +229,9 @@ Future<void> _handleAppeal(BuildContext context) async {
                   ),
                 ),
               ),
-              20.horizontalSpace,
+              // removed except for completed case, will be delibrated
+              if(status == BookingStatus.completed.value)...[
+                  20.horizontalSpace,
               Expanded(
                 child: ElevatedButton(
                   onPressed: () async {
@@ -258,6 +261,8 @@ Future<void> _handleAppeal(BuildContext context) async {
                   ),
                 ),
               ),
+              ]
+            
             ],
           ),
         ],

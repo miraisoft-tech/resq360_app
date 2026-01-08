@@ -81,7 +81,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     final current = state;
     if (current is! ChatDetailReady) return;
 
-    final optimisticMessage = MessageResponse(
+    final localMessage = MessageResponse(
       id: DateTime.now().millisecondsSinceEpoch * -1,
       chatId: current.chat.id,
       senderType: 'PROVIDER',
@@ -100,7 +100,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     emit(
       current.copyWith(
         messages: [
-          optimisticMessage,
+          localMessage,
           ...current.messages,
         ],
       ),
@@ -124,7 +124,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
         messages: [
           result.data!,
           ...current.messages.where(
-            (m) => m.id != optimisticMessage.id,
+            (m) => m.id != localMessage.id,
           ),
         ],
       ),
@@ -139,7 +139,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final current = state as ChatDetailReady;
 
-    final optimisticMessage = MessageResponse(
+    final localMessage = MessageResponse(
       id: DateTime.now().millisecondsSinceEpoch * -1,
       chatId: chatId,
       senderType: event.userType,
@@ -150,7 +150,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     );
     emit(
       current.copyWith(
-        messages: [optimisticMessage, ...current.messages],
+        messages: [localMessage, ...current.messages],
       ),
     );
 

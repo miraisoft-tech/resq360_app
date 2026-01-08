@@ -42,7 +42,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
   int? get _currentUserId => CustomerAuthProvider.instance.authInfo?.id;
 
-  bool canShowDetails = false;
+  
 
   @override
   void dispose() {
@@ -84,32 +84,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   Expanded(
                     child: _buildChatContent(state),
                   ),
-                  if (canShowDetails)
-                    GestureDetector(
-                      onTap: () async {
-                        if (state is ChatDetailReady) {
-                          final serviceMessage = state.messages.firstWhere(
-                            (m) =>
-                                m.messageType == 'SYSTEM' && m.metadata != null,
-                          );
-
-                          await pushScreen(
-                            context,
-                            ServiceDetailScreen(
-                              chat: state.chat,
-                              message: serviceMessage,
-                            ),
-                          );
-                        }
-                      },
-                      child: GenText(
-                        'View Service details',
-                        weight: FontWeight.w500,
-                        color: appColors.primary.shade500,
-                        decoration: TextDecoration.underline,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
                   30.verticalSpace,
                   IgnorePointer(
                     ignoring: state is! ChatDetailReady,
@@ -278,7 +252,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           context,
           body: const PaymentCompleted(),
         );
-        canShowDetails = true;
         context.read<ChatDetailBloc>().add(RefreshMessages());
       } else {
         await showErrorSnackbar(context, 'Payment unsuccessful');
@@ -397,8 +370,9 @@ class _MessageList extends StatelessWidget {
         final message = messages[index];
         final amount = message.metadata?.amount?.toString() ?? '';
         final isMine =
-            message.senderType == 'USER' && message.senderId == currentUserId;
-
+            message.senderType == 'USER' ;
+            // && message.senderId == currentUserId;
+print('${message.senderId} and ${currentUserId}');
         return Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child:

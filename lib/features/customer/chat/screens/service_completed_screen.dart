@@ -1,10 +1,11 @@
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/screens/thank_you.modal.dart';
+import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 
 class ServiceCompletedScreen extends StatefulWidget {
   const ServiceCompletedScreen({required this.serviceRequestId, super.key});
-final int serviceRequestId;
+  final int serviceRequestId;
   @override
   State<ServiceCompletedScreen> createState() => _ServiceCompletedScreenState();
 }
@@ -150,25 +151,44 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
               },
             ),
             40.verticalSpace,
-            WideButton(
-              label: 'Submit',
-              backgroundColor: appColors.primary.shade500,
-              onPressed:
-                  reviewController.text.isNotEmpty && rating > 0
-                      ? () async {
-                        await GeneralDialogs.showCustomBottomSheet(
-                          context,
-                          body: ThankYouModal(
-                            onContinuePressed: () async {
-                              if (context.mounted) await pop(context);
-                              if (context.mounted) await pop(context);
-                              if (context.mounted) await pop(context);
-                              if (context.mounted) await pop(context);
-                            },
-                          ),
-                        );
-                      }
-                      : null,
+            BlocConsumer<RatingsBloc, RatingsState>(
+              listener: (context, state) async {
+                if (state is RateProviderSuccess) {
+                  await GeneralDialogs.showCustomBottomSheet(
+                    context,
+                    body: ThankYouModal(
+                      onContinuePressed: () async {
+                        if (context.mounted) await pop(context);
+                        if (context.mounted) await pop(context);
+                        if (context.mounted) await pop(context);
+                      },
+                    ),
+                  );
+                }
+                if (state is RatingsError) {
+                  await showErrorSnackbar(context, state.message);
+                }
+              },
+              builder: (context, state) {
+                return WideButton(
+                  label: 'Submit',
+                  loading: state is RatingsLoading,
+                  backgroundColor: appColors.primary.shade500,
+                  onPressed:
+                      reviewController.text.isNotEmpty && rating > 0
+                          ? () async {
+                            context.read<RatingsBloc>().add(
+                              RateProviderEvent(
+                                serviceRequestId:
+                                    widget.serviceRequestId.toString(),
+                                ratings: rating.toInt(),
+                                review: reviewController.text,
+                              ),
+                            );
+                          }
+                          : null,
+                );
+              },
             ),
           ],
         ),

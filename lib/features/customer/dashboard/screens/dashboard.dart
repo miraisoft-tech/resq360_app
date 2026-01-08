@@ -226,18 +226,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: colors.black,
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: () async {
-                      // await pushScreen(context, const ServiceProvidersScreen());
-                    },
-                    child: UrbText(
-                      'View All',
-                      size: 12,
-                      height: 20.5,
-                      weight: FontWeight.w400,
-                      color: colors.primary.shade500,
-                    ),
-                  ),
+                  // GestureDetector(
+                  //   onTap: () async {
+                  //     // await pushScreen(context, const ServiceProvidersScreen(serviceProviderId: null,));
+                  //   },
+                  //   child: UrbText(
+                  //     'View All',
+                  //     size: 12,
+                  //     height: 20.5,
+                  //     weight: FontWeight.w400,
+                  //     color: colors.primary.shade500,
+                  //   ),
+                  // ),
                 ],
               ),
               12.verticalSpace,
