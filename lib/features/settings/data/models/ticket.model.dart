@@ -29,8 +29,8 @@ class Ticket {
       status: json['status']as String? ?? 'OPEN',
       priority: json['priority']as String? ?? 'LOW',
       category: json['category']as String? ?? '',
-      contactEmail: json['contactEmail']as String,
-      contactPhone: json['contactPhone']as String,
+      contactEmail: json['contactEmail']as String?,
+      contactPhone: json['contactPhone']as String?,
       createdAt: DateTime.parse(json['createdAt']as String),
       updatedAt: DateTime.parse(json['updatedAt']as String),
       closedAt:

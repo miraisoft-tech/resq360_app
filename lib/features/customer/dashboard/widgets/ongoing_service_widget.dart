@@ -9,6 +9,7 @@ import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart'
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
 
 class OngoingServiceCard extends StatefulWidget {
@@ -89,7 +90,7 @@ Future<void> _handleAppeal(BuildContext context) async {
    final res = await SupportRepo.instance.createTicket(
       subject: 'Service Appeal',
       description: 'User opened an appeal for $serviceName service.',
-      category: 'GENERAL_INQUIRY',
+      category: AdminIssueType.serviceIssue.value,
       priority: 'LOW',
       contactEmail: contactEmail.toString(),
       contactPhone: contactPhone.toString(),
@@ -113,7 +114,6 @@ Future<void> _handleAppeal(BuildContext context) async {
         widget.booking.assignedProvider?.fullName ?? 'Assigned Provider'),
   );
 
-  debugPrint('🔟 Navigation completed');
 }
 
   @override

@@ -1,17 +1,85 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/issue_radio_widget.dart';
 
-class ContactAdminScreen extends StatelessWidget {
-  const ContactAdminScreen({super.key});
+class ContactAdminScreen extends StatefulWidget {
+  const ContactAdminScreen({required this.email, super.key});
+  final String email;
+
+  @override
+  State<ContactAdminScreen> createState() => _ContactAdminScreenState();
+}
+
+class _ContactAdminScreenState extends State<ContactAdminScreen> {
+  final issueController = TextEditingController();
+  final descriptionController = TextEditingController();
+
+  final selectedIssue = ValueNotifier<AdminIssueType?>(null);
+
+  bool isLoading = false;
+
+  @override
+  void dispose() {
+    issueController.dispose();
+    selectedIssue.dispose();
+    descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleContinue(BuildContext context) async {
+    final issue = selectedIssue.value;
+    debugPrint('Selected issue: ${selectedIssue.value}');
+    if (issue == null) {
+      await showErrorSnackbar(context, 'Please select an issue');
+      return;
+    }
+
+    if (issue == AdminIssueType.other && issueController.text.trim().isEmpty) {
+      await showErrorSnackbar(context, 'Please choose your issue');
+      return;
+    }
+ if (descriptionController.text.isEmpty) {
+      await showErrorSnackbar(context, 'Please describe your issue');
+      return;
+    }
+
+
+
+    setState(() => isLoading = true);
+
+    log(widget.email);
+
+    final res = await SupportRepo.instance.createTicket(
+      subject: issue.value,
+      description:
+          descriptionController.text,
+      category: issue.value,
+      priority: 'LOW',
+      contactEmail: widget.email,
+    );
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
+
+    if (res.error != null) {
+      await showErrorSnackbar(context, res.error!);
+      return;
+    }
+
+    final ticketId = res.data!['data']['ticketId'].toString();
+
+    await pushScreen(
+      context,
+      SupportChatScreen(ticketId: ticketId),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final issueController = TextEditingController();
-
-    final selectedIssue = ValueNotifier<AdminIssueType?>(null);
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -35,8 +103,7 @@ class ContactAdminScreen extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: pad(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
               const GenText(
                 'Choose the issue you’d like help with',
@@ -48,38 +115,13 @@ class ContactAdminScreen extends StatelessWidget {
                 builder: (context, selected, _) {
                   return Column(
                     children: [
-                      IssueRadio(
-                        label: 'Complaints',
-                        selected: selected == AdminIssueType.complaints,
-                        onTap:
-                            () =>
-                                selectedIssue.value = AdminIssueType.complaints,
-                      ),
-                      IssueRadio(
-                        label: 'Enquiry',
-                        selected: selected == AdminIssueType.enquiry,
-                        onTap:
-                            () => selectedIssue.value = AdminIssueType.enquiry,
-                      ),
-                      IssueRadio(
-                        label: 'Review',
-                        selected: selected == AdminIssueType.review,
-                        onTap:
-                            () => selectedIssue.value = AdminIssueType.review,
-                      ),
-                      IssueRadio(
-                        label: 'Account Issue',
-                        selected: selected == AdminIssueType.accountIssue,
-                        onTap:
-                            () =>
-                                selectedIssue.value =
-                                    AdminIssueType.accountIssue,
-                      ),
-                      IssueRadio(
-                        label: 'Other',
-                        selected: selected == AdminIssueType.other,
-                        onTap: () => selectedIssue.value = AdminIssueType.other,
-                      ),
+                      ...AdminIssueType.values.map((issue) {
+                        return IssueRadio(
+                          label: issue.label,
+                          selected: selected == issue,
+                          onTap: () => selectedIssue.value = issue,
+                        );
+                      }),
                       if (selected == AdminIssueType.other) ...[
                         20.verticalSpace,
                         KFormField(
@@ -95,13 +137,22 @@ class ContactAdminScreen extends StatelessWidget {
                   );
                 },
               ),
-              const Spacer(),
+
+              15.verticalSpace,
+
+              KFormField(
+                label: 'Description',
+                controller: descriptionController,
+                minLines: 8,
+                maxLines: 10,
+                hintText: 'Type the issue you’d like help with here...',
+              ),
+              15.verticalSpace,
               WideButton(
                 label: 'Continue',
+                loading: isLoading,
                 backgroundColor: appColors.primary.shade500,
-                onPressed: () async {
-                  await pushScreen(context, const SupportChatScreen(ticketId: '',));
-                },
+                onPressed: isLoading ? null : () => _handleContinue(context),
               ),
             ],
           ),

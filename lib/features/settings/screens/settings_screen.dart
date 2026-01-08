@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
@@ -71,6 +72,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  Future<String?> getEmail() async {
+    var email = '';
+    final cred = await AuthLocalRepo.instance.getLocalCredentials();
+    if (cred != null) {
+      email = cred.userName ?? '';
+    }
+    return email;
+  }
+
   @override
   Widget build(
     BuildContext context,
@@ -122,7 +132,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
         onTap: () async {
-          await pushScreen(context, const ContactAdminScreen());
+          final email = await getEmail();
+          if (email != null) {
+            await pushScreen(context, ContactAdminScreen(email: email));
+          }
         },
       ),
     ];
@@ -186,7 +199,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
         onTap: () async {
-          await pushScreen(context, const ContactAdminScreen());
+          final email = await getEmail();
+          if (email != null) {
+            await pushScreen(context, ContactAdminScreen(email: email));
+          }
         },
       ),
     ];
@@ -251,10 +267,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           context,
                           body: AccountStatusDialog(
                             onTap: () async {
+                              final email = await getEmail();
+
                               Navigator.pop(context);
                               await pushScreen(
                                 context,
-                                const ContactAdminScreen(),
+                                ContactAdminScreen(
+                                  email: email ?? '',
+                                ),
                               );
                             },
                           ),

@@ -8,7 +8,11 @@ import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 
 class SupportChatScreen extends StatelessWidget {
-  const SupportChatScreen({required this.ticketId,  this.providerName, super.key});
+  const SupportChatScreen({
+    required this.ticketId,
+    this.providerName,
+    super.key,
+  });
 
   final String ticketId;
   final String? providerName;
@@ -21,13 +25,34 @@ class SupportChatScreen extends StatelessWidget {
         unawaited(cubit.loadTicket(ticketId));
         return cubit;
       },
-      child: const _SupportChatView(),
+      child: _SupportChatView(providerName),
     );
   }
 }
 
-class _SupportChatView extends StatelessWidget {
-  const _SupportChatView();
+class _SupportChatView extends StatefulWidget {
+  const _SupportChatView(this.providerName);
+
+  final String? providerName;
+
+  @override
+  State<_SupportChatView> createState() => _SupportChatViewState();
+}
+
+class _SupportChatViewState extends State<_SupportChatView> {
+  final ScrollController _scrollController = ScrollController();
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_scrollController.hasClients) {
+        await _scrollController.animateTo(
+          _scrollController.position.minScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,22 +60,23 @@ class _SupportChatView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context,),
       body: SafeArea(
         child: BlocConsumer<SupportTicketCubit, SupportTicketState>(
           listener: (context, state) {
-           
-                    },
+
+          },
           builder: (context, state) {
             if (state.loading && state.messages.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
+            _scrollToBottom();
 
             return Column(
               children: [
                 const ListDivider(),
                 Expanded(
-                  child: ListView.builder(  
+                  child: ListView.builder(
                     padding: EdgeInsets.only(
                       left: 16.w,
                       right: 16.w,
@@ -65,18 +91,21 @@ class _SupportChatView extends StatelessWidget {
                       return Padding(
                         padding: EdgeInsets.only(bottom: 20.h),
                         child: ChatBubble(
-                          type: message.isFromUser
-                              ? MessageType.sent
-                              : MessageType.received,
+                          type:
+                              message.isFromUser
+                                  ? MessageType.sent
+                                  : MessageType.received,
                           message: message.message,
                           time: message.createdAt.formatDate,
                           status: message.status,
-                          onRetry: message.status == MessageStatus.failed
-                              ? () => cubit.retryMessage(message)
-                              : null,
-                          onDelete: message.status == MessageStatus.failed
-                              ? () => cubit.deleteFailedMessage(message)
-                              : null,
+                          onRetry:
+                              message.status == MessageStatus.failed
+                                  ? () => cubit.retryMessage(message)
+                                  : null,
+                          onDelete:
+                              message.status == MessageStatus.failed
+                                  ? () => cubit.deleteFailedMessage(message)
+                                  : null,
                         ),
                       );
                     },
@@ -96,7 +125,9 @@ class _SupportChatView extends StatelessWidget {
                       await _showAttachmentMenu(context);
                     },
                     onSend: (text) async {
-                      await context.read<SupportTicketCubit>().sendMessage(text);
+                      await context.read<SupportTicketCubit>().sendMessage(
+                        text,
+                      );
                     },
                   ),
               ],
@@ -107,9 +138,11 @@ class _SupportChatView extends StatelessWidget {
     );
   }
 
+
+  
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final appColors = context.appColors;
-
+    final name = widget.providerName ?? '';
     return AppBar(
       elevation: 0,
       backgroundColor: appColors.whiteColor,
@@ -121,8 +154,9 @@ class _SupportChatView extends StatelessWidget {
       title: Row(
         children: [
           const CircleAvatar(
-            backgroundImage:
-                AssetImage(AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG),
+            backgroundImage: AssetImage(
+              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+            ),
             radius: 25,
           ),
           8.horizontalSpace,
@@ -130,7 +164,7 @@ class _SupportChatView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GenText(
-                'You, Admin',
+                'You, Admin ${name.isNotEmpty ? ', $name' : ''} ',
                 weight: FontWeight.w500,
                 color: appColors.black,
               ),
