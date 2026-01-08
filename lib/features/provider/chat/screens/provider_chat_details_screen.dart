@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
-import 'package:resq360/core/utils/dailer_util.dart';
+import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/provider/chat/screens/provider_generate_invoice.dialog.dart';
 import 'package:resq360/features/provider/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';

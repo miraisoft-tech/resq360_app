@@ -8,7 +8,7 @@ import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/provider/chat/screens/provider_invoice_confirm.dart';
 
 class ProviderGenerateInvoiceDialog extends StatefulWidget {

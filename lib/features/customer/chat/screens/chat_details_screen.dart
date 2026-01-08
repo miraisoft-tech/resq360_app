@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
-import 'package:resq360/core/utils/dailer_util.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
+import 'package:resq360/core/utils/dialer_util.dart';
+import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
@@ -71,7 +71,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             final chat = state.chat;
             title = chat.title ?? 'Chat';
             // no phone data in chat
-            phone = '00242323'; 
+            phone = '002423231212'; 
             isActive = chat.isActive ?? false;
           }
           return Scaffold(

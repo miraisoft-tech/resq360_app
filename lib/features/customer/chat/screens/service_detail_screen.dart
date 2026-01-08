@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
 
 class ServiceDetailScreen extends StatefulWidget {

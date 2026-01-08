@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/intro/screens/intro_screen.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -76,6 +76,12 @@ class _SplashScreenState extends State<SplashScreen> {
         userTypeString == 'provider' ? UserType.provider : UserType.customer;
 
     dashboardViewModel.userType = userType;
+
+    if (userType == UserType.provider) {
+      await ProviderAuthProvider.instance.loadProviderProfile();
+    } else {
+      await CustomerAuthProvider.instance.loadCustomerProfile();
+    }
 
     if (!mounted) return;
 

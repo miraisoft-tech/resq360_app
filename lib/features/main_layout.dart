@@ -1,11 +1,11 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 
 class MainLayoutPage extends StatefulWidget {
   const MainLayoutPage({required this.userType, super.key});

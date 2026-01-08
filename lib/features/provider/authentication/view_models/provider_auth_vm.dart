@@ -3,17 +3,18 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/location_service.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/authentication/data/service/provider_auth_remote.repo.dart';
 
-class CustomerAuthProvider extends BaseViewModel with LocationMixin {
-  // Singleton setup
-  CustomerAuthProvider._internal({required this.authRemoteRepo});
-  static final CustomerAuthProvider instance = CustomerAuthProvider._internal(authRemoteRepo: AuthRemoteRepo.instance);
+class ProviderAuthProvider extends BaseViewModel with LocationMixin {
+  ProviderAuthProvider._internal({required this.authRemoteRepo});
+  static final ProviderAuthProvider instance = ProviderAuthProvider._internal(
+    authRemoteRepo: ProviderAuthRemoteRepo.instance,
+  );
 
-  final AuthRemoteRepo authRemoteRepo;
+  final ProviderAuthRemoteRepo authRemoteRepo;
 
   BuildContext get context => AppNavigator.navKey.currentContext!;
 
@@ -30,22 +31,24 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
   bool get isLocalCredStored => localCred != null;
   bool useBiometics = false;
 
+
   bool isLoading = false;
   void setBusy({required bool isBusy}) {
     isLoading = isBusy;
     notifyListeners();
   }
 
-  CustomerUserModel? authInfo;
+  ProviderModel? authInfo;
 
   Future<void> init() async {
-    final authData = await AuthLocalRepo.instance.getAuthCredentials();
+    final authData = await AuthLocalRepo.instance.getProviderCredentials();
 
     if (authData != null) {
-      log('Restored AuthResponse for customer');
+      log('Restored AuthResponse for provider');
       authInfo = authData;
     } else {
-      log('No saved AuthResponse for customer — user not logged in');
+      log('No saved AuthResponse for provider — user not logged in');
+      authInfo = null;
     }
 
     await initLocalRepo();
@@ -57,6 +60,26 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
     useBiometics = await AuthLocalRepo.instance.getAccountBiometricsLogin();
     notifyListeners();
   }
+
+  Future<void> loadProviderProfile() async {
+  if (authInfo == null) return;
+
+  try {
+    setBusy(isBusy: true);
+
+    final profile = await authRemoteRepo.getProviderProfile();
+
+    authInfo = profile.data;
+
+    notifyListeners();
+  } catch (e, s) {
+    log('Failed to load provider profile: $e');
+    log(s);
+  } finally {
+    setBusy(isBusy: false);
+  }
+}
+
 
   Future<void> clearAuthData() async {
     authInfo = null;
@@ -84,9 +107,9 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
         await replaceScreen(context, const SelectAccountTypeScreen());
       }
 
-      log('Customer logout successful');
+      log('Provider logout successful');
     } on Exception catch (e, s) {
-      log('Customer logout failed: $e');
+      log('Provider logout failed: $e');
       log(s);
       setBusy(isBusy: false);
     }

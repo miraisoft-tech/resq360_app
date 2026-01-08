@@ -9,7 +9,7 @@ import 'package:resq360/features/customer/authentication/data/models/auth/user_k
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-import 'package:resq360/features/provider/authentication/data/service/auth_remote.repo.dart';
+import 'package:resq360/features/provider/authentication/data/service/provider_auth_remote.repo.dart';
 
 part 'provider_auth_event.dart';
 part 'provider_auth_state.dart';
