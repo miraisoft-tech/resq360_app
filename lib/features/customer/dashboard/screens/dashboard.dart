@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: colors.whiteColor,
       body: SafeArea(
         child: RefreshIndicator(
+            color: colors.primary,
           onRefresh: () async{
             context.read<CustomerAuthBloc>().add(
               const CustomergetUserProfile(),

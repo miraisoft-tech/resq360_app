@@ -44,6 +44,7 @@ Future<void> _onRefresh() async {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: RefreshIndicator(
+            color: appColors.primary,
           onRefresh:_onRefresh,
           child: Column(
             children: [

@@ -113,6 +113,7 @@ class _BookingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
     return BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
       builder: (context, state) {
         if (state is ProviderServicesLoading) {
@@ -155,6 +156,7 @@ class _BookingList extends StatelessWidget {
           }
 
           return RefreshIndicator(
+            color: appColors.primary,
             onRefresh: () async {
               context.read<ProviderServiceBloc>().add(
                     ProviderFetchBookings(

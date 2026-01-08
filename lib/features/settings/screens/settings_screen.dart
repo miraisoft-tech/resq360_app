@@ -223,6 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         foregroundColor: appColors.black,
       ),
       body: RefreshIndicator(
+        color: appColors.primary,
         onRefresh: _refreshProfile,
         child: ListView(
           padding: EdgeInsets.only(

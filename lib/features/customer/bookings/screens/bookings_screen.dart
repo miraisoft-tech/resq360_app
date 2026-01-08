@@ -1,6 +1,8 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
+import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 
@@ -119,6 +121,8 @@ class _BookingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = context.appColors;
+
     return BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
       builder: (context, state) {
         if (state is CustomerServicesLoading) {
@@ -159,6 +163,7 @@ class _BookingList extends StatelessWidget {
           }
 
           return RefreshIndicator(
+            color: appColors.primary,
             onRefresh: () async {
               context.read<CustomerBookingBloc>().add(
                 FetchCustomerBookings(status: _mapTypeToStatus()),
@@ -281,13 +286,17 @@ class _BookingCardState extends State<BookingCard> {
               ),
               SVGButton(
                 path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                onTap: () {},
+                onTap: () async {
+                  // await pushScreen(context, const ChatDetailScreen(chatId: 1));
+                },
               ),
               15.horizontalSpace,
               SVGButton(
                 path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
                 color: colors.primary.shade500,
-                onTap: () {},
+                onTap: () async {
+                  await DialerUtil.open('');
+                },
               ),
               10.horizontalSpace,
             ],

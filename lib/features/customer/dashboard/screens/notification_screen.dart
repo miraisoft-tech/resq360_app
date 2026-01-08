@@ -138,6 +138,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             final grouped = _groupNotifications(uiList);
 
             return RefreshIndicator(
+            color: appColors.primary,
               onRefresh: _onRefresh,
               child: Padding(
                 padding: pad(horizontal: 20, vertical: 10),
