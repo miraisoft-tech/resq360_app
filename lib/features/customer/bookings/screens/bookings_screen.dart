@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_pdf_util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
@@ -217,6 +218,7 @@ class _BookingCardState extends State<BookingCard> {
     final end = data.completedAt?.formatTime ?? '--';
 
     final status = data.status?.capitalize ?? 'Unknown';
+    // final canDownload = data.status == 'COMPLETED';
 
     return Container(
       padding: pad(vertical: 18, horizontal: 14),
@@ -341,7 +343,21 @@ class _BookingCardState extends State<BookingCard> {
                         invoice: 'N/A',
                         dateTime: '$date - $end',
                         method: 'Card',
-                        onDownload: () {},
+                        onDownload:
+                            // canDownload
+                            //     ? 
+                                () async {
+                                  await BookingReceiptPdfUtil.generateBookingReceiptPdf(
+                                    bookingId: data.requestId ?? 'N/A',
+                                    service: serviceCategory,
+                                    providerName: providerName,
+                                    status: status,
+                                    dateTime: '$date - $end',
+                                    paymentMethod: 'Card',
+                                    amount: 'To be billed',
+                                  );
+                                }
+                                // : null,
                       ),
                     );
                   },

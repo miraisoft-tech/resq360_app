@@ -5,7 +5,6 @@ import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
-import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/provider/chat/screens/provider_generate_invoice.dialog.dart';
 import 'package:resq360/features/provider/chat/widgets/provider_chat_invoice_card_widget.dart';

@@ -6,7 +6,6 @@ import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
-import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
 import 'package:resq360/features/customer/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
@@ -372,7 +371,7 @@ class _MessageList extends StatelessWidget {
         final isMine =
             message.senderType == 'USER' ;
             // && message.senderId == currentUserId;
-print('${message.senderId} and ${currentUserId}');
+// print('${message.senderId} and ${currentUserId}');
         return Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child:
