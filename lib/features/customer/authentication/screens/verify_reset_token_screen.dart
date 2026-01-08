@@ -95,7 +95,7 @@ class _VerifyResetTokenScreenState extends State<VerifyResetTokenScreen> {
           controller
             ..endTime =
                 DateTime.now()
-                    .add(const Duration(seconds: 5 * 60))
+                    .add(const Duration(seconds: 1 * 60))
                     .millisecondsSinceEpoch
             ..start();
 

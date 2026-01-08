@@ -2,8 +2,6 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
-import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 
 class BookingsScreen extends StatefulWidget {
@@ -125,7 +123,7 @@ class _BookingList extends StatelessWidget {
 
     return BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
       builder: (context, state) {
-        if (state is CustomerServicesLoading) {
+        if (state is CustomerBookingLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 

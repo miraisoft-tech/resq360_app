@@ -1,16 +1,17 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
+import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
@@ -25,7 +26,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
-    context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+    context.read<ServiceCatalogBloc>().add(const FetchServices());
     context.read<CustomerAdvertisementBloc>().add(CustomerFetchAdvertisement());
     context.read<CustomerBookingBloc>().add(
       const FetchCustomerBookings(status: 'PENDING'),
@@ -47,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const CustomergetUserProfile(),
             );
 
-            context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+            context.read<ServiceCatalogBloc>().add(const FetchServices());
             context.read<CustomerAdvertisementBloc>().add(
               CustomerFetchAdvertisement(),
             );
@@ -174,13 +175,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               20.verticalSpace,
-              BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+              BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
                 builder: (context, state) {
-                  if (state is CustomerServicesLoading) {
+                  if (state is ServiceCatalogLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  if (state is CustomerServicesLoaded) {
+                  if (state is ServicesLoaded) {
                     final categories = state.services;
 
                     return SizedBox(
@@ -193,13 +194,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           final category = categories[index];
                           return ServiceCategoryWidget(
                             category: category,
+                            onTap: ()async{
+                               await pushScreen(
+                                        context,
+                                        ServiceProvidersScreen(
+                                          serviceProviderId: category.id,
+                                        ),
+                                      );
+                            },
                           );
                         },
                       ),
                     );
                   }
 
-                  if (state is CustomerServicesError) {
+                  if (state is ServiceCatalogError) {
                     return Center(child: Text(state.error));
                   }
 

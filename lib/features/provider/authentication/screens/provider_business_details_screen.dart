@@ -3,9 +3,9 @@
 // ignore_for_file: unawaited_futures
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
 import 'package:resq360/core/utils/validators.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
@@ -52,7 +52,7 @@ class _ProviderBusinessDetailsScreenState
   void initState() {
     super.initState();
 
-    context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+    context.read<ServiceCatalogBloc>().add(const FetchServices());
 
     nameController = TextEditingController();
     addressController = TextEditingController();
@@ -96,8 +96,8 @@ class _ProviderBusinessDetailsScreenState
         latitude: locationData['latitude'] as double,
       );
 
-      final servicesState = context.read<CustomerServicesBloc>().state;
-      if (servicesState is! CustomerServicesLoaded) {
+      final servicesState = context.read<ServiceCatalogBloc>().state;
+      if (servicesState is! ServicesLoaded) {
         showSnackBar(context, 'Error', 'Please wait for services to load');
         setState(() => isProcessing = false);
         return;
@@ -205,16 +205,16 @@ class _ProviderBusinessDetailsScreenState
                           ),
                     ),
                     16.verticalSpace,
-                    BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+                    BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
                       builder: (context, state) {
-                        if (state is CustomerServicesLoading) {
+                        if (state is ServiceCatalogLoading) {
                           isProcessing = true;
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         }
 
-                        if (state is CustomerServicesError) {
+                        if (state is ServiceCatalogError) {
                           isProcessing = false;
                           log('Error loading services: ${state.error}');
                           return Column(
@@ -228,8 +228,8 @@ class _ProviderBusinessDetailsScreenState
                               WideButton(
                                 label: 'retry',
                                 onPressed: () {
-                                  context.read<CustomerServicesBloc>().add(
-                                    CustomerFetchServices(),
+                                  context.read<ServiceCatalogBloc>().add(
+                                    const FetchServices(),
                                   );
                                 },
                               ),
@@ -237,7 +237,7 @@ class _ProviderBusinessDetailsScreenState
                           );
                         }
 
-                        if (state is CustomerServicesLoaded) {
+                        if (state is ServicesLoaded) {
                           isProcessing = false;
 
                           final categories = state.services;

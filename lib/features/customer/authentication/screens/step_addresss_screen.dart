@@ -82,7 +82,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
             body: StepModal(
               title: 'Verification Complete!',
               description:
-                  'Welcome to ResQ360, Jane! You can now book a service and browse service providers.',
+                  'Welcome to ResQ360, You can now book a service and browse service providers.',
               icon: AppAssets.ASSETS_LOGO_LOGO_PNG,
               buttonText: 'Go to Dashboard',
               onContinuePressed: () async {

@@ -72,7 +72,7 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
     authInfo = profile.data;
 
     notifyListeners();
-  } catch (e, s) {
+  } on Exception catch (e, s) {
     log('Failed to load provider profile: $e');
     log(s);
   } finally {

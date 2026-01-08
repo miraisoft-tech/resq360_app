@@ -20,7 +20,7 @@ class ConfirmEmailScreen extends StatefulWidget {
 class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
   int endTime =
       DateTime.now()
-          .add(const Duration(seconds: 5 * 60))
+          .add(const Duration(seconds: 1 * 60))
           .millisecondsSinceEpoch;
 
   late TextEditingController _otpController1;
@@ -51,7 +51,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
     controller
       ..endTime =
           DateTime.now()
-              .add(const Duration(seconds: 5 * 60))
+              .add(const Duration(seconds: 1 * 60))
               .millisecondsSinceEpoch
       ..start();
   }
@@ -94,7 +94,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           controller
             ..endTime =
                 DateTime.now()
-                    .add(const Duration(seconds: 5 * 60))
+                    .add(const Duration(seconds: 1 * 60))
                     .millisecondsSinceEpoch
             ..start();
 

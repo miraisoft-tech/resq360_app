@@ -24,7 +24,7 @@ class ProviderVerifyEmailScreen extends StatefulWidget {
 class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
   int endTime =
       DateTime.now()
-          .add(const Duration(seconds: 5 * 60))
+          .add(const Duration(seconds: 1 * 60))
           .millisecondsSinceEpoch;
 
   late TextEditingController _tokenController;
@@ -98,7 +98,7 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
             controller
               ..endTime =
                   DateTime.now()
-                      .add(const Duration(seconds: 5 * 60))
+                      .add(const Duration(seconds: 1 * 60))
                       .millisecondsSinceEpoch
               ..start();
           });

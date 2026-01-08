@@ -1,6 +1,6 @@
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
+import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
@@ -19,11 +19,11 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   void initState() {
     super.initState();
 
-    final bloc = context.read<CustomerServicesBloc>();
+    final bloc = context.read<ServiceCatalogBloc>();
     final currentState = bloc.state;
 
-    if (currentState is! CustomerServicesLoaded) {
-      bloc.add(CustomerFetchServices());
+    if (currentState is! ServicesLoaded) {
+      bloc.add(const FetchServices());
     }
   }
 
@@ -37,7 +37,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<CustomerServicesBloc, CustomerServicesState>(
+    return BlocListener<ServiceCatalogBloc, ServiceCatalogState>(
       listener: (context, state) {},
       child: Scaffold(
         backgroundColor: colors.whiteColor,
@@ -60,24 +60,24 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
           ),
           centerTitle: true,
         ),
-        body: BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+        body: BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
           builder: (context, state) {
-            if (state is CustomerServicesLoading) {
+            if (state is ServiceCatalogLoading) {
               return const Center(child: CircularProgressIndicator());
             }
 
-            if (state is CustomerServicesError) {
+            if (state is ServiceCatalogError) {
               return ErrorMessageAndButton(
                 error: state.error,
                 onPressed: () {
-                  context.read<CustomerServicesBloc>().add(
-                    CustomerFetchServices(),
+                  context.read<ServiceCatalogBloc>().add(
+                    const FetchServices(),
                   );
                 },
               );
             }
 
-            if (state is CustomerServicesLoaded) {
+            if (state is ServicesLoaded) {
               final services = state.services;
 
               final filteredServices =

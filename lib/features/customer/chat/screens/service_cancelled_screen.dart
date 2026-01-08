@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use, document_ignores
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/cancel_reason_enum.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/widgets/dialogs/cancelled.modal.dart';
 
 class ServiceCancelledScreen extends StatefulWidget {
@@ -172,41 +172,42 @@ class _ServiceCancelledScreenState extends State<ServiceCancelledScreen> {
                 ),
                 12.horizontalSpace,
                 Expanded(
-                  child: BlocConsumer<CustomerServicesBloc, CustomerServicesState>(
+                  child: BlocConsumer<BookingBloc, BookingState>(
                     listener: (context, state) async {
-                       if (state is ServiceBookingCancelled) {
-                            await GeneralDialogs.showCustomBottomSheet(
-                              context,
-                              body: CancelledModal(
-                                onContinuePressed: () async {
-                                  if (context.mounted) await pop(context);
-                                  if (context.mounted) await pop(context);
-                                  if (context.mounted) await pop(context);
-                                  if (context.mounted) await pop(context);
-                                },
-                              ),
-                            );
-                          }
+                      if (state is BookingCancelled) {
+                        await GeneralDialogs.showCustomBottomSheet(
+                          context,
+                          body: CancelledModal(
+                            onContinuePressed: () async {
+                              if (context.mounted) await pop(context);
+                              if (context.mounted) await pop(context);
+                              if (context.mounted) await pop(context);
+                              if (context.mounted) await pop(context);
+                            },
+                          ),
+                        );
+                      }
 
-                          if (state is CustomerServicesError) {
-                            await showErrorSnackbar(context, state.error);
-                          }
+                      if (state is BookingError) {
+                        await showErrorSnackbar(context, state.error);
+                      }
                     },
                     builder: (context, state) {
                       return WideButton(
                         label: 'Confirm',
                         backgroundColor: appColors.error,
                         textColor: appColors.whiteColor,
-                            loading: state is CustomerServicesLoading,
+                        loading: state is BookingLoading,
 
                         onPressed:
-                            canSubmit ? () async {
-                                      context.read<CustomerServicesBloc>().add(
-                                        CustomerCancelServiceBooking(
-                                        widget.serviceRequestId, cancellationReason!
-                                        ),
-                                      );
-                                 
+                            canSubmit
+                                ? () async {
+                                  context.read<BookingBloc>().add(
+                                    CancelBooking(
+                                      serviceRequestId: widget.serviceRequestId,
+                                      cancellationReason: cancellationReason!,
+                                    ),
+                                  );
                                 }
                                 : null,
                       );

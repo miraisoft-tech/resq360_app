@@ -3,9 +3,9 @@ import 'dart:math';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
+import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
@@ -43,7 +43,7 @@ class _ProviderGenerateInvoiceDialogState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(initializeLocation());
-      context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+      context.read<ServiceCatalogBloc>().add(const FetchServices());
       unawaited(fetchCategory());
     });
 
@@ -58,9 +58,9 @@ class _ProviderGenerateInvoiceDialogState
   }
 
   Future<bool> fetchCategory() async {
-    final state = context.read<CustomerServicesBloc>().state;
+    final state = context.read<ServiceCatalogBloc>().state;
 
-    if (state is! CustomerServicesLoaded) {
+    if (state is! ServicesLoaded) {
       return false;
     }
 
@@ -121,16 +121,16 @@ class _ProviderGenerateInvoiceDialogState
                   ),
                 ],
               ),
-              BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+              BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
                 builder: (context, state) {
-                  if (state is CustomerServicesLoading) {
+                  if (state is ServiceCatalogLoading) {
                     isProcessing = true;
                     return const Center(
                       child: CircularProgressIndicator(),
                     );
                   }
 
-                  if (state is CustomerServicesError) {
+                  if (state is ServiceCatalogError) {
                     isProcessing = false;
                     log('Error loading services: ${state.error}');
                     return Column(
@@ -144,8 +144,8 @@ class _ProviderGenerateInvoiceDialogState
                         WideButton(
                           label: 'retry',
                           onPressed: () {
-                            context.read<CustomerServicesBloc>().add(
-                              CustomerFetchServices(),
+                            context.read<ServiceCatalogBloc>().add(
+                              const FetchServices(),
                             );
                           },
                         ),
@@ -153,7 +153,7 @@ class _ProviderGenerateInvoiceDialogState
                     );
                   }
 
-                  if (state is CustomerServicesLoaded) {
+                  if (state is ServicesLoaded) {
                     isProcessing = false;
 
                     // final categories = state.services;

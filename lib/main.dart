@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc_registry.dart';
+import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/navigation/navigator.dart';
@@ -19,8 +21,9 @@ import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bl
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/notification_bloc/notification_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/service/service_repo.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
@@ -64,6 +67,7 @@ Future<void> main() async {
   Bloc.observer = AppBlocObserver();
   final themePreferences = ThemePreferences();
   final ratingsRepo = RatingsRepo.instance;
+  final serviceRepo = ServiceRepo(); 
 
   runApp(
     TranslationProvider(
@@ -73,7 +77,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => ThemeCubit(themePreferences)),
           BlocProvider(create: (_) => CustomerAuthBloc()),
           BlocProvider(create: (_) => ProviderAuthBloc()),
-          BlocProvider(create: (_) => CustomerServicesBloc()),
+          // BlocProvider(create: (_) => CustomerServicesBloc()),
           BlocProvider(create: (_) => ServiceProviderBloc()),
           BlocProvider(create: (_) => ChatBloc()),
           BlocProvider(create: (_) => ChatListBloc()),
@@ -89,6 +93,11 @@ Future<void> main() async {
           BlocProvider(create: (_) => NotificationBloc()),
           BlocProvider(create: (_) => GalleryBloc()),
           BlocProvider(create: (_) => WalletTransactionsBloc()),
+          BlocProvider(create: (_) => BookingBloc(serviceRepo: serviceRepo)),
+          BlocProvider(create: (_) => ServiceCatalogBloc(serviceRepo: serviceRepo)),
+          BlocProvider(create: (_) => ServiceCatalogBloc(serviceRepo: serviceRepo)),
+          BlocProvider(create: (_) => ServiceRequestBloc(serviceRepo: serviceRepo)),
+
         ],
         child: const MyApp(),
       ),

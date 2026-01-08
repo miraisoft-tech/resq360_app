@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
@@ -11,16 +11,11 @@ import 'package:resq360/features/customer/dashboard/widgets/user_review_card.dar
 
 class ServiceProviderDetailsScreen extends StatefulWidget {
   const ServiceProviderDetailsScreen({
-    required this.providerId,
-    required this.providerName,
     required this.provider,
     super.key,
-    this.activityStatus,
+  
   });
 
-  final int providerId;
-  final String providerName;
-  final String? activityStatus;
   final ServiceProvider provider;
 
   @override
@@ -48,8 +43,8 @@ class _ServiceProviderDetailsScreenState
     final providerServiceId = widget.provider.providerServiceId;
     if (providerServiceId == null) return;
 
-    context.read<CustomerServicesBloc>().add(
-      CustomerCreateServiceRequest(providerServiceId: providerServiceId),
+    context.read<ServiceRequestBloc>().add(
+      CreateServiceRequest(providerServiceId: providerServiceId),
     );
   }
 
@@ -76,24 +71,25 @@ class _ServiceProviderDetailsScreenState
     .toList();
   
 
-    return BlocListener<CustomerServicesBloc, CustomerServicesState>(
+    return BlocListener<ServiceRequestBloc, ServiceRequestState>(
       listener: (context, state) async {
-        if (state is CustomerServicesLoading) {
+        if (state is ServiceRequestLoading) {
           await showLoadingDialog(
             context,
           );
         }
 
-        if (state is CustomerServiceRequestCreated) {
+        if (state is ServiceRequestCreated) {
           await pop(context);
           await pushScreen(
             context,
             ChatDetailScreen(chatId: state.chatId),
           );
-        } else if (state is CustomerServicesError) {
+        } else if (state is ServiceRequestError) {
           await pop(context);
           await showSnackBar(context, 'Error', state.error);
         }
+       
       },
       child: Scaffold(
         backgroundColor: colors.whiteColor,
@@ -232,7 +228,7 @@ class _ServiceProviderDetailsScreenState
                               SVGButton(
                                 path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
                                 onTap: () async {
-                                  // ChatDetailScreen(chatId: state.chatId),
+                                  await _createServiceRequest();
                                 },
                               ),
                               15.horizontalSpace,

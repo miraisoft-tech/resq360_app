@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use, document_ignores
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
+import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/provider_cancel_enums.dart';
 import 'package:resq360/features/widgets/dialogs/cancelled.modal.dart';
 
@@ -210,20 +210,20 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                 12.horizontalSpace,
                 Expanded(
                   child:
-                      BlocConsumer<ProviderServiceBloc, ProviderServiceState>(
+                      BlocConsumer<BookingBloc, BookingState>(
                         builder: (context, state) {
                           return WideButton(
                             label: 'Confirm',
                             backgroundColor: appColors.error,
                             textColor: appColors.whiteColor,
-                            loading: state is ProviderServicesLoading,
+                            loading: state is BookingLoading,
                             onPressed:
                                canSubmit ? () async {
                                       final data = int.parse(
                                         widget.serviceRequestId,
                                       );
-                                      context.read<ProviderServiceBloc>().add(
-                                        ProviderCancelServiceBooking(
+                                      context.read<BookingBloc>().add(
+                                        CancelBooking(
                                           cancellationReason: cancellationReason!,
                                           serviceRequestId: data,
                                         ),
@@ -234,9 +234,9 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                         },
                         listener: (
                           BuildContext context,
-                          ProviderServiceState state,
+                          BookingState state,
                         ) async {
-                          if (state is ProviderServiceBookingCancelled) {
+                          if (state is BookingCancelled) {
                             await GeneralDialogs.showCustomBottomSheet(
                               context,
                               body: CancelledModal(
@@ -247,7 +247,7 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                             );
                           }
 
-                          if (state is ProviderServicesError) {
+                          if (state is BookingError) {
                             await showErrorSnackbar(context, state.error);
                           }
                         },

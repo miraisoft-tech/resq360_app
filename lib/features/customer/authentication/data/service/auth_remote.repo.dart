@@ -9,7 +9,6 @@ import 'package:resq360/features/customer/authentication/data/models/auth/custom
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;

@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
@@ -39,29 +40,30 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
             borderRadius: BorderRadius.circular(10.r),
             border: Border.all(color: colors.textColor.shade100),
           ),
-          child: BlocListener<ProviderServiceBloc, ProviderServiceState>(
-            listener: (context, state) async {
-              // if (state is ProviderServiceBookingCancelled) {
-              //  await showErrorSnackbar(context, 'Booking cancelled successfully');
-              //   context.read<ProviderServiceBloc>().add(
-              //         const ProviderFetchBookings(),
-              //       );
-              // }
-
-              if (state is ProviderServiceBookingStarted) {
-                await showSuccessSnackbar(
-                  context,
-                  'Service started successfully',
-                );
-                context.read<ProviderServiceBloc>().add(
-                  const ProviderFetchBookings(status: 'pending'),
-                );
-              }
-
-              if (state is ProviderServicesError) {
-                await showErrorSnackbar(context, state.error);
-              }
-            },
+          child: MultiBlocListener(
+            listeners: [
+              BlocListener<ProviderServiceBloc, ProviderServiceState>(
+                listener: (context, state) async {
+     
+                  if (state is ProviderServicesError) {
+                    await showErrorSnackbar(context, state.error);
+                  }
+                },
+              ),
+              BlocListener<BookingBloc, BookingState>(
+                listener: (context, state)async {
+                  if (state is BookingStarted) {
+                    await showSuccessSnackbar(
+                      context,
+                      'Service started successfully',
+                    );
+                    context.read<ProviderServiceBloc>().add(
+                       ProviderFetchBookings(status: BookingStatus.pending.value),
+                    );
+                  }
+                },
+              ),
+            ],
             child: BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
               builder: (context, state) {
                 if (state is ProviderServicesLoading) {
@@ -102,7 +104,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                                     weight: FontWeight.w500,
                                   ),
                                   GenText(
-                                    ' (${booking?.serviceCategory?.name ?? 'Service'})',
+                                    ' (//${booking?.serviceCategory?.name ?? 'Service'})',
                                     height: 24.5,
                                     weight: FontWeight.w400,
                                     color: colors.neutral.shade400,
@@ -161,9 +163,11 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
-                                context.read<ProviderServiceBloc>().add(
-                                  ProviderStartServiceBooking(
-                                    int.parse(booking?.requestId ?? ''),
+                                context.read<BookingBloc>().add(
+                                  StartBooking(
+                                    serviceRequestId: int.parse(
+                                      booking?.requestId ?? '',
+                                    ),
                                   ),
                                 );
                               },
