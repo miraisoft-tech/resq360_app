@@ -10,7 +10,6 @@ class ChatRepo extends BaseAPI {
   ChatRepo._internal();
   static final ChatRepo _instance = ChatRepo._internal();
 
- 
   Future<ApiResult<ChatResponse>> createChat({
     required CreateChatRequest chatRequest,
   }) async {
@@ -36,8 +35,8 @@ class ChatRepo extends BaseAPI {
       }
       return ApiResult(error: 'Faild to create chat');
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       log('creating chat failed $e');
       return ApiResult(error: e.toString());
     }
@@ -62,8 +61,8 @@ class ChatRepo extends BaseAPI {
         return ApiResult(error: 'Failed to load chats');
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       log('failed to fetch chat $e');
       return ApiResult(error: e.toString());
     }
@@ -82,8 +81,8 @@ class ChatRepo extends BaseAPI {
         return ApiResult(error: 'Failed to fetch chat');
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -93,7 +92,7 @@ class ChatRepo extends BaseAPI {
     int page = 1,
     int limit = 20,
   }) async {
-    final url = '/chat/$chatId/messages';
+    final url = '/chat/$chatId/messages?page=$page&limit=$limit';
 
     try {
       final response = await dio().get<Map<String, dynamic>>(url);
@@ -107,8 +106,8 @@ class ChatRepo extends BaseAPI {
         return ApiResult(error: 'Failed to fetch chat messages');
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -134,14 +133,13 @@ class ChatRepo extends BaseAPI {
         );
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
 
-
-    Future<ApiResult<MessageResponse>> sendInvoice({
+  Future<ApiResult<MessageResponse>> sendInvoice({
     required SendInvoice invoiceRequest,
   }) async {
     const url = '/chat/messages/invoice';
@@ -162,8 +160,8 @@ class ChatRepo extends BaseAPI {
         );
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -178,8 +176,8 @@ class ChatRepo extends BaseAPI {
         return ApiResult(error: 'Failed to mark as read');
       }
     } on DioException catch (e) {
-    return handleDioError(e); 
-  } on Exception catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -193,9 +191,9 @@ class ChatRepo extends BaseAPI {
       } else {
         return ApiResult(error: 'Failed to leave chat');
       }
-    }on DioException catch (e) {
-    return handleDioError(e); 
-  }  on Exception catch (e) {
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }

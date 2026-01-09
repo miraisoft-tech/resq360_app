@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/core/services/location_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
@@ -30,7 +31,6 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
   LocalUser? localCred;
   bool get isLocalCredStored => localCred != null;
   bool useBiometics = false;
-
 
   bool isLoading = false;
   void setBusy({required bool isBusy}) {
@@ -62,24 +62,23 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
   }
 
   Future<void> loadProviderProfile() async {
-  if (authInfo == null) return;
+    if (authInfo == null) return;
 
-  try {
-    setBusy(isBusy: true);
+    try {
+      setBusy(isBusy: true);
 
-    final profile = await authRemoteRepo.getProviderProfile();
+      final profile = await authRemoteRepo.getProviderProfile();
 
-    authInfo = profile.data;
+      authInfo = profile.data;
 
-    notifyListeners();
-  } on Exception catch (e, s) {
-    log('Failed to load provider profile: $e');
-    log(s);
-  } finally {
-    setBusy(isBusy: false);
+      notifyListeners();
+    } on Exception catch (e, s) {
+      log('Failed to load provider profile: $e');
+      log(s);
+    } finally {
+      setBusy(isBusy: false);
+    }
   }
-}
-
 
   Future<void> clearAuthData() async {
     authInfo = null;
@@ -90,6 +89,8 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
   Future<void> logout() async {
     try {
       setBusy(isBusy: true);
+
+      await ChatSocketService.instance.reset();
 
       await AuthLocalRepo.instance.clearAuthCredentials();
       await AuthLocalRepo.instance.clearAccessToken();

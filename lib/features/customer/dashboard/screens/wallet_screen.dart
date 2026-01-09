@@ -3,6 +3,7 @@ import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
+import 'package:resq360/features/customer/dashboard/screens/all_transactions_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
@@ -215,11 +216,19 @@ class _WalletScreenState extends State<WalletScreen> {
                       color: appColors.black,
                     ),
                   ),
-                  GenText(
-                    'View All',
-                    size: 12,
-                    weight: FontWeight.w400,
-                    color: appColors.primary.shade500,
+                  GestureDetector(
+                    onTap: () async {
+                      await pushScreen(
+                        context,
+                        const AllTransactionsScreen(),
+                      );
+                    },
+                    child: GenText(
+                      'View All',
+                      size: 12,
+                      weight: FontWeight.w400,
+                      color: appColors.primary.shade500,
+                    ),
                   ),
                 ],
               ),

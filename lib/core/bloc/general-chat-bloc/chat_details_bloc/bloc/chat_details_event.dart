@@ -6,6 +6,7 @@ sealed class ChatDetailsEvent extends Equatable {
   @override
   List<Object> get props => [];
 }
+
 sealed class ChatDetailEvent extends Equatable {
   const ChatDetailEvent();
 
@@ -30,6 +31,7 @@ class SendTextMessage extends ChatDetailEvent {
   @override
   List<Object?> get props => [content];
 }
+
 class SendInvoiceMessage extends ChatDetailEvent {
   const SendInvoiceMessage(this.invoice);
 
@@ -40,6 +42,8 @@ class SendInvoiceMessage extends ChatDetailEvent {
 }
 
 class RefreshMessages extends ChatDetailEvent {}
+
+class LoadMoreMessages extends ChatDetailEvent {}
 
 class _IncomingMessage extends ChatDetailEvent {
   const _IncomingMessage(this.message);

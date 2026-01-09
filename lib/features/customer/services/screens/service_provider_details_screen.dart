@@ -8,12 +8,12 @@ import 'package:resq360/features/customer/dashboard/data/models/service-model/se
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/user_review_card.dart';
+import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 
 class ServiceProviderDetailsScreen extends StatefulWidget {
   const ServiceProviderDetailsScreen({
     required this.provider,
     super.key,
-  
   });
 
   final ServiceProvider provider;
@@ -26,7 +26,7 @@ class ServiceProviderDetailsScreen extends StatefulWidget {
 class _ServiceProviderDetailsScreenState
     extends State<ServiceProviderDetailsScreen> {
   int currentIndex = 0;
-  
+
   final List<Map<String, dynamic>> reviews = [
     {
       'name': 'Maria Okoro',
@@ -39,7 +39,6 @@ class _ServiceProviderDetailsScreenState
   ];
 
   Future<void> _createServiceRequest() async {
-
     final providerServiceId = widget.provider.providerServiceId;
     if (providerServiceId == null) return;
 
@@ -51,6 +50,12 @@ class _ServiceProviderDetailsScreenState
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RatingsBloc>().add(
+        FetchProviderRatingsById(providerId: widget.provider.id),
+      );
+    });
   }
 
   @override
@@ -59,17 +64,17 @@ class _ServiceProviderDetailsScreenState
     final provider = widget.provider;
     final providerServices = provider.providerServices;
     final serviceGallery = provider.images;
-    final serviceGroups = providerServices
-    .map(
-      (service) => _ServiceGroup(
-        title: service.name,
-        items: [
-          service.service.name,
-        ],
-      ),
-    )
-    .toList();
-  
+    final serviceGroups =
+        providerServices
+            .map(
+              (service) => _ServiceGroup(
+                title: service.name,
+                items: [
+                  service.service.name,
+                ],
+              ),
+            )
+            .toList();
 
     return BlocListener<ServiceRequestBloc, ServiceRequestState>(
       listener: (context, state) async {
@@ -89,7 +94,6 @@ class _ServiceProviderDetailsScreenState
           await pop(context);
           await showSnackBar(context, 'Error', state.error);
         }
-       
       },
       child: Scaffold(
         backgroundColor: colors.whiteColor,
@@ -306,7 +310,7 @@ class _ServiceProviderDetailsScreenState
                           ),
                           12.verticalSpace,
 
-                         ...serviceGroups,
+                          ...serviceGroups,
 
                           20.verticalSpace,
 
