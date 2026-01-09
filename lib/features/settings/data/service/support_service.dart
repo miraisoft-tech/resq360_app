@@ -97,6 +97,7 @@ class SupportRepo extends BaseAPI {
       return handleDioError(e);
     }
   }
+  
 
   Future<ApiResult<Map<String, dynamic>>> sendTicketMessage({
     required String ticketId,
@@ -184,4 +185,27 @@ class SupportRepo extends BaseAPI {
       return handleDioError(e);
     }
   }
+
+  Future<String?> findExistingOpenAppealTicketId() async {
+  final res = await SupportRepo.instance.getTickets();
+
+  if (res.error != null && res.error!.isNotEmpty) {
+    return null;
+  }
+
+  final tickets = res.data;
+  if (tickets == null || tickets.isEmpty) return null;
+
+  for (final ticket in tickets) {
+    final isOpen = ticket.status == 'OPEN';
+    final isAppeal = ticket.subject == 'Service Appeal';
+    final isGeneralInquiry = ticket.category == 'GENERAL_INQUIRY';
+
+    if (isOpen && isAppeal && isGeneralInquiry) {
+      return ticket.ticketId;
+    }
+  }
+
+  return null;
+}
 }

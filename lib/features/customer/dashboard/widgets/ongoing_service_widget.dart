@@ -65,7 +65,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
 
     if (shouldProceed != true) return;
 
-    final existingTicketId = await findExistingOpenAppealTicketId();
+    final existingTicketId = await SupportRepo.instance.findExistingOpenAppealTicketId();
 
     if (!context.mounted) {
       return;
@@ -274,25 +274,25 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
   }
 }
 
-Future<String?> findExistingOpenAppealTicketId() async {
-  final res = await SupportRepo.instance.getTickets();
+// Future<String?> findExistingOpenAppealTicketId() async {
+//   final res = await SupportRepo.instance.getTickets();
 
-  if (res.error != null && res.error!.isNotEmpty) {
-    return null;
-  }
+//   if (res.error != null && res.error!.isNotEmpty) {
+//     return null;
+//   }
 
-  final tickets = res.data;
-  if (tickets == null || tickets.isEmpty) return null;
+//   final tickets = res.data;
+//   if (tickets == null || tickets.isEmpty) return null;
 
-  for (final ticket in tickets) {
-    final isOpen = ticket.status == 'OPEN';
-    final isAppeal = ticket.subject == 'Service Appeal';
-    final isGeneralInquiry = ticket.category == 'GENERAL_INQUIRY';
+//   for (final ticket in tickets) {
+//     final isOpen = ticket.status == 'OPEN';
+//     final isAppeal = ticket.subject == 'Service Appeal';
+//     final isGeneralInquiry = ticket.category == 'GENERAL_INQUIRY';
 
-    if (isOpen && isAppeal && isGeneralInquiry) {
-      return ticket.ticketId;
-    }
-  }
+//     if (isOpen && isAppeal && isGeneralInquiry) {
+//       return ticket.ticketId;
+//     }
+//   }
 
-  return null;
-}
+//   return null;
+// }
