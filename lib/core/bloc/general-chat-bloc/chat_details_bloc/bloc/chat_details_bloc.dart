@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
@@ -25,6 +25,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     on<SendTextMessage>(_onSendMessage);
     on<SendInvoiceMessage>(_onSendInvoiceMessage);
     on<RefreshMessages>(_onRefreshMessages);
+    on<LoadMoreMessages>(_onLoadMoreMessages);
     on<_IncomingMessage>(_onIncomingMessage);
   }
 
@@ -37,41 +38,62 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     OpenChatDetail event,
     Emitter<ChatDetailState> emit,
   ) async {
-    emit(ChatDetailLoading());
+    try {
+      emit(ChatDetailLoading());
 
-    final result = await _repo.getChatById(event.chatId);
+      final chatResult = await _repo.getChatById(event.chatId);
 
-    if (result.data == null) {
-      emit(ChatDetailFailure(result.error ?? 'Failed to load chat'));
-      return;
+      if (chatResult.data == null) {
+        emit(ChatDetailFailure(chatResult.error ?? 'Failed to load chat'));
+        return;
+      }
+
+      final messagesResult = await _repo.getChatMessages(event.chatId);
+
+      if (messagesResult.data == null) {
+        emit(
+          ChatDetailFailure(messagesResult.error ?? 'Failed to load messages'),
+        );
+        return;
+      }
+
+      await _connectSocket();
+
+      final chat = chatResult.data!;
+      final messagesData = messagesResult.data!;
+
+      emit(
+        ChatDetailReady(
+          chat: chat,
+          messages: messagesData.messages,
+          currentPage: messagesData.page,
+          totalPages: messagesData.totalPages,
+          hasMoreMessages: messagesData.page < messagesData.totalPages,
+        ),
+      );
+    } on Exception catch (e) {
+      emit(ChatDetailFailure(e.toString()));
     }
-
-    await _connectSocket();
-
-    final chat = result.data!;
-    emit(
-      ChatDetailReady(
-        chat: chat,
-        messages: chat.messages ?? [],
-      ),
-    );
   }
 
   Future<void> _connectSocket() async {
-    if (!_socket.isConnected) {
+    try {
       await _socket.connect();
+
+      unawaited(_socket.joinChat(chatId));
+
+      await _socketSub?.cancel();
+      _socketSub = _socket.messageStream.listen(
+        (msg) {
+          if ((msg.chatId == chatId) &&
+              !(msg.senderType?.contains('USER') ?? false)) {
+            add(_IncomingMessage(msg));
+          }
+        },
+      );
+    } on Exception catch (e) {
+      log('Socket connection error: $e');
     }
-
-    await _socket.joinChat(chatId);
-
-    await _socketSub?.cancel();
-    _socketSub = _socket.messageStream.listen(
-      (msg) {
-        if (msg.chatId == chatId) {
-          add(_IncomingMessage(msg));
-        }
-      },
-    );
   }
 
   Future<void> _onSendInvoiceMessage(
@@ -187,12 +209,55 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   ) async {
     if (state is! ChatDetailReady) return;
 
+    final current = state as ChatDetailReady;
+
     final result = await _repo.getChatMessages(chatId);
     if (result.data == null) return;
 
+    final messagesData = result.data!;
+
     emit(
-      (state as ChatDetailReady).copyWith(
-        messages: result.data!.messages,
+      current.copyWith(
+        messages: messagesData.messages,
+        currentPage: messagesData.page,
+        totalPages: messagesData.totalPages,
+        hasMoreMessages: messagesData.page < messagesData.totalPages,
+      ),
+    );
+  }
+
+  Future<void> _onLoadMoreMessages(
+    LoadMoreMessages event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    if (state is! ChatDetailReady) return;
+
+    final current = state as ChatDetailReady;
+
+    if (current.isLoadingMore || !current.hasMoreMessages) return;
+
+    emit(current.copyWith(isLoadingMore: true));
+
+    final nextPage = current.currentPage + 1;
+    final result = await _repo.getChatMessages(chatId, page: nextPage);
+
+    if (result.data == null) {
+      emit(current.copyWith(isLoadingMore: false));
+      return;
+    }
+
+    final messagesData = result.data!;
+
+    // Append older messages to the end of the list
+    final allMessages = [...current.messages, ...messagesData.messages];
+
+    emit(
+      current.copyWith(
+        messages: allMessages,
+        currentPage: messagesData.page,
+        totalPages: messagesData.totalPages,
+        hasMoreMessages: messagesData.page < messagesData.totalPages,
+        isLoadingMore: false,
       ),
     );
   }

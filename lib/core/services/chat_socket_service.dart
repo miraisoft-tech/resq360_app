@@ -16,7 +16,6 @@ class ChatSocketService {
   DateTime? _connectedAt;
   int _retryCount = 0;
 
-
   final _messageController = StreamController<MessageResponse>.broadcast();
   final _typingController = StreamController<Map<String, dynamic>>.broadcast();
   final _userJoinedController =
@@ -29,10 +28,23 @@ class ChatSocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
- Completer<void>? _connectionCompleter;
+  Completer<void>? _connectionCompleter;
+  String? _currentToken;
 
-  Future<void> connect() async {
+  Future<void> connect({bool forceReconnect = false}) async {
     final token = await AuthLocalRepo.instance.getAccessToken();
+
+    if (isConnected && !forceReconnect && _currentToken == token) {
+      return;
+    }
+
+    if (_socket != null && (_currentToken != token || forceReconnect)) {
+      _socket?.disconnect();
+      _socket?.dispose();
+      _socket = null;
+    }
+
+    _currentToken = token;
     const url = 'https://resq360-kspk.onrender.com/chat';
 
     _connectionCompleter = Completer<void>();
@@ -51,12 +63,12 @@ class ChatSocketService {
       _connectedAt = DateTime.now();
       _retryCount = 0;
       log('Socket connected to $url at $_connectedAt');
-      
+
       if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
         _connectionCompleter!.complete();
       }
     });
-   
+
     _socket!.onDisconnect((_) {
       if (_connectedAt != null) {
         final uptime = DateTime.now().difference(_connectedAt!);
@@ -67,19 +79,21 @@ class ChatSocketService {
       _connectedAt = null;
     });
 
-_socket!.onConnectError((error) {
-  _retryCount++;
-  log('Socket connection error: $error | Retry #$_retryCount');
-  
-  if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
-    _connectionCompleter!.completeError(
-      Exception('Socket connection error: $error')
-    );
-  }
-});
+    _socket!.onConnectError((error) {
+      _retryCount++;
+      log('Socket connection error: $error | Retry #$_retryCount');
+
+      if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+        _connectionCompleter!.completeError(
+          Exception('Socket connection error: $error'),
+        );
+      }
+    });
     _socket!.onReconnect((_) {
       _connectedAt = DateTime.now();
-      log(' Reconnected successfully after $_retryCount retries at $_connectedAt');
+      log(
+        ' Reconnected successfully after $_retryCount retries at $_connectedAt',
+      );
       _retryCount = 0;
     });
 
@@ -91,23 +105,22 @@ _socket!.onConnectError((error) {
       log('Event: $event | Data: $data');
     });
 
-   _socket!.onAny((event, data) {
-  log('Event: $event | Data: $data');
-});
+    _socket!.onAny((event, data) {
+      log('Event: $event | Data: $data');
+    });
 
+    _socket?.on('chat-notification', (data) {
+      log('Chat notification received: $data');
 
-_socket?.on('chat-notification', (data) {
-  log('Chat notification received: $data');
-  
-  try {
-_handleChatNotification(data);
-  } on Exception catch (e) {
-    log(' Failed to parse chat notification: $e');
-  }
-});
+      try {
+        _handleChatNotification(data);
+      } on Exception catch (e) {
+        log(' Failed to parse chat notification: $e');
+      }
+    });
 
     _socket!.connect();
-    
+
     // Wait for connection to be established
     return _connectionCompleter!.future.timeout(
       const Duration(seconds: 10),
@@ -118,8 +131,6 @@ _handleChatNotification(data);
   }
 
   IO.Socket? get socket => _socket;
-  
-  
 
   Future<void> joinChat(int chatId) async {
     if (!isConnected) {
@@ -141,24 +152,29 @@ _handleChatNotification(data);
     return completer.future;
   }
 
-  void sendMessage (SendMessageRequest payload){
+  void sendMessage(SendMessageRequest payload) {
     if (!isConnected) {
-    log(' Cannot send message — socket not connected');
-    return;
-  }
-    _socket?.emitWithAck('send-message', payload.toJson(), ack: ( dynamic response) {
-      log('Server acknowledged message: $response');
-      if (response['success'] == true) {
-      final message = MessageResponse.fromJson(response['message'] as Map<String, dynamic>);
-      _messageController.add(message);
+      log(' Cannot send message — socket not connected');
+      return;
     }
-    });
+    _socket?.emitWithAck(
+      'send-message',
+      payload.toJson(),
+      ack: (dynamic response) {
+        log('Server acknowledged message: $response');
+        if (response['success'] == true) {
+          final message = MessageResponse.fromJson(
+            response['message'] as Map<String, dynamic>,
+          );
+          _messageController.add(message);
+        }
+      },
+    );
   }
 
   void _handleChatNotification(dynamic data) {
     final notification = data as Map<String, dynamic>;
     final type = notification['type'] as String?;
-
 
     switch (type) {
       case 'NEW_MESSAGE':
@@ -188,12 +204,15 @@ _handleChatNotification(data);
 
   Future<void> disconnect() async {
     _socket?.disconnect();
-    await Future.wait([
-      _messageController.close(),
-      _typingController.close(),
-      _userJoinedController.close(),
-      _userLeftController.close(),
-      _messageReadController.close(),
-    ]);
+    _socket?.dispose();
+    _socket = null;
+    _currentToken = null;
+    _connectedAt = null;
+  }
+
+  /// Call this when user logs out to ensure fresh connection on next login
+  Future<void> reset() async {
+    await disconnect();
+    _retryCount = 0;
   }
 }

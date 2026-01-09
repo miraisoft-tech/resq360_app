@@ -75,31 +75,30 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
                   child: _buildChatContent(state),
                 ),
                 // if (canShowDetails)
-                  GestureDetector(
-                    onTap: () async {
-                      if (state is ChatDetailReady) {
-                        final serviceMessage = state.messages.firstWhere(
-                          (m) =>
-                              m.messageType == 'SYSTEM' && m.metadata != null,
-                        );
+                GestureDetector(
+                  onTap: () async {
+                    if (state is ChatDetailReady) {
+                      final serviceMessage = state.messages.firstWhere(
+                        (m) => m.messageType == 'SYSTEM' && m.metadata != null,
+                      );
 
-                        await pushScreen(
-                          context,
-                          ServiceDetailScreen(
-                            chat: state.chat,
-                            message: serviceMessage,
-                          ),
-                        );
-                      }
-                    },
-                    child: GenText(
-                      'View Service details',
-                      weight: FontWeight.w500,
-                      color: appColors.primary.shade500,
-                      decoration: TextDecoration.underline,
-                      textAlign: TextAlign.center,
-                    ),
+                      await pushScreen(
+                        context,
+                        ServiceDetailScreen(
+                          chat: state.chat,
+                          message: serviceMessage,
+                        ),
+                      );
+                    }
+                  },
+                  child: GenText(
+                    'View Service details',
+                    weight: FontWeight.w500,
+                    color: appColors.primary.shade500,
+                    decoration: TextDecoration.underline,
+                    textAlign: TextAlign.center,
                   ),
+                ),
                 IgnorePointer(
                   ignoring: state is! ChatDetailReady,
                   child: Opacity(
@@ -161,7 +160,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
     }
 
     if (state is ChatDetailReady) {
-      log('${state.messages[0].senderId} and $_currentUserId');
+      log('${state.messages.firstOrNull?.senderId} and $_currentUserId');
       return _MessageList(
         controller: _scrollController,
         messages: state.messages,
@@ -370,10 +369,9 @@ class _MessageList extends StatelessWidget {
       itemCount: messages.length,
       itemBuilder: (_, index) {
         final message = messages[index];
-        final isMine =
-            message.senderType == 'PROVIDER';
-            //  && message.senderId == currentUserId;
-    
+        final isMine = message.senderType == 'PROVIDER';
+        //  && message.senderId == currentUserId;
+
         if (message.messageType == 'SYSTEM') {
           return Column(
             children: [
@@ -397,7 +395,7 @@ class _MessageList extends StatelessWidget {
             ChatBubble(
               type: isMine ? MessageType.sent : MessageType.received,
               message: message.content ?? '',
-              time: _formatTime(message.createdAt!),
+              time: _formatTime(message.createdAt ?? DateTime.now()),
             ),
             20.verticalSpace,
           ],

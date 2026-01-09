@@ -41,8 +41,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
   int? get _currentUserId => CustomerAuthProvider.instance.authInfo?.id;
 
-  
-
   @override
   void dispose() {
     _scrollController.dispose();
@@ -70,12 +68,12 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             final chat = state.chat;
             title = chat.title ?? 'Chat';
             // no phone data in chat
-            phone = '002423231212'; 
+            phone = '002423231212';
             isActive = chat.isActive ?? false;
           }
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(title, isActive, phone ),
+            appBar: _buildAppBar(title, isActive, phone),
             body: SafeArea(
               child: Column(
                 children: [
@@ -149,7 +147,11 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     return const SizedBox.shrink();
   }
 
-  PreferredSizeWidget _buildAppBar(String title, bool isActive, String phoneNumber) {
+  PreferredSizeWidget _buildAppBar(
+    String title,
+    bool isActive,
+    String phoneNumber,
+  ) {
     final appColors = context.appColors;
 
     return AppBar(
@@ -368,10 +370,9 @@ class _MessageList extends StatelessWidget {
       itemBuilder: (_, index) {
         final message = messages[index];
         final amount = message.metadata?.amount?.toString() ?? '';
-        final isMine =
-            message.senderType == 'USER' ;
-            // && message.senderId == currentUserId;
-// print('${message.senderId} and ${currentUserId}');
+        final isMine = message.senderType == 'USER';
+        // && message.senderId == currentUserId;
+        // print('${message.senderId} and ${currentUserId}');
         return Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child:

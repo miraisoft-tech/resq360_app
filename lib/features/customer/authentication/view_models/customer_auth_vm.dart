@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/core/services/location_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
@@ -9,9 +10,10 @@ import 'package:resq360/features/customer/authentication/data/service/auth_remot
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class CustomerAuthProvider extends BaseViewModel with LocationMixin {
-  // Singleton setup
   CustomerAuthProvider._internal({required this.authRemoteRepo});
-  static final CustomerAuthProvider instance = CustomerAuthProvider._internal(authRemoteRepo: AuthRemoteRepo.instance);
+  static final CustomerAuthProvider instance = CustomerAuthProvider._internal(
+    authRemoteRepo: AuthRemoteRepo.instance,
+  );
 
   final AuthRemoteRepo authRemoteRepo;
 
@@ -59,23 +61,22 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
   }
 
   Future<void> loadCustomerProfile() async {
-  if (authInfo == null) return;
+    if (authInfo == null) return;
 
-  try {
-    setBusy(isBusy: true);
+    try {
+      setBusy(isBusy: true);
 
-    final profile = await authRemoteRepo.getUserProfile();
-    authInfo = profile.data;
+      final profile = await authRemoteRepo.getUserProfile();
+      authInfo = profile.data;
 
-    notifyListeners();
-  } on Exception catch (e, s) {
-    log('Failed to load customer profile: $e');
-    log(s);
-  } finally {
-    setBusy(isBusy: false);
+      notifyListeners();
+    } on Exception catch (e, s) {
+      log('Failed to load customer profile: $e');
+      log(s);
+    } finally {
+      setBusy(isBusy: false);
+    }
   }
-}
-
 
   Future<void> clearAuthData() async {
     authInfo = null;
@@ -86,6 +87,8 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
   Future<void> logout() async {
     try {
       setBusy(isBusy: true);
+
+      await ChatSocketService.instance.reset();
 
       await AuthLocalRepo.instance.clearAuthCredentials();
       await AuthLocalRepo.instance.clearAccessToken();
