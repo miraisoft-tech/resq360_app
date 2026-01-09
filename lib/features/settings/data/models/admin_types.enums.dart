@@ -22,3 +22,32 @@ enum AdminIssueType {
 
   final String label;
 }
+
+
+extension AdminIssuePriority on AdminIssueType {
+  String get priority {
+    switch (this) {
+      case AdminIssueType.paymentIssue:
+      case AdminIssueType.billingIssue:
+      case AdminIssueType.billingInquiry:
+      case AdminIssueType.refundRequest:
+        return 'HIGH';
+
+      case AdminIssueType.emergency:
+        return 'URGENT';
+
+      case AdminIssueType.generalInquiry:
+      case AdminIssueType.technicalIssue:
+      case AdminIssueType.serviceComplaint:
+      case AdminIssueType.serviceIssue:
+      case AdminIssueType.accountIssue:
+      case AdminIssueType.providerIssue:
+      case AdminIssueType.appBug:
+      case AdminIssueType.featureRequest:
+      case AdminIssueType.bugReport:
+      case AdminIssueType.complaint:
+      case AdminIssueType.other:
+        return 'LOW';
+    }
+  }
+}

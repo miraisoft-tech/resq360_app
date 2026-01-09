@@ -2,16 +2,11 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
-import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
-import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
-import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
-import 'package:resq360/features/settings/data/service/support_service.dart';
+import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 
 class OngoingServiceCard extends StatefulWidget {
   const OngoingServiceCard({
@@ -34,91 +29,17 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _setupUser();
+      await _getEmail();
     });
   }
 
-  Future<void> _setupUser() async {
-    final type = await AuthLocalRepo.instance.getUserType();
-    if (type == null) return;
-
-    userType = type;
-
-    if (type == 'user') {
-      currentUser = CustomerAuthProvider.instance.authInfo;
-    } else if (type == UserType.provider.name) {
-      currentUser = ProviderAuthProvider.instance.authInfo;
+  Future<String?> _getEmail() async {
+    var email = '';
+    final cred = await AuthLocalRepo.instance.getLocalCredentials();
+    if (cred != null) {
+      email = cred.userName ?? '';
     }
-
-    if (mounted) {
-      setState(() {
-        userReady = currentUser != null;
-      });
-    }
-  }
-
-  Future<void> _handleAppeal(BuildContext context) async {
-    final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
-      context,
-      body: const PaymentAppealDialog(),
-    );
-
-    if (shouldProceed != true) return;
-
-    final existingTicketId = await SupportRepo.instance.findExistingOpenAppealTicketId();
-
-    if (!context.mounted) {
-      return;
-    }
-
-    if (existingTicketId != null) {
-      if (currentUser != null) {
-        await pushScreen(
-          context,
-          SupportChatScreen(
-            ticketId: existingTicketId,
-            providerName:
-                widget.booking.assignedProvider?.fullName ??
-                'Assigned Provider',
-          ),
-        );
-      }
-
-      return;
-    }
-
-    final serviceName = widget.booking.serviceCategory?.name ?? 'service';
-    final contactEmail = currentUser.email;
-    final contactPhone = currentUser.phoneNumber;
-
-    final res = await SupportRepo.instance.createTicket(
-      subject: 'Service Appeal',
-      description: 'User opened an appeal for $serviceName service.',
-      category: AdminIssueType.serviceIssue.value,
-      priority: 'LOW',
-      contactEmail: contactEmail.toString(),
-      contactPhone: contactPhone.toString(),
-      serviceCategory: widget.booking.serviceCategory?.id,
-      relatedServiceProviderId: widget.booking.assignedProvider?.id,
-    );
-
-    if (!context.mounted) return;
-
-    if (res.error != null) {
-      await showErrorSnackbar(context, res.error!);
-      return;
-    }
-
-    final ticketId = res.data!['data']['ticketId'].toString();
-
-    await pushScreen(
-      context,
-      SupportChatScreen(
-        ticketId: ticketId,
-        providerName:
-            widget.booking.assignedProvider?.fullName ?? 'Assigned Provider',
-      ),
-    );
+    return email;
   }
 
   @override
@@ -224,7 +145,15 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
-                  onPressed: () => _handleAppeal(context),
+                  onPressed: () async {
+                    final email = await _getEmail();
+                    if (email != null) {
+                      await pushScreen(
+                        context,
+                         ContactAdminScreen(issueType: AdminIssueType.serviceIssue, serviceCategory: widget.booking.serviceCategory?.id,relatedServiceProviderId: widget.booking.assignedProvider?.id,),
+                      );
+                    }
+                  },
                   child: GenText(
                     'Appeal',
                     height: 16.5,

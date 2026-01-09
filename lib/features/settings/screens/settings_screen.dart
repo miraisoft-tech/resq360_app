@@ -8,6 +8,7 @@ import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
+import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
 import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
@@ -132,10 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
         onTap: () async {
-          final email = await getEmail();
-          if (email != null) {
-            await pushScreen(context, ContactAdminScreen(email: email));
-          }
+        await pushScreen(context, const ContactAdminScreen( issueType: AdminIssueType.complaint,));
         },
       ),
     ];
@@ -201,7 +199,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onTap: () async {
           final email = await getEmail();
           if (email != null) {
-            await pushScreen(context, ContactAdminScreen(email: email));
+            await pushScreen(context, const ContactAdminScreen(issueType: AdminIssueType.complaint,));
           }
         },
       ),
@@ -268,13 +266,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           context,
                           body: AccountStatusDialog(
                             onTap: () async {
-                              final email = await getEmail();
-
                               Navigator.pop(context);
                               await pushScreen(
                                 context,
-                                ContactAdminScreen(
-                                  email: email ?? '',
+                                const ContactAdminScreen(
+                                 issueType: AdminIssueType.complaint,
                                 ),
                               );
                             },

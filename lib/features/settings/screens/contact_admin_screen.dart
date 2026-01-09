@@ -1,12 +1,14 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/issue_radio_widget.dart';
 
 class ContactAdminScreen extends StatefulWidget {
-  const ContactAdminScreen({required this.email, super.key});
-  final String email;
+  const ContactAdminScreen({ this.issueType, super.key, this.serviceCategory, this.relatedServiceProviderId});
+  final AdminIssueType? issueType;
+  final int? serviceCategory;
+  final int? relatedServiceProviderId;
 
   @override
   State<ContactAdminScreen> createState() => _ContactAdminScreenState();
@@ -21,6 +23,11 @@ class _ContactAdminScreenState extends State<ContactAdminScreen> {
   bool isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   void dispose() {
     issueController.dispose();
     selectedIssue.dispose();
@@ -28,54 +35,68 @@ class _ContactAdminScreenState extends State<ContactAdminScreen> {
     super.dispose();
   }
 
-  Future<void> _handleContinue(BuildContext context) async {
-    final issue = selectedIssue.value;
-    debugPrint('Selected issue: ${selectedIssue.value}');
-    if (issue == null) {
-      await showErrorSnackbar(context, 'Please select an issue');
-      return;
+  Future<String?> _getEmail() async {
+    var email = '';
+    final cred = await AuthLocalRepo.instance.getLocalCredentials();
+    if (cred != null) {
+      email = cred.userName ?? '';
     }
-
-    if (issue == AdminIssueType.other && issueController.text.trim().isEmpty) {
-      await showErrorSnackbar(context, 'Please choose your issue');
-      return;
-    }
- if (descriptionController.text.isEmpty) {
-      await showErrorSnackbar(context, 'Please describe your issue');
-      return;
-    }
-
-
-
-    setState(() => isLoading = true);
-
-    log(widget.email);
-
-    final res = await SupportRepo.instance.createTicket(
-      subject: issue.value,
-      description:
-          descriptionController.text,
-      category: issue.value,
-      priority: 'LOW',
-      contactEmail: widget.email,
-    );
-
-    if (!mounted) return;
-
-    setState(() => isLoading = false);
-
-    if (res.error != null) {
-      await showErrorSnackbar(context, res.error!);
-      return;
-    }
-
-    final ticketId = res.data!['data']['ticketId'].toString();
-
-    await pushScreen(
-      context,
-      SupportChatScreen(ticketId: ticketId),
-    );
+    return email;
   }
+  
+
+Future<void> _handleContinue(BuildContext context) async {
+  final issue = selectedIssue.value;
+
+  if (issue == null) {
+    return showErrorSnackbar(context, 'Please select an issue');
+  }
+
+  if (issue == AdminIssueType.other && issueController.text.trim().isEmpty) {
+    return showErrorSnackbar(context, 'Please choose your issue');
+  }
+
+  if (descriptionController.text.isEmpty) {
+    return showErrorSnackbar(context, 'Please describe your issue');
+  }
+
+  setState(() => isLoading = true);
+
+  final email = await _getEmail();
+
+  int? serviceCategory;
+  int? relatedServiceProviderId;
+
+if (widget.issueType != null &&
+    widget.issueType == AdminIssueType.serviceIssue) {
+  serviceCategory = widget.serviceCategory;
+  relatedServiceProviderId = widget.relatedServiceProviderId;
+}
+
+
+  final res = await SupportRepo.instance.createTicket(
+    subject: issue == AdminIssueType.other ? issueController.text.trim() : issue.value,
+    description: descriptionController.text.trim(),
+    category: issue.value,
+    priority: issue.priority,
+    contactEmail: email ?? '',
+    serviceCategory: serviceCategory,
+    relatedServiceProviderId: relatedServiceProviderId,
+  );
+
+  if (!mounted) return;
+
+  setState(() => isLoading = false);
+
+  if (res.error != null) {
+    return showErrorSnackbar(context, res.error!);
+  }
+
+  await showSuccessSnackbar(
+    context,
+    'Ticket has been sent, check email for response',
+  );
+}
 
   @override
   Widget build(BuildContext context) {

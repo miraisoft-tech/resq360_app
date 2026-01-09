@@ -1,20 +1,12 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
-import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
-import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
-import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
-import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
-import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
-import 'package:resq360/features/settings/data/service/support_service.dart';
+import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_confirm.dialog.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
@@ -31,94 +23,16 @@ class _WalletScreenState extends State<WalletScreen> {
   dynamic currentUser;
   bool userReady = false;
 
-
   @override
   void initState() {
     super.initState();
-     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _setupUser();
-       context.read<WalletBloc>().add(FetchWalletInfo());
-    context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      context.read<WalletBloc>().add(FetchWalletInfo());
+      context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
     });
   }
 
-   Future<void> _setupUser() async {
-    final type = await AuthLocalRepo.instance.getUserType();
-    if (type == null) return;
 
-    userType = type;
-
-    if (type == 'user') {
-      currentUser = CustomerAuthProvider.instance.authInfo;
-    } else if (type == UserType.provider.name) {
-      currentUser = ProviderAuthProvider.instance.authInfo;
-    }
-
-    if (mounted) {
-      setState(() {
-        userReady = currentUser != null;
-      });
-    }
-  }
-
-    Future<void> _handleAppeal(BuildContext context, WalletTransaction walletTx) async {
-    final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
-      context,
-      body: const PaymentAppealDialog(),
-    );
-
-    if (shouldProceed != true) return;
-
-    final existingTicketId = await SupportRepo.instance.findExistingOpenAppealTicketId();
-
-    if (!context.mounted) {
-      return;
-    }
-
-    if (existingTicketId != null) {
-      if (currentUser != null) {
-        await pushScreen(
-          context,
-          SupportChatScreen(
-            ticketId: existingTicketId,
-          ),
-        );
-      }
-
-      return;
-    }
-
-    final serviceName = walletTx.category;
-    final contactEmail = currentUser.email;
-    final contactPhone = currentUser.phoneNumber;
-
-    final res = await SupportRepo.instance.createTicket(
-      subject: 'Service Appeal',
-      description: 'User opened an appeal for $serviceName service.',
-      category: AdminIssueType.paymentIssue.value,
-      priority: 'LOW',
-      contactEmail: contactEmail.toString(),
-      contactPhone: contactPhone.toString(),
-      serviceCategory: walletTx.serviceRequestId,
-      relatedServiceProviderId: walletTx.providerId,
-    );
-
-    if (!context.mounted) return;
-
-    if (res.error != null) {
-      await showErrorSnackbar(context, res.error!);
-      return;
-    }
-
-    final ticketId = res.data!['data']['ticketId'].toString();
-
-    await pushScreen(
-      context,
-      SupportChatScreen(
-        ticketId: ticketId,
-      ),
-    );
-  }
 
 
   @override
@@ -351,14 +265,21 @@ class _WalletScreenState extends State<WalletScreen> {
                         return WalletTransactionTile(
                           tx: tx,
                           onTap: () async {
-                            await GeneralDialogs.showCustomBottomSheet(
-                              context,
-                              body: TransactionDetailModal(
-                                onRetry: () {},
-                                onSupport:()=> _handleAppeal(context, tx),
-                                tx: tx,
-                              ),
-                            );
+                    
+                              await GeneralDialogs.showCustomBottomSheet(
+                                context,
+                                body: TransactionDetailModal(
+                                  onRetry: () {},
+                                  onSupport: () async {
+                                    await pushScreen(
+                                      context,
+                                      const ContactAdminScreen(),
+                                    );
+                                  },
+                                  tx: tx,
+                                ),
+                              );
+  
                           },
                         );
                       },
