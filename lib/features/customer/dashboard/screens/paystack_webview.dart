@@ -55,30 +55,6 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
     );
   }
 
-  bool _isCallbackUrl(String? url) {
-    if (url == null) return false;
-
-    final uri = Uri.tryParse(url);
-    if (uri == null) return false;
-
-    final callbackUri = Uri.parse(widget.callbackUrl);
-
-    // Match ONLY scheme + host + path
-    final isCallbackEndpoint =
-        uri.scheme == callbackUri.scheme &&
-        uri.host == callbackUri.host &&
-        uri.path == callbackUri.path;
-
-    if (!isCallbackEndpoint) return false;
-
-    // Paystack always sends at least one of these
-    final trxRef = uri.queryParameters['trxref'];
-    final reference = uri.queryParameters['reference'];
-
-    // If either matches the one we initiated
-    return trxRef == widget.reference || reference == widget.reference;
-  }
-
   void _finish([bool success = true]) {
     if (finished) return;
     finished = true;
@@ -140,8 +116,11 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
 
             onLoadStart: (_, url) {
               setState(() => _loading = true);
+              log('the url is now: $url');
 
-              if (_isCallbackUrl(url?.toString())) {
+              if (url.toString().contains(
+                ' https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
+              )) {
                 _finish();
               }
             },
@@ -156,7 +135,9 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
             shouldOverrideUrlLoading: (_, nav) async {
               final url = nav.request.url.toString();
 
-              if (_isCallbackUrl(url)) {
+              if (url.contains(
+                ' https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
+              )) {
                 _finish();
                 return NavigationActionPolicy.CANCEL;
               }
