@@ -57,38 +57,41 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
     }
   }
 
-Future<void> _handleAppeal(BuildContext context) async {
-  final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
-    context,
-    body: const PaymentAppealDialog(),
-  );
-
-  if (shouldProceed != true) return;
-
-  final existingTicketId = await findExistingOpenAppealTicketId();
-
-  if (!context.mounted) {
-    return;
-  }
-
-  if (existingTicketId != null) {
-
-    if (currentUser != null) {
-       await pushScreen(
+  Future<void> _handleAppeal(BuildContext context) async {
+    final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
       context,
-      SupportChatScreen(ticketId: existingTicketId, providerName: widget.booking.assignedProvider?.fullName ?? 'Assigned Provider')
+      body: const PaymentAppealDialog(),
     );
+
+    if (shouldProceed != true) return;
+
+    final existingTicketId = await findExistingOpenAppealTicketId();
+
+    if (!context.mounted) {
+      return;
     }
-   
 
-    return;
-  }
+    if (existingTicketId != null) {
+      if (currentUser != null) {
+        await pushScreen(
+          context,
+          SupportChatScreen(
+            ticketId: existingTicketId,
+            providerName:
+                widget.booking.assignedProvider?.fullName ??
+                'Assigned Provider',
+          ),
+        );
+      }
 
-   final serviceName = widget.booking.serviceCategory?.name ?? 'service';
+      return;
+    }
+
+    final serviceName = widget.booking.serviceCategory?.name ?? 'service';
     final contactEmail = currentUser.email;
     final contactPhone = currentUser.phoneNumber;
 
-   final res = await SupportRepo.instance.createTicket(
+    final res = await SupportRepo.instance.createTicket(
       subject: 'Service Appeal',
       description: 'User opened an appeal for $serviceName service.',
       category: AdminIssueType.serviceIssue.value,
@@ -99,23 +102,24 @@ Future<void> _handleAppeal(BuildContext context) async {
       relatedServiceProviderId: widget.booking.assignedProvider?.id,
     );
 
+    if (!context.mounted) return;
 
-  if (!context.mounted) return;
+    if (res.error != null) {
+      await showErrorSnackbar(context, res.error!);
+      return;
+    }
 
-  if (res.error != null) {
-    await showErrorSnackbar(context, res.error!);
-    return;
+    final ticketId = res.data!['data']['ticketId'].toString();
+
+    await pushScreen(
+      context,
+      SupportChatScreen(
+        ticketId: ticketId,
+        providerName:
+            widget.booking.assignedProvider?.fullName ?? 'Assigned Provider',
+      ),
+    );
   }
-
-  final ticketId = res.data!['data']['ticketId'].toString();
-
-  await pushScreen(
-    context,
-    SupportChatScreen(ticketId: ticketId, providerName: 
-        widget.booking.assignedProvider?.fullName ?? 'Assigned Provider'),
-  );
-
-}
 
   @override
   Widget build(BuildContext context) {
@@ -229,40 +233,39 @@ Future<void> _handleAppeal(BuildContext context) async {
                   ),
                 ),
               ),
-              // removed except for completed case, will be delibrated
-              if(status == BookingStatus.completed.value)...[
-                  20.horizontalSpace,
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final serviceRequestId = widget.booking.id;
-                    if (serviceRequestId == null) return;
 
-                    await pushScreen(
-                      context,
-                      ServiceCompletedScreen(
-                        serviceRequestId: serviceRequestId,
+              if (status == BookingStatus.completed.value) ...[
+                20.horizontalSpace,
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final serviceRequestId = widget.booking.id;
+                      if (serviceRequestId == null) return;
+
+                      await pushScreen(
+                        context,
+                        ServiceCompletedScreen(
+                          serviceRequestId: serviceRequestId,
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: pad(horizontal: 14, vertical: 10),
+                      backgroundColor: colors.primary.shade500,
+                      foregroundColor: colors.whiteColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: pad(horizontal: 14, vertical: 10),
-                    backgroundColor: colors.primary.shade500,
-                    foregroundColor: colors.whiteColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: GenText(
+                      'Complete',
+                      height: 16.5,
+                      color: colors.whiteColor,
+                      weight: FontWeight.w500,
                     ),
                   ),
-                  child: GenText(
-                    'Complete',
-                    height: 16.5,
-                    color: colors.whiteColor,
-                    weight: FontWeight.w500,
-                  ),
                 ),
-              ),
-              ]
-            
+              ],
             ],
           ),
         ],

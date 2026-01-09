@@ -20,7 +20,7 @@ class TransactionDetailModal extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.65,
+      height: MediaQuery.of(context).size.height * 0.75,
       padding: pad(vertical: 10, horizontal: 16),
       decoration: BoxDecoration(
         color: appColors.whiteColor,
@@ -67,7 +67,6 @@ class TransactionDetailModal extends StatelessWidget {
               ),
               20.verticalSpace,
 
-        
               GenText(
                 tx.title,
                 size: 12,
@@ -83,19 +82,18 @@ class TransactionDetailModal extends StatelessWidget {
               ),
               4.verticalSpace,
 
-
               GenText(
                 tx.status ?? 'UNKNOWN',
-                color: tx.status == 'FAILED'
-                    ? appColors.error.shade500
-                    : appColors.success.shade600,
+                color:
+                    tx.status == 'FAILED'
+                        ? appColors.error.shade500
+                        : appColors.success.shade600,
                 weight: FontWeight.w600,
               ),
               20.verticalSpace,
               Divider(color: appColors.textColor.shade100),
               20.verticalSpace,
 
-            
               _TransactionDetailItem(
                 label: 'Invoice No.',
                 value: tx.reference ?? '-',
@@ -119,9 +117,7 @@ class TransactionDetailModal extends StatelessWidget {
 
               _TransactionDetailItem(
                 label: 'Failure Reason',
-                value: tx.status == 'FAILED'
-                    ? 'Transaction failed'
-                    : '-',
+                value: tx.status == 'FAILED' ? 'Transaction failed' : '-',
               ),
 
               24.verticalSpace,
@@ -136,14 +132,14 @@ class TransactionDetailModal extends StatelessWidget {
                     ),
                   ),
                   10.horizontalSpace,
-                  Expanded(
-                    child: WideButton(
-                      label: 'Try Again',
-                      backgroundColor: appColors.primary.shade500,
-                      textColor: appColors.whiteColor,
-                      onPressed: onRetry,
-                    ),
-                  ),
+                  // Expanded(
+                  //   child: WideButton(
+                  //     label: 'Try Again',
+                  //     backgroundColor: appColors.primary.shade500,
+                  //     textColor: appColors.whiteColor,
+                  //     onPressed: onRetry,
+                  //   ),
+                  // ),
                 ],
               ),
               20.verticalSpace,
@@ -161,7 +157,6 @@ class TransactionDetailModal extends StatelessWidget {
   }
 }
 
-
 class _TransactionDetailItem extends StatelessWidget {
   const _TransactionDetailItem({
     required this.label,
@@ -178,17 +173,21 @@ class _TransactionDetailItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GenText(
             label,
             size: 12,
             color: appColors.textColor.shade400,
           ),
-          GenText(
-            value,
-            color: appColors.black,
-            weight: FontWeight.w500,
+          20.horizontalSpace,
+          Expanded(
+            child: GenText(
+              value,
+              color: appColors.black,
+              weight: FontWeight.w500,
+              textAlign: TextAlign.end,
+              maxLines: 1,
+            ),
           ),
         ],
       ),

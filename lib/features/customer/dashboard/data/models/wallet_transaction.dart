@@ -131,7 +131,7 @@ class TransactionMetadata {
     return TransactionMetadata(
       walletId: json['walletId'] as int?,
       userId: json['userId'] as int?,
-      userType: json['userType'] as String,
+      userType: json['userType'] as String?,
     );
   }
   final int? walletId;
@@ -151,12 +151,12 @@ class Pagination {
 
   factory Pagination.fromJson(Map<String, dynamic> json) {
     return Pagination(
-      currentPage: json['currentPage'] as int,
-      totalPages: json['totalPages'] as int,
-      total: json['total'] as int,
-      itemsPerPage: json['itemsPerPage'] as int,
-      hasNextPage: json['hasNextPage'] as bool,
-      hasPrev: json['hasPrev'] as bool,
+      currentPage: json['currentPage'] as int?,
+      totalPages: json['totalPages'] as int?,
+      total: json['total'] as int?,
+      itemsPerPage: json['itemsPerPage'] as int?,
+      hasNextPage: json['hasNextPage'] as bool?,
+      hasPrev: json['hasPrev'] as bool?,
     );
   }
   final int? currentPage;

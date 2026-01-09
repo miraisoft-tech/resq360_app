@@ -10,6 +10,7 @@ class FilterSearchFormField extends StatefulWidget {
     this.inputFormatters,
     this.hintWidget,
     this.onTapSuffix,
+    this.onTap,
     this.validator,
     this.onChanged,
     this.keyboardType,
@@ -28,6 +29,7 @@ class FilterSearchFormField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final void Function()? onTapSuffix;
   final void Function(String?)? onChanged;
+  final VoidCallback? onTap;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final int maxLines;
@@ -69,6 +71,7 @@ class _FilterSearchFormFieldState extends State<FilterSearchFormField> {
             keyboardType: widget.keyboardType,
             validator: widget.validator,
             onChanged: widget.onChanged,
+            onTap: widget.onTap,
             inputFormatters: widget.inputFormatters,
             controller: widget.controller,
             focusNode: _focusNode,

@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
@@ -26,12 +27,17 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
-    context.read<ServiceCatalogBloc>().add(const FetchServices());
-    context.read<CustomerAdvertisementBloc>().add(CustomerFetchAdvertisement());
-    context.read<CustomerBookingBloc>().add(
-      const FetchCustomerBookings(status: 'PENDING'),
-    );
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ServiceCatalogBloc>().add(const FetchServices());
+      context.read<CustomerAdvertisementBloc>().add(
+        CustomerFetchAdvertisement(),
+      );
+      context.read<CustomerBookingBloc>().add(
+        FetchCustomerBookings(status: BookingStatus.pending.value),
+      );
+    });
   }
 
   @override
@@ -42,8 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: colors.whiteColor,
       body: SafeArea(
         child: RefreshIndicator(
-            color: colors.primary,
-          onRefresh: () async{
+          color: colors.primary,
+          onRefresh: () async {
             context.read<CustomerAuthBloc>().add(
               const CustomergetUserProfile(),
             );
@@ -53,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
               CustomerFetchAdvertisement(),
             );
             context.read<CustomerBookingBloc>().add(
-               FetchCustomerBookings(status: BookingStatus.pending.name),
+              FetchCustomerBookings(status: BookingStatus.pending.value),
             );
           },
           child: ListView(
@@ -111,6 +117,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 hintText: 'Search for services',
                 onTapSuffix: () {},
                 onChanged: (value) {},
+                onTap: () async {
+                  await AppGenUtil.offKeyboard();
+
+                  await pushScreen(context, const ServiceCategoryScreen());
+                },
                 prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
               ),
               20.verticalSpace,
@@ -194,13 +205,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           final category = categories[index];
                           return ServiceCategoryWidget(
                             category: category,
-                            onTap: ()async{
-                               await pushScreen(
-                                        context,
-                                        ServiceProvidersScreen(
-                                          serviceProviderId: category.id,
-                                        ),
-                                      );
+                            onTap: () async {
+                              await pushScreen(
+                                context,
+                                ServiceProvidersScreen(
+                                  serviceProviderId: category.id,
+                                ),
+                              );
                             },
                           );
                         },

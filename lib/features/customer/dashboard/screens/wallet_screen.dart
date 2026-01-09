@@ -1,4 +1,3 @@
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
@@ -29,7 +28,7 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    
+
     // final transactions = [
     //   const WalletTransaction(
     //     title: 'QuickTow Emergency',
@@ -248,7 +247,8 @@ class _WalletScreenState extends State<WalletScreen> {
                     return ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: transactions.length,
+                      itemCount:
+                          transactions.length > 4 ? 5 : transactions.length,
                       separatorBuilder: (_, _) => 16.verticalSpace,
                       itemBuilder: (context, index) {
                         final tx = transactions[index];
@@ -261,7 +261,7 @@ class _WalletScreenState extends State<WalletScreen> {
                               body: TransactionDetailModal(
                                 onRetry: () {},
                                 onSupport: () {},
-                                tx:tx
+                                tx: tx,
                               ),
                             );
                           },

@@ -45,32 +45,14 @@ class BaseAPI {
             log('No token found for ${res.uri}');
           }
 
-          // final token = container.read(authProvider).authInfo?.token;
-
-          // if (BuildConfig.isDev) {
-          //   log('${res.uri}\ntoken $token\n${res.data ?? 'N/A'}');
-          // }
-
-          // if (customAccessToken != null) {
-          //   res.headers['Authorization'] = 'Bearer $customAccessToken';
-          // }
-
-          // if (token != null) {
-          //   res.headers['Authorization'] = 'Bearer $token';
-          //   res.headers['x-epump-sub'] =
-          //       '${container.read(authProvider).authInfo?.code}';
-          // } else {
-          //   res.headers['Username'] = '${container.read(signupProvider).email}';
-          // }
-
           return handler.next(res);
         },
         onResponse: (res, handler) async {
           final statusCode = res.statusCode;
           final data = res.data?.toString() ?? '';
 
-          if (statusCode == 401 ||
-              (statusCode == 200 && data.contains('Unauthorized') || data.contains('DOCTYPE'))) {
+          if (statusCode == 200 && data.contains('Unauthorized') ||
+              data.contains('DOCTYPE')) {
             final authBloc = BlocRegistry.authBloc;
             if (authBloc == null) return handler.next(res);
             authBloc.add(ForceLogoutEvent());
