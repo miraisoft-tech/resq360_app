@@ -8,6 +8,7 @@ import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dar
 import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
+import 'package:resq360/features/customer/dashboard/screens/all_transactions_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
@@ -31,18 +32,17 @@ class _WalletScreenState extends State<WalletScreen> {
   dynamic currentUser;
   bool userReady = false;
 
-
   @override
   void initState() {
     super.initState();
-     WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _setupUser();
-       context.read<WalletBloc>().add(FetchWalletInfo());
-    context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
+      context.read<WalletBloc>().add(FetchWalletInfo());
+      context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
     });
   }
 
-   Future<void> _setupUser() async {
+  Future<void> _setupUser() async {
     final type = await AuthLocalRepo.instance.getUserType();
     if (type == null) return;
 
@@ -61,7 +61,10 @@ class _WalletScreenState extends State<WalletScreen> {
     }
   }
 
-    Future<void> _handleAppeal(BuildContext context, WalletTransaction walletTx) async {
+  Future<void> _handleAppeal(
+    BuildContext context,
+    WalletTransaction walletTx,
+  ) async {
     final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
       context,
       body: const PaymentAppealDialog(),
@@ -69,7 +72,8 @@ class _WalletScreenState extends State<WalletScreen> {
 
     if (shouldProceed != true) return;
 
-    final existingTicketId = await SupportRepo.instance.findExistingOpenAppealTicketId();
+    final existingTicketId =
+        await SupportRepo.instance.findExistingOpenAppealTicketId();
 
     if (!context.mounted) {
       return;
@@ -119,7 +123,6 @@ class _WalletScreenState extends State<WalletScreen> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -301,11 +304,19 @@ class _WalletScreenState extends State<WalletScreen> {
                       color: appColors.black,
                     ),
                   ),
-                  GenText(
-                    'View All',
-                    size: 12,
-                    weight: FontWeight.w400,
-                    color: appColors.primary.shade500,
+                  GestureDetector(
+                    onTap: () async {
+                      await pushScreen(
+                        context,
+                        const AllTransactionsScreen(),
+                      );
+                    },
+                    child: GenText(
+                      'View All',
+                      size: 12,
+                      weight: FontWeight.w400,
+                      color: appColors.primary.shade500,
+                    ),
                   ),
                 ],
               ),
@@ -355,7 +366,7 @@ class _WalletScreenState extends State<WalletScreen> {
                               context,
                               body: TransactionDetailModal(
                                 onRetry: () {},
-                                onSupport:()=> _handleAppeal(context, tx),
+                                onSupport: () => _handleAppeal(context, tx),
                                 tx: tx,
                               ),
                             );
