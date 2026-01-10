@@ -30,7 +30,8 @@ class AdvertisementRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
-Future<ApiResult<void>> createAdvertisement({
+
+  Future<ApiResult<void>> createAdvertisement({
     required int discountPercentage,
     required int durationInMilliSeconds,
     required String paymentMethod,
@@ -56,10 +57,32 @@ Future<ApiResult<void>> createAdvertisement({
       }
     } on DioException catch (e) {
       return ApiResult(
-        error: e.response?.data?['message'] as String ,
+        error: e.response?.data?['message'] as String,
       );
     }
   }
 
-
+  Future<ApiResult<int>> fetchAdvertPrice() async {
+    const url = '/advertisements/pricing';
+     var price = 0;
+    try {
+      final res = await dio().get<Map<String, dynamic>>(url);
+      if (res.statusCode == 200) {
+        final json = res.data;
+        if(json != null){
+           price = json['price'] as int;
+        }
+       
+        return ApiResult(data: price);
+      } else {
+        return ApiResult(error: res.data?['message'].toString());
+      }
+    } on DioException catch (e) {
+      final message =
+          e.response?.data?['message'] ?? e.message ?? 'Network error';
+      return ApiResult(error: message.toString());
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
 }

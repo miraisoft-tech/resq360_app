@@ -1,14 +1,10 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
-import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
@@ -30,7 +26,6 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _setupUser();
       context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
     });
 
@@ -56,24 +51,6 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     }
   }
 
-  Future<void> _setupUser() async {
-    final type = await AuthLocalRepo.instance.getUserType();
-    if (type == null) return;
-
-    userType = type;
-
-    if (type == 'user') {
-      currentUser = CustomerAuthProvider.instance.authInfo;
-    } else if (type == UserType.provider.name) {
-      currentUser = ProviderAuthProvider.instance.authInfo;
-    }
-
-    if (mounted) {
-      setState(() {
-        userReady = currentUser != null;
-      });
-    }
-  }
 
   Future<void> _handleAppeal(
     BuildContext context,

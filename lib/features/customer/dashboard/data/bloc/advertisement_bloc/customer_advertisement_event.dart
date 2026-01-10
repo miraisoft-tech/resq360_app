@@ -22,3 +22,4 @@ class CreateAdvertisement extends CustomerAdvertisementEvent {
   final String paymentMethod;
   final String description;
 }
+class FetchAdvertisementPrice extends CustomerAdvertisementEvent{}

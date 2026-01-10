@@ -1,13 +1,14 @@
 part of 'customer_payment_bloc.dart';
 
-sealed class CustomerPaymentEvent extends Equatable {
+abstract class CustomerPaymentEvent extends Equatable {
   const CustomerPaymentEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-final class CustomerInitWalletFundingEvent extends CustomerPaymentEvent {
+// Wallet Funding Events
+class CustomerInitWalletFundingEvent extends CustomerPaymentEvent {
   const CustomerInitWalletFundingEvent({
     required this.amount,
     required this.userType,
@@ -20,15 +21,17 @@ final class CustomerInitWalletFundingEvent extends CustomerPaymentEvent {
   List<Object?> get props => [amount, userType];
 }
 
-final class CustomerVerifyWalletFundingEvent extends CustomerPaymentEvent {
+class CustomerVerifyWalletFundingEvent extends CustomerPaymentEvent {
   const CustomerVerifyWalletFundingEvent(this.reference);
+
   final String reference;
 
   @override
   List<Object?> get props => [reference];
 }
 
-final class CustomerInitServicePaymentEvent extends CustomerPaymentEvent {
+// Service Payment Events
+class CustomerInitServicePaymentEvent extends CustomerPaymentEvent {
   const CustomerInitServicePaymentEvent({
     required this.amount,
     required this.email,
@@ -45,7 +48,7 @@ final class CustomerInitServicePaymentEvent extends CustomerPaymentEvent {
   List<Object?> get props => [amount, email, currency, callbackUrl];
 }
 
-final class CustomerInitServiceRequestPaymentEvent extends CustomerPaymentEvent {
+class CustomerInitServiceRequestPaymentEvent extends CustomerPaymentEvent {
   const CustomerInitServiceRequestPaymentEvent({
     required this.chatId,
     required this.invoiceMessageId,
@@ -57,11 +60,39 @@ final class CustomerInitServiceRequestPaymentEvent extends CustomerPaymentEvent 
   final String paymentMethod;
 
   @override
-  List<Object?> get props => [chatId, invoiceMessageId, paymentMethod,];
+  List<Object?> get props => [chatId, invoiceMessageId, paymentMethod];
 }
 
-final class CustomerVerifyServicePaymentEvent extends CustomerPaymentEvent {
+class CustomerVerifyServicePaymentEvent extends CustomerPaymentEvent {
   const CustomerVerifyServicePaymentEvent(this.reference);
+
+  final String reference;
+
+  @override
+  List<Object?> get props => [reference];
+}
+
+// Advertisement Payment Events
+class CustomerInitAdvertisementPaymentEvent extends CustomerPaymentEvent {
+  const CustomerInitAdvertisementPaymentEvent({
+    required this.amount,
+    required this.email,
+    required this.currency,
+    required this.callbackUrl,
+  });
+
+  final int amount;
+  final String email;
+  final String currency;
+  final String callbackUrl;
+
+  @override
+  List<Object?> get props => [amount, email, currency, callbackUrl];
+}
+
+class CustomerVerifyAdvertisementPaymentEvent extends CustomerPaymentEvent {
+  const CustomerVerifyAdvertisementPaymentEvent(this.reference);
+
   final String reference;
 
   @override

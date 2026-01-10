@@ -32,17 +32,16 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
 
     return BlocBuilder<CustomerAdvertisementBloc, CustomerAdvertisementState>(
       builder: (context, state) {
-        switch (state) {
-          case CustomerAdvertisementLoading():
+        if (state is CustomerAdvertisementLoading) {
             return const CircularProgressIndicator();
-          case CustomerAdvertisementInitial():
-            return const SizedBox.shrink();
-          case CustomerAdvertisementFetched(
-            adverisementList: final ads,
-          ):
-            if (ads.isEmpty) {
+          
+        }
+        if(state is CustomerAdvertisementFetched ){
+          final ads = state.adverisementList;
+          if (ads.isEmpty) {
               return const SizedBox.shrink();
             }
+        
             return Column(
               children: [
                 SizedBox(
@@ -126,11 +125,8 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
                   SmallDotIndicator(total: ads.length, currentIndex: _currentPage),
               ],
             );
-          case CustomerAdvertisementError():
-            return const SizedBox.shrink();
-          case CustomerAdvertisementCreated():
-            return const SizedBox.shrink();
         }
+        return const SizedBox.shrink();
       },
     );
   }

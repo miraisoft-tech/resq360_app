@@ -13,6 +13,8 @@ class CustomerAdvertisementBloc
   CustomerAdvertisementBloc() : super(CustomerAdvertisementInitial()) {
     on<CustomerFetchAdvertisement>(_fetchAdvertisement);
      on<CreateAdvertisement>(_onCreateAdvertisement);
+     on<FetchAdvertisementPrice>(_onGetAdvertPrice);
+
   }
 
   Future<void> _fetchAdvertisement(
@@ -47,7 +49,23 @@ class CustomerAdvertisementBloc
     if (result.error != null) {
       emit(CustomerAdvertisementError(error: result.error!));
     } else {
-      emit(CustomerAdvertisementCreated());
+      emit(AdvertisementCreated());
+    }
+  }
+
+    Future<void> _onGetAdvertPrice(
+    FetchAdvertisementPrice event,
+    Emitter<CustomerAdvertisementState> emit,
+  ) async {
+    emit(AdvertisementFetchPriceLoading());
+
+    final result = await advertisementRepo.fetchAdvertPrice();
+
+    if (result.error != null) {
+      emit(CustomerAdvertisementError(error: result.error!));
+    } else {
+      final price = result.data;
+      emit(AdvertisementPriceFetched(price: price ?? 0));
     }
   }
 }

@@ -257,15 +257,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 CustomerAdvertisementState
               >(
                 builder: (context, state) {
-                  switch (state) {
-                    case CustomerAdvertisementLoading():
+                  if (state is CustomerAdvertisementLoading) {
                       return const CircularProgressIndicator();
-                    case CustomerAdvertisementInitial():
-                      return const SizedBox.shrink();
-                    case CustomerAdvertisementFetched(
-                      adverisementList: final ads,
-                    ):
-                      if (ads.isEmpty) {
+                  }
+                  if (state is CustomerAdvertisementFetched) {
+                    final ads = state.adverisementList;
+                    if (ads.isEmpty) {
                         return const Center(
                           child: Text(
                             'No advertisements available',
@@ -273,19 +270,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         );
                       }
+
                       return RecommendedCard(advertisement: ads.first);
-                    case CustomerAdvertisementError(error: final message):
-                      return ErrorMessageAndButton(
-                        error: message,
+                  }
+
+                  if (state is CustomerAdvertisementError){
+                    return ErrorMessageAndButton(
+                        error: state.error,
                         onPressed: () {
                           context.read<CustomerAdvertisementBloc>().add(
                             CustomerFetchAdvertisement(),
                           );
                         },
                       );
-                    case CustomerAdvertisementCreated():
-                      return const SizedBox.shrink();
                   }
+                  return const SizedBox.shrink();
                 },
               ),
               30.verticalSpace,

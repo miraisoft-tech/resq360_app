@@ -2,8 +2,15 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
+import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
+import 'package:resq360/features/provider/chat/data/models/duration.enum.dart';
 import 'package:resq360/features/widgets/dialogs/payment_fiished.modal.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
@@ -16,7 +23,7 @@ class PromoteServiceReviewScreen extends StatefulWidget {
   });
   final String description;
   final String discount;
-  final String duration;
+  final PromotionDuration duration;
 
   @override
   State<PromoteServiceReviewScreen> createState() =>
@@ -25,6 +32,25 @@ class PromoteServiceReviewScreen extends StatefulWidget {
 
 class _PromoteServiceReviewScreenState
     extends State<PromoteServiceReviewScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<CustomerAdvertisementBloc>().add(FetchAdvertisementPrice());
+  }
+
+  Future<String?> getUserEmail() async {
+    final type = await AuthLocalRepo.instance.getUserType();
+    if (type == null) return null;
+
+    if (type == 'user') {
+      return CustomerAuthProvider.instance.authInfo?.email;
+    } else if (type == UserType.provider.name) {
+      return ProviderAuthProvider.instance.authInfo?.email;
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -37,7 +63,7 @@ class _PromoteServiceReviewScreenState
               unawaited(showLoadingDialog(context));
             }
 
-            if (state is CustomerAdvertisementCreated) {
+            if (state is AdvertisementCreated) {
               await pop(context);
               await GeneralDialogs.showCustomDialog<void>(
                 context,
@@ -53,7 +79,6 @@ class _PromoteServiceReviewScreenState
 
             if (state is CustomerAdvertisementError) {
               await pop(context);
-
               await showErrorSnackbar(context, state.error);
             }
           },
@@ -64,6 +89,9 @@ class _PromoteServiceReviewScreenState
               balance = state.wallet.balance.toString();
             }
           },
+        ),
+        BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
+          listener: _handlePaymentState,
         ),
       ],
       child: Scaffold(
@@ -145,7 +173,7 @@ class _PromoteServiceReviewScreenState
                           ),
                           const Spacer(),
                           GenText(
-                            widget.duration,
+                            widget.duration.label,
                             height: 24.5,
                             weight: FontWeight.w500,
                             color: appColors.black,
@@ -162,11 +190,26 @@ class _PromoteServiceReviewScreenState
                             color: appColors.textColor.shade400,
                           ),
                           const Spacer(),
-                          GenText(
-                            '₦12,000',
-                            height: 24.5,
-                            weight: FontWeight.w500,
-                            color: appColors.black,
+                          BlocBuilder<
+                            CustomerAdvertisementBloc,
+                            CustomerAdvertisementState
+                          >(
+                            builder: (context, state) {
+                              if (state is AdvertisementPriceFetched) {
+                                return GenText(
+                                  state.price.toString(),
+                                  height: 24.5,
+                                  weight: FontWeight.w500,
+                                  color: appColors.black,
+                                );
+                              }
+                              return GenText(
+                                'loading',
+                                height: 24.5,
+                                weight: FontWeight.w500,
+                                color: appColors.black,
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -180,11 +223,23 @@ class _PromoteServiceReviewScreenState
                             color: appColors.textColor.shade400,
                           ),
                           const Spacer(),
-                          GenText(
-                            '₦12,000',
-                            height: 24.5,
-                            weight: FontWeight.w500,
-                            color: appColors.black,
+                          BlocBuilder<
+                            CustomerAdvertisementBloc,
+                            CustomerAdvertisementState
+                          >(
+                            builder: (context, state) {
+                              if (state is AdvertisementPriceFetched) {
+                                final total =
+                                    state.price * widget.duration.value;
+                                return GenText(
+                                  total.toString(),
+                                  height: 24.5,
+                                  weight: FontWeight.w500,
+                                  color: appColors.black,
+                                );
+                              }
+                              return const GenText('Calculating...');
+                            },
                           ),
                         ],
                       ),
@@ -203,36 +258,75 @@ class _PromoteServiceReviewScreenState
                       ),
                     ),
                     12.horizontalSpace,
-                    Expanded(
-                      child: WideButton(
-                        label: 'Pay Now',
-                        backgroundColor: appColors.primary.shade500,
-                        textColor: appColors.whiteColor,
-                        onPressed: () async {
-                          await GeneralDialogs.showCustomDialog<void>(
-                            context,
-                            body: PaymentOptionDialog(
-                              onPaymentSelected: (
-                                PaymentMethod paymentMethod,
-                              ) async {
-                                if (paymentMethod == PaymentMethod.wallet) {
-                                  await GeneralDialogs.showCustomDialog<void>(
-                                    context,
-                                    body: FinishPaymentDialog(
-                                      amount: widget.discount,
-                                      walletBalance:
-                                          double.parse(balance).toInt(),
-                                      discount: widget.discount,
-                                      duration: widget.duration,
-                                      description: widget.description,
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          );
-                        },
-                      ),
+                    BlocBuilder<
+                      CustomerAdvertisementBloc,
+                      CustomerAdvertisementState
+                    >(
+                      builder: (context, state) {
+                        final isLoaded = state is AdvertisementPriceFetched;
+
+                        return Expanded(
+                          child: WideButton(
+                            label: isLoaded ? 'Pay Now' : 'Loading...',
+                            backgroundColor: appColors.primary.shade500,
+                            textColor: appColors.whiteColor,
+                            onPressed:
+                                isLoaded
+                                    ? () async {
+                                      await GeneralDialogs.showCustomDialog<
+                                        void
+                                      >(
+                                        context,
+                                        body: PaymentOptionDialog(
+                                          onPaymentSelected: (
+                                            paymentMethod,
+                                          ) async {
+                                            if (paymentMethod ==
+                                                PaymentMethod.wallet) {
+                                              await GeneralDialogs.showCustomDialog<
+                                                void
+                                              >(
+                                                context,
+                                                body: FinishPaymentDialog(
+                                                  amount:
+                                                      state.price.toString(),
+                                                  walletBalance:
+                                                      double.parse(
+                                                        balance,
+                                                      ).toInt(),
+                                                  discount: widget.discount,
+                                                  duration: widget.duration,
+                                                  description:
+                                                      widget.description,
+                                                ),
+                                              );
+                                            } else {
+                                              // Paystack payment
+                                              final total =
+                                                  state.price *
+                                                  widget.duration.value;
+                                              final email =
+                                                  await getUserEmail();
+                                              log(email);
+                                              if (email == null) return;
+                                              context.read<CustomerPaymentBloc>().add(
+                                                CustomerInitAdvertisementPaymentEvent(
+                                                  amount: total,
+                                                  email: email,
+                                                  currency: 'NGN',
+                                                  callbackUrl:
+                                                      'https://example.com/callback',
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      );
+                                    }
+                                    : null,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -243,20 +337,62 @@ class _PromoteServiceReviewScreenState
       ),
     );
   }
-}
 
-int durationToMilliseconds(String value) {
-  switch (value) {
-    case '24 hours':
-      return const Duration(hours: 24).inMilliseconds;
-    case '48 hours':
-      return const Duration(hours: 48).inMilliseconds;
-    case '72 hours':
-      return const Duration(hours: 72).inMilliseconds;
-    case '1 week':
-      return const Duration(days: 7).inMilliseconds;
-    default:
-      return const Duration(hours: 24).inMilliseconds;
+  Future<void> _handlePaymentState(
+    BuildContext context,
+    CustomerPaymentState state,
+  ) async {
+    if (state is AdvertisementPaymentLoadingState) {
+      await showLoadingDialog(context);
+    }
+
+    if (state is AdvertisementPaymentInitiatedState) {
+      Navigator.pop(context);
+
+      final completed = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => PaystackWebViewPage(
+                authorizationUrl: state.payment.authorizationUrl,
+                reference: state.payment.reference,
+                callbackUrl: 'https://example.com/callback',
+              ),
+        ),
+      );
+
+      if (completed ?? false) {
+        context.read<CustomerPaymentBloc>().add(
+          CustomerVerifyAdvertisementPaymentEvent(
+            state.payment.reference,
+          ),
+        );
+      } else {
+        await showErrorSnackbar(context, 'Payment cancelled');
+      }
+    }
+
+    if (state is AdvertisementPaymentVerifiedState) {
+      Navigator.pop(context);
+
+      if (state.verification.gatewayResponse == 'Successful') {
+        context.read<CustomerAdvertisementBloc>().add(
+          CreateAdvertisement(
+            discount: int.parse(widget.discount),
+            duration: widget.duration.milliseconds,
+            paymentMethod: PaymentMethod.new_card.name,
+            description: widget.description,
+          ),
+        );
+      } else {
+        await showErrorSnackbar(context, 'Payment unsuccessful');
+      }
+    }
+
+    if (state is AdvertisementPaymentFailureState) {
+      Navigator.pop(context);
+      await showErrorSnackbar(context, state.error);
+    }
   }
 }
 
@@ -273,7 +409,7 @@ class FinishPaymentDialog extends StatefulWidget {
   final String amount;
   final int walletBalance;
   final String discount;
-  final String duration;
+  final PromotionDuration duration;
   final String description;
 
   @override
@@ -284,7 +420,8 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final fee = int.parse(widget.amount);
+    final fee = int.parse(widget.amount) * widget.duration.value;
+
     final remaining = widget.walletBalance - fee;
     return Padding(
       padding: EdgeInsets.only(top: 220.h, bottom: 200.h),
@@ -384,7 +521,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                         ),
                         50.horizontalSpace,
                         GenText(
-                          '₦12,000',
+                          '₦${widget.amount}',
                           weight: FontWeight.w500,
                           color: appColors.neutral.shade500,
                         ),
@@ -430,21 +567,20 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                         if (remaining < 1) {
                           await showErrorSnackbar(
                             context,
-                            'insuficient Balance',
+                            'Insufficient Balance',
                           );
-                         Navigator.pop(context);
-                         return;
+                          Navigator.pop(context);
+                          return;
                         }
                         Navigator.pop(context);
                         context.read<CustomerAdvertisementBloc>().add(
                           CreateAdvertisement(
                             discount: int.parse(widget.discount),
-                            duration: durationToMilliseconds(widget.duration),
+                            duration: widget.duration.milliseconds,
                             paymentMethod: 'wallet',
                             description: widget.description,
                           ),
                         );
-                        
                       },
                     ),
                   ),

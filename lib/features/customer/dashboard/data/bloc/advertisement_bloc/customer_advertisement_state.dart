@@ -10,6 +10,8 @@ sealed class CustomerAdvertisementState extends Equatable {
 final class CustomerAdvertisementInitial extends CustomerAdvertisementState {}
 
 final class CustomerAdvertisementLoading extends CustomerAdvertisementState {}
+final class AdvertisementFetchPriceLoading extends CustomerAdvertisementState {}
+
 
 final class CustomerAdvertisementFetched extends CustomerAdvertisementState {
   const CustomerAdvertisementFetched({required this.adverisementList});
@@ -20,7 +22,14 @@ final class CustomerAdvertisementFetched extends CustomerAdvertisementState {
   List<Object?> get props => [adverisementList];
 }
 
-class CustomerAdvertisementCreated extends CustomerAdvertisementState {}
+class AdvertisementCreated extends CustomerAdvertisementState {}
+
+class AdvertisementPriceFetched extends CustomerAdvertisementState {
+  const AdvertisementPriceFetched({required this.price});
+
+  final int price;
+}
+
 
 final class CustomerAdvertisementError extends CustomerAdvertisementState {
   const CustomerAdvertisementError({required this.error});

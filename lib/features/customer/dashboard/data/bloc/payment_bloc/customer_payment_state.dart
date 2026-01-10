@@ -1,62 +1,96 @@
 part of 'customer_payment_bloc.dart';
 
-sealed class CustomerPaymentState extends Equatable {
+abstract class CustomerPaymentState extends Equatable {
   const CustomerPaymentState();
 
   @override
   List<Object?> get props => [];
 }
 
-final class CustomerPaymentInitialState extends CustomerPaymentState {}
+class CustomerPaymentInitialState extends CustomerPaymentState {}
 
+class WalletFundingLoadingState extends CustomerPaymentState {}
 
-final class WalletFundingLoadingState extends CustomerPaymentState {}
-
-final class WalletFundingInitiatedState extends CustomerPaymentState {
+class WalletFundingInitiatedState extends CustomerPaymentState {
   const WalletFundingInitiatedState(this.payment);
+
   final PaymentResponse payment;
 
   @override
   List<Object?> get props => [payment];
 }
 
-final class WalletFundingVerifiedState extends CustomerPaymentState {
+class WalletFundingVerifiedState extends CustomerPaymentState {
   const WalletFundingVerifiedState(this.verification);
+
   final PaymentVerification verification;
 
   @override
   List<Object?> get props => [verification];
 }
 
-final class WalletFundingFailureState extends CustomerPaymentState {
+class WalletFundingFailureState extends CustomerPaymentState {
   const WalletFundingFailureState(this.error);
+
   final String error;
 
   @override
   List<Object?> get props => [error];
 }
 
+// Service Payment States
+class ServicePaymentLoadingState extends CustomerPaymentState {}
 
-final class ServicePaymentLoadingState extends CustomerPaymentState {}
-
-final class ServicePaymentInitiatedState extends CustomerPaymentState {
+class ServicePaymentInitiatedState extends CustomerPaymentState {
   const ServicePaymentInitiatedState(this.payment);
+
   final PaymentResponse payment;
 
   @override
   List<Object?> get props => [payment];
 }
 
-final class ServicePaymentVerifiedState extends CustomerPaymentState {
+class ServicePaymentVerifiedState extends CustomerPaymentState {
   const ServicePaymentVerifiedState(this.verification);
+
   final PaymentVerification verification;
 
   @override
   List<Object?> get props => [verification];
 }
 
-final class ServicePaymentFailureState extends CustomerPaymentState {
+class ServicePaymentFailureState extends CustomerPaymentState {
   const ServicePaymentFailureState(this.error);
+
+  final String error;
+
+  @override
+  List<Object?> get props => [error];
+}
+
+class AdvertisementPaymentLoadingState extends CustomerPaymentState {}
+
+class AdvertisementPaymentInitiatedState extends CustomerPaymentState {
+  const AdvertisementPaymentInitiatedState(this.payment);
+
+  final PaymentResponse payment;
+
+  @override
+  List<Object?> get props => [payment];
+}
+
+class AdvertisementPaymentVerifiedState extends CustomerPaymentState {
+  const AdvertisementPaymentVerifiedState(this.verification);
+
+  final PaymentVerification verification;
+
+  @override
+  List<Object?> get props => [verification];
+}
+
+class AdvertisementPaymentFailureState extends CustomerPaymentState {
+  const AdvertisementPaymentFailureState(this.error);
+
   final String error;
 
   @override

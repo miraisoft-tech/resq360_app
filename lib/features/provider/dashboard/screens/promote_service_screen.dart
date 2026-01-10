@@ -1,5 +1,8 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/chat/data/models/duration.enum.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_review.dart';
+
+
 
 class PromoteServiceScreen extends StatefulWidget {
   const PromoteServiceScreen({super.key});
@@ -13,18 +16,19 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
   late TextEditingController promoController;
   late TextEditingController discountController;
 
-  final ValueNotifier<String?> _selectType = ValueNotifier(null);
-  final List<String> categoryTypes = [
-    '24 hours',
-    '48 hours',
-    '72 hours',
-    '1 week',
-  ];
+  final ValueNotifier<PromotionDuration?> _selectDuration =
+      ValueNotifier<PromotionDuration?>(null);
+
+  // final List<String> categoryTypes = [
+  //   '24 hours',
+  //   '48 hours',
+  //   '72 hours',
+  //   '1 week',
+  // ];
 
   @override
   void initState() {
     super.initState();
-
     nameController = TextEditingController();
     promoController = TextEditingController();
     discountController = TextEditingController();
@@ -41,7 +45,7 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
+    final categoryDurations = PromotionDuration.values.toList();
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
@@ -97,24 +101,21 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                 },
               ),
               16.verticalSpace,
-              ValueListenableBuilder<String?>(
-                valueListenable: _selectType,
-                builder: (
-                  BuildContext context,
-                  String? value,
-                  Widget? child,
-                ) {
-                  return ObjectKDropDown(
+              ValueListenableBuilder<PromotionDuration?>(
+                valueListenable: _selectDuration,
+                builder: (context, value, child) {
+                  return ObjectKDropDown<PromotionDuration>(
                     label: 'Promotion Duration',
-                    hintText: 'Select the Promotion Duration ',
-                    displayStringForOption: (String? id) => id ?? '',
+                    hintText: 'Select the Promotion Duration',
                     showPrefix: false,
+
+                    displayStringForOption: (PromotionDuration d) => d.label,
+
                     value: value,
-                    dropdownItems: categoryTypes,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectType.value = value;
-                      });
+                    dropdownItems: categoryDurations,
+
+                    onChanged: (selected) {
+                      _selectDuration.value = selected;
                     },
                   );
                 },
@@ -132,21 +133,29 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                   ),
                   12.horizontalSpace,
                   Expanded(
-                    child: WideButton(
-                      label: 'Continue',
-                      backgroundColor: appColors.primary.shade500,
-                      textColor: appColors.whiteColor,
-                      onPressed: () async {
-                        if (_selectType.value == null)return;
-                        if (promoController.text.isNotEmpty && discountController.text.isNotEmpty && _selectType.value!.isNotEmpty) {
-                          await pushScreen(
-                          context,
-                           PromoteServiceReviewScreen(description: promoController.text, discount: discountController.text, duration: _selectType.value!),
-                        );
-                        }
-                      },
-                    ),
-                  ),
+  child: WideButton(
+    label: 'Continue',
+    backgroundColor: appColors.primary.shade500,
+    textColor: appColors.whiteColor,
+    onPressed: () async {
+      final selected = _selectDuration.value;
+
+      // ensure all fields are valid
+      if (selected == null) return;
+      if (promoController.text.isEmpty) return;
+      if (discountController.text.isEmpty) return;
+
+      await pushScreen(
+        context,
+        PromoteServiceReviewScreen(
+          description: promoController.text,
+          discount: discountController.text,
+          duration: selected,
+        ),
+      );
+    },
+  ),
+),
                 ],
               ),
             ],
