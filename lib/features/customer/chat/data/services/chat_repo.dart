@@ -87,6 +87,27 @@ class ChatRepo extends BaseAPI {
     }
   }
 
+ Future<ApiResult<ChatResponse>> getChatByserviceRequestId(int serviceRequestId) async {
+    final url = '/chat/service-request/$serviceRequestId';
+    try {
+      final response = await dio().get<Map<String, dynamic>>(url);
+      if (response.statusCode == 200 && response.data != null) {
+        final chat = ChatResponse.fromJson(
+          response.data!['data'] as Map<String, dynamic>,
+        );
+        return ApiResult(data: chat);
+      } else {
+        return ApiResult(error: 'Failed to fetch chat');
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+
+
   Future<ApiResult<ChatMessagesResponse>> getChatMessages(
     int chatId, {
     int page = 1,

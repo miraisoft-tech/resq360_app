@@ -1,101 +1,101 @@
-part of 'chat_bloc.dart';
+// part of 'chat_bloc.dart';
 
 
-sealed class ChatEvent extends Equatable {
-  const ChatEvent();
+// sealed class ChatEvent extends Equatable {
+//   const ChatEvent();
 
-  @override
-  List<Object?> get props => [];
-}
+//   @override
+//   List<Object?> get props => [];
+// }
 
-class ConnectChatSocketEvent extends ChatEvent {}
-class NewMessageReceivedEvent extends ChatEvent {
-  const NewMessageReceivedEvent(this.message);
-  final MessageResponse message;
-}
+// class ConnectChatSocketEvent extends ChatEvent {}
+// class NewMessageReceivedEvent extends ChatEvent {
+//   const NewMessageReceivedEvent(this.message);
+//   final MessageResponse message;
+// }
 
-class CreateChatEvent extends ChatEvent {
-  const CreateChatEvent({ required this.chatRequest});
-  final CreateChatRequest chatRequest;
+// class CreateChatEvent extends ChatEvent {
+//   const CreateChatEvent({ required this.chatRequest});
+//   final CreateChatRequest chatRequest;
 
-  @override
-  List<Object?> get props => [chatRequest];
-}
+//   @override
+//   List<Object?> get props => [chatRequest];
+// }
 
-class GetChatsEvent extends ChatEvent {}
+// class GetChatsEvent extends ChatEvent {}
 
-class JoinChatEvent extends ChatEvent {
-  const JoinChatEvent(this.chatId);
-  final int chatId;
+// class JoinChatEvent extends ChatEvent {
+//   const JoinChatEvent(this.chatId);
+//   final int chatId;
 
-  @override
-  List<Object?> get props => [chatId];
-}
+//   @override
+//   List<Object?> get props => [chatId];
+// }
 
-class SendMessageEvent extends ChatEvent {
-  const SendMessageEvent({required this.messageRequest,  this.localMessage});
-  final SendMessageRequest messageRequest;
-    final MessageResponse? localMessage;
+// class SendMessageEvent extends ChatEvent {
+//   const SendMessageEvent({required this.messageRequest,  this.localMessage});
+//   final SendMessageRequest messageRequest;
+//     final MessageResponse? localMessage;
 
-  @override
-  List<Object?> get props => [messageRequest, localMessage];
-}
+//   @override
+//   List<Object?> get props => [messageRequest, localMessage];
+// }
 
-class SendInvoiceEvent extends ChatEvent {
-  const SendInvoiceEvent({required this.messageRequest,  this.localMessage});
-  final SendInvoice messageRequest;
-    final MessageResponse? localMessage;
+// class SendInvoiceEvent extends ChatEvent {
+//   const SendInvoiceEvent({required this.messageRequest,  this.localMessage});
+//   final SendInvoice messageRequest;
+//     final MessageResponse? localMessage;
 
-  @override
-  List<Object?> get props => [messageRequest, localMessage];
-}
+//   @override
+//   List<Object?> get props => [messageRequest, localMessage];
+// }
 
-class SendFileMessageEvent extends ChatEvent {
-  const SendFileMessageEvent({
-    required this.chatId,
-    required this.file,
-    required this.fileName,
-    required this.mimeType,
-  });
+// class SendFileMessageEvent extends ChatEvent {
+//   const SendFileMessageEvent({
+//     required this.chatId,
+//     required this.file,
+//     required this.fileName,
+//     required this.mimeType,
+//   });
 
-  final int chatId;
-  final File file;
-  final String fileName;
-  final String mimeType;
+//   final int chatId;
+//   final File file;
+//   final String fileName;
+//   final String mimeType;
 
-  @override
-  List<Object?> get props => [chatId, file, fileName, mimeType];
-}
+//   @override
+//   List<Object?> get props => [chatId, file, fileName, mimeType];
+// }
 
-class GetChatMessagesEvent extends ChatEvent {
-  const GetChatMessagesEvent({required this.chatId});
-  final int chatId;
+// class GetChatMessagesEvent extends ChatEvent {
+//   const GetChatMessagesEvent({required this.chatId});
+//   final int chatId;
 
-  @override
-  List<Object?> get props => [chatId];
-}
+//   @override
+//   List<Object?> get props => [chatId];
+// }
 
-class MarkMessageAsReadEvent extends ChatEvent {
-  const MarkMessageAsReadEvent(this.messageId);
-  final int messageId;
+// class MarkMessageAsReadEvent extends ChatEvent {
+//   const MarkMessageAsReadEvent(this.messageId);
+//   final int messageId;
 
-  @override
-  List<Object?> get props => [messageId];
-}
+//   @override
+//   List<Object?> get props => [messageId];
+// }
 
-class LeaveChatEvent extends ChatEvent {
-  const LeaveChatEvent(this.chatId);
-  final int chatId;
+// class LeaveChatEvent extends ChatEvent {
+//   const LeaveChatEvent(this.chatId);
+//   final int chatId;
 
-  @override
-  List<Object?> get props => [chatId];
-}
+//   @override
+//   List<Object?> get props => [chatId];
+// }
 
-class LoadMoreMessagesEvent extends ChatEvent {
-  const LoadMoreMessagesEvent({required this.chatId, required this.lastMessageId});
-  final int chatId;
-  final int lastMessageId;
+// class LoadMoreMessagesEvent extends ChatEvent {
+//   const LoadMoreMessagesEvent({required this.chatId, required this.lastMessageId});
+//   final int chatId;
+//   final int lastMessageId;
 
-  @override
-  List<Object?> get props => [chatId, lastMessageId];
-}
+//   @override
+//   List<Object?> get props => [chatId, lastMessageId];
+// }

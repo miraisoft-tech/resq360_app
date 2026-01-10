@@ -4,7 +4,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc_registry.dart';
@@ -79,7 +78,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => ProviderAuthBloc()),
           BlocProvider(create: (_) => ServiceProviderBloc()),
           // BlocProvider(create: (_) => CustomerServicesBloc()),
-          BlocProvider(create: (_) => ChatBloc()),
+          // BlocProvider(create: (_) => ChatBloc()),
           BlocProvider(create: (_) => ChatListBloc()),
           BlocProvider(create: (_) => ProfileUpdateBloc()),
           BlocProvider(create: (_) => ProviderServiceBloc()),

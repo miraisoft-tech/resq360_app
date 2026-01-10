@@ -15,11 +15,12 @@ class BookingReceiptPdfUtil {
   static Future<void> generateBookingReceiptPdf({
     required String bookingId,
     required String service,
-    required String providerName,
     required String status,
     required String dateTime,
     required String paymentMethod,
     required String amount,
+    String? providerName,
+    String? clientName,
   }) async {
     final pdf = pw.Document();
 
@@ -63,61 +64,78 @@ class BookingReceiptPdfUtil {
               pw.Text(
                 'Booking Details',
                 style: const pw.TextStyle(
-                  // font: interBold, 
-                  fontSize: 18),
+                  // font: interBold,
+                  fontSize: 18,
+                ),
               ),
               pw.SizedBox(height: 10),
               pw.Text(
                 'Booking ID: $bookingId',
                 style: const pw.TextStyle(
-                  
                   // font: interRegular,
-
-                   fontSize: 16),
+                  fontSize: 16,
+                ),
               ),
               pw.SizedBox(height: 10),
               pw.Text(
                 'Service: $service',
                 style: const pw.TextStyle(
-                  
                   // font: interRegular,
+                  fontSize: 16,
+                ),
+              ),
+              if (providerName != null) ...{
+                pw.SizedBox(height: 10),
+                pw.Text(
+                  'Provider: $providerName',
+                  style: const pw.TextStyle(
+                    // font: interRegular,
+                    fontSize: 16,
+                  ),
+                ),
+              },
+              if (clientName != null) ...{
+                pw.SizedBox(height: 10),
+                pw.Text(
+                  'client: $clientName',
+                  style: const pw.TextStyle(
+                    // font: interRegular,
+                    fontSize: 16,
+                  ),
+                ),
+              },
 
-                   fontSize: 16),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Text(
-                'Provider: $providerName',
-                style: const pw.TextStyle(
-                  // font: interRegular,
-                   fontSize: 16),
-              ),
               pw.SizedBox(height: 10),
               pw.Text(
                 'Status: $status',
                 style: const pw.TextStyle(
                   // font: interRegular,
-                   fontSize: 16),
+                  fontSize: 16,
+                ),
               ),
               pw.SizedBox(height: 10),
               pw.Text(
                 'Date & Time: $dateTime',
                 style: const pw.TextStyle(
                   // font: interRegular,
-                   fontSize: 16),
+                  fontSize: 16,
+                ),
               ),
               pw.SizedBox(height: 20),
               pw.Text(
                 'Payment Details',
                 style: const pw.TextStyle(
-                  // font: interBold, 
-                  fontSize: 18),
+                  // font: interBold,
+                  fontSize: 18,
+                ),
               ),
               pw.SizedBox(height: 10),
               pw.Text(
                 'Payment Method: $paymentMethod',
                 style: const pw.TextStyle(
                   // font: interRegular,
-                   fontSize: 16),
+                  fontSize: 16,
+                ),
               ),
               pw.SizedBox(height: 10),
               pw.Text(
@@ -133,14 +151,16 @@ class BookingReceiptPdfUtil {
                 'Thank you for using ResQ360!',
                 style: const pw.TextStyle(
                   // font: interRegular,
-                   fontSize: 14),
+                  fontSize: 14,
+                ),
               ),
               pw.SizedBox(height: 10),
               pw.Text(
                 'Website: www.resq360.ng',
                 style: const pw.TextStyle(
                   // font: interRegular,
-                   fontSize: 14),
+                  fontSize: 14,
+                ),
               ),
             ],
           );

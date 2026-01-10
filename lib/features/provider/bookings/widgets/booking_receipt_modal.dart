@@ -18,7 +18,7 @@ class BookingReceiptModal extends StatelessWidget {
   final String invoice;
   final String dateTime;
   final String method;
-  final VoidCallback onDownload;
+  final VoidCallback? onDownload;
 
   @override
   Widget build(BuildContext context) {

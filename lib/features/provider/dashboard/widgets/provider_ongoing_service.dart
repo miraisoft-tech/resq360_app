@@ -44,21 +44,22 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
             listeners: [
               BlocListener<ProviderServiceBloc, ProviderServiceState>(
                 listener: (context, state) async {
-     
                   if (state is ProviderServicesError) {
                     await showErrorSnackbar(context, state.error);
                   }
                 },
               ),
               BlocListener<BookingBloc, BookingState>(
-                listener: (context, state)async {
+                listener: (context, state) async {
                   if (state is BookingStarted) {
                     await showSuccessSnackbar(
                       context,
                       'Service started successfully',
                     );
                     context.read<ProviderServiceBloc>().add(
-                       ProviderFetchBookings(status: BookingStatus.pending.value),
+                      ProviderFetchBookings(
+                        status: BookingStatus.pending.value,
+                      ),
                     );
                   }
                 },
@@ -72,6 +73,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
 
                 if (state is ProviderBookingsLoaded) {
                   final booking = state.bookings.firstOrNull;
+                  final serviceRequestId = booking?.id;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +106,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                                     weight: FontWeight.w500,
                                   ),
                                   GenText(
-                                    ' (//${booking?.serviceCategory?.name ?? 'Service'})',
+                                    ' (${booking?.serviceCategory?.name ?? 'Service'})',
                                     height: 24.5,
                                     weight: FontWeight.w400,
                                     color: colors.neutral.shade400,
@@ -144,12 +146,14 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                                 ),
                               ),
                               onPressed: () async {
-                                await pushScreen(
-                                  context,
-                                  CancelSlientServiceScreen(
-                                    serviceRequestId: booking?.requestId ?? '',
-                                  ),
-                                );
+                                if (serviceRequestId != null) {
+                                  await pushScreen(
+                                    context,
+                                    CancelSlientServiceScreen(
+                                      serviceRequestId: serviceRequestId,
+                                    ),
+                                  );
+                                }
                               },
                               child: GenText(
                                 'Cancel',
@@ -163,13 +167,13 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
-                                context.read<BookingBloc>().add(
-                                  StartBooking(
-                                    serviceRequestId: int.parse(
-                                      booking?.requestId ?? '',
+                                if (serviceRequestId != null) {
+                                  context.read<BookingBloc>().add(
+                                    StartBooking(
+                                      serviceRequestId: serviceRequestId,
                                     ),
-                                  ),
-                                );
+                                  );
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colors.primary.shade500,

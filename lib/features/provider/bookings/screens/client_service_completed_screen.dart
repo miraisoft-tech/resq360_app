@@ -4,7 +4,7 @@ import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bl
 
 class ClientServiceCompletedScreen extends StatefulWidget {
   const ClientServiceCompletedScreen({required this.serviceRequestId, super.key});
-  final String serviceRequestId;
+  final int serviceRequestId;
   @override
   State<ClientServiceCompletedScreen> createState() =>
       _ClientServiceCompletedScreenState();
@@ -164,7 +164,7 @@ class _ClientServiceCompletedScreenState
                           ? () async {
                             context.read<ProviderServiceBloc>().add(
                               ProviderCompleteServiceBooking(
-                                serviceRequestId: int.parse(widget.serviceRequestId),
+                                serviceRequestId: widget.serviceRequestId,
                                 ratings: rating,
                                 review: reviewController.text,
                               ),

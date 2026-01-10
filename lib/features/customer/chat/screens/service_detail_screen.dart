@@ -9,7 +9,6 @@ import 'package:resq360/features/customer/chat/screens/service_completed_screen.
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
-import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
@@ -257,29 +256,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       ),
     );
   }
-}
-
-Future<String?> findExistingOpenAppealTicketId() async {
-  final res = await SupportRepo.instance.getTickets();
-
-  if (res.error != null && res.error!.isNotEmpty) {
-    return null;
-  }
-
-  final tickets = res.data;
-  if (tickets == null || tickets.isEmpty) return null;
-
-  for (final ticket in tickets) {
-    final isOpen = ticket.status == 'OPEN';
-    final isAppeal = ticket.subject == 'Service Appeal';
-    final isGeneralInquiry = ticket.category == 'GENERAL_INQUIRY';
-
-    if (isOpen && isAppeal && isGeneralInquiry) {
-      return ticket.ticketId;
-    }
-  }
-
-  return null;
 }
 
 class _ServiceCard extends StatelessWidget {

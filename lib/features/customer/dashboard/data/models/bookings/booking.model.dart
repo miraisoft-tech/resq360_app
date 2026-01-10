@@ -37,6 +37,8 @@ class Bookings {
     this.user,
     this.assignedProvider,
     this.serviceCategory,
+    this.paymentMethod,
+    this.amount,
   });
 
   factory Bookings.fromJson(Map<String, dynamic> json) => Bookings(
@@ -99,6 +101,9 @@ class Bookings {
             : ServiceCategory.fromJson(
                 json['serviceCategory'] as Map<String, dynamic>,
               ),
+              paymentMethod: json['paymentMethod'] as String?,
+              amount: json['amount'] as String?
+
       );
 
   final int? id;
@@ -137,6 +142,8 @@ class Bookings {
   final User? user;
   final AssignedProvider? assignedProvider;
   final ServiceCategory? serviceCategory;
+  final String? paymentMethod;
+  final String? amount;
 }
 
 
@@ -146,17 +153,22 @@ class AssignedProvider {
     this.id,
     this.fullName,
     this.profileImage,
+    this.phoneNumber,
+
   });
 
   factory AssignedProvider.fromJson(Map<String, dynamic> json) => AssignedProvider(
         id: json['id'] as int?,
         fullName: json['fullName'] as String?,
         profileImage: json['profileImage'] as String?,
+        phoneNumber: json['phoneNumber'] as String?
       );
 
   final int? id;
   final String? fullName;
   final String? profileImage;
+  final String? phoneNumber;
+
 }
 
 class User {
@@ -164,17 +176,20 @@ class User {
     this.id,
     this.fullName,
     this.profileImage,
+    this.phoneNumber,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
         id: json['id'] as int?,
         fullName: json['fullName'] as String?,
         profileImage: json['profileImage'] as String?,
+        phoneNumber: json['phoneNumber'] as String?
       );
 
   final int? id;
   final String? fullName;
   final String? profileImage;
+  final String? phoneNumber;
 }
 class ServiceCategory {
   ServiceCategory({
