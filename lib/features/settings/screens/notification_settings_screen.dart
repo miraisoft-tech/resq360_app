@@ -1,11 +1,14 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/settings/widgets/update_phone.modal.dart';
 import 'package:resq360/features/widgets/custom_switch.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/subscribe_confirm.dialog.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
-  const NotificationSettingsScreen({super.key});
+  const NotificationSettingsScreen({required this.isProvider, super.key});
+
+  final bool isProvider;
 
   @override
   State<NotificationSettingsScreen> createState() =>
@@ -18,6 +21,17 @@ class _NotificationSettingsScreenState
   ValueNotifier<bool> emailNotification = ValueNotifier(true);
   ValueNotifier<bool> smsNotification = ValueNotifier(true);
   ValueNotifier<bool> renewSMSNotification = ValueNotifier(true);
+
+
+
+   late Future<String?> phoneNumberFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    phoneNumberFuture = AuthLocalRepo.instance
+        .getUserPhoneNumber(isProvider: widget.isProvider);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,44 +128,53 @@ class _NotificationSettingsScreenState
                     },
                   ),
                   20.verticalSpace,
-                  GestureDetector(
-                    onTap: () async {
-                      await GeneralDialogs.showCustomDialog<void>(
-                        context,
-                        body: const UpdatePhoneModal(),
+                  FutureBuilder(
+                    future: phoneNumberFuture,
+                    builder: (context, asyncSnapshot) {
+                      final phone = asyncSnapshot.data ?? 'No number';
+                      return GestureDetector(
+                        onTap: () async {
+                          await GeneralDialogs.showCustomDialog<void>(
+                            context,
+                            body: UpdatePhoneModal(
+                              phoneNumber: phone, 
+                              isProvider: widget.isProvider,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: pad(vertical: 16, horizontal: 16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(color: appColors.textColor.shade100),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              GenText(
+                                'Phone Number',
+                                color: appColors.black,
+                                weight: FontWeight.w500,
+                              ),
+                              5.verticalSpace,
+                              GenText(
+                                phone,
+                                size: 12,
+                                color: appColors.textColor.shade500,
+                                weight: FontWeight.w400,
+                              ),
+                              GenText(
+                                'Update Number',
+                                size: 12,
+                                color: appColors.primary.shade500,
+                                weight: FontWeight.w400,
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     },
-                    child: Container(
-                      width: double.infinity,
-                      padding: pad(vertical: 16, horizontal: 16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: appColors.textColor.shade100),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GenText(
-                            'Phone Number',
-                            color: appColors.black,
-                            weight: FontWeight.w500,
-                          ),
-                          5.verticalSpace,
-                          GenText(
-                            '08145660699',
-                            size: 12,
-                            color: appColors.textColor.shade500,
-                            weight: FontWeight.w400,
-                          ),
-                          GenText(
-                            'Update Number',
-                            size: 12,
-                            color: appColors.primary.shade500,
-                            weight: FontWeight.w400,
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               ),

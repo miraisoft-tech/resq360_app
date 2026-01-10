@@ -32,8 +32,6 @@ class ChatDetailScreen extends StatelessWidget {
 class _ChatDetailView extends StatefulWidget {
   const _ChatDetailView();
 
-  // final int chatId;
-
   @override
   State<_ChatDetailView> createState() => _ChatDetailViewState();
 }
@@ -69,8 +67,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           if (state is ChatDetailReady) {
             final chat = state.chat;
             title = chat.title ?? 'Chat';
-            // no phone data in chat
-            phone = '002423231212';
+            phone = chat.provider?.phoneNumber ?? '';
             isActive = chat.isActive ?? false;
           }
           return Scaffold(

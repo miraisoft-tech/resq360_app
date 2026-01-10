@@ -61,8 +61,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
         if (state is ChatDetailReady) {
           final chat = state.chat;
           title = chat.title ?? 'Chat';
-          // no phone data in chat
-          phone = '00242323';
+          phone = chat.user?.phoneNumber ?? '';
           isActive = chat.isActive ?? false;
         }
         return Scaffold(

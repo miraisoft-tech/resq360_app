@@ -104,17 +104,20 @@ class ProviderInfo {
     this.id,
     this.fullName,
     this.profileImage,
+    this.phoneNumber,
   });
 
   factory ProviderInfo.fromJson(Map<String, dynamic> json) => ProviderInfo(
         id: json['id'] as int?,
         fullName: json['fullName'] as String?,
         profileImage: json['profileImage'] as String?,
+        phoneNumber: json['phoneNumber'] as String?,
       );
 
   final int? id;
   final String? fullName;
   final String? profileImage;
+  final String? phoneNumber;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -127,15 +130,19 @@ class UserInfo {
   UserInfo({
     this.fullName,
     this.profileImage,
+    this.phoneNumber
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) => UserInfo(
         fullName: json['fullName'] as String?,
         profileImage: json['profileImage'] as String?,
+        phoneNumber: json['phoneNumber'] as String?,
       );
 
   final String? fullName;
   final String? profileImage;
+  final String? phoneNumber;
+
 
   Map<String, dynamic> toJson() => {
         'fullName': fullName,

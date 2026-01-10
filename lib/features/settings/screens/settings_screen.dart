@@ -178,7 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_NOTIFICATIONS_SVG.svg,
         title: 'Notification Settings',
         onTap: () async {
-          await pushScreen(context, const NotificationSettingsScreen());
+          await pushScreen(context,  NotificationSettingsScreen(isProvider: isProvider));
         },
       ),
       SettingsItem(
@@ -256,7 +256,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (isProvider)
               BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
                 builder: (context, state) {
-                  if (state is ProviderProfileLoadedState) {}
                   if (state is ProviderProfileLoadedState) {
                     final status = state.user.activityStatus ?? 'UNKNOWN';
 

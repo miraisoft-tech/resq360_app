@@ -7,7 +7,9 @@ import 'package:resq360/features/settings/widgets/update_phone_success.modal.dar
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 
 class UpdateSMSModal extends StatefulWidget {
-  const UpdateSMSModal({super.key});
+  const UpdateSMSModal({required this.number, super.key});
+
+  final String number;
 
   @override
   State<UpdateSMSModal> createState() => _UpdateSMSModalState();

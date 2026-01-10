@@ -1,8 +1,15 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/widgets/update_phone_sms.modal.dart';
 
 class UpdatePhoneModal extends StatefulWidget {
-  const UpdatePhoneModal({super.key});
+  const UpdatePhoneModal({
+    required this.phoneNumber,
+    required this.isProvider,
+    super.key,
+  });
+  final String phoneNumber;
+  final bool isProvider;
 
   @override
   State<UpdatePhoneModal> createState() => _UpdatePhoneModalState();
@@ -50,7 +57,7 @@ class _UpdatePhoneModalState extends State<UpdatePhoneModal> {
               ),
               20.verticalSpace,
               GenText(
-                '08145660699',
+                widget.phoneNumber,
                 size: 12,
                 height: 12.5,
                 weight: FontWeight.w500,
@@ -79,7 +86,7 @@ class _UpdatePhoneModalState extends State<UpdatePhoneModal> {
                           Navigator.pop(context);
                           await GeneralDialogs.showCustomDialog<void>(
                             context,
-                            body: const UpdateSMSModal(),
+                            body:  UpdateSMSModal(number:phoneController.text ),
                           );
                         },
               ),

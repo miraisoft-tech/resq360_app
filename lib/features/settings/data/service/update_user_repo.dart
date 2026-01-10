@@ -39,8 +39,8 @@ class UpdateUserRepo extends BaseAPI {
   }
 
   Future<ApiResult<dynamic>> updateUserInformation({
-     String? fullName,
-     String? phoneNumber,
+    String? fullName,
+    String? phoneNumber,
     String? profileImageUrl,
     String? profileImageId,
   }) async {
@@ -61,14 +61,14 @@ class UpdateUserRepo extends BaseAPI {
   }
 
   Future<ApiResult<dynamic>> updateProviderInformation({
-     String? fullName,
-     String? phoneNumber,
-     String? companyName,
-     String? description,
-     List<String>? workingDays,
-     DateTime? openingHours,
-     DateTime? closingHours,
-     String? activityStatus,
+    String? fullName,
+    String? phoneNumber,
+    String? companyName,
+    String? description,
+    List<String>? workingDays,
+    DateTime? openingHours,
+    DateTime? closingHours,
+    String? activityStatus,
     String? profileImageUrl,
     String? profileImageId,
     List<String>? images,
@@ -86,7 +86,7 @@ class UpdateUserRepo extends BaseAPI {
       'openingHours': openingHours?.toIso8601String(),
       'closingHours': closingHours?.toIso8601String(),
       'activityStatus': activityStatus,
-      'images': images
+      'images': images,
     }..removeWhere((_, value) => value == null);
 
     return _updateData(
@@ -95,24 +95,25 @@ class UpdateUserRepo extends BaseAPI {
       logTag: 'Provider Info Update',
     );
   }
+
   Future<ApiResult<dynamic>> updateProviderService({
     required bool isActive,
     required int serviceCategoryId,
-     required List<String> minorServices, 
-     String? customServiceName,
+    required List<String> minorServices,
+    String? customServiceName,
   }) async {
     const endpoint = '/user/provider/services';
 
     final data = {
-  'services': [
-    {
-      'isActive': isActive,
-      'serviceCategoryId': serviceCategoryId,
-      'customServiceName': customServiceName,
-      'minorServices': minorServices
-    }
-  ]
-};
+      'services': [
+        {
+          'isActive': isActive,
+          'serviceCategoryId': serviceCategoryId,
+          'customServiceName': customServiceName,
+          'minorServices': minorServices,
+        },
+      ],
+    };
 
     return _updateData(
       endpoint: endpoint,
@@ -120,7 +121,6 @@ class UpdateUserRepo extends BaseAPI {
       logTag: 'Provider service Update',
     );
   }
-
 
   Future<ApiResult<dynamic>> updateProviderAddress({
     required Map<String, dynamic> addressData,

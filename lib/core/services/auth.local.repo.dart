@@ -85,6 +85,22 @@ class AuthLocalRepo {
     }
   }
 
+  ////====get phone number====////
+  
+  Future<String?> getUserPhoneNumber({required bool isProvider}) async {
+  try {
+    if (isProvider) {
+      final provider = await getProviderCredentials();
+      return provider?.phoneNumber;
+    } else {
+      final customer = await getAuthCredentials();
+      return customer?.phoneNumber;
+    }
+  } on Exception catch (e) {
+    log('getUserPhoneNumber error: $e');
+    return null;
+  }
+}
   Future<bool> clearAuthCredentials() async {
     try {
       await pref.deleteKey(key: DBKeys.authData);
