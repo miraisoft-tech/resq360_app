@@ -137,10 +137,13 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
-                        await pushScreen(
+                        if (_selectType.value == null)return;
+                        if (promoController.text.isNotEmpty && discountController.text.isNotEmpty && _selectType.value!.isNotEmpty) {
+                          await pushScreen(
                           context,
-                          const PromoteServiceReviewScreen(),
+                           PromoteServiceReviewScreen(description: promoController.text, discount: discountController.text, duration: _selectType.value!),
                         );
+                        }
                       },
                     ),
                   ),

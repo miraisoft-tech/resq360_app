@@ -1,10 +1,11 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 
 enum PaymentMethod {
   wallet,
   existingCard,
   //how it is from BE
-// ignore_for_file: constant_identifier_names
+  // ignore_for_file: constant_identifier_names
   new_card,
 }
 
@@ -22,6 +23,12 @@ class PaymentOptionDialog extends StatefulWidget {
 
 class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
   PaymentMethod? selectedPayment;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<WalletBloc>().add(FetchWalletInfo());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,12 +70,25 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
                 ],
               ),
               20.verticalSpace,
-              PaymentOption(
-                icon: AppAssets.ASSETS_ICONS_PAYMENT_WALLET_SVG.svg,
-                title: 'Pay from Wallet',
-                subtitle: 'Balance: ₦45,000',
-                isSelected: selectedPayment == PaymentMethod.wallet,
-                onTap: () => _selectPayment(PaymentMethod.wallet),
+              BlocBuilder<WalletBloc, WalletState>(
+                builder: (context, state) {
+                  var subtitle = 'Loading...';
+                  var disabled = true;
+                  if (state is FetchedWalletInfo) {
+                    subtitle = 'Balance: ₦${state.wallet.balance}';
+                    disabled = false;
+                  } else if (state is FetchingWalletInfoError) {
+                    subtitle = 'Unable to fetch balance';
+                    disabled = true;
+                  }
+                  return PaymentOption(
+                    icon: AppAssets.ASSETS_ICONS_PAYMENT_WALLET_SVG.svg,
+                    title: 'Pay from Wallet',
+                    subtitle: subtitle,
+                    isSelected: selectedPayment == PaymentMethod.wallet,
+                    onTap: disabled ? null: () => _selectPayment(PaymentMethod.wallet),
+                  );
+                },
               ),
               12.verticalSpace,
               // PaymentOption(
@@ -92,7 +112,6 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // log('pressed');
                       Navigator.pop(context);
 
                       widget.onPaymentSelected(selectedPayment!);

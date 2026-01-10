@@ -283,6 +283,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                       );
+                    case CustomerAdvertisementCreated():
+                      return const SizedBox.shrink();
                   }
                 },
               ),

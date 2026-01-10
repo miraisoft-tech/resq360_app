@@ -20,6 +20,8 @@ final class CustomerAdvertisementFetched extends CustomerAdvertisementState {
   List<Object?> get props => [adverisementList];
 }
 
+class CustomerAdvertisementCreated extends CustomerAdvertisementState {}
+
 final class CustomerAdvertisementError extends CustomerAdvertisementState {
   const CustomerAdvertisementError({required this.error});
 

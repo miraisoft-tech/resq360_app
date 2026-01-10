@@ -128,6 +128,8 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
             );
           case CustomerAdvertisementError():
             return const SizedBox.shrink();
+          case CustomerAdvertisementCreated():
+            return const SizedBox.shrink();
         }
       },
     );

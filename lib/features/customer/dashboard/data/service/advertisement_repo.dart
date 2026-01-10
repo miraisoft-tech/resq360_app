@@ -30,4 +30,36 @@ class AdvertisementRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+Future<ApiResult<void>> createAdvertisement({
+    required int discountPercentage,
+    required int durationInMilliSeconds,
+    required String paymentMethod,
+    required String description,
+  }) async {
+    const url = '/advertisements/promotion/providers';
+
+    try {
+      final res = await dio().post<Map<String, dynamic>>(
+        url,
+        data: {
+          'discountPercentage': discountPercentage,
+          'durationInMilliSeconds': durationInMilliSeconds,
+          'paymentMethod': paymentMethod,
+          'description': description,
+        },
+      );
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return ApiResult();
+      } else {
+        return ApiResult(error: res.data?['message'] as String);
+      }
+    } on DioException catch (e) {
+      return ApiResult(
+        error: e.response?.data?['message'] as String ,
+      );
+    }
+  }
+
+
 }

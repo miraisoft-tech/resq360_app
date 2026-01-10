@@ -12,6 +12,7 @@ class CustomerAdvertisementBloc
     extends Bloc<CustomerAdvertisementEvent, CustomerAdvertisementState> {
   CustomerAdvertisementBloc() : super(CustomerAdvertisementInitial()) {
     on<CustomerFetchAdvertisement>(_fetchAdvertisement);
+     on<CreateAdvertisement>(_onCreateAdvertisement);
   }
 
   Future<void> _fetchAdvertisement(
@@ -27,6 +28,26 @@ class CustomerAdvertisementBloc
       }
     } on Exception catch (e) {
       emit(CustomerAdvertisementError(error: e.toString()));
+    }
+  }
+
+  Future<void> _onCreateAdvertisement(
+    CreateAdvertisement event,
+    Emitter<CustomerAdvertisementState> emit,
+  ) async {
+    emit(CustomerAdvertisementLoading());
+
+    final result = await advertisementRepo.createAdvertisement(
+      discountPercentage: event.discount,
+      durationInMilliSeconds: event.duration,
+      paymentMethod: event.paymentMethod,
+      description: event.description,
+    );
+
+    if (result.error != null) {
+      emit(CustomerAdvertisementError(error: result.error!));
+    } else {
+      emit(CustomerAdvertisementCreated());
     }
   }
 }

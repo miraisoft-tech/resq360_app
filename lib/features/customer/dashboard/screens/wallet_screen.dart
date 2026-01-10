@@ -40,32 +40,6 @@ class _WalletScreenState extends State<WalletScreen> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    // final transactions = [
-    //   const WalletTransaction(
-    //     title: 'QuickTow Emergency',
-    //     date: 'Aug 15th, 5:16pm',
-    //     amount: 7500,
-    //     isCredit: true,
-    //   ),
-    //   const WalletTransaction(
-    //     title: 'QuickTow Emergency',
-    //     date: 'Aug 15th, 2:00pm',
-    //     amount: -15000,
-    //     isCredit: false,
-    //   ),
-    //   const WalletTransaction(
-    //     title: 'QuickTow Emergency',
-    //     date: 'Aug 15th, 2:00pm',
-    //     amount: 7500,
-    //     isCredit: true,
-    //   ),
-    //   const WalletTransaction(
-    //     title: 'QuickTow Emergency',
-    //     date: 'Aug 15th, 2:00pm',
-    //     amount: -15000,
-    //     isCredit: false,
-    //   ),
-    // ];
     var isLoadingDialogShown = false;
 
     return BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
