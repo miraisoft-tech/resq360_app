@@ -4,13 +4,13 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
-import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
+import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
+import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   const ServiceDetailScreen({
@@ -211,15 +211,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     backgroundColor: appColors.primary.shade50,
                     textColor: appColors.primary.shade500,
                     onPressed: () async {
-                      await handleServiceAppeal(
-                        context: context,
-                        userReady: userReady,
-                        serviceCategory: serviceCategory,
-                        serviceCategoryId: widget.chat.serviceCategoryId,
-                        providerId: widget.chat.provider?.id,
-                        contactEmail: currentUser.email.toString(),
-                        contactPhone: currentUser.phoneNumber.toString(),
-                        providerName:companyName
+                      await pushScreen(
+                        context,
+                         ContactAdminScreen(issueType: AdminIssueType.serviceIssue, serviceCategory: widget.chat.serviceCategoryId,relatedServiceProviderId: widget.chat.provider?.id,),
                       );
                     },
                   ),
@@ -372,79 +366,79 @@ class _ServiceCard extends StatelessWidget {
   }
 }
 
-Future<void> handleServiceAppeal({
-  required BuildContext context,
-  required bool userReady,
-  required String serviceCategory,
-  required int? serviceCategoryId,
-  required int? providerId,
-  required String contactEmail,
-  required String contactPhone,
-  required String providerName,
-}) async {
-  if (!userReady) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('User not ready')),
-    );
-    return;
-  }
+// Future<void> handleServiceAppeal({
+//   required BuildContext context,
+//   required bool userReady,
+//   required String serviceCategory,
+//   required int? serviceCategoryId,
+//   required int? providerId,
+//   required String contactEmail,
+//   required String contactPhone,
+//   required String providerName,
+// }) async {
+//   if (!userReady) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       const SnackBar(content: Text('User not ready')),
+//     );
+//     return;
+//   }
 
-  final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
-    context,
-    body: const PaymentAppealDialog(),
-  );
+//   final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
+//     context,
+//     body: const PaymentAppealDialog(),
+//   );
 
-  if (shouldProceed != true) return;
+//   if (shouldProceed != true) return;
 
-  final existingTicketId = await findExistingOpenAppealTicketId();
+//   final existingTicketId = await findExistingOpenAppealTicketId();
 
-  if (!context.mounted) return;
+//   if (!context.mounted) return;
 
-  if (existingTicketId != null) {
-    await pushScreen(
-      context,
-      SupportChatScreen(ticketId: existingTicketId, providerName: providerName,),
-    );
-    return;
-  }
+//   if (existingTicketId != null) {
+//     await pushScreen(
+//       context,
+//       SupportChatScreen(ticketId: existingTicketId, providerName: providerName,),
+//     );
+//     return;
+//   }
 
-  unawaited(
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (_) => const Center(
-            child: CircularProgressIndicator(),
-          ),
-    ),
-  );
+//   unawaited(
+//     showDialog<void>(
+//       context: context,
+//       barrierDismissible: false,
+//       builder:
+//           (_) => const Center(
+//             child: CircularProgressIndicator(),
+//           ),
+//     ),
+//   );
 
-  final res = await SupportRepo.instance.createTicket(
-    subject: 'Service Appeal',
-    description: 'User opened an appeal for $serviceCategory service.',
-    category: 'GENERAL_INQUIRY',
-    priority: 'LOW',
-    contactEmail: contactEmail,
-    contactPhone: contactPhone,
-    serviceCategory: serviceCategoryId,
-    relatedServiceProviderId: providerId,
-  );
+//   final res = await SupportRepo.instance.createTicket(
+//     subject: 'Service Appeal',
+//     description: 'User opened an appeal for $serviceCategory service.',
+//     category: 'GENERAL_INQUIRY',
+//     priority: 'LOW',
+//     contactEmail: contactEmail,
+//     contactPhone: contactPhone,
+//     serviceCategory: serviceCategoryId,
+//     relatedServiceProviderId: providerId,
+//   );
 
-  if (!context.mounted) return;
+//   if (!context.mounted) return;
 
 
-  Navigator.of(context).pop();
+//   Navigator.of(context).pop();
 
-  final error = res.error;
-  if (error != null && error.isNotEmpty) {
-    await showErrorSnackbar(context, error);
-    return;
-  }
+//   final error = res.error;
+//   if (error != null && error.isNotEmpty) {
+//     await showErrorSnackbar(context, error);
+//     return;
+//   }
 
-  final ticketId = res.data!['data']['ticketId'].toString();
+//   final ticketId = res.data!['data']['ticketId'].toString();
 
-  await pushScreen(
-    context,
-    SupportChatScreen(ticketId: ticketId, providerName: providerName,),
-  );
-}
+//   await pushScreen(
+//     context,
+//     SupportChatScreen(ticketId: ticketId, providerName: providerName,),
+//   );
+// }

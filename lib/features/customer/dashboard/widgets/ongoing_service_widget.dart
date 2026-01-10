@@ -1,7 +1,5 @@
-import 'dart:async';
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
@@ -21,26 +19,6 @@ class OngoingServiceCard extends StatefulWidget {
 }
 
 class _OngoingServiceCardState extends State<OngoingServiceCard> {
-  String? userType;
-  dynamic currentUser;
-  bool userReady = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _getEmail();
-    });
-  }
-
-  Future<String?> _getEmail() async {
-    var email = '';
-    final cred = await AuthLocalRepo.instance.getLocalCredentials();
-    if (cred != null) {
-      email = cred.userName ?? '';
-    }
-    return email;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,13 +124,10 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                     ),
                   ),
                   onPressed: () async {
-                    final email = await _getEmail();
-                    if (email != null) {
                       await pushScreen(
                         context,
                          ContactAdminScreen(issueType: AdminIssueType.serviceIssue, serviceCategory: widget.booking.serviceCategory?.id,relatedServiceProviderId: widget.booking.assignedProvider?.id,),
                       );
-                    }
                   },
                   child: GenText(
                     'Appeal',
