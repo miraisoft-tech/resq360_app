@@ -88,7 +88,7 @@ class _ServiceProviderDetailsScreenState
           await pop(context);
           await pushScreen(
             context,
-            ChatDetailScreen(chatId: state.chatId),
+            ChatDetailScreen(chatId: state.chatId,),
           );
         } else if (state is ServiceRequestError) {
           await pop(context);

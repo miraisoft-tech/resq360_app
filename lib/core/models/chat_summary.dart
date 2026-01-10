@@ -6,12 +6,14 @@ class ChatSummary {
     this.lastMessage,
     this.lastMessageTime,
     this.unreadCount = 0,
+    // this.status = '',
   });
   final int chatId;
   final String title;
   final String? lastMessage;
   final DateTime? lastMessageTime;
   final int unreadCount;
+  // final String status;
 
   ChatSummary copyWith({
     String? lastMessage,

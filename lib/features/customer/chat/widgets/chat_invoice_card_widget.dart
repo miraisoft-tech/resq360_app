@@ -2,6 +2,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/metadata.dart';
+import 'package:resq360/features/provider/chat/data/models/payment_status.enum.dart';
 
 class ChatInvoiceCardWidget extends StatelessWidget {
   const ChatInvoiceCardWidget({
@@ -10,7 +11,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
     required this.messageCreatedAt,
     required this.message, 
     required this.chat,
-    super.key, 
+    required this.status, super.key, 
   });
 
   final void Function() onTapPay;
@@ -18,6 +19,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
   final MessageResponse message;
   final ChatResponse chat;
   final String messageCreatedAt;
+  final String status;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -149,8 +151,8 @@ class ChatInvoiceCardWidget extends StatelessWidget {
           ),
           16.verticalSpace,
           WideButton(
-            label: 'Pay Now',
-            onPressed: onTapPay,
+            label: status == PaymentStatus.completed.value ? 'Paid' : 'Pay Now',
+            onPressed: status != PaymentStatus.completed.value ? onTapPay : null,
           ),
           6.verticalSpace,
           GenText(

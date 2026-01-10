@@ -6,6 +6,7 @@ import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
+import 'package:resq360/features/provider/chat/data/models/payment_status.enum.dart';
 import 'package:resq360/features/provider/chat/screens/provider_generate_invoice.dialog.dart';
 import 'package:resq360/features/provider/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
@@ -287,16 +288,17 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
             ],
           ),
         ),
-        PopupMenuItem<String>(
-          value: 'invoice',
-          child: Row(
-            children: [
-              const GenText('Generate Invoice'),
-              5.horizontalSpace,
-              AppAssets.ASSETS_ICONS_ATTACH_INVOICE_SVG.svg,
-            ],
+        if (chat.paymentStatus != 'COMPLETED')
+          PopupMenuItem<String>(
+            value: 'invoice',
+            child: Row(
+              children: [
+                const GenText('Generate Invoice'),
+                5.horizontalSpace,
+                AppAssets.ASSETS_ICONS_ATTACH_INVOICE_SVG.svg,
+              ],
+            ),
           ),
-        ),
       ],
     ).then((String? result) async {
       if (!context.mounted) return;
@@ -371,7 +373,7 @@ class _MessageList extends StatelessWidget {
         final message = messages[index];
         final isMine = message.senderType == 'PROVIDER';
         //  && message.senderId == currentUserId;
-
+        log(chat.paymentStatus);
         if (message.messageType == 'SYSTEM') {
           return Column(
             children: [
@@ -380,8 +382,8 @@ class _MessageList extends StatelessWidget {
                 message: message,
                 chat: chat,
                 paymentStatus:
-                    chat.paymentStatus == PaymentStatus.paid.name
-                        ? PaymentStatus.paid
+                    chat.paymentStatus == PaymentStatus.completed.value
+                        ? PaymentStatus.completed
                         : PaymentStatus.pending,
                 onTapPay: () => _handleInvoicePayment(context, message),
               ),

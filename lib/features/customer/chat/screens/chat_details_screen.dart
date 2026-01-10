@@ -32,6 +32,8 @@ class ChatDetailScreen extends StatelessWidget {
 class _ChatDetailView extends StatefulWidget {
   const _ChatDetailView();
 
+  // final int chatId;
+
   @override
   State<_ChatDetailView> createState() => _ChatDetailViewState();
 }
@@ -132,7 +134,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
 
     if (state is ChatDetailFailure) {
-      return ErrorMessageAndButton(error: state.error);
+      return ErrorMessageAndButton(error: state.error, onPressed: () {
+        // context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chatId));
+      },);
     }
 
     if (state is ChatDetailReady) {
@@ -401,7 +405,7 @@ class _MessageList extends StatelessWidget {
                           },
                         ),
                       );
-                    },
+                    }, status: chat.paymentStatus ?? 'PENDING',
                   )
                   : ChatBubble(
                     type: isMine ? MessageType.sent : MessageType.received,
