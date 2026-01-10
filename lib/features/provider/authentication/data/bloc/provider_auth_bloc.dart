@@ -44,7 +44,17 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         password: event.password,
       );
       if (result.data != null) {
-        emit(ProviderAuthLoginSuccessState(result.data!.provider));
+        final providerProfileResult =
+            await providerAuthRemoteRepo.getProviderProfile();
+        if (providerProfileResult.data != null) {
+          emit(ProviderAuthLoginSuccessState(result.data!.provider));
+        } else {
+          emit(
+            ProviderAuthFailureState(
+              providerProfileResult.error ?? 'Failed to load profile',
+            ),
+          );
+        }
       } else {
         log('bloc error ${result.error}');
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
@@ -71,7 +81,17 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         address: event.address,
       );
       if (result.data != null) {
-        emit(ProviderAuthSignupSuccessState(result.data!.provider));
+        final providerProfileResult =
+            await providerAuthRemoteRepo.getProviderProfile();
+        if (providerProfileResult.data != null) {
+          emit(ProviderAuthSignupSuccessState(result.data!.provider));
+        } else {
+          emit(
+            ProviderAuthFailureState(
+              providerProfileResult.error ?? 'Failed to load profile',
+            ),
+          );
+        }
       } else {
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
       }

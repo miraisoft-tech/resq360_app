@@ -19,51 +19,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
   static final ProviderAuthRemoteRepo instance =
       ProviderAuthRemoteRepo._internal();
 
-  // Future<EmptyResponse> googleSignin({required String deviceId}) async {
-  //   try {
-  //     final googleSignIn = GoogleSignIn(scopes: ['email']);
-
-  //     final googleUser = await googleSignIn.signIn();
-
-  //     log(googleUser.toString());
-
-  //     if (googleUser != null) {
-  //       final googleAuth = await googleUser.authentication;
-
-  //       const url = 'Account/Auth/Google';
-
-  //       log('id token ${googleAuth.idToken}');
-
-  //       log('access token ${googleAuth.accessToken}');
-
-  //       final res = await dio(
-  //         customAccessToken: googleAuth.idToken,
-  //       ).post<Map<String, dynamic>>(url);
-
-  //       log(res.statusCode);
-  //       log(res.data);
-
-  //       switch (res.statusCode) {
-  //         case 200:
-  //           return AuthResponse.fromJson(res.data ?? {});
-  //         default:
-  //           return ErrorResponse(
-  //             message:
-  //                 res.data?['message'].toString() ??
-  //                 'An error occured please try again!',
-  //           );
-  //       }
-  //     }
-  //   } on Exception catch (e, s) {
-  //     log(e);
-  //     log(s);
-
-  //     return ErrorResponse(message: '$e $s');
-  //   }
-
-  //   throw Exception('Sign-Up flow failed.');
-  // }
-
   Future<ApiResult<AuthResponse>> loginWithEmail({
     required String email,
     required String password,
@@ -71,7 +26,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     try {
       const url = '/auth/login';
 
-      // Fetch the saved user type from AuthLocalRepo
       final savedUserType = await authLocalDataSource.getUserType();
       final userType = savedUserType ?? 'user';
 
@@ -97,17 +51,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
           email: email,
           password: password,
         );
-        final userProfileResult = await getProviderProfile();
 
-        final name = userProfileResult.data?.fullName;
-        log(
-          'Fetched user profile: $name',
-        );
-        if (userProfileResult.error != null) {
-          return ApiResult(
-            error: userProfileResult.error,
-          );
-        }
 
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
@@ -177,13 +121,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
       if (res.statusCode == 201 && res.data != null) {
         final success = res.data!['success'] == true;
-        final userProfileResult = await getProviderProfile();
-
-        if (userProfileResult.error != null) {
-          return ApiResult(
-            error: userProfileResult.error,
-          );
-        }
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
           return ApiResult(data: authResponse);
