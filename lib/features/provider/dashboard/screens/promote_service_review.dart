@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/provider/chat/data/models/duration.enum.dart';
 import 'package:resq360/features/widgets/dialogs/payment_fiished.modal.dart';
@@ -35,21 +33,6 @@ class _PromoteServiceReviewScreenState
     context.read<CustomerAdvertisementBloc>().add(FetchAdvertisementPrice());
   }
 
-Future<String?> getUserEmail() async {
-  final type = await AuthLocalRepo.instance.getUserType();
-
-  if (type == 'user') {
-    final customer = await AuthLocalRepo.instance.getAuthCredentials();
-    return customer?.email;
-  }
-
-  if (type == 'provider') {
-    final provider = await AuthLocalRepo.instance.getProviderCredentials();
-    return provider?.email;
-  }
-
-  return null;
-}
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -57,30 +40,7 @@ Future<String?> getUserEmail() async {
     return MultiBlocListener(
       listeners: [
         BlocListener<CustomerAdvertisementBloc, CustomerAdvertisementState>(
-          listener: (context, state) async {
-            if (state is CustomerAdvertisementLoading) {
-              unawaited(showLoadingDialog(context));
-            }
-
-            if (state is AdvertisementCreated) {
-              await pop(context);
-              await GeneralDialogs.showCustomDialog<void>(
-                context,
-                body: PaymentFinished(
-                  onTap: () async {
-                    if (context.mounted) await pop(context);
-                    if (context.mounted) await pop(context);
-                    if (context.mounted) await pop(context);
-                  },
-                ),
-              );
-            }
-
-            if (state is CustomerAdvertisementError) {
-              await pop(context);
-              await showErrorSnackbar(context, state.error);
-            }
-          },
+          listener: _handleAdvertisementState,
         ),
         BlocListener<WalletBloc, WalletState>(
           listener: (context, state) {
@@ -88,9 +48,6 @@ Future<String?> getUserEmail() async {
               balance = state.wallet.balance.toString();
             }
           },
-        ),
-        BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
-          listener: _handlePaymentState,
         ),
       ],
       child: Scaffold(
@@ -228,8 +185,9 @@ Future<String?> getUserEmail() async {
                           >(
                             builder: (context, state) {
                               if (state is AdvertisementPriceFetched) {
+                                final price = state.price ?? 0;
                                 final total =
-                                    state.price * widget.duration.value;
+                                    price * widget.duration.value;
                                 return GenText(
                                   total.toString(),
                                   height: 24.5,
@@ -272,6 +230,10 @@ Future<String?> getUserEmail() async {
                             onPressed:
                                 isLoaded
                                     ? () async {
+                                      final price = state.price ?? 0;
+                                      final total =
+                                          price * widget.duration.value;
+
                                       await GeneralDialogs.showCustomDialog<
                                         void
                                       >(
@@ -280,43 +242,23 @@ Future<String?> getUserEmail() async {
                                           onPaymentSelected: (
                                             paymentMethod,
                                           ) async {
-                                            if (paymentMethod ==
-                                                PaymentMethod.wallet) {
-                                              await GeneralDialogs.showCustomDialog<
-                                                void
-                                              >(
-                                                context,
-                                                body: FinishPaymentDialog(
-                                                  amount:
-                                                      state.price.toString(),
-                                                  walletBalance:
-                                                      double.parse(
-                                                        balance,
-                                                      ).toInt(),
-                                                  discount: widget.discount,
-                                                  duration: widget.duration,
-                                                  description:
-                                                      widget.description,
-                                                ),
-                                              );
-                                            } else {
-                                              final total =
-                                                  state.price *
-                                                  widget.duration.value;
-                                              final email =
-                                                  await getUserEmail();
-                                              log(email);
-                                              if (email == null) return;
-                                              context.read<CustomerPaymentBloc>().add(
-                                                CustomerInitAdvertisementPaymentEvent(
-                                                  amount: total,
-                                                  email: email,
-                                                  currency: 'NGN',
-                                                  callbackUrl:
-                                                      'https://example.com/callback',
-                                                ),
-                                              );
-                                            }
+                                            await GeneralDialogs.showCustomDialog<
+                                              void
+                                            >(
+                                              context,
+                                              body: FinishPaymentDialog(
+                                                amount: state.price.toString(),
+                                                walletBalance:
+                                                    double.parse(
+                                                      balance,
+                                                    ).toInt(),
+                                                discount: widget.discount,
+                                                duration: widget.duration,
+                                                description: widget.description,
+                                                paymentType: paymentMethod.name,
+                                                total: total,
+                                              ),
+                                            );
                                           },
                                         ),
                                       );
@@ -336,12 +278,14 @@ Future<String?> getUserEmail() async {
     );
   }
 
-  Future<void> _handlePaymentState(
+  Future<void> _handleAdvertisementState(
     BuildContext context,
-    CustomerPaymentState state,
+    CustomerAdvertisementState state,
   ) async {
-    if (state is AdvertisementPaymentLoadingState) {
-      await showLoadingDialog(context);
+    if (state is CustomerAdvertisementLoading ||
+        state is AdvertisementPaymentVerifying) {
+      unawaited(showLoadingDialog(context));
+      return;
     }
 
     if (state is AdvertisementPaymentInitiatedState) {
@@ -360,37 +304,38 @@ Future<String?> getUserEmail() async {
       );
 
       if (completed ?? false) {
-        context.read<CustomerPaymentBloc>().add(
-          CustomerVerifyAdvertisementPaymentEvent(
-            state.payment.reference,
-          ),
-        );
+        await _verifyAdvertisementPayment(state.payment.reference);
       } else {
         await showErrorSnackbar(context, 'Payment cancelled');
       }
+      return;
     }
 
-    if (state is AdvertisementPaymentVerifiedState) {
-      Navigator.pop(context);
-
-      if (state.verification.gatewayResponse == 'Successful') {
-        context.read<CustomerAdvertisementBloc>().add(
-          CreateAdvertisement(
-            discount: int.parse(widget.discount),
-            duration: widget.duration.milliseconds,
-            paymentMethod: PaymentMethod.new_card.name,
-            description: widget.description,
-          ),
-        );
-      } else {
-        await showErrorSnackbar(context, 'Payment unsuccessful');
-      }
+    if (state is AdvertisementCreated) {
+      await pop(context);
+      await GeneralDialogs.showCustomDialog<void>(
+        context,
+        body: PaymentFinished(
+          onTap: () async {
+            if (context.mounted) await pop(context);
+            if (context.mounted) await pop(context);
+            if (context.mounted) await pop(context);
+          },
+        ),
+      );
+      return;
     }
 
-    if (state is AdvertisementPaymentFailureState) {
+    if (state is CustomerAdvertisementError) {
       Navigator.pop(context);
       await showErrorSnackbar(context, state.error);
     }
+  }
+
+  Future<void> _verifyAdvertisementPayment(String reference) async {
+    context.read<CustomerAdvertisementBloc>().add(
+      VerifyAdvertisementPayment(reference: reference),
+    );
   }
 }
 
@@ -401,6 +346,8 @@ class FinishPaymentDialog extends StatefulWidget {
     required this.discount,
     required this.duration,
     required this.description,
+    required this.paymentType,
+    required this.total,
     super.key,
   });
 
@@ -409,6 +356,8 @@ class FinishPaymentDialog extends StatefulWidget {
   final String discount;
   final PromotionDuration duration;
   final String description;
+  final String paymentType;
+  final int total;
 
   @override
   State<FinishPaymentDialog> createState() => _FinishPaymentDialogState();
@@ -419,8 +368,8 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
     final fee = int.parse(widget.amount) * widget.duration.value;
-
     final remaining = widget.walletBalance - fee;
+
     return Padding(
       padding: EdgeInsets.only(top: 220.h, bottom: 200.h),
       child: Material(
@@ -476,74 +425,79 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                     ),
                     10.verticalSpace,
                     GenText(
-                      widget.amount,
+                      '₦${widget.amount}',
                       weight: FontWeight.w500,
                       color: appColors.black,
                     ),
                   ],
                 ),
               ),
-              20.verticalSpace,
-              Container(
-                width: double.infinity,
-                padding: pad(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.grey,
-                  borderRadius: BorderRadius.circular(10.r),
+              if (widget.paymentType == PaymentMethod.wallet.name) ...[
+                20.verticalSpace,
+                Container(
+                  width: double.infinity,
+                  padding: pad(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: AppColors.grey,
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          GenText(
+                            'Wallet Balance',
+                            weight: FontWeight.w500,
+                            color: appColors.black,
+                          ),
+                          const Spacer(),
+                          GenText(
+                            '₦${widget.walletBalance}',
+                            weight: FontWeight.w500,
+                            color: appColors.black,
+                          ),
+                        ],
+                      ),
+                      10.verticalSpace,
+                      Row(
+                        children: [
+                          GenText(
+                            'Total Fee:',
+                            weight: FontWeight.w500,
+                            color: appColors.neutral.shade500,
+                          ),
+                          const Spacer(),
+                          GenText(
+                            '₦${widget.total}',
+                            weight: FontWeight.w500,
+                            color: appColors.neutral.shade500,
+                          ),
+                        ],
+                      ),
+                      10.verticalSpace,
+                      Row(
+                        children: [
+                          GenText(
+                            'Remaining Balance:',
+                            weight: FontWeight.w500,
+                            color: appColors.neutral.shade500,
+                          ),
+                          const Spacer(),
+                          GenText(
+                            '₦$remaining',
+                            weight: FontWeight.w500,
+                            color:
+                                remaining >= 0
+                                    ? appColors.success.shade600
+                                    : appColors.error.shade600,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        GenText(
-                          'Wallet Balance',
-                          weight: FontWeight.w500,
-                          color: appColors.black,
-                        ),
-                        50.horizontalSpace,
-                        GenText(
-                          widget.walletBalance.toString(),
-                          weight: FontWeight.w500,
-                          color: appColors.black,
-                        ),
-                      ],
-                    ),
-                    10.verticalSpace,
-                    Row(
-                      children: [
-                        GenText(
-                          'Promotion Fee:',
-                          weight: FontWeight.w500,
-                          color: appColors.neutral.shade500,
-                        ),
-                        50.horizontalSpace,
-                        GenText(
-                          '₦${widget.amount}',
-                          weight: FontWeight.w500,
-                          color: appColors.neutral.shade500,
-                        ),
-                      ],
-                    ),
-                    10.verticalSpace,
-                    Row(
-                      children: [
-                        GenText(
-                          'Remaining Balance:',
-                          weight: FontWeight.w500,
-                          color: appColors.neutral.shade500,
-                        ),
-                        20.horizontalSpace,
-                        GenText(
-                          remaining.toString(),
-                          weight: FontWeight.w500,
-                          color: appColors.neutral.shade500,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              ],
               40.verticalSpace,
               Row(
                 children: [
@@ -558,27 +512,17 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                   12.horizontalSpace,
                   Expanded(
                     child: WideButton(
-                      label: 'Pay ${widget.amount}',
+                      label: 'Pay ₦${widget.total}',
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
-                        if (widget.walletBalance < 1) {
-                          await showErrorSnackbar(
-                            context,
-                            'Insufficient Balance',
-                          );
-                          Navigator.pop(context);
-                          return;
-                        }
                         Navigator.pop(context);
-                        context.read<CustomerAdvertisementBloc>().add(
-                          CreateAdvertisement(
-                            discount: int.parse(widget.discount),
-                            duration: widget.duration.milliseconds,
-                            paymentMethod: 'wallet',
-                            description: widget.description,
-                          ),
-                        );
+
+                        if (widget.paymentType == PaymentMethod.wallet.name) {
+                          await _payWithWallet();
+                        } else {
+                          await _payWithCard();
+                        }
                       },
                     ),
                   ),
@@ -587,6 +531,37 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _payWithWallet() async {
+    final balance = widget.walletBalance;
+    final total = widget.total;
+
+    if (balance < total) {
+      await showErrorSnackbar(context, 'Insufficient balance');
+      return;
+    }
+
+    context.read<CustomerAdvertisementBloc>().add(
+      CreateAdvertisement(
+        discount: int.parse(widget.discount),
+        duration: widget.duration.milliseconds,
+        paymentMethod: PaymentMethod.wallet.name,
+        description: widget.description,
+      ),
+    );
+  }
+
+  Future<void> _payWithCard() async {
+    context.read<CustomerAdvertisementBloc>().add(
+      CreateAdvertisement(
+        discount: int.parse(widget.discount),
+        duration: widget.duration.milliseconds,
+        paymentMethod: PaymentMethod.new_card.name,
+
+        description: widget.description,
       ),
     );
   }

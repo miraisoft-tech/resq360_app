@@ -16,8 +16,6 @@ class CustomerPaymentBloc
     on<CustomerInitServicePaymentEvent>(_initServicePayment);
     on<CustomerInitServiceRequestPaymentEvent>(_initServiceRequestPayment);
     on<CustomerVerifyServicePaymentEvent>(_verifyServicePayment);
-    on<CustomerInitAdvertisementPaymentEvent>(_initAdvertisementPayment);
-    on<CustomerVerifyAdvertisementPaymentEvent>(_verifyAdvertisementPayment);
   }
 
   final PaymentRepo _repo;
@@ -131,47 +129,4 @@ class CustomerPaymentBloc
     }
   }
 
-  Future<void> _initAdvertisementPayment(
-    CustomerInitAdvertisementPaymentEvent event,
-    Emitter<CustomerPaymentState> emit,
-  ) async {
-    emit(AdvertisementPaymentLoadingState());
-
-    final result = await _repo.initiatePayment(
-      amount: event.amount,
-      email: event.email,
-      currency: event.currency,
-      callbackUrl: event.callbackUrl,
-    );
-
-    if (result.data != null) {
-      emit(AdvertisementPaymentInitiatedState(result.data!));
-    } else {
-      log(result.error);
-      emit(
-        AdvertisementPaymentFailureState(
-          result.error ?? 'Advertisement payment initiation failed',
-        ),
-      );
-    }
-  }
-
-  Future<void> _verifyAdvertisementPayment(
-    CustomerVerifyAdvertisementPaymentEvent event,
-    Emitter<CustomerPaymentState> emit,
-  ) async {
-    emit(AdvertisementPaymentLoadingState());
-
-    final result = await _repo.verifyPayment(event.reference);
-
-    if (result.isSuccess && result.data != null) {
-      emit(AdvertisementPaymentVerifiedState(result.data!));
-    } else {
-      emit(
-        AdvertisementPaymentFailureState(
-          result.error ?? 'Advertisement payment verification failed',
-        ),
-      );
-    }
-  }
 }

@@ -70,14 +70,14 @@ class ServicePaymentFailureState extends CustomerPaymentState {
 
 class AdvertisementPaymentLoadingState extends CustomerPaymentState {}
 
-class AdvertisementPaymentInitiatedState extends CustomerPaymentState {
-  const AdvertisementPaymentInitiatedState(this.payment);
+// class AdvertisementPaymentInitiatedState extends CustomerPaymentState {
+//   const AdvertisementPaymentInitiatedState(this.payment);
 
-  final PaymentResponse payment;
+//   final PaymentResponse payment;
 
-  @override
-  List<Object?> get props => [payment];
-}
+//   @override
+//   List<Object?> get props => [payment];
+// }
 
 class AdvertisementPaymentVerifiedState extends CustomerPaymentState {
   const AdvertisementPaymentVerifiedState(this.verification);

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement_response.dart';
 
 class AdvertisementRepo extends BaseAPI {
   Future<ApiResult<List<Advertisement>>> fetchAllAdvertisement() async {
@@ -31,7 +32,7 @@ class AdvertisementRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<void>> createAdvertisement({
+  Future<ApiResult<CreateAvertisementResponse>> createAdvertisement({
     required int discountPercentage,
     required int durationInMilliSeconds,
     required String paymentMethod,
@@ -51,7 +52,8 @@ class AdvertisementRepo extends BaseAPI {
       );
 
       if (res.statusCode == 200 || res.statusCode == 201) {
-        return ApiResult();
+        final data = CreateAvertisementResponse.fromJson(res.data ?? {});
+        return ApiResult(data: data);
       } else {
         return ApiResult(error: res.data?['message'] as String);
       }
