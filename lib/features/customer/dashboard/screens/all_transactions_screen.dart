@@ -141,6 +141,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
         onRefresh: () async {
           context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
         },
+        color: appColors.primary,
         child: BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
           builder: (context, state) {
             if (state is WalletTransactionsLoading) {

@@ -178,6 +178,7 @@ class _BookingList extends StatelessWidget {
                   ),
                 );
               },
+              color: appColors.primary,
               child: ListView.separated(
                 padding: pad(vertical: 16, horizontal: 16),
                 itemCount: bookings.length,

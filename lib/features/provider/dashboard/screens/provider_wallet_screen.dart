@@ -22,7 +22,7 @@ class ProviderWalletScreen extends StatefulWidget {
 class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
 
   
-    var isLoadingDialogShown = false;
+    bool isLoadingDialogShown = false;
 
   @override
   void initState() {

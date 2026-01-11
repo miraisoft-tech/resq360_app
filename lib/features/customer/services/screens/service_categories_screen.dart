@@ -39,134 +39,140 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
 
     return BlocListener<ServiceCatalogBloc, ServiceCatalogState>(
       listener: (context, state) {},
-      child: Scaffold(
-        backgroundColor: colors.whiteColor,
-        appBar: AppBar(
-          elevation: 0,
+      child: RefreshIndicator(
+        onRefresh: ()async{
+          context.read<ServiceCatalogBloc>().add(const FetchServices());
+        },
+        color: colors.primary,
+        child: Scaffold(
           backgroundColor: colors.whiteColor,
-          leading:
-              Navigator.canPop(context)
-                  ? IconButton(
-                    icon: Icon(Icons.arrow_back, color: colors.black),
-                    onPressed: () => pop(context),
-                  )
-                  : null,
-          title: UrbText(
-            'Service Category',
-            size: 22,
-            height: 32,
-            weight: FontWeight.w700,
-            color: colors.black,
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: colors.whiteColor,
+            leading:
+                Navigator.canPop(context)
+                    ? IconButton(
+                      icon: Icon(Icons.arrow_back, color: colors.black),
+                      onPressed: () => pop(context),
+                    )
+                    : null,
+            title: UrbText(
+              'Service Category',
+              size: 22,
+              height: 32,
+              weight: FontWeight.w700,
+              color: colors.black,
+            ),
+            centerTitle: true,
           ),
-          centerTitle: true,
-        ),
-        body: BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
-          builder: (context, state) {
-            if (state is ServiceCatalogLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (state is ServiceCatalogError) {
-              return ErrorMessageAndButton(
-                error: state.error,
-                onPressed: () {
-                  context.read<ServiceCatalogBloc>().add(
-                    const FetchServices(),
-                  );
-                },
-              );
-            }
-
-            if (state is ServicesLoaded) {
-              final services = state.services;
-
-              final filteredServices =
-                  _searchController.text.isEmpty
-                      ? services
-                      : services.where((service) {
-                        return service.name.toLowerCase().contains(
-                          _searchController.text.toLowerCase(),
-                        );
-                      }).toList();
-
-              return Padding(
-                padding: pad(horizontal: 16, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FilterSearchFormField(
-                      controller: _searchController,
-                      hintText: 'Search for services',
-                      onTapSuffix: () {
-                        _searchController.clear();
-                        setState(() {});
-                      },
-                      onChanged: (value) {
-                        setState(() {});
-                      },
-                      prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
-                    ),
-                    20.verticalSpace,
-                    Expanded(
-                      child:
-                          filteredServices.isEmpty
-                              ? Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.search_off,
-                                      size: 64,
-                                      color: colors.greyColor,
-                                    ),
-                                    16.verticalSpace,
-                                    UrbText(
-                                      'No services found',
-                                      size: 16,
-                                      weight: FontWeight.w600,
-                                      color: colors.greyColor,
-                                    ),
-                                    8.verticalSpace,
-                                    UrbText(
-                                      'Try searching with different keywords',
-                                      color: colors.greyColor,
-                                    ),
-                                  ],
+          body: BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
+            builder: (context, state) {
+              if (state is ServiceCatalogLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+        
+              if (state is ServiceCatalogError) {
+                return ErrorMessageAndButton(
+                  error: state.error,
+                  onPressed: () {
+                    context.read<ServiceCatalogBloc>().add(
+                      const FetchServices(),
+                    );
+                  },
+                );
+              }
+        
+              if (state is ServicesLoaded) {
+                final services = state.services;
+        
+                final filteredServices =
+                    _searchController.text.isEmpty
+                        ? services
+                        : services.where((service) {
+                          return service.name.toLowerCase().contains(
+                            _searchController.text.toLowerCase(),
+                          );
+                        }).toList();
+        
+                return Padding(
+                  padding: pad(horizontal: 16, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FilterSearchFormField(
+                        controller: _searchController,
+                        hintText: 'Search for services',
+                        onTapSuffix: () {
+                          _searchController.clear();
+                          setState(() {});
+                        },
+                        onChanged: (value) {
+                          setState(() {});
+                        },
+                        prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
+                      ),
+                      20.verticalSpace,
+                      Expanded(
+                        child:
+                            filteredServices.isEmpty
+                                ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.search_off,
+                                        size: 64,
+                                        color: colors.greyColor,
+                                      ),
+                                      16.verticalSpace,
+                                      UrbText(
+                                        'No services found',
+                                        size: 16,
+                                        weight: FontWeight.w600,
+                                        color: colors.greyColor,
+                                      ),
+                                      8.verticalSpace,
+                                      UrbText(
+                                        'Try searching with different keywords',
+                                        color: colors.greyColor,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                                : GridView.builder(
+                                  itemCount: filteredServices.length,
+        
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        mainAxisSpacing: 16,
+                                        crossAxisSpacing: 16,
+                                        mainAxisExtent: 160,
+                                      ),
+                                  itemBuilder: (context, index) {
+                                    final service = filteredServices[index];
+        
+                                    return ServiceCategoryWidget(
+                                      category: service,
+                                      onTap: () async {
+                                        await pushScreen(
+                                          context,
+                                          ServiceProvidersScreen(
+                                            serviceProviderId: service.id,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
                                 ),
-                              )
-                              : GridView.builder(
-                                itemCount: filteredServices.length,
-
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      mainAxisSpacing: 16,
-                                      crossAxisSpacing: 16,
-                                      mainAxisExtent: 160,
-                                    ),
-                                itemBuilder: (context, index) {
-                                  final service = filteredServices[index];
-
-                                  return ServiceCategoryWidget(
-                                    category: service,
-                                    onTap: () async {
-                                      await pushScreen(
-                                        context,
-                                        ServiceProvidersScreen(
-                                          serviceProviderId: service.id,
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
