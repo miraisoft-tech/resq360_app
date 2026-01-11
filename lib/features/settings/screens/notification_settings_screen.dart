@@ -1,5 +1,8 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/settings/data/bloc/notification_settings_bloc/notification_settings_bloc.dart';
+
+import 'package:resq360/features/settings/data/models/notification_settings.model.dart';
 import 'package:resq360/features/settings/widgets/update_phone.modal.dart';
 import 'package:resq360/features/widgets/custom_switch.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
@@ -17,20 +20,19 @@ class NotificationSettingsScreen extends StatefulWidget {
 
 class _NotificationSettingsScreenState
     extends State<NotificationSettingsScreen> {
-  ValueNotifier<bool> inAppNotification = ValueNotifier(true);
-  ValueNotifier<bool> emailNotification = ValueNotifier(true);
-  ValueNotifier<bool> smsNotification = ValueNotifier(true);
-  ValueNotifier<bool> renewSMSNotification = ValueNotifier(true);
-
-
-
-   late Future<String?> phoneNumberFuture;
+  late Future<String?> phoneNumberFuture;
+  NotificationSettingsModel? currentSettings;
 
   @override
   void initState() {
     super.initState();
-    phoneNumberFuture = AuthLocalRepo.instance
-        .getUserPhoneNumber(isProvider: widget.isProvider);
+    phoneNumberFuture = AuthLocalRepo.instance.getUserPhoneNumber(
+      isProvider: widget.isProvider,
+    );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NotificationSettingsBloc>().add(FetchNotificationSettings());
+    });
   }
 
   @override
@@ -56,131 +58,166 @@ class _NotificationSettingsScreenState
         backgroundColor: appColors.whiteColor,
         foregroundColor: appColors.black,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: pad(horizontal: 20, vertical: 16),
-          child: ListView(
-            children: [
-              _CardTile(
-                header: 'In-App',
-                title: 'In-App Notification',
-                subtitle:
-                    'In-app notification are mandatory for important updates.',
-                isEnabled: inAppNotification.value,
-                onChanged: ({required value}) {
-                  setState(() {
-                    inAppNotification.value = value;
-                  });
-                },
-              ),
-              20.verticalSpace,
-              _CardTile(
-                header: 'Email',
-                title: 'Email Notification',
-                subtitle:
-                    'Email notification are mandatory for important updates.',
-                isEnabled: emailNotification.value,
-                onChanged: ({required value}) {
-                  setState(() {
-                    inAppNotification.value = value;
-                  });
-                },
-              ),
-              20.verticalSpace,
-              _CardTile(
-                header: 'SMS',
-                title: 'SMS Notification',
-                subtitle:
-                    'Subscription is required to boost your chances of getting quick access to job offers by 85%.',
-                isEnabled: smsNotification.value,
-                onChanged: ({required value}) {
-                  setState(() {
-                    smsNotification.value = value;
-                  });
-                },
-              ),
-              Col(
+      body: BlocConsumer<NotificationSettingsBloc, NotificationSettingsState>(
+        listener: (context, state) async {
+          if (state is FetchingNotificationSettingsError) {
+            await showErrorSnackbar(context, state.error);
+          }
+
+          if (state is UpdatingNotificationSettingsError) {
+            await showErrorSnackbar(context, state.error);
+          }
+
+          if (state is UpdatedNotificationSettings) {
+            setState(() {
+              currentSettings = state.settings;
+            });
+          }
+
+          if (state is FetchedNotificationSettings) {
+            setState(() {
+              currentSettings = state.settings;
+            });
+          }
+        },
+        builder: (context, state) {
+          if (state is FetchNotificationSettingsLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (currentSettings == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return SafeArea(
+            child: Padding(
+              padding: pad(horizontal: 20, vertical: 16),
+              child: ListView(
                 children: [
                   _CardTile(
-                    header: '',
-                    title: 'Auto-renew Subscription',
+                    header: 'In-App',
+                    title: 'In-App Notification',
                     subtitle:
-                        'Enable automatic renewal to avoid missing job offers.',
-                    isEnabled: renewSMSNotification.value,
-                    onChanged: ({required value}) async {
-                      setState(() {
-                        renewSMSNotification.value = value;
-                      });
-
-                      await GeneralDialogs.showCustomDialog<void>(
-                        context,
-                        body: PaymentOptionDialog(
-                          onPaymentSelected: (method) async {
-                            await GeneralDialogs.showCustomDialog<void>(
-                              context,
-                              body: const SubscribeConfirmDialog(
-                                amount: '₦15,0000',
-                              ),
-                            );
-                          },
-                        ),
+                        'In-app notification are mandatory for important updates.',
+                    isEnabled: currentSettings!.pushNotifications,
+                    onChanged: ({required value}) {
+                      context.read<NotificationSettingsBloc>().add(
+                        UpdatePushNotification(value: value),
                       );
                     },
                   ),
                   20.verticalSpace,
-                  FutureBuilder(
-                    future: phoneNumberFuture,
-                    builder: (context, asyncSnapshot) {
-                      final phone = asyncSnapshot.data ?? 'No number';
-                      return GestureDetector(
-                        onTap: () async {
-                          await GeneralDialogs.showCustomDialog<void>(
-                            context,
-                            body: UpdatePhoneModal(
-                              phoneNumber: phone, 
-                              isProvider: widget.isProvider,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          padding: pad(vertical: 16, horizontal: 16),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: appColors.textColor.shade100),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              GenText(
-                                'Phone Number',
-                                color: appColors.black,
-                                weight: FontWeight.w500,
-                              ),
-                              5.verticalSpace,
-                              GenText(
-                                phone,
-                                size: 12,
-                                color: appColors.textColor.shade500,
-                                weight: FontWeight.w400,
-                              ),
-                              GenText(
-                                'Update Number',
-                                size: 12,
-                                color: appColors.primary.shade500,
-                                weight: FontWeight.w400,
-                              ),
-                            ],
-                          ),
-                        ),
+                  _CardTile(
+                    header: 'Email',
+                    title: 'Email Notification',
+                    subtitle:
+                        'Email notification are mandatory for important updates.',
+                    isEnabled: currentSettings!.emailNotifications,
+                    onChanged: ({required value}) {
+                      context.read<NotificationSettingsBloc>().add(
+                        UpdateEmailNotification(value: value),
                       );
                     },
                   ),
+                  20.verticalSpace,
+                  _CardTile(
+                    header: 'SMS',
+                    title: 'SMS Notification',
+                    subtitle:
+                        'Subscription is required to boost your chances of getting quick access to job offers by 85%.',
+                    isEnabled: currentSettings!.smsNotifications,
+                    onChanged: ({required value}) {
+                      context.read<NotificationSettingsBloc>().add(
+                        UpdateSmsNotification(value: value),
+                      );
+                    },
+                  ),
+                  Col(
+                    children: [
+                      _CardTile(
+                        header: '',
+                        title: 'Auto-renew Subscription',
+                        subtitle:
+                            'Enable automatic renewal to avoid missing job offers.',
+                        isEnabled: currentSettings!.weeklyReports,
+                        onChanged: ({required value}) async {
+                          context.read<NotificationSettingsBloc>().add(
+                            UpdateWeeklyReports(value: value),
+                          );
+
+                          await GeneralDialogs.showCustomDialog<void>(
+                            context,
+                            body: PaymentOptionDialog(
+                              onPaymentSelected: (method) async {
+                                await GeneralDialogs.showCustomDialog<void>(
+                                  context,
+                                  body: const SubscribeConfirmDialog(
+                                    amount: '₦15,0000',
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                      20.verticalSpace,
+                      FutureBuilder(
+                        future: phoneNumberFuture,
+                        builder: (context, asyncSnapshot) {
+                          final phone = asyncSnapshot.data ?? 'No number';
+                          return GestureDetector(
+                            onTap: () async {
+                              await GeneralDialogs.showCustomDialog<void>(
+                                context,
+                                body: UpdatePhoneModal(
+                                  phoneNumber: phone,
+                                  isProvider: widget.isProvider,
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: pad(vertical: 16, horizontal: 16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: appColors.textColor.shade100,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  GenText(
+                                    'Phone Number',
+                                    color: appColors.black,
+                                    weight: FontWeight.w500,
+                                  ),
+                                  5.verticalSpace,
+                                  GenText(
+                                    phone,
+                                    size: 12,
+                                    color: appColors.textColor.shade500,
+                                    weight: FontWeight.w400,
+                                  ),
+                                  GenText(
+                                    'Update Number',
+                                    size: 12,
+                                    color: appColors.primary.shade500,
+                                    weight: FontWeight.w400,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -193,26 +230,29 @@ class _CardTile extends StatelessWidget {
     required this.subtitle,
     this.isEnabled = true,
     this.onChanged,
-    super.key,
   });
+
   final String header;
   final String title;
   final String subtitle;
   final bool isEnabled;
   final void Function({required bool value})? onChanged;
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Col(
       children: [
-        UrbText(
-          header,
-          color: appColors.black,
-          weight: FontWeight.w700,
-          size: 16,
-        ),
-        16.verticalSpace,
+        if (header.isNotEmpty) ...[
+          UrbText(
+            header,
+            color: appColors.black,
+            weight: FontWeight.w700,
+            size: 16,
+          ),
+          16.verticalSpace,
+        ],
         Container(
           width: double.infinity,
           padding: pad(vertical: 16, horizontal: 16),
