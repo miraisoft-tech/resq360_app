@@ -140,7 +140,6 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
     onPressed: () async {
       final selected = _selectDuration.value;
 
-      // ensure all fields are valid
       if (selected == null) return;
       if (promoController.text.isEmpty) return;
       if (discountController.text.isEmpty) return;

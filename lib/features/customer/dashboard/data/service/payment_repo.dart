@@ -17,8 +17,8 @@ class PaymentRepo extends BaseAPI {
   }) async {
     const url = '/wallet/fund';
     final data = {
-      'amount': amount * 10,
-      'userType': userType,
+      'amount': amount,
+      // 'userType': userType,
     };
 
     log('fund wallet Data: $data');

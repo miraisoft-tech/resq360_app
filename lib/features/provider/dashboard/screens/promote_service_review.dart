@@ -564,7 +564,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
-                        if (remaining < 1) {
+                        if (widget.walletBalance < 1) {
                           await showErrorSnackbar(
                             context,
                             'Insufficient Balance',
