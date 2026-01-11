@@ -1,15 +1,11 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
-import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_withdraw_screen.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.dart';
@@ -24,43 +20,22 @@ class ProviderWalletScreen extends StatefulWidget {
 }
 
 class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
-  String? userType;
-  dynamic currentUser;
-  bool userReady = false;
+
+  
+    var isLoadingDialogShown = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _setupUser();
       context.read<WalletBloc>().add(FetchWalletInfo());
       context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
     });
   }
 
-  Future<void> _setupUser() async {
-    final type = await AuthLocalRepo.instance.getUserType();
-    if (type == null) return;
-
-    userType = type;
-
-    if (type == 'user') {
-      currentUser = CustomerAuthProvider.instance.authInfo;
-    } else if (type == UserType.provider.name) {
-      currentUser = ProviderAuthProvider.instance.authInfo;
-    }
-
-    if (mounted) {
-      setState(() {
-        userReady = currentUser != null;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    var isLoadingDialogShown = false;
 
     return BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
       listener: (context, state) async {
@@ -79,6 +54,10 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
         }
 
         if (state is WalletFundingInitiatedState) {
+          if (isLoadingDialogShown) {
+            isLoadingDialogShown = false;
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           final url = state.payment.authorizationUrl;
           final reference = state.payment.reference;
           if (!mounted) return;
@@ -110,6 +89,14 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
         }
 
         if (state is WalletFundingVerifiedState) {
+          if (isLoadingDialogShown) {
+            isLoadingDialogShown = false;
+            Navigator.of(context, rootNavigator: true).pop();
+            await Future<void>.delayed(const Duration(milliseconds: 100));
+          }
+
+          if (!mounted) return;
+
           await GeneralDialogs.showCustomDialog<void>(
             context,
             body: FundWalletCompleted(
@@ -143,9 +130,11 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
           centerTitle: true,
         ),
         body: RefreshIndicator(
-          onRefresh: ()async{
-             context.read<WalletBloc>().add(FetchWalletInfo());
-          context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
+          onRefresh: () async {
+            context.read<WalletBloc>().add(FetchWalletInfo());
+            context.read<WalletTransactionsBloc>().add(
+              FetchWalletTransactions(),
+            );
           },
           color: appColors.primary,
           child: SingleChildScrollView(
@@ -172,7 +161,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                         ),
                       );
                     }
-          
+
                     if (state is FetchedWalletInfo) {
                       final balance = state.wallet.balance;
                       return ProviderWalletBalanceCard(
@@ -220,7 +209,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                     if (state is WalletTransactionsLoading) {
                       return const Center(child: CircularProgressIndicator());
                     }
-          
+
                     if (state is WalletTransactionsError) {
                       return ErrorMessageAndButton(
                         error: state.error,
@@ -231,10 +220,10 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                         },
                       );
                     }
-          
+
                     if (state is WalletTransactionsLoaded) {
                       final transactions = state.transactions;
-          
+
                       if (transactions.isEmpty) {
                         return const EmptyScreenWidget(
                           imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
@@ -243,7 +232,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                               'Your wallet history will appear here after your first payment or credit',
                         );
                       }
-          
+
                       return ListView.separated(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -251,7 +240,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                         separatorBuilder: (_, _) => 16.verticalSpace,
                         itemBuilder: (context, index) {
                           final tx = transactions[index];
-          
+
                           return WalletTransactionTile(
                             tx: tx,
                             onTap: () async {
@@ -273,7 +262,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                         },
                       );
                     }
-          
+
                     return const SizedBox.shrink();
                   },
                 ),
