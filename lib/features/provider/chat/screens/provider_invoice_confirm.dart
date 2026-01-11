@@ -1,12 +1,14 @@
-
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
 
 class ProviderInvoiceConfirmDialog extends StatefulWidget {
-  const ProviderInvoiceConfirmDialog({required this.invoice, required this.chat, super.key});
+  const ProviderInvoiceConfirmDialog({
+    required this.invoice,
+    required this.chat,
+    super.key,
+  });
 
   final Map<String, dynamic> invoice;
   final ChatResponse chat;
@@ -19,10 +21,8 @@ class ProviderInvoiceConfirmDialog extends StatefulWidget {
 class _ProviderGenerateInvoiceDialogState
     extends State<ProviderInvoiceConfirmDialog> {
   bool viewMore = false;
-    final now = DateTime.now();
-late final formattedDate =
-    '${now.month}/${now.day}/${now.year}';
-
+  final now = DateTime.now();
+  late final formattedDate = '${now.month}/${now.day}/${now.year}';
 
   // Future<void> sendInvoice() async {
   //   final meta = {
@@ -33,7 +33,6 @@ late final formattedDate =
   //     'description': widget.invoice['description'],
   //     'amount': widget.invoice['price'],
   //   };
-
 
   //   final request = SendMessageRequest(
   //     chatId: widget.invoice['chatId'] as int,
@@ -55,25 +54,25 @@ late final formattedDate =
 
   Future<void> sendInvoice() async {
     log('sent');
-  final request = SendInvoice(
-    chatId: widget.invoice['chatId'] as int,
-    amount: widget.invoice['price'] as int,
-    currency: 'NGN',
-    description: widget.invoice['description'] as String,
-    invoiceId: widget.invoice['invoiceNo'] as String,
-    fileName: '',
-    fileUrl: '',
-    fileSize: 0,
-    mimeType: ''
-  );
+    final request = SendInvoice(
+      chatId: widget.invoice['chatId'] as int,
+      amount: widget.invoice['price'] as int,
+      currency: 'NGN',
+      description: widget.invoice['description'] as String,
+      invoiceId: widget.invoice['invoiceNo'] as String,
+      fileName: '',
+      fileUrl: '',
+      fileSize: 0,
+      mimeType: '',
+    );
 
-  context.read<ChatDetailBloc>().add(
-    SendInvoiceMessage(request),
-  );
+    context.read<ChatDetailBloc>().add(
+      SendInvoiceMessage(request),
+    );
 
-  Navigator.of(context).pop();
-}
-
+    Navigator.of(context).pop();
+    Navigator.of(context).pop();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +322,9 @@ late final formattedDate =
                       label: 'Edit Invoice',
                       backgroundColor: appColors.primary.shade50,
                       textColor: appColors.primary.shade500,
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
                     ),
                   ),
                   12.horizontalSpace,

@@ -123,6 +123,11 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
               )) {
                 _finish();
               }
+               if (url.toString().contains(
+                '/payment/verification',
+              )) {
+                _finish();
+              }
             },
 
             onLoadStop: (_, _) async {
@@ -136,12 +141,15 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
               final url = nav.request.url.toString();
 
               if (url.contains(
-                ' https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
-              )) {
+                ' https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',  )) {
                 _finish();
                 return NavigationActionPolicy.CANCEL;
               }
-
+              if (url.contains(
+                ' /payment/verification',  )) {
+                _finish();
+                return NavigationActionPolicy.CANCEL;
+              }
               return NavigationActionPolicy.ALLOW;
             },
 
