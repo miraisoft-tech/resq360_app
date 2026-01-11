@@ -87,11 +87,12 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
             rootNavigator: true,
           ).push<bool>(
             MaterialPageRoute(
-              builder: (_) => PaystackWebViewPage(
-                authorizationUrl: url,
-                reference: reference,
-                callbackUrl: 'https://example.com/callback',
-              ),
+              builder:
+                  (_) => PaystackWebViewPage(
+                    authorizationUrl: url,
+                    reference: reference,
+                    callbackUrl: 'https://example.com/callback',
+                  ),
             ),
           );
 
@@ -101,8 +102,8 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
 
           if (finished ?? false) {
             context.read<CustomerPaymentBloc>().add(
-                  CustomerVerifyWalletFundingEvent(reference),
-                );
+              CustomerVerifyWalletFundingEvent(reference),
+            );
           } else {
             await showErrorSnackbar(context, 'Payment cancelled');
           }
@@ -111,9 +112,12 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
         if (state is WalletFundingVerifiedState) {
           await GeneralDialogs.showCustomDialog<void>(
             context,
-            body: const FundWalletCompleted(),
+            body: FundWalletCompleted(
+              amount: state.verification.amount,
+            ),
           );
           context.read<WalletBloc>().add(FetchWalletInfo());
+          context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
         }
 
         if (state is WalletFundingFailureState) {
@@ -138,134 +142,143 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
           ),
           centerTitle: true,
         ),
-        body: SingleChildScrollView(
-          padding: pad(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              BlocBuilder<WalletBloc, WalletState>(
-                builder: (context, state) {
-                  if (state is FetchWalletLoading) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: appColors.primary.shade500,
-                      ),
-                    );
-                  }
-                  if (state is FetchingWalletInfoError) {
-                    return Center(
-                      child: ErrorMessageAndButton(
-                        error: 'failed to fetch balance',
-                        onPressed: () {
-                          context.read<WalletBloc>().add(FetchWalletInfo());
-                        },
-                      ),
-                    );
-                  }
-
-                  if (state is FetchedWalletInfo) {
-                    final balance = state.wallet.balance;
-                    return ProviderWalletBalanceCard(
-                      balance: balance!.toInt(),
-                      onAddFunds: () async {
-                        await GeneralDialogs.showCustomDialog<void>(
-                          context,
-                          body: const FundWalletConfirmDialog(
-                            // amount: 20000,
-                          ),
-                        );
-                      },
-                      onWithdraw: () async {
-                        await pushScreen(
-                            context, const ProviderWithdrawScreen());
-                      },
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-              30.verticalSpace,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GenText(
-                    'Transaction History',
-                    size: 18,
-                    weight: FontWeight.w700,
-                    color: appColors.black,
-                  ),
-                  GenText(
-                    'View All',
-                    size: 12,
-                    weight: FontWeight.w400,
-                    color: appColors.primary.shade500,
-                  ),
-                ],
-              ),
-              16.verticalSpace,
-              BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
-                builder: (context, state) {
-                  if (state is WalletTransactionsLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (state is WalletTransactionsError) {
-                    return ErrorMessageAndButton(
-                      error: state.error,
-                      onPressed: () {
-                        context.read<WalletTransactionsBloc>().add(
-                              FetchWalletTransactions(),
-                            );
-                      },
-                    );
-                  }
-
-                  if (state is WalletTransactionsLoaded) {
-                    final transactions = state.transactions;
-
-                    if (transactions.isEmpty) {
-                      return const EmptyScreenWidget(
-                        imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
-                        message: 'No Transactions Yet',
-                        subMessage:
-                            'Your wallet history will appear here after your first payment or credit',
+        body: RefreshIndicator(
+          onRefresh: ()async{
+             context.read<WalletBloc>().add(FetchWalletInfo());
+          context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
+          },
+          color: appColors.primary,
+          child: SingleChildScrollView(
+            padding: pad(horizontal: 20, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                BlocBuilder<WalletBloc, WalletState>(
+                  builder: (context, state) {
+                    if (state is FetchWalletLoading) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: appColors.primary.shade500,
+                        ),
                       );
                     }
-
-                    return ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: transactions.length,
-                      separatorBuilder: (_, _) => 16.verticalSpace,
-                      itemBuilder: (context, index) {
-                        final tx = transactions[index];
-
-                        return WalletTransactionTile(
-                          tx: tx,
-                          onTap: () async {
-                            await GeneralDialogs.showCustomBottomSheet(
-                              context,
-                              body: TransactionDetailModal(
-                                onRetry: () {},
-                                onSupport: () async {
-                                  await pushScreen(
-                                    context,
-                                    const ContactAdminScreen(),
-                                  );
-                                },
-                                tx: tx,
-                              ),
-                            );
+                    if (state is FetchingWalletInfoError) {
+                      return Center(
+                        child: ErrorMessageAndButton(
+                          error: 'failed to fetch balance',
+                          onPressed: () {
+                            context.read<WalletBloc>().add(FetchWalletInfo());
                           },
+                        ),
+                      );
+                    }
+          
+                    if (state is FetchedWalletInfo) {
+                      final balance = state.wallet.balance;
+                      return ProviderWalletBalanceCard(
+                        balance: balance!.toInt(),
+                        onAddFunds: () async {
+                          await GeneralDialogs.showCustomDialog<void>(
+                            context,
+                            body: const FundWalletConfirmDialog(
+                              // amount: 20000,
+                            ),
+                          );
+                        },
+                        onWithdraw: () async {
+                          await pushScreen(
+                            context,
+                            const ProviderWithdrawScreen(),
+                          );
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                30.verticalSpace,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GenText(
+                      'Transaction History',
+                      size: 18,
+                      weight: FontWeight.w700,
+                      color: appColors.black,
+                    ),
+                    GenText(
+                      'View All',
+                      size: 12,
+                      weight: FontWeight.w400,
+                      color: appColors.primary.shade500,
+                    ),
+                  ],
+                ),
+                16.verticalSpace,
+                BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
+                  builder: (context, state) {
+                    if (state is WalletTransactionsLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+          
+                    if (state is WalletTransactionsError) {
+                      return ErrorMessageAndButton(
+                        error: state.error,
+                        onPressed: () {
+                          context.read<WalletTransactionsBloc>().add(
+                            FetchWalletTransactions(),
+                          );
+                        },
+                      );
+                    }
+          
+                    if (state is WalletTransactionsLoaded) {
+                      final transactions = state.transactions;
+          
+                      if (transactions.isEmpty) {
+                        return const EmptyScreenWidget(
+                          imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
+                          message: 'No Transactions Yet',
+                          subMessage:
+                              'Your wallet history will appear here after your first payment or credit',
                         );
-                      },
-                    );
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
-            ],
+                      }
+          
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: transactions.length,
+                        separatorBuilder: (_, _) => 16.verticalSpace,
+                        itemBuilder: (context, index) {
+                          final tx = transactions[index];
+          
+                          return WalletTransactionTile(
+                            tx: tx,
+                            onTap: () async {
+                              await GeneralDialogs.showCustomBottomSheet(
+                                context,
+                                body: TransactionDetailModal(
+                                  onRetry: () {},
+                                  onSupport: () async {
+                                    await pushScreen(
+                                      context,
+                                      const ContactAdminScreen(),
+                                    );
+                                  },
+                                  tx: tx,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    }
+          
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

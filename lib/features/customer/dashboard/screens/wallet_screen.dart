@@ -92,7 +92,7 @@ class _WalletScreenState extends State<WalletScreen> {
         if (state is WalletFundingVerifiedState) {
           await GeneralDialogs.showCustomDialog<void>(
             context,
-            body: const FundWalletCompleted(),
+            body:  FundWalletCompleted(amount:state.verification.amount),
           );
           context.read<WalletBloc>().add(FetchWalletInfo());
         }

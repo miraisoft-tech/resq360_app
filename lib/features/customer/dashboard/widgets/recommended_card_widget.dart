@@ -23,6 +23,7 @@ class RecommendedCard extends StatelessWidget {
     return Column(
       children: [
         Container(
+          margin: const EdgeInsets.only(right: 12),
           padding: pad(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
             border: Border.all(color: colors.lightGreyColor2),
@@ -121,7 +122,7 @@ class RecommendedCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(33.r),
                         ),
                         child: GenText(
-                          '\$${advertisement.budget}',
+                          '₦${advertisement.budget}',
                           size: 13,
                           weight: FontWeight.w600,
                           color: colors.whiteColor,
@@ -133,8 +134,7 @@ class RecommendedCard extends StatelessWidget {
             ],
           ),
         ),
-        10.verticalSpace,
-        const SmallDotIndicator(total: 3, currentIndex: 0),
+        
       ],
     );
   }

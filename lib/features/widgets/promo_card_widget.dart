@@ -45,7 +45,7 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
             return Column(
               children: [
                 SizedBox(
-                  height: 140,
+                  height: 200,
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: ads.length,

@@ -6,6 +6,7 @@ import 'package:resq360/features/customer/authentication/data/bloc/customer_auth
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
@@ -258,31 +259,31 @@ class _HomeScreenState extends State<HomeScreen> {
               >(
                 builder: (context, state) {
                   if (state is CustomerAdvertisementLoading) {
-                      return const CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   }
                   if (state is CustomerAdvertisementFetched) {
                     final ads = state.adverisementList;
                     if (ads.isEmpty) {
-                        return const Center(
-                          child: Text(
-                            'No advertisements available',
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        );
-                      }
+                      return const Center(
+                        child: Text(
+                          'No advertisements available',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                      );
+                    }
 
-                      return RecommendedCard(advertisement: ads.first);
+                    return AdvertisementCarousel(ads: ads);
                   }
 
-                  if (state is CustomerAdvertisementError){
+                  if (state is CustomerAdvertisementError) {
                     return ErrorMessageAndButton(
-                        error: state.error,
-                        onPressed: () {
-                          context.read<CustomerAdvertisementBloc>().add(
-                            CustomerFetchAdvertisement(),
-                          );
-                        },
-                      );
+                      error: state.error,
+                      onPressed: () {
+                        context.read<CustomerAdvertisementBloc>().add(
+                          CustomerFetchAdvertisement(),
+                        );
+                      },
+                    );
                   }
                   return const SizedBox.shrink();
                 },
@@ -343,6 +344,72 @@ class HeaderWidget extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+class AdvertisementCarousel extends StatefulWidget {
+  const AdvertisementCarousel({required this.ads, super.key});
+  final List<Advertisement> ads;
+
+  @override
+  State<AdvertisementCarousel> createState() => _AdvertisementCarouselState();
+}
+
+class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
+  late final PageController _pageController;
+  int currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.88);
+
+    _pageController.addListener(() {
+      final newIndex = _pageController.page?.round() ?? 0;
+
+      if (newIndex != currentIndex) {
+        setState(() => currentIndex = newIndex);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 165.h,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.ads.length,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () async {
+                  final id = widget.ads[index].providerId;
+                  if (id == null) return;
+                  // await pushScreen(
+                  //   context,
+                  //   ServiceProviderDetailsScreen( provider: null,),
+                  // );
+                },
+                child: RecommendedCard(advertisement: widget.ads[index]),
+              );
+            },
+          ),
+        ),
+        5.verticalSpace,
+        SmallDotIndicator(
+          total: widget.ads.length,
+          currentIndex: currentIndex,
         ),
       ],
     );

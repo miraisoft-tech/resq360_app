@@ -4,12 +4,9 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
-import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/provider/chat/data/models/duration.enum.dart';
 import 'package:resq360/features/widgets/dialogs/payment_fiished.modal.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
@@ -38,19 +35,21 @@ class _PromoteServiceReviewScreenState
     context.read<CustomerAdvertisementBloc>().add(FetchAdvertisementPrice());
   }
 
-  Future<String?> getUserEmail() async {
-    final type = await AuthLocalRepo.instance.getUserType();
-    if (type == null) return null;
+Future<String?> getUserEmail() async {
+  final type = await AuthLocalRepo.instance.getUserType();
 
-    if (type == 'user') {
-      return CustomerAuthProvider.instance.authInfo?.email;
-    } else if (type == UserType.provider.name) {
-      return ProviderAuthProvider.instance.authInfo?.email;
-    }
-
-    return null;
+  if (type == 'user') {
+    final customer = await AuthLocalRepo.instance.getAuthCredentials();
+    return customer?.email;
   }
 
+  if (type == 'provider') {
+    final provider = await AuthLocalRepo.instance.getProviderCredentials();
+    return provider?.email;
+  }
+
+  return null;
+}
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -301,7 +300,6 @@ class _PromoteServiceReviewScreenState
                                                 ),
                                               );
                                             } else {
-                                              // Paystack payment
                                               final total =
                                                   state.price *
                                                   widget.duration.value;

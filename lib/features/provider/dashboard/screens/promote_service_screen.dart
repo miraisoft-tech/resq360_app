@@ -2,8 +2,6 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/chat/data/models/duration.enum.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_review.dart';
 
-
-
 class PromoteServiceScreen extends StatefulWidget {
   const PromoteServiceScreen({super.key});
 
@@ -18,13 +16,6 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
 
   final ValueNotifier<PromotionDuration?> _selectDuration =
       ValueNotifier<PromotionDuration?>(null);
-
-  // final List<String> categoryTypes = [
-  //   '24 hours',
-  //   '48 hours',
-  //   '72 hours',
-  //   '1 week',
-  // ];
 
   @override
   void initState() {
@@ -133,28 +124,28 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                   ),
                   12.horizontalSpace,
                   Expanded(
-  child: WideButton(
-    label: 'Continue',
-    backgroundColor: appColors.primary.shade500,
-    textColor: appColors.whiteColor,
-    onPressed: () async {
-      final selected = _selectDuration.value;
+                    child: WideButton(
+                      label: 'Continue',
+                      backgroundColor: appColors.primary.shade500,
+                      textColor: appColors.whiteColor,
+                      onPressed: () async {
+                        final selected = _selectDuration.value;
 
-      if (selected == null) return;
-      if (promoController.text.isEmpty) return;
-      if (discountController.text.isEmpty) return;
+                        if (selected == null) return;
+                        if (promoController.text.isEmpty) return;
+                        if (discountController.text.isEmpty) return;
 
-      await pushScreen(
-        context,
-        PromoteServiceReviewScreen(
-          description: promoController.text,
-          discount: discountController.text,
-          duration: selected,
-        ),
-      );
-    },
-  ),
-),
+                        await pushScreen(
+                          context,
+                          PromoteServiceReviewScreen(
+                            description: promoController.text,
+                            discount: discountController.text,
+                            duration: selected,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ],
