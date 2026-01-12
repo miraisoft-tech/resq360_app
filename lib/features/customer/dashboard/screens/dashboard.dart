@@ -16,6 +16,7 @@ import 'package:resq360/features/customer/services/screens/service_categories_sc
 import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
+import 'package:resq360/features/settings/screens/settings_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
 
@@ -316,10 +317,15 @@ class HeaderWidget extends StatelessWidget {
 
     return Row(
       children: [
-        const CircleAvatar(
-          radius: 19,
-          backgroundImage: AssetImage(
-            AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+        GestureDetector(
+          onTap: () async {
+            await pushScreen(context, const SettingsScreen());
+          },
+          child: const CircleAvatar(
+            radius: 19,
+            backgroundImage: AssetImage(
+              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+            ),
           ),
         ),
         10.horizontalSpace,
