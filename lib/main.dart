@@ -31,6 +31,7 @@ import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bl
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/gallery_bloc/gallery_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/notification_settings_bloc/notification_settings_bloc.dart';
+import 'package:resq360/features/settings/data/bloc/phone_update_bloc/phone_update_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/service/ratings_service.dart';
@@ -79,8 +80,6 @@ Future<void> main() async {
           BlocProvider(create: (_) => CustomerAuthBloc()),
           BlocProvider(create: (_) => ProviderAuthBloc()),
           BlocProvider(create: (_) => ServiceProviderBloc()),
-          // BlocProvider(create: (_) => CustomerServicesBloc()),
-          // BlocProvider(create: (_) => ChatBloc()),
           BlocProvider(create: (_) => ChatListBloc()),
           BlocProvider(create: (_) => ProfileUpdateBloc()),
           BlocProvider(create: (_) => ProviderServiceBloc()),
@@ -99,8 +98,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => ServiceRequestBloc(serviceRepo: serviceRepo)),
           BlocProvider(create: (_) => NotificationSettingsBloc(),),
           BlocProvider(create: (_) => ProviderBloc(),),
-
-
+          BlocProvider(create: (_) => PhoneUpdateBloc(),),
         ],
         child: const MyApp(),
       ),

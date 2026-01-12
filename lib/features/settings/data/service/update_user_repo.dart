@@ -155,4 +155,38 @@ class UpdateUserRepo extends BaseAPI {
       logTag: 'Bank Account Update',
     );
   }
+
+  Future<ApiResult<dynamic>> requestPhoneNumberOtp({
+    required String newPhoneNumber,
+  }) async {
+    const endpoint = '/auth/provider/phone-number/request-otp';
+
+    final data = {
+      'newPhoneNumber': newPhoneNumber,
+    };
+
+    return _updateData(
+      endpoint: endpoint,
+      data: data,
+      logTag: 'Request Phone OTP',
+    );
+  }
+
+  Future<ApiResult<dynamic>> changePhoneNumber({
+    required String newPhoneNumber,
+    required String otp,
+  }) async {
+    const endpoint = '/auth/provider/phone-number/change';
+
+    final data = {
+      'newPhoneNumber': newPhoneNumber,
+      'otp': otp,
+    };
+
+    return _updateData(
+      endpoint: endpoint,
+      data: data,
+      logTag: 'Change Phone Number',
+    );
+  }
 }
