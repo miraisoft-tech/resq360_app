@@ -6,6 +6,7 @@ import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
+import 'package:resq360/features/provider/chat/data/models/message_type.enum.dart';
 import 'package:resq360/features/provider/chat/data/models/payment_status.enum.dart';
 import 'package:resq360/features/provider/chat/screens/provider_generate_invoice.dialog.dart';
 import 'package:resq360/features/provider/chat/widgets/provider_chat_invoice_card_widget.dart';
@@ -74,12 +75,12 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
                 Expanded(
                   child: _buildChatContent(state),
                 ),
-                // if (canShowDetails)
+                if (canShowDetails)
                 GestureDetector(
                   onTap: () async {
                     if (state is ChatDetailReady) {
                       final serviceMessage = state.messages.firstWhere(
-                        (m) => m.messageType == 'SYSTEM' && m.metadata != null,
+                        (m) => m.messageType == MessageReceivedType.invoice.value && m.metadata != null,
                       );
 
                       await pushScreen(
@@ -229,9 +230,19 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
     ChatDetailState state,
   ) {
     if (state is ChatDetailReady) {
+        final hasPaid = state.chat.paymentStatus == PaymentStatus.completed.value;
+
+    final hasInvoice = state.messages.any(
+      (m) =>
+          m.messageType == MessageReceivedType.invoice.value &&
+          m.metadata != null,
+    );
+
+    setState(() {
+      canShowDetails = hasPaid && hasInvoice;
+    });
       _scrollToBottom();
     }
-    // if(state is MessageSent ){}
   }
 
   Future<void> _showAttachmentMenu(
@@ -373,7 +384,8 @@ class _MessageList extends StatelessWidget {
         final isMine = message.senderType == 'PROVIDER';
         //  && message.senderId == currentUserId;
         log(chat.paymentStatus);
-        if (message.messageType == 'SYSTEM') {
+        if (message.messageType == MessageReceivedType.invoice.value) {
+        log(message.messageType);
           return Column(
             children: [
               ProviderChatInvoiceCardWidget(

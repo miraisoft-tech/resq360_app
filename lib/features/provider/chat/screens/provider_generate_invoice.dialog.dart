@@ -54,7 +54,9 @@ class _ProviderGenerateInvoiceDialogState
 
   Future<void> initializeLocation() async {
     final locationData = await LocationHelper.getCurrentLocation();
-    locationController.text = (locationData['address'] as String?) ?? '';
+    if (locationController.text.isNotEmpty) {
+       locationController.text = (locationData['address'] as String?) ?? '';
+    }
   }
 
   Future<bool> fetchCategory() async {
@@ -155,36 +157,6 @@ class _ProviderGenerateInvoiceDialogState
 
                   if (state is ServicesLoaded) {
                     isProcessing = false;
-
-                    // final categories = state.services;
-
-                    // // return ValueListenableBuilder<Service?>(
-                    // //   valueListenable: _selectType,
-                    // //   builder: (
-                    // //     BuildContext context,
-                    // //     Service? value,
-                    // //     Widget? child,
-                    // //   ) {
-                    // //     return ObjectKDropDown<Service>(
-                    // //       label: 'Service Category',
-                    // //       hintText: 'select service category',
-                    // //       displayStringForOption:  (Service service) => service.name,
-                    // //       showPrefix: false,
-                    // //       value:  value != null
-                    // //                       ? categories.firstWhere(
-                    // //                         (service) => service.id == value.id,
-                    // //                         orElse: () => categories.first,
-                    // //                       )
-                    // //                       : null,
-                    // //       dropdownItems: categories,
-                    // //        onChanged: (service) {
-                    // //                 setState(() {
-                    // //                   _selectType.value = service;
-                    // //                 });
-                    // //       },
-                    // //     );
-                    // //   },
-                    // // );
                     return ServiceDropdown(
                       items: state.services,
                       controller: _selectType,

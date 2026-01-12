@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
+import 'package:resq360/features/provider/chat/data/models/message_type.enum.dart';
 import 'package:resq360/features/provider/chat/data/models/payment_status.enum.dart';
 
 
@@ -24,8 +25,8 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
     final createdAt = message.createdAt;
     final time = message.createdAt != null ? message.createdAt!.formatDate : '';
 
-    if (message.messageType != 'SYSTEM' ||
-        metadata.type != 'INVOICE' ||
+    if (
+        metadata.type !=  MessageReceivedType.invoice.value ||
         metadata.amount == null) {
       return const SizedBox.shrink();
     }

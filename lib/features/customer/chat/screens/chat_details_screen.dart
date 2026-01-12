@@ -9,6 +9,7 @@ import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.
 import 'package:resq360/features/customer/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
+import 'package:resq360/features/provider/chat/data/models/message_type.enum.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
@@ -377,7 +378,7 @@ class _MessageList extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child:
-              message.messageType == 'SYSTEM'
+              message.messageType ==  MessageReceivedType.invoice.value
                   ? ChatInvoiceCardWidget(
                     message: message,
                     chat: chat,
