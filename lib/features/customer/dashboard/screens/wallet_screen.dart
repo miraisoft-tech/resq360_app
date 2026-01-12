@@ -143,7 +143,10 @@ class _WalletScreenState extends State<WalletScreen> {
                 BlocBuilder<WalletBloc, WalletState>(
                   builder: (context, state) {
                     if (state is FetchWalletLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                     return  Center(child: CircularProgressIndicator(
+                       color: appColors.primary,
+
+                    ));
                     }
                     if (state is FetchingWalletInfoError) {
                       return Center(
@@ -226,7 +229,10 @@ class _WalletScreenState extends State<WalletScreen> {
                 BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
                   builder: (context, state) {
                     if (state is WalletTransactionsLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                     return  Center(child: CircularProgressIndicator(
+                       color: appColors.primary,
+
+                    ));
                     }
 
                     if (state is WalletTransactionsError) {

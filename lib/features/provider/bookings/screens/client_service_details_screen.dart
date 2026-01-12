@@ -196,9 +196,9 @@ class _ProviderServiceDetailScreenState
                       ),
                     ),
                   12.horizontalSpace,
-                  Expanded(
+                  if (widget.booking.status == 'PENDING') Expanded(
                     child: WideButton(
-                      label: 'Arrived',
+                      label: 'Start',
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
@@ -209,7 +209,7 @@ class _ProviderServiceDetailScreenState
                         }
                       },
                     ),
-                  ),
+                  ) else const SizedBox.shrink()
                 ],
               ),
               12.verticalSpace,

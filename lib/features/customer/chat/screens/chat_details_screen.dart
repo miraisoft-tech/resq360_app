@@ -120,7 +120,10 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(),
+             CircularProgressIndicator(
+            color: appColors.primary,
+
+            ),
             16.verticalSpace,
             GenText(
               'Loading messages...',
@@ -254,6 +257,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     if (state is ServicePaymentVerifiedState) {
       Navigator.pop(context);
       log('called refresh');
+          context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chatId));
       context.read<ChatDetailBloc>().add(RefreshMessages());
       if (state.verification.gatewayResponse == 'Successful') {
         await GeneralDialogs.showCustomDialog<void>(

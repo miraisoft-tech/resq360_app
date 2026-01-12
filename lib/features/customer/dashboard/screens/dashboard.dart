@@ -140,7 +140,10 @@ class _HomeScreenState extends State<HomeScreen> {
               BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
                 builder: (context, state) {
                   if (state is CustomerBookingLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return  Center(child: CircularProgressIndicator(
+                       color: colors.primary,
+
+                    ));
                   }
 
                   if (state is CustomerBookingLoaded) {
@@ -191,7 +194,10 @@ class _HomeScreenState extends State<HomeScreen> {
               BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
                 builder: (context, state) {
                   if (state is ServiceCatalogLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                   return  Center(child: CircularProgressIndicator(
+                       color: colors.primary,
+
+                    ));
                   }
 
                   if (state is ServicesLoaded) {

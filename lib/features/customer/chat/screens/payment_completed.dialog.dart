@@ -55,10 +55,6 @@ class PaymentCompleted extends StatelessWidget {
                       textColor: appColors.whiteColor,
                       onPressed: () async {
                         Navigator.of(context).pop();
-                        await GeneralDialogs.showCustomDialog<void>(
-                          context,
-                          body: const PaymentCompleted(),
-                        );
                       },
                     ),
                   ),

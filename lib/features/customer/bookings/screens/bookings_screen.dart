@@ -129,7 +129,10 @@ class _BookingList extends StatelessWidget {
     return BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
       builder: (context, state) {
         if (state is CustomerBookingLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return  Center(child: CircularProgressIndicator(
+            color: appColors.primary,
+
+          ));
         }
 
         if (state is CustomerBookingError) {

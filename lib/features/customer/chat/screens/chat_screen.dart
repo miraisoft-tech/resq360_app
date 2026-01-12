@@ -24,10 +24,10 @@ class _ChatScreenState extends State<ChatScreen> {
     context.read<ChatListBloc>().add(LoadChatList());
   }
 
-Future<void> _onRefresh() async {
-   context.read<ChatListBloc>().add(RefreshChatList());
+  Future<void> _onRefresh() async {
+    context.read<ChatListBloc>().add(RefreshChatList());
+  }
 
-}
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -44,8 +44,8 @@ Future<void> _onRefresh() async {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: RefreshIndicator(
-            color: appColors.primary,
-          onRefresh:_onRefresh,
+          color: appColors.primary,
+          onRefresh: _onRefresh,
           child: Column(
             children: [
               FilterSearchFormField(
@@ -55,66 +55,71 @@ Future<void> _onRefresh() async {
                 hintText: 'Search',
               ),
               const SizedBox(height: 12),
-               ChatFilterTabs(
-              selectedFilter: selectedFilter,
-              onFilterSelected:
-                  (value) => setState(() => selectedFilter = value),
-            ),
+              ChatFilterTabs(
+                selectedFilter: selectedFilter,
+                onFilterSelected:
+                    (value) => setState(() => selectedFilter = value),
+              ),
               const SizedBox(height: 12),
               Expanded(
                 child: BlocBuilder<ChatListBloc, ChatListState>(
                   builder: (context, state) {
                     if (state.isLoading && state.chats.isEmpty) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: appColors.primary,
+                        ),
                       );
                     }
-          
+
                     if (state.error != null) {
                       return ErrorMessageAndButton(
                         error: state.error!,
                         onPressed: () {
-                          context
-                              .read<ChatListBloc>()
-                              .add(LoadChatList());
+                          context.read<ChatListBloc>().add(LoadChatList());
                         },
                       );
                     }
-          
+
                     final chats = _applyFilter(state.chats);
-          
+
                     if (chats.isEmpty) {
                       return const EmptyScreenWidget(
-                        imagePath:
-                            AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
+                        imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
                         message: 'No messages yet',
                         subMessage:
                             'Start a conversation with a service provider',
                       );
                     }
-          
+
                     return ListView.separated(
                       itemCount: chats.length,
-                      separatorBuilder: (_, _) =>
-                          const ListDivider( verticalSpacing: 0),
+                      separatorBuilder:
+                          (_, _) => const ListDivider(verticalSpacing: 0),
                       itemBuilder: (context, index) {
-                        final chat = chats[index];
-          
+                        final filteredChats =
+                            chats
+                                .where(
+                                  (c) => c.lastMessage?.isNotEmpty ?? false,
+                                )
+                                .toList();
+                        final chat = filteredChats[index];
+
                         return ChatTile(
                           chat: Chat(
                             name: chat.title,
                             message: chat.lastMessage ?? '',
-                            time: chat.lastMessageTime != null
-                                ? _formatTime(chat.lastMessageTime!)
-                                : '',
-                            avatar:
-                                AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+                            time:
+                                chat.lastMessageTime != null
+                                    ? _formatTime(chat.lastMessageTime!)
+                                    : '',
+                            avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
                           ),
                           onTap: () async {
-                            context
-                                .read<ChatListBloc>()
-                                .add(ClearUnreadCount(chat.chatId));
-          
+                            context.read<ChatListBloc>().add(
+                              ClearUnreadCount(chat.chatId),
+                            );
+
                             await pushScreen(
                               context,
                               ChatDetailScreen(
@@ -166,8 +171,7 @@ Future<void> _onRefresh() async {
     final query = _searchController.text.toLowerCase();
 
     return chats.where((chat) {
-      if (query.isNotEmpty &&
-          !chat.title.toLowerCase().contains(query)) {
+      if (query.isNotEmpty && !chat.title.toLowerCase().contains(query)) {
         return false;
       }
 
@@ -194,8 +198,6 @@ Future<void> _onRefresh() async {
     return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
   }
 }
-
-
 
 // class ChatScreen extends StatefulWidget {
 //   const ChatScreen({super.key});
@@ -313,7 +315,7 @@ Future<void> _onRefresh() async {
 //             16.verticalSpace,
 //             BlocBuilder<ChatBloc, ChatState>(
 //               builder: (context, state) {
-                
+
 //                 return Expanded(
 //                   child:
 //                       (chats.isEmpty)

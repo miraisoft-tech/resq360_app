@@ -133,7 +133,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
         onTap: () async {
-        await pushScreen(context, const ContactAdminScreen( issueType: AdminIssueType.complaint,));
+          await pushScreen(
+            context,
+            const ContactAdminScreen(
+              issueType: AdminIssueType.complaint,
+            ),
+          );
         },
       ),
     ];
@@ -178,7 +183,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_NOTIFICATIONS_SVG.svg,
         title: 'Notification Settings',
         onTap: () async {
-          await pushScreen(context,  NotificationSettingsScreen(isProvider: isProvider));
+          await pushScreen(
+            context,
+            NotificationSettingsScreen(isProvider: isProvider),
+          );
         },
       ),
       SettingsItem(
@@ -199,7 +207,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onTap: () async {
           final email = await getEmail();
           if (email != null) {
-            await pushScreen(context, const ContactAdminScreen(issueType: AdminIssueType.complaint,));
+            await pushScreen(
+              context,
+              const ContactAdminScreen(
+                issueType: AdminIssueType.complaint,
+              ),
+            );
           }
         },
       ),
@@ -269,7 +282,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               await pushScreen(
                                 context,
                                 const ContactAdminScreen(
-                                 issueType: AdminIssueType.complaint,
+                                  issueType: AdminIssueType.complaint,
                                 ),
                               );
                             },
@@ -418,6 +431,8 @@ class _ProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+
     if (isProvider) {
       return BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
         builder: (context, state) {
@@ -436,7 +451,11 @@ class _ProfileSection extends StatelessWidget {
           }
 
           if (state is ProviderAuthLoadingState) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color: colors.primary,
+              ),
+            );
           }
 
           return const SizedBox.shrink();
@@ -461,7 +480,11 @@ class _ProfileSection extends StatelessWidget {
         }
 
         if (state is CustomerAuthLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(
+              color: colors.primary,
+            ),
+          );
         }
 
         if (state is CustomerAuthFailure) {

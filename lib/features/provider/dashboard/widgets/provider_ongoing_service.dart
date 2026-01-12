@@ -68,7 +68,10 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
             child: BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
               builder: (context, state) {
                 if (state is ProviderServicesLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                 return  Center(child: CircularProgressIndicator(
+                       color: colors.primary,
+
+                    ));
                 }
 
                 if (state is ProviderBookingsLoaded) {

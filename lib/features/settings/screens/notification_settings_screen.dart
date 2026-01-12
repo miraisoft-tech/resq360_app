@@ -82,11 +82,17 @@ class _NotificationSettingsScreenState
         },
         builder: (context, state) {
           if (state is FetchNotificationSettingsLoading) {
-            return const Center(child: CircularProgressIndicator());
+           return  Center(child: CircularProgressIndicator(
+                       color: appColors.primary,
+
+                    ));
           }
 
           if (currentSettings == null) {
-            return const Center(child: CircularProgressIndicator());
+           return  Center(child: CircularProgressIndicator(
+                       color: appColors.primary,
+
+                    ));
           }
 
           return SafeArea(

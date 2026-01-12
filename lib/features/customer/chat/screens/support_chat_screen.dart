@@ -68,7 +68,10 @@ class _SupportChatViewState extends State<_SupportChatView> {
           },
           builder: (context, state) {
             if (state.loading && state.messages.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
+              return  Center(child: CircularProgressIndicator(
+            color: appColors.primary,
+
+              ));
             }
             _scrollToBottom();
 

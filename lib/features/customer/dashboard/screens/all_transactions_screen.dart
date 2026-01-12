@@ -145,7 +145,10 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
         child: BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
           builder: (context, state) {
             if (state is WalletTransactionsLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return  Center(child: CircularProgressIndicator(
+            color: appColors.primary,
+
+              ));
             }
 
             if (state is WalletTransactionsError) {

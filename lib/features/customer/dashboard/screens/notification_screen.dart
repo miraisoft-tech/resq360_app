@@ -114,10 +114,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
       body: BlocConsumer<NotificationBloc, NotificationState>(
         builder: (context, state) {
           if (state is NotificationInitial) {
-            return const Center(child: CircularProgressIndicator());
+           return  Center(child: CircularProgressIndicator(
+                       color: appColors.primary,
+
+                    ));
           }
           if (state is NotificationLoading) {
-            return const Center(child: CircularProgressIndicator());
+           return  Center(child: CircularProgressIndicator(
+                       color: appColors.primary,
+
+                    ));
           }
            if (state is UnreadCountLoaded) {
             unreadCount = state.count;

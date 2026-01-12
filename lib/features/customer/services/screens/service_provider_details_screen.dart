@@ -94,7 +94,6 @@ class _ServiceProviderDetailsScreenState
       },
       child: BlocBuilder<ProviderBloc, ProviderState>(
         builder: (context, providerState) {
-          // Show loading state
           if (providerState is ProviderLoading || _provider == null) {
             return Scaffold(
               backgroundColor: colors.whiteColor,
