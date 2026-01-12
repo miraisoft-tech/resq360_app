@@ -13,6 +13,7 @@ import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widg
 import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
+import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
@@ -394,12 +395,12 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () async {
-                  final id = widget.ads[index].providerId;
-                  if (id == null) return;
-                  // await pushScreen(
-                  //   context,
-                  //   ServiceProviderDetailsScreen( provider: null,),
-                  // );
+                  final providerId = widget.ads[index].providerId;
+                  if (providerId == null) return;
+                  await pushScreen(
+                    context,
+                    ServiceProviderDetailsScreen( providerId: providerId,),
+                  );
                 },
                 child: RecommendedCard(advertisement: widget.ads[index]),
               );

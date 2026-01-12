@@ -102,140 +102,184 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
           color: colors.black,
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: pad(horizontal: 16),
-            child: FilterSearchFormField(
-              controller: _searchController,
-              hintText: 'Search for services',
-              onTapSuffix: () {},
-              onChanged: (value) {
-                Future.delayed(
-                  const Duration(milliseconds: 500),
-                  _fetchProviders,
-                );
-              },
-              prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          _fetchProviders();
+        },
+        color: colors.primary,
+        child: Column(
+          children: [
+            Padding(
+              padding: pad(horizontal: 16),
+              child: FilterSearchFormField(
+                controller: _searchController,
+                hintText: 'Search for services',
+                onTapSuffix: () {},
+                onChanged: (value) {
+                  Future.delayed(
+                    const Duration(milliseconds: 500),
+                    _fetchProviders,
+                  );
+                },
+                prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
+              ),
             ),
-          ),
-          24.verticalSpace,
-          TabBar(
-            controller: _tabController,
-            indicatorColor: colors.primary.shade500,
-            labelColor: colors.primary.shade500,
-            unselectedLabelColor: colors.black,
-            labelStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            tabs: const [
-              Tab(text: 'All'),
-              Tab(text: 'Online'),
-              Tab(text: 'Offline'),
-            ],
-          ),
-          10.verticalSpace,
-          Padding(
-            padding: pad(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GenText(
-                  'Sorted by Proximity',
-                  size: 13,
-                  color: colors.textColor.shade500,
-                ),
-                BlocConsumer<ServiceProviderBloc, ServiceProviderState>(
-                  listener: (context, state) {
-                    if (state is ServiceProvidersError) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) async {
-                        await showErrorSnackbar(
-                          context,
-                          ' ping providers failed',
-                        );
-                      });
-                    }
-
-                    if (state is PingProvidersSuccess) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) async {
-                        await showSuccessSnackbar(
-                          context,
-                          'Providers pinged successfully',
-                        );
-                      });
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is PingProvidersLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    return ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.primary.shade500,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                      ),
-                      onPressed: () {
-                        log('Ping Providers pressed');
-                        _pingProviders();
-                      },
-                      icon: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG.svg,
-                      label: GenText(
-                        'Ping Providers',
-                        size: 12,
-                        height: 20,
-                        weight: FontWeight.w400,
-                        color: colors.whiteColor,
-                      ),
-                    );
-                  },
-                ),
+            24.verticalSpace,
+            TabBar(
+              controller: _tabController,
+              indicatorColor: colors.primary.shade500,
+              labelColor: colors.primary.shade500,
+              unselectedLabelColor: colors.black,
+              labelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              tabs: const [
+                Tab(text: 'All'),
+                Tab(text: 'Online'),
+                Tab(text: 'Offline'),
               ],
             ),
-          ),
-          20.verticalSpace,
-          Container(
-            width: double.infinity,
-            padding: pad(horizontal: 8, vertical: 4),
-            margin: pad(horizontal: 16),
-            decoration: BoxDecoration(
-              color: colors.error.shade50,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: GenText(
-              'Ping Providers: Send your request to multiple providers at once to get faster response.',
-              size: 10,
-              height: 20,
-              weight: FontWeight.w400,
-              color: colors.black,
-            ),
-          ),
-          20.verticalSpace,
-          Expanded(
-            child: BlocBuilder<ServiceProviderBloc, ServiceProviderState>(
-              builder: (context, state) {
-                if (state is ServiceProvidersLoading) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: colors.primary.shade500,
-                    ),
-                  );
-                }
+            10.verticalSpace,
+            Padding(
+              padding: pad(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GenText(
+                    'Sorted by Proximity',
+                    size: 13,
+                    color: colors.textColor.shade500,
+                  ),
+                  BlocConsumer<ServiceProviderBloc, ServiceProviderState>(
+                    listener: (context, state) {
+                      if (state is ServiceProvidersError) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) async {
+                          await showErrorSnackbar(
+                            context,
+                            ' ping providers failed',
+                          );
+                        });
+                      }
 
-                if (state is ServiceProvidersLoaded) {
-                  providers = state.providers;
+                      if (state is PingProvidersSuccess) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) async {
+                          await showSuccessSnackbar(
+                            context,
+                            'Providers pinged successfully',
+                          );
+                        });
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is PingProvidersLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      return ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primary.shade500,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                        ),
+                        onPressed: () {
+                          log('Ping Providers pressed');
+                          _pingProviders();
+                        },
+                        icon: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG.svg,
+                        label: GenText(
+                          'Ping Providers',
+                          size: 12,
+                          height: 20,
+                          weight: FontWeight.w400,
+                          color: colors.whiteColor,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            20.verticalSpace,
+            Container(
+              width: double.infinity,
+              padding: pad(horizontal: 8, vertical: 4),
+              margin: pad(horizontal: 16),
+              decoration: BoxDecoration(
+                color: colors.error.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: GenText(
+                'Ping Providers: Send your request to multiple providers at once to get faster response.',
+                size: 10,
+                height: 20,
+                weight: FontWeight.w400,
+                color: colors.black,
+              ),
+            ),
+            20.verticalSpace,
+            Expanded(
+              child: BlocBuilder<ServiceProviderBloc, ServiceProviderState>(
+                builder: (context, state) {
+                  if (state is ServiceProvidersLoading) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: colors.primary.shade500,
+                      ),
+                    );
+                  }
+
+                  if (state is ServiceProvidersLoaded) {
+                    providers = state.providers;
+                    if (providers.isNotEmpty) {
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          _fetchProviders();
+                        },
+                        color: colors.primary,
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _ProviderList(
+                              providers: providers,
+                            ),
+                            _ProviderList(
+                              providers:
+                                  providers
+                                      .where(
+                                        (p) => p.activityStatus == 'online',
+                                      )
+                                      .toList(),
+                            ),
+                            _ProviderList(
+                              providers:
+                                  providers
+                                      .where(
+                                        (p) => p.activityStatus == 'offline',
+                                      )
+                                      .toList(),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return Center(
+                        child: GenText(
+                          'No service providers found.',
+                          size: 16,
+                          color: colors.textColor.shade500,
+                        ),
+                      );
+                    }
+                  }
                   if (providers.isNotEmpty) {
                     return TabBarView(
                       controller: _tabController,
                       children: [
-                        _ProviderList(
-                          providers: providers,
-                        ),
+                        _ProviderList(providers: providers),
                         _ProviderList(
                           providers:
                               providers
@@ -250,42 +294,14 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                         ),
                       ],
                     );
-                  } else {
-                    return Center(
-                      child: GenText(
-                        'No service providers found.',
-                        size: 16,
-                        color: colors.textColor.shade500,
-                      ),
-                    );
                   }
-                }
-                if (providers.isNotEmpty) {
-                  return TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _ProviderList(providers: providers),
-                      _ProviderList(
-                        providers:
-                            providers
-                                .where((p) => p.activityStatus == 'online')
-                                .toList(),
-                      ),
-                      _ProviderList(
-                        providers:
-                            providers
-                                .where((p) => p.activityStatus == 'offline')
-                                .toList(),
-                      ),
-                    ],
-                  );
-                }
 
-                return const SizedBox.shrink();
-              },
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

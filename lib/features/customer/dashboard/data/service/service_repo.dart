@@ -147,6 +147,33 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
+    Future<ApiResult<ServiceProvider>> fetchProviderByid({
+    required int providerId,
+  }) async {
+   
+    final url = '/user/provider/$providerId';
+    try {
+    
+      final response = await dio().get<Map<String, dynamic>>(
+        url,
+      );
+      log('GET $url => ${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final json = response.data!;
+        final providers = ServiceProvider.fromJson(json['data'] as Map<String, dynamic>);
+        return ApiResult(data: providers);
+      } else {
+        log('Failed to fetch provider: ${response.data}');
+        return ApiResult(error: 'Failed to fetch provider');
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
   Future<ApiResult<Map<String, dynamic>>> updateServiceInfo({
     required int serviceCategoryId,
     required String name,
