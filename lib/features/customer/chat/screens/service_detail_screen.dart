@@ -42,11 +42,16 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
+         if (state is BookingLoading) {
+          await showLoadingDialog(context);
+        }
          if (state is BookingStarted) {
+          Navigator.pop(context);
           await showSuccessSnackbar(context, 'Service has started');
         }
 
         if (state is BookingCompleted) {
+          Navigator.pop(context);
           await pushScreen(
             context,
             ServiceCompletedScreen(serviceRequestId: state.serviceRequestId),
@@ -54,6 +59,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         }
 
         if (state is BookingError) {
+          Navigator.pop(context);
           await showErrorSnackbar(context, state.error);
         }
       },
