@@ -81,15 +81,15 @@ class _ServiceProviderDetailsScreenState
     final colors = context.appColors;
 
     return BlocListener<ProviderBloc, ProviderState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is ProviderLoaded) {
           setState(() {
             _provider = state.provider;
           });
           _loadRatings();
         } else if (state is ProviderError) {
-          showSnackBar(context, 'Error', state.error);
-          pop(context);
+          await showSnackBar(context, 'Error', state.error);
+          await pop(context);
         }
       },
       child: BlocBuilder<ProviderBloc, ProviderState>(

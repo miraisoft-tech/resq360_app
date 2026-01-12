@@ -25,14 +25,14 @@ class ChatDetailScreen extends StatelessWidget {
     return BlocProvider(
       create:
           (_) => ChatDetailBloc(chatId: chatId)..add(OpenChatDetail(chatId)),
-      child: const _ChatDetailView(),
+      child: _ChatDetailView(chatId),
     );
   }
 }
 
 class _ChatDetailView extends StatefulWidget {
-  const _ChatDetailView();
-
+  const _ChatDetailView(this.chatId);
+  final int chatId;
   @override
   State<_ChatDetailView> createState() => _ChatDetailViewState();
 }
@@ -132,9 +132,12 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
 
     if (state is ChatDetailFailure) {
-      return ErrorMessageAndButton(error: state.error, onPressed: () {
-        // context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chatId));
-      },);
+      return ErrorMessageAndButton(
+        error: state.error,
+        onPressed: () {
+          context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chatId));
+        },
+      );
     }
 
     if (state is ChatDetailReady) {
@@ -250,12 +253,13 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
     if (state is ServicePaymentVerifiedState) {
       Navigator.pop(context);
+      log('called refresh');
+      context.read<ChatDetailBloc>().add(RefreshMessages());
       if (state.verification.gatewayResponse == 'Successful') {
         await GeneralDialogs.showCustomDialog<void>(
           context,
           body: const PaymentCompleted(),
         );
-        context.read<ChatDetailBloc>().add(RefreshMessages());
       } else {
         await showErrorSnackbar(context, 'Payment unsuccessful');
       }
@@ -378,7 +382,7 @@ class _MessageList extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child:
-              message.messageType ==  MessageReceivedType.invoice.value
+              message.messageType == MessageReceivedType.invoice.value
                   ? ChatInvoiceCardWidget(
                     message: message,
                     chat: chat,
@@ -403,7 +407,8 @@ class _MessageList extends StatelessWidget {
                           },
                         ),
                       );
-                    }, status: chat.paymentStatus ?? 'PENDING',
+                    },
+                    status: chat.paymentStatus ?? 'PENDING',
                   )
                   : ChatBubble(
                     type: isMine ? MessageType.sent : MessageType.received,

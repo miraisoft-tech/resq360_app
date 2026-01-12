@@ -162,7 +162,6 @@ class _BookingList extends StatelessWidget {
           }
 
           return RefreshIndicator(
-            color: appColors.primary,
             onRefresh: () async {
               context.read<ProviderServiceBloc>().add(
                 ProviderFetchBookings(
@@ -170,34 +169,25 @@ class _BookingList extends StatelessWidget {
                 ),
               );
             },
-            child: RefreshIndicator(
-              onRefresh: () async {
-                context.read<ProviderServiceBloc>().add(
-                  ProviderFetchBookings(
-                    status: _mapTypeToStatus(),
-                  ),
+            color: appColors.primary,
+            child: ListView.separated(
+              padding: pad(vertical: 16, horizontal: 16),
+              itemCount: bookings.length,
+              separatorBuilder: (_, _) => 16.verticalSpace,
+              itemBuilder: (_, index) {
+                final booking = bookings[index];
+                return BookingCard(
+                  data: booking,
+                  onTap:  () async {
+                    await pushScreen(
+                      context,
+                      ProviderServiceDetailScreen(
+                        booking: booking,
+                      ),
+                    );
+                  },
                 );
               },
-              color: appColors.primary,
-              child: ListView.separated(
-                padding: pad(vertical: 16, horizontal: 16),
-                itemCount: bookings.length,
-                separatorBuilder: (_, _) => 16.verticalSpace,
-                itemBuilder: (_, index) {
-                  final booking = bookings[index];
-                  return BookingCard(
-                    data: booking,
-                    onTap:  () async {
-                      await pushScreen(
-                        context,
-                        ProviderServiceDetailScreen(
-                          booking: booking,
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
             ),
           );
         }
