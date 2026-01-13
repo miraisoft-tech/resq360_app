@@ -11,6 +11,7 @@ class SendInvoice {
     this.fileUrl,
     this.fileSize,
     this.mimeType,
+    this.date
   });
 
   factory SendInvoice.fromRawJson(String str) =>
@@ -26,6 +27,7 @@ class SendInvoice {
     fileUrl: json['fileUrl'] as String?,
     fileSize: json['fileSize'] as int?,
     mimeType: json['mimeType'] as String?,
+    date: json['date'] as DateTime?,
   );
   final int? chatId;
   final int? amount;
@@ -36,6 +38,7 @@ class SendInvoice {
   final String? fileUrl;
   final int? fileSize;
   final String? mimeType;
+  final DateTime? date;
 
   String toRawJson() => json.encode(toJson());
 
@@ -49,5 +52,6 @@ class SendInvoice {
     'fileUrl': fileUrl,
     'fileSize': fileSize,
     'mimeType': mimeType,
+    'date': date?.toIso8601String(),
   };
 }

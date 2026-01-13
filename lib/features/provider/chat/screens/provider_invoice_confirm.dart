@@ -20,10 +20,19 @@ class ProviderInvoiceConfirmDialog extends StatefulWidget {
 
 class _ProviderGenerateInvoiceDialogState
     extends State<ProviderInvoiceConfirmDialog> {
+
+
   bool viewMore = false;
   final now = DateTime.now();
-  late final formattedDate = '${now.month}/${now.day}/${now.year}';
+  
+late final DateTime parsedDate = widget.invoice['date'] != null
+    ? DateTime.parse(widget.invoice['date'] as String)
+    : now;
 
+late final String formattedDate =
+    '${parsedDate.month}/${parsedDate.day}/${parsedDate.year}';
+
+    
   // Future<void> sendInvoice() async {
   //   final meta = {
   //     'InvoiceNo': widget.invoice['invoiceNo'],
@@ -64,6 +73,7 @@ class _ProviderGenerateInvoiceDialogState
       fileUrl: '',
       fileSize: 0,
       mimeType: '',
+      date: DateTime.parse(widget.invoice['date'] as String),
     );
 
     context.read<ChatDetailBloc>().add(

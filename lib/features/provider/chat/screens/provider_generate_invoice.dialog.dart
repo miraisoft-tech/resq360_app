@@ -24,6 +24,8 @@ class ProviderGenerateInvoiceDialog extends StatefulWidget {
 class _ProviderGenerateInvoiceDialogState
     extends State<ProviderGenerateInvoiceDialog> {
   final ValueNotifier<Service?> _selectType = ValueNotifier(null);
+  final ValueNotifier<DateTime?> _selectedDate = ValueNotifier(null);
+  final TextEditingController dateController = TextEditingController();
 
   // final List<String> categoryTypes = [
   //   'Towing',
@@ -45,6 +47,7 @@ class _ProviderGenerateInvoiceDialogState
       unawaited(initializeLocation());
       context.read<ServiceCatalogBloc>().add(const FetchServices());
       unawaited(fetchCategory());
+      dateController.text = '';
     });
 
     priceController = TextEditingController();
@@ -55,7 +58,7 @@ class _ProviderGenerateInvoiceDialogState
   Future<void> initializeLocation() async {
     final locationData = await LocationHelper.getCurrentLocation();
     if (locationController.text.isNotEmpty) {
-       locationController.text = (locationData['address'] as String?) ?? '';
+      locationController.text = (locationData['address'] as String?) ?? '';
     }
   }
 
@@ -78,7 +81,7 @@ class _ProviderGenerateInvoiceDialogState
     locationController.dispose();
     priceController.dispose();
     serviceController.dispose();
-
+    dateController.dispose();
     super.dispose();
   }
 
@@ -101,8 +104,8 @@ class _ProviderGenerateInvoiceDialogState
             color: appColors.whiteColor,
             borderRadius: BorderRadius.circular(12.r),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: ListView(
+            // mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -173,6 +176,37 @@ class _ProviderGenerateInvoiceDialogState
                 keyboardType: TextInputType.text,
               ),
               14.verticalSpace,
+              ValueListenableBuilder<DateTime?>(
+                valueListenable: _selectedDate,
+                builder: (_, value, _) {
+                  return KFormField(
+                    label: 'Invoice Date',
+                    hintText: 'Select date',
+                    controller: dateController,
+                    type:
+                        InputType
+                            .dob, 
+                    onTapSuffix: () async {
+                      final now = DateTime.now();
+
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: value ?? now,
+                        firstDate: DateTime(now.year - 1),
+                        lastDate: DateTime(now.year + 2),
+                      );
+
+                      if (picked != null) {
+                        _selectedDate.value = picked;
+                        dateController.text =
+                            '${picked.month}/${picked.day}/${picked.year}';
+                      }
+                    },
+                  );
+                },
+              ),
+
+              14.verticalSpace,
               KFormField(
                 label: 'Price',
                 hintText: 'Enter the price',
@@ -208,7 +242,8 @@ class _ProviderGenerateInvoiceDialogState
                       onPressed: () async {
                         if (locationController.text.isEmpty ||
                             priceController.text.isEmpty ||
-                            serviceController.text.isEmpty) {
+                            serviceController.text.isEmpty ||
+                            _selectedDate.value == null) {
                           await showErrorSnackbar(
                             context,
                             'Please fill in all required fields',
@@ -225,9 +260,9 @@ class _ProviderGenerateInvoiceDialogState
                           'location': locationController.text,
                           'price': int.tryParse(priceController.text) ?? 0,
                           'description': serviceController.text,
+                          'date': _selectedDate.value!.toIso8601String(),
                         };
 
-                       
                         await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: BlocProvider.value(
