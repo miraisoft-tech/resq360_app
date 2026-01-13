@@ -115,7 +115,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 color: appColors.black,
               ),
               20.verticalSpace,
-               ReviewSummaryCard(averageRating: 0, totalReviews: 0,),
+               const ReviewSummaryCard(averageRating: 0, totalReviews: 0,),
               30.verticalSpace,
               ...reviews.map((r) => UserReviewCard(data: r)),
               const Spacer(),

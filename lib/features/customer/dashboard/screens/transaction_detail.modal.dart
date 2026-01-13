@@ -112,9 +112,10 @@ class TransactionDetailModal extends StatelessWidget {
               ),
               _TransactionDetailItem(
                 label: 'Payment Method',
-                value: tx.gatewayReference != null ? 'Card' : '-',
+                value: tx.gatewayReference != null ? 'Card' : 'Wallet',
               ),
 
+              if(tx.status == 'FAILED')
               _TransactionDetailItem(
                 label: 'Failure Reason',
                 value: tx.status == 'FAILED' ? 'Transaction failed' : '-',

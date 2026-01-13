@@ -276,7 +276,7 @@ class _HeaderRow extends StatelessWidget {
 NotificationModel mapToUi(notif.Notification n) {
   return NotificationModel(
     id: n.id!,
-    title: n.user?.fullName ?? 'N/A',
+    title: n.user?.fullName ?? '',
     message: n.details ?? '',
     time: timeAgo(n.createdAt),
     isUnread: n.status == 'UNREAD',
