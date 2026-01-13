@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
@@ -19,13 +20,11 @@ class ServiceDetailScreen extends StatefulWidget {
   State<ServiceDetailScreen> createState() => _ServiceDetailScreenState();
 }
 
-
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {});
   }
 
   @override
@@ -42,19 +41,22 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
-         if (state is BookingLoading) {
+        if (state is BookingLoading) {
           await showLoadingDialog(context);
         }
-         if (state is BookingStarted) {
+        if (state is BookingStarted) {
           Navigator.pop(context);
+          if (widget.chat.id != null) {
+            context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chat.id!));
+          }
           await showSuccessSnackbar(context, 'Service has started');
         }
 
         if (state is BookingCompleted) {
           Navigator.pop(context);
-          await pushScreen(
+          await showSuccessSnackbar(
             context,
-            ServiceCompletedScreen(serviceRequestId: state.serviceRequestId),
+            'Service has been marked as completed',
           );
         }
 
@@ -197,19 +199,18 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 ),
               ),
               const Spacer(),
-
-              WideButton(
-                label: 'Start',
-                backgroundColor: appColors.primary.shade500,
-                textColor: appColors.whiteColor,
-                onPressed: () async {
-                  if (serviceRequestId != null) {
-                    context.read<BookingBloc>().add(
-                      StartBooking(serviceRequestId: serviceRequestId),
-                    );
-                  }
-                },
-              ),
+              // WideButton(
+              //   label: 'Start',
+              //   backgroundColor: appColors.primary.shade500,
+              //   textColor: appColors.whiteColor,
+              //   onPressed: () async {
+              //     if (serviceRequestId != null) {
+              //       context.read<BookingBloc>().add(
+              //         StartBooking(serviceRequestId: serviceRequestId),
+              //       );
+              //     }
+              //   },
+              // ),
               10.verticalSpace,
               Row(
                 children: [
@@ -231,24 +232,27 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     ),
                   ),
                   12.horizontalSpace,
-                  Expanded(
-                    child: WideButton(
-                      label: 'Complete',
-                      backgroundColor: appColors.primary.shade500,
-                      textColor: appColors.whiteColor,
-                      onPressed: () async {
-                        if (serviceRequestId != null) {
-                          context.read<BookingBloc>().add(
-                            CompleteBooking(
-                              serviceRequestId: serviceRequestId,
-                              ratings: 0,
-                              review: '',
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ),
+                  if (widget.chat.serviceRequestStatus != 'COMPLETED')
+                    Expanded(
+                      child: WideButton(
+                        label: 'Complete',
+                        backgroundColor: appColors.primary.shade500,
+                        textColor: appColors.whiteColor,
+                        onPressed: () async {
+                          if (serviceRequestId != null) {
+                            context.read<BookingBloc>().add(
+                              CompleteBooking(
+                                serviceRequestId: serviceRequestId,
+                                ratings: 4,
+                                review: 'okay',
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
                 ],
               ),
               5.verticalSpace,

@@ -30,6 +30,6 @@ class ProviderCompleteServiceBooking extends ProviderServiceEvent {
     required this.review,
   });
   final int serviceRequestId;
-  final double ratings;
+  final int ratings;
   final String review;
 }

@@ -243,7 +243,7 @@ class _BookingCardState extends State<BookingCard> {
     final providerName = data.assignedProvider?.fullName ?? 'Unknown Provider';
 
     final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
-    const amount = 'To be billed.';
+        final amount = data.amount ?? '';
 
     final date = data.createdAt?.formatDate ?? 'N/A';
     final start = data.providerStartedAt?.formatTime ?? '--';
@@ -377,7 +377,7 @@ class _BookingCardState extends State<BookingCard> {
                         provider: providerName,
                         serviceId: data.requestId ?? 'N/A',
                         status: status,
-                        invoice: 'N/A',
+                        invoice: data.requestId ?? 'N/A',
                         dateTime: '$date - $end',
                         method: 'Card',
                         onDownload:

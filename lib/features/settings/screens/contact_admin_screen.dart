@@ -5,7 +5,7 @@ import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/issue_radio_widget.dart';
 
 class ContactAdminScreen extends StatefulWidget {
-  const ContactAdminScreen({ this.issueType, super.key, this.serviceCategory, this.relatedServiceProviderId});
+  const ContactAdminScreen({super.key, this.issueType, this.serviceCategory, this.relatedServiceProviderId});
   final AdminIssueType? issueType;
   final int? serviceCategory;
   final int? relatedServiceProviderId;

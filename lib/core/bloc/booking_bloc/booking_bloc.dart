@@ -5,9 +5,7 @@ import 'package:resq360/features/customer/dashboard/data/service/service_repo.da
 part 'booking_event.dart';
 part 'booking_state.dart';
 
-
 class BookingBloc extends Bloc<BookingEvent, BookingState> {
-
   BookingBloc({required this.serviceRepo}) : super(BookingInitial()) {
     on<StartBooking>(_onStartBooking);
     on<CancelBooking>(_onCancelBooking);
@@ -21,7 +19,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
   ) async {
     emit(BookingLoading());
     try {
-      final result = await serviceRepo.startServiceBooking(event.serviceRequestId);
+      final result = await serviceRepo.startServiceBooking(
+        event.serviceRequestId,
+      );
 
       if (result.error != null) {
         emit(BookingError(error: result.error ?? 'Failed to start booking'));
@@ -43,10 +43,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         serviceRequestId: event.serviceRequestId,
         cancellationReason: event.cancellationReason,
       );
-      
+
       log(result);
-      
-      if (!result.isSuccess) {
+        if (result.error != null) {
         emit(BookingError(error: result.error ?? 'Failed to cancel booking'));
       } else {
         emit(BookingCancelled(serviceRequestId: event.serviceRequestId));
@@ -68,10 +67,12 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
         review: event.review,
       );
 
-      if (!result.isSuccess) {
-        emit(BookingError(error: result.error ?? 'Failed to complete booking'));
-      } else {
-        emit(BookingCompleted(serviceRequestId: event.serviceRequestId));
+      if (result.error != null) {
+          emit(
+            BookingError(error: result.error ?? 'Failed to complete booking'),
+          );
+        } else {
+          emit(BookingCompleted(serviceRequestId: event.serviceRequestId));
       }
     } on Exception catch (e) {
       emit(BookingError(error: e.toString()));

@@ -12,7 +12,7 @@ class ClientServiceCompletedScreen extends StatefulWidget {
 
 class _ClientServiceCompletedScreenState
     extends State<ClientServiceCompletedScreen> {
-  double rating = 0;
+  int rating = 0;
   final TextEditingController reviewController = TextEditingController();
 
   @override
@@ -109,7 +109,7 @@ class _ClientServiceCompletedScreenState
             ),
             12.verticalSpace,
             RatingBar.builder(
-              initialRating: rating,
+              initialRating: rating.toDouble(),
               minRating: 1,
               itemSize: 32,
               allowHalfRating: true,
@@ -120,7 +120,7 @@ class _ClientServiceCompletedScreenState
                     color: appColors.primary.shade500,
                   ),
               onRatingUpdate: (val) {
-                setState(() => rating = val);
+                setState(() => rating = val.toInt());
               },
             ),
             32.verticalSpace,

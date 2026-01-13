@@ -219,7 +219,7 @@ class _BookingCardState extends State<BookingCard> {
     });
   }
 
-  Future<void> _navigateToChatByServiceRequest(
+  Future<void> navigateToChatByServiceRequest(
     BuildContext context,
     int serviceRequestId,
   ) async {
@@ -264,8 +264,9 @@ class _BookingCardState extends State<BookingCard> {
 
     final method = data.paymentMethod ?? 'Unknown';
 
-    final phonenumber = data.assignedProvider?.phoneNumber ?? '';
+    final phonenumber = data.user?.phoneNumber ?? '';
     final serviceRequest = data.id;
+
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -330,8 +331,9 @@ class _BookingCardState extends State<BookingCard> {
                 SVGButton(
                   path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
                   onTap: () async {
+                    log(serviceRequest);
                     if (serviceRequest != null) {
-                      await _navigateToChatByServiceRequest(
+                      await navigateToChatByServiceRequest(
                         context,
                         serviceRequest,
                       );
@@ -386,6 +388,7 @@ class _BookingCardState extends State<BookingCard> {
                           provider: clientName,
                           status: status,
                           invoice: data.requestId ?? 'N/A',
+                          amount: amount,
                           dateTime: '$date - $end',
                           method: method,
                           onDownload:
@@ -401,7 +404,7 @@ class _BookingCardState extends State<BookingCard> {
                                       amount: 'To be billed',
                                     );
                                   }
-                                  : null,
+                                  : null, 
                         ),
                       );
                     },

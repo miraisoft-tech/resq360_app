@@ -326,15 +326,15 @@ class ServiceRepo extends BaseAPI {
 
   Future<ApiResult<void>> completeServiceBooking(
     int serviceRequestId, {
-    required double ratings,
+    required int ratings,
     required String review,
   }) async {
     final url = '/services/bookings/$serviceRequestId/complete';
     try {
-      final formData = FormData.fromMap({
+      final formData = {
         'ratings': ratings,
         'review': review,
-      });
+      };
       final res = await dio().post<Map<String, dynamic>>(url, data: formData);
       log('POST $url => ${res.statusCode}');
 

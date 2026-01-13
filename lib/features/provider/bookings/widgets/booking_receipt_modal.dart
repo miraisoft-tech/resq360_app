@@ -6,6 +6,7 @@ class BookingReceiptModal extends StatelessWidget {
     required this.provider,
     required this.status,
     required this.invoice,
+    required this.amount,
     required this.dateTime,
     required this.method,
     required this.onDownload,
@@ -15,6 +16,7 @@ class BookingReceiptModal extends StatelessWidget {
   final String service;
   final String provider;
   final String status;
+  final String amount;
   final String invoice;
   final String dateTime;
   final String method;
@@ -70,7 +72,7 @@ class BookingReceiptModal extends StatelessWidget {
           ),
           30.verticalSpace,
           UrbText(
-            '₦15,000.00',
+            amount,
             size: 18,
             height: 28.5,
             weight: FontWeight.w700,

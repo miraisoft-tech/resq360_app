@@ -1,9 +1,13 @@
+import 'package:http/http.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
+import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
+import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 
 class ProviderServiceDetailScreen extends StatefulWidget {
   const ProviderServiceDetailScreen({required this.booking, super.key});
@@ -19,11 +23,15 @@ class _ProviderServiceDetailScreenState
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final companyName = widget.booking.assignedProvider?.fullName ?? '';
+    final providerName = widget.booking.assignedProvider?.fullName ?? '';
     final clientName = widget.booking.user?.fullName ?? '';
     final serviceRequestId = widget.booking.id;
     final amount = widget.booking.amount ?? '';
     final invoiceNum = widget.booking.requestId ?? '';
+    final providerImage = widget.booking.assignedProvider?.profileImage;
+    final clientImage = widget.booking.user?.profileImage;
+    final serviceCategoryname = widget.booking.serviceCategory?.name;
+    
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
@@ -103,12 +111,13 @@ class _ProviderServiceDetailScreenState
               // ),
               16.verticalSpace,
               _ServiceCard(
-                name: companyName,
-                subtitle: 'Towing Service',
+                name: providerName,
+                subtitle: serviceCategoryname ?? '',
                 rating: '4.9',
                 reviewCount: '(347 reviews)',
-                avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG.imageAsset(),
-                showActions: true,
+                avatar:
+                    providerImage ??
+                    'https://randomuser.me/api/portraits/men/30.jpg',
               ),
               12.verticalSpace,
               _ServiceCard(
@@ -116,7 +125,9 @@ class _ProviderServiceDetailScreenState
                 subtitle: '1.0km away',
                 rating: '4.8',
                 reviewCount: '(50 reviews)',
-                avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG.imageAsset(),
+                avatar:
+                    clientImage ??
+                    'https://randomuser.me/api/portraits/men/30.jpg',
               ),
               16.verticalSpace,
               Container(
@@ -178,7 +189,7 @@ class _ProviderServiceDetailScreenState
               const Spacer(),
               Row(
                 children: [
-                  if (widget.booking.status == 'COMPLETED')
+                  if (widget.booking.status == 'PENDING')
                     Expanded(
                       child: WideButton(
                         label: 'Cancel',
@@ -196,20 +207,20 @@ class _ProviderServiceDetailScreenState
                       ),
                     ),
                   12.horizontalSpace,
-                  if (widget.booking.status == 'PENDING') Expanded(
-                    child: WideButton(
-                      label: 'Start',
-                      backgroundColor: appColors.primary.shade500,
-                      textColor: appColors.whiteColor,
-                      onPressed: () async {
-                        if (serviceRequestId != null) {
-                          context.read<BookingBloc>().add(
-                            StartBooking(serviceRequestId: serviceRequestId),
-                          );
-                        }
-                      },
-                    ),
-                  ) else const SizedBox.shrink()
+                  // if (widget.booking.status == 'PENDING') Expanded(
+                  //   child: WideButton(
+                  //     label: 'Start',
+                  //     backgroundColor: appColors.primary.shade500,
+                  //     textColor: appColors.whiteColor,
+                  //     onPressed: () async {
+                  //       if (serviceRequestId != null) {
+                  //         context.read<BookingBloc>().add(
+                  //           StartBooking(serviceRequestId: serviceRequestId),
+                  //         );
+                  //       }
+                  //     },
+                  //   ),
+                  // ) else const SizedBox.shrink()
                 ],
               ),
               12.verticalSpace,
@@ -222,32 +233,43 @@ class _ProviderServiceDetailScreenState
                       backgroundColor: appColors.primary.shade50,
                       textColor: appColors.primary.shade500,
                       onPressed: () async {
-                        await GeneralDialogs.showCustomDialog<void>(
+                        await pushScreen(
                           context,
-                          body: const PaymentAppealDialog(),
+                          ContactAdminScreen(
+                            issueType: AdminIssueType.serviceIssue,
+                            serviceCategory:
+                                widget.booking.serviceCategory?.id ?? 0,
+                            relatedServiceProviderId:
+                                widget.booking.assignedProviderId,
+                          ),
                         );
+                        // await GeneralDialogs.showCustomDialog<void>(
+                        //   context,
+                        //   body: const PaymentAppealDialog(),
+                        // );
                       },
                     ),
                   ),
                   12.horizontalSpace,
-                  Expanded(
-                    child: WideButton(
-                      label: 'Complete',
-                      backgroundColor: appColors.primary.shade500,
-                      textColor: appColors.whiteColor,
-                      onPressed: () async {
-                        if (serviceRequestId != null) {
-                          context.read<BookingBloc>().add(
-                            CompleteBooking(
-                              serviceRequestId: serviceRequestId,
-                              ratings: 0,
-                              review: '',
-                            ),
-                          );
-                        }
-                      },
+                  if (widget.booking.status == 'PENDING')
+                    Expanded(
+                      child: WideButton(
+                        label: 'Complete',
+                        backgroundColor: appColors.primary.shade500,
+                        textColor: appColors.whiteColor,
+                        onPressed: () async {
+                          if (serviceRequestId != null) {
+                            context.read<BookingBloc>().add(
+                              CompleteBooking(
+                                serviceRequestId: serviceRequestId,
+                                ratings: 0,
+                                review: '',
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     ),
-                  ),
                 ],
               ),
               // 5.verticalSpace,
@@ -272,6 +294,7 @@ class _ServiceCard extends StatelessWidget {
     required this.rating,
     required this.reviewCount,
     required this.avatar,
+    this.phoneNumber,
     this.showActions = false,
   });
 
@@ -279,8 +302,9 @@ class _ServiceCard extends StatelessWidget {
   final String subtitle;
   final String rating;
   final String reviewCount;
-  final Widget avatar;
+  final String avatar;
   final bool showActions;
+  final String? phoneNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +318,12 @@ class _ServiceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(radius: 24, child: avatar),
+          CircleAvatar(
+            radius: 24,
+            backgroundImage: NetworkImage(
+              avatar,
+            ),
+          ),
           12.horizontalSpace,
           Expanded(
             child: Column(
@@ -335,11 +364,18 @@ class _ServiceCard extends StatelessWidget {
           if (showActions) ...[
             8.horizontalSpace,
 
-            SVGButton(path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG, onTap: () {}),
+            SVGButton(
+              path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
+              onTap: () {
+                // navigateToChatByServiceRequest()
+              },
+            ),
             8.horizontalSpace,
             SVGButton(
               path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-              onTap: () {},
+              onTap: () async {
+                // await DialerUtil.open(phoneNumber);
+              },
               color: appColors.primary.shade500,
             ),
           ],
