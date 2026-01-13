@@ -199,7 +199,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GenText(
-                title,
+                title.capitalizeWords(),
                 weight: FontWeight.w500,
                 color: appColors.black,
               ),

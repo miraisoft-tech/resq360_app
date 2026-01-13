@@ -108,7 +108,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         return ChatTile(
                           chat: Chat(
                             name: chat.title,
-                            message: chat.lastMessage ?? '',
+                            message: chat.lastMessage?.capitalizeWords() ?? '',
                             time:
                                 chat.lastMessageTime != null
                                     ? _formatTime(chat.lastMessageTime!)

@@ -49,3 +49,15 @@ extension DateFormatting on DateTime {
 //   String get capitalize =>
 //       isEmpty ? this : '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
 // }
+
+extension CapitalizeWordsExtension on String {
+  String capitalizeWords() {
+    if (trim().isEmpty) return this;
+
+    return split(' ')
+        .map((word) => word.isEmpty
+            ? word
+            : word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .join(' ');
+  }
+}
