@@ -520,16 +520,15 @@ class ProfileView extends StatelessWidget {
       children: [
         Stack(
           alignment: Alignment.bottomRight,
+          clipBehavior: Clip.none,
           children: [
-            CircleAvatar(
-              radius: 45.r,
-              backgroundImage: NetworkImage(
-                imageUrl ?? 'https://randomuser.me/api/portraits/men/30.jpg',
-              ),
+            PictureWidget(
+              image: imageUrl,
+              radius: 50,
             ),
             Positioned(
-              bottom: 2,
-              right: 2,
+              bottom: 5,
+              right: 5,
               child: GestureDetector(
                 onTap: onPickImage,
                 child: Container(

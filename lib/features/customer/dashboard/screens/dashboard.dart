@@ -50,30 +50,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: colors.whiteColor,
       body: SafeArea(
-        child: RefreshIndicator(
-          color: colors.primary,
-          onRefresh: () async {
-            context.read<CustomerAuthBloc>().add(
-              const CustomergetUserProfile(),
-            );
-
-            context.read<ServiceCatalogBloc>().add(const FetchServices());
-            context.read<CustomerAdvertisementBloc>().add(
-              CustomerFetchAdvertisement(),
-            );
-            context.read<CustomerBookingBloc>().add(
-              FetchCustomerBookings(status: BookingStatus.pending.value),
-            );
-          },
-          child: ListView(
-            padding: EdgeInsets.only(
-              left: 16.w,
-              right: 16.w,
-              top: 10.h,
-              bottom: 50.h,
-            ),
-            children: [
-              Row(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                top: 10.h,
+              ),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
@@ -114,193 +99,227 @@ class _HomeScreenState extends State<HomeScreen> {
                   10.horizontalSpace,
                 ],
               ),
-              10.verticalSpace,
-              FilterSearchFormField(
-                controller: TextEditingController(),
-                hintText: 'Search for services',
-                onTapSuffix: () {},
-                onChanged: (value) {},
-                onTap: () async {
-                  await AppGenUtil.offKeyboard();
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                color: colors.primary,
+                onRefresh: () async {
+                  context.read<CustomerAuthBloc>().add(
+                    const CustomergetUserProfile(),
+                  );
 
-                  await pushScreen(context, const ServiceCategoryScreen());
+                  context.read<ServiceCatalogBloc>().add(const FetchServices());
+                  context.read<CustomerAdvertisementBloc>().add(
+                    CustomerFetchAdvertisement(),
+                  );
+                  context.read<CustomerBookingBloc>().add(
+                    FetchCustomerBookings(status: BookingStatus.pending.value),
+                  );
                 },
-                prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
-              ),
-              20.verticalSpace,
-              const PromoCardWidget(),
-              20.verticalSpace,
-              UrbText(
-                'Ongoing Service',
-                size: 18,
-                height: 28.5,
-                weight: FontWeight.w700,
-                color: colors.black,
-              ),
-              12.verticalSpace,
-              BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
-                builder: (context, state) {
-                  if (state is CustomerBookingLoading) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: colors.primary,
-                      ),
-                    );
-                  }
-
-                  if (state is CustomerBookingLoaded) {
-                    if (state.bookings.isEmpty) {
-                      return const GenText('No ongoing service');
-                    }
-
-                    if (state.bookings.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-
-                    final ongoingBooking = state.bookings.first;
-
-                    return OngoingServiceCard(
-                      booking: ongoingBooking,
-                    );
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
-              20.verticalSpace,
-              Row(
-                children: [
-                  UrbText(
-                    'What service do you need?',
-                    size: 18,
-                    height: 28.5,
-                    weight: FontWeight.w700,
-                    color: colors.black,
+                child: ListView(
+                  padding: EdgeInsets.only(
+                    left: 16.w,
+                    right: 16.w,
+                    top: 10.h,
+                    bottom: 50.h,
                   ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () async {
-                      await pushScreen(context, const ServiceCategoryScreen());
-                    },
-                    child: UrbText(
-                      'View All',
-                      size: 12,
-                      height: 20.5,
-                      weight: FontWeight.w400,
-                      color: colors.primary.shade500,
+                  children: [
+                    10.verticalSpace,
+                    FilterSearchFormField(
+                      controller: TextEditingController(),
+                      hintText: 'Search for services',
+                      onTapSuffix: () {},
+                      onChanged: (value) {},
+                      onTap: () async {
+                        await AppGenUtil.offKeyboard();
+
+                        await pushScreen(
+                          context,
+                          const ServiceCategoryScreen(),
+                        );
+                      },
+                      prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
                     ),
-                  ),
-                ],
-              ),
-              20.verticalSpace,
-              BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
-                builder: (context, state) {
-                  if (state is ServiceCatalogLoading) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        color: colors.primary,
-                      ),
-                    );
-                  }
+                    20.verticalSpace,
+                    const PromoCardWidget(),
+                    20.verticalSpace,
+                    UrbText(
+                      'Ongoing Service',
+                      size: 18,
+                      height: 28.5,
+                      weight: FontWeight.w700,
+                      color: colors.black,
+                    ),
+                    12.verticalSpace,
+                    BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
+                      builder: (context, state) {
+                        if (state is CustomerBookingLoading) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: colors.primary,
+                            ),
+                          );
+                        }
 
-                  if (state is ServicesLoaded) {
-                    final categories = state.services;
+                        if (state is CustomerBookingLoaded) {
+                          if (state.bookings.isEmpty) {
+                            return const GenText('No ongoing service');
+                          }
 
-                    return SizedBox(
-                      height: 130,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: 3,
-                        separatorBuilder: (_, _) => 12.horizontalSpace,
-                        itemBuilder: (context, index) {
-                          final category = categories[index];
-                          return ServiceCategoryWidget(
-                            category: category,
-                            onTap: () async {
-                              await pushScreen(
-                                context,
-                                ServiceProvidersScreen(
-                                  serviceProviderId: category.id,
-                                ),
+                          if (state.bookings.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final ongoingBooking = state.bookings.first;
+
+                          return OngoingServiceCard(
+                            booking: ongoingBooking,
+                          );
+                        }
+
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    20.verticalSpace,
+                    Row(
+                      children: [
+                        UrbText(
+                          'What service do you need?',
+                          size: 18,
+                          height: 28.5,
+                          weight: FontWeight.w700,
+                          color: colors.black,
+                        ),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () async {
+                            await pushScreen(
+                              context,
+                              const ServiceCategoryScreen(),
+                            );
+                          },
+                          child: UrbText(
+                            'View All',
+                            size: 12,
+                            height: 20.5,
+                            weight: FontWeight.w400,
+                            color: colors.primary.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    20.verticalSpace,
+                    BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
+                      builder: (context, state) {
+                        if (state is ServiceCatalogLoading) {
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: colors.primary,
+                            ),
+                          );
+                        }
+
+                        if (state is ServicesLoaded) {
+                          final categories = state.services;
+
+                          return SizedBox(
+                            height: 130,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 3,
+                              separatorBuilder: (_, _) => 12.horizontalSpace,
+                              itemBuilder: (context, index) {
+                                final category = categories[index];
+                                return ServiceCategoryWidget(
+                                  category: category,
+                                  onTap: () async {
+                                    await pushScreen(
+                                      context,
+                                      ServiceProvidersScreen(
+                                        serviceProviderId: category.id,
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          );
+                        }
+
+                        if (state is ServiceCatalogError) {
+                          return Center(child: Text(state.error));
+                        }
+
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    30.verticalSpace,
+                    Row(
+                      children: [
+                        UrbText(
+                          'Recommended for You',
+                          size: 18,
+                          height: 28.5,
+                          weight: FontWeight.w700,
+                          color: colors.black,
+                        ),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () async {
+                            // await pushScreen(context, const ServiceProvidersScreen(serviceProviderId: null,));
+                          },
+                          child: UrbText(
+                            'View All',
+                            size: 12,
+                            height: 20.5,
+                            weight: FontWeight.w400,
+                            color: colors.primary.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    12.verticalSpace,
+                    BlocBuilder<
+                      CustomerAdvertisementBloc,
+                      CustomerAdvertisementState
+                    >(
+                      builder: (context, state) {
+                        if (state is CustomerAdvertisementLoading) {
+                          return const CircularProgressIndicator();
+                        }
+                        if (state is CustomerAdvertisementFetched) {
+                          final ads = state.adverisementList;
+                          if (ads.isEmpty) {
+                            return const Center(
+                              child: Text(
+                                'No advertisements available',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                            );
+                          }
+
+                          return AdvertisementCarousel(ads: ads);
+                        }
+
+                        if (state is CustomerAdvertisementError) {
+                          return ErrorMessageAndButton(
+                            error: state.error,
+                            onPressed: () {
+                              context.read<CustomerAdvertisementBloc>().add(
+                                CustomerFetchAdvertisement(),
                               );
                             },
                           );
-                        },
-                      ),
-                    );
-                  }
-
-                  if (state is ServiceCatalogError) {
-                    return Center(child: Text(state.error));
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
-              30.verticalSpace,
-              Row(
-                children: [
-                  UrbText(
-                    'Recommended for You',
-                    size: 18,
-                    height: 28.5,
-                    weight: FontWeight.w700,
-                    color: colors.black,
-                  ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () async {
-                      // await pushScreen(context, const ServiceProvidersScreen(serviceProviderId: null,));
-                    },
-                    child: UrbText(
-                      'View All',
-                      size: 12,
-                      height: 20.5,
-                      weight: FontWeight.w400,
-                      color: colors.primary.shade500,
-                    ),
-                  ),
-                ],
-              ),
-              12.verticalSpace,
-              BlocBuilder<
-                CustomerAdvertisementBloc,
-                CustomerAdvertisementState
-              >(
-                builder: (context, state) {
-                  if (state is CustomerAdvertisementLoading) {
-                    return const CircularProgressIndicator();
-                  }
-                  if (state is CustomerAdvertisementFetched) {
-                    final ads = state.adverisementList;
-                    if (ads.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No advertisements available',
-                          style: TextStyle(fontSize: 14),
-                        ),
-                      );
-                    }
-
-                    return AdvertisementCarousel(ads: ads);
-                  }
-
-                  if (state is CustomerAdvertisementError) {
-                    return ErrorMessageAndButton(
-                      error: state.error,
-                      onPressed: () {
-                        context.read<CustomerAdvertisementBloc>().add(
-                          CustomerFetchAdvertisement(),
-                        );
+                        }
+                        return const SizedBox.shrink();
                       },
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
+                    ),
+                    30.verticalSpace,
+                  ],
+                ),
               ),
-              30.verticalSpace,
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

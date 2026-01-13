@@ -28,7 +28,7 @@ class ServiceCategoryWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CacheNetworkImageWidget(
-              imgUrl: category.image,
+              imageUrl: category.image,
               height: 60,
               width: 100,
               fit: BoxFit.contain,

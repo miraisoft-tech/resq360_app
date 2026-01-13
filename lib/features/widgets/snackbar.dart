@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:another_flushbar/flushbar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../__lib.dart';
@@ -144,9 +145,32 @@ Future<void> showLoadingDialog(BuildContext context) async {
     barrierColor: const Color.fromRGBO(173, 173, 173, 0.23),
     barrierDismissible: false,
     builder: (BuildContext context) {
-      return const Center(child: LoadingDialogWidget());
+      return const Center(child: ActivityDialogWidget());
+
+      // return const Center(child: LoadingDialogWidget());
     },
   );
+}
+
+class ActivityDialogWidget extends StatefulWidget {
+  const ActivityDialogWidget({super.key});
+
+  @override
+  ActivityDialogState createState() => ActivityDialogState();
+}
+
+class ActivityDialogState extends State<ActivityDialogWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: pad(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        color: context.appColors.black.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: CupertinoActivityIndicator(color: context.appColors.whiteColor),
+    );
+  }
 }
 
 class AnimatedColorSpinKit extends StatefulWidget {

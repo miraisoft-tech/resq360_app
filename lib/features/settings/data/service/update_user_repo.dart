@@ -49,7 +49,7 @@ class UpdateUserRepo extends BaseAPI {
     final data = {
       'fullName': fullName,
       'phoneNumber': phoneNumber,
-      'profileImageUrl': profileImageUrl,
+      'profileImage': profileImageUrl,
       'profileImageId': profileImageId,
     }..removeWhere((_, value) => value == null);
 
@@ -78,7 +78,7 @@ class UpdateUserRepo extends BaseAPI {
     final data = {
       'fullName': fullName,
       'phoneNumber': phoneNumber,
-      'profileImageUrl': profileImageUrl,
+      'profileImage': profileImageUrl,
       'profileImageId': profileImageId,
       'companyName': companyName,
       'description': description,

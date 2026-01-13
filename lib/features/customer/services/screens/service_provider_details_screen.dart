@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/gallery_item_model.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/provider_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/user_review_card.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
+import 'package:resq360/features/widgets/gallery_image_viewer.dart';
 
 class ServiceProviderDetailsScreen extends StatefulWidget {
   const ServiceProviderDetailsScreen({
@@ -33,17 +35,6 @@ class _ServiceProviderDetailsScreenState
     extends State<ServiceProviderDetailsScreen> {
   int currentIndex = 0;
   ServiceProvider? _provider;
-
-  final List<Map<String, dynamic>> reviews = [
-    {
-      'name': 'Maria Okoro',
-      'avatar': 'https://randomuser.me/api/portraits/women/47.jpg',
-      'rating': 5,
-      'date': '1 day ago',
-      'comment':
-          'QuickTow Emergency is simply the best, they arrived in time and towed my vehicle to my destination. I would recommend their service',
-    },
-  ];
 
   @override
   void initState() {
@@ -73,6 +64,46 @@ class _ServiceProviderDetailsScreenState
 
     context.read<ServiceRequestBloc>().add(
       CreateServiceRequest(providerServiceId: providerServiceId),
+    );
+  }
+
+  Future<void> _openImagesFullScreen(int indexOfImage) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder:
+            (context) => GalleryImageViewWrapper(
+              backgroundColor: Colors.black,
+              initialIndex: indexOfImage,
+              galleryItems:
+                  _provider!.images
+                      .asMap()
+                      .entries
+                      .map(
+                        (e) => GalleryItemModel(
+                          id: e.key.toString(),
+                          imageUrl: e.value,
+                          index: e.key,
+                        ),
+                      )
+                      .toList(),
+              titleGallery: null,
+              loadingWidget: const Center(
+                child: CircularProgressIndicator(),
+              ),
+              errorWidget: const Center(
+                child: Icon(Icons.broken_image, size: 50),
+              ),
+              minScale: 0.5,
+              maxScale: 4,
+              radius: 0,
+              reverse: false,
+              showListInGalley: true,
+              showAppBar: true,
+              closeWhenSwipeUp: true,
+              closeWhenSwipeDown: true,
+            ),
+      ),
     );
   }
 
@@ -167,13 +198,16 @@ class _ServiceProviderDetailsScreenState
                                     setState(() => currentIndex = i);
                                   },
                                   itemBuilder: (_, index) {
-                                    return Image.network(
-                                      serviceGallery[index],
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      errorBuilder:
-                                          (_, _, _) =>
-                                              const Icon(Icons.broken_image),
+                                    return GestureDetector(
+                                      onTap: () => _openImagesFullScreen(index),
+                                      child: Image.network(
+                                        serviceGallery[index],
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        errorBuilder:
+                                            (_, _, _) =>
+                                                const Icon(Icons.broken_image),
+                                      ),
                                     );
                                   },
                                 ),
@@ -220,11 +254,8 @@ class _ServiceProviderDetailsScreenState
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const CircleAvatar(
-                                      radius: 25,
-                                      backgroundImage: NetworkImage(
-                                        'https://randomuser.me/api/portraits/men/32.jpg',
-                                      ),
+                                    PictureWidget(
+                                      image: provider.profileImage,
                                     ),
                                     12.horizontalSpace,
                                     Expanded(
@@ -252,17 +283,6 @@ class _ServiceProviderDetailsScreenState
                                                 ) {
                                                   if (ratingState
                                                       is ProviderRatingsLoaded) {
-                                                    final ratings =
-                                                        ratingState.ratings;
-
-                                                    final avg =
-                                                        (ratings.averageRatings ??
-                                                                0)
-                                                            .toDouble();
-                                                    final total =
-                                                        ratings.totalReviews ??
-                                                        0;
-
                                                     return Row(
                                                       children: [
                                                         const Icon(
@@ -272,15 +292,14 @@ class _ServiceProviderDetailsScreenState
                                                         ),
                                                         4.horizontalSpace,
                                                         GenText(
-                                                          avg.toStringAsFixed(
-                                                            1,
-                                                          ),
+                                                          provider.averageRating
+                                                              .toString(),
                                                           color: colors.black,
                                                         ),
 
                                                         6.horizontalSpace,
                                                         GenText(
-                                                          '($total)',
+                                                          '(${provider.totalReviews})',
                                                           size: 12,
                                                           color:
                                                               colors

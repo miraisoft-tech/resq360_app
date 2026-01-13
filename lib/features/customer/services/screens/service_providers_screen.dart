@@ -70,15 +70,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
       serviceCategoryId: widget.serviceProviderId,
     );
     context.read<ServiceProviderBloc>().add(event);
-    // _fetchProviders();
   }
-
-  // void _toggleProximity() {
-  //   setState(() {
-  //     _sortByProximity = !_sortByProximity;
-  //   });
-  //   _fetchProviders();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +159,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                         WidgetsBinding.instance.addPostFrameCallback((_) async {
                           await showSuccessSnackbar(
                             context,
-                            'Providers pinged successfully',
+                            'Providers pinged successfully!',
                           );
                         });
                       }
@@ -399,8 +391,9 @@ class _ProviderCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 26,
+                  PictureWidget(
+                    image: provider.profileImage,
+                    radius: 30,
                   ),
                   12.horizontalSpace,
                   Expanded(
@@ -428,10 +421,14 @@ class _ProviderCard extends StatelessWidget {
                               color: Colors.orange,
                             ),
                             4.horizontalSpace,
-                            GenText(provider.averageRating.toString(), size: 12, color: colors.black),
+                            GenText(
+                              provider.averageRating.toString(),
+                              size: 12,
+                              color: colors.black,
+                            ),
                             2.horizontalSpace,
                             GenText(
-                              provider.totalReviews.toString(),
+                              '(${provider.totalReviews})',
                               size: 12,
                               color: colors.neutral.shade300,
                             ),

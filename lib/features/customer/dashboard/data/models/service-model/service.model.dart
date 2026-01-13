@@ -13,7 +13,10 @@ class Service {
 
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
-      id: json['id'] is int ? json['id'] as int : int.tryParse(json['id'].toString()) ?? 0,
+      id:
+          json['id'] is int
+              ? json['id'] as int
+              : int.tryParse(json['id'].toString()) ?? 0,
       name: json['name']?.toString() ?? '',
       image: json['image']?.toString() ?? '',
       imageId: json['imageId']?.toString(),
@@ -36,19 +39,17 @@ class Service {
   final String status;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'image': image,
-        'imageId': imageId,
-        'description': description,
-        'createdBy': createdBy,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-        'status': status,
-      };
+    'id': id,
+    'name': name,
+    'image': image,
+    'imageId': imageId,
+    'description': description,
+    'createdBy': createdBy,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+    'status': status,
+  };
 }
-
-
 
 class ServiceProvider {
   ServiceProvider({
@@ -77,19 +78,27 @@ class ServiceProvider {
       activityStatus: json['activityStatus']?.toString(),
       openingHours: json['openingHours']?.toString(),
       closingHours: json['closingHours']?.toString(),
-      workingDays: (json['workingDays'] as List? ?? []).map((e) => e.toString()).toList(),
+      workingDays:
+          (json['workingDays'] as List? ?? [])
+              .map((e) => e.toString())
+              .toList(),
       description: json['description']?.toString(),
       images: (json['images'] as List? ?? []).map((e) => e.toString()).toList(),
       profileImage: json['profileImage']?.toString(),
-      providerServices: (json['ProviderService'] as List? ?? [])
-          .map((e) => ProviderService.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      serviceRequests: (json['ServiceRequest'] as List? ?? [])
-          .map((e) => ServiceRequest.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      distance: json['distance'] == null ? null : (json['distance'] as num).toDouble(),
-      averageRating: (json['averageRating'] as num).toDouble(),
-      totalReviews: json['totalReviews'] as int,
+      providerServices:
+          (json['ProviderService'] as List? ?? [])
+              .map((e) => ProviderService.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      serviceRequests:
+          (json['ServiceRequest'] as List? ?? [])
+              .map((e) => ServiceRequest.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      distance:
+          json['distance'] == null
+              ? null
+              : (json['distance'] as num).toDouble(),
+      averageRating: (json['averageRating'] as num?)?.toDouble(),
+      totalReviews: json['totalReviews'] as int?,
       serviceName: json['serviceName']?.toString(),
       providerServiceId: json['providerServiceId'] as int?,
     );
@@ -107,12 +116,11 @@ class ServiceProvider {
   final List<ProviderService> providerServices;
   final List<ServiceRequest> serviceRequests;
   final double? distance;
-  final double averageRating;
-  final int totalReviews; 
+  final double? averageRating;
+  final int? totalReviews;
   final String? serviceName;
   final int? providerServiceId;
 }
-
 
 class ProviderService {
   ProviderService({
@@ -136,7 +144,10 @@ class ProviderService {
       providerId: json['providerId'] as int,
       createdAt: json['createdAt']?.toString() ?? '',
       updatedAt: json['updatedAt']?.toString() ?? '',
-      minorServices: (json['minorServices'] as List? ?? []).map((e) => e.toString()).toList(),
+      minorServices:
+          (json['minorServices'] as List? ?? [])
+              .map((e) => e.toString())
+              .toList(),
       service: Service.fromJson(json['service'] as Map<String, dynamic>),
     );
   }
@@ -151,7 +162,6 @@ class ProviderService {
   final List<String> minorServices;
   final Service service;
 }
-
 
 class ServiceRequest {
   ServiceRequest({

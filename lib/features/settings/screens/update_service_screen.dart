@@ -154,7 +154,8 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
               ServiceDetailSection(
                 descController: descController,
                 pickedImages: pickedImages,
-                onImagesPicked: (images) => setState(() => pickedImages = images),
+                onImagesPicked:
+                    (images) => setState(() => pickedImages = images),
                 onServiceSelected: (type) => selectedServiceType = type,
                 onSubmit: handleUpdateService,
               ),
@@ -199,8 +200,8 @@ class ServiceDetailSection extends StatefulWidget {
 class _ServiceDetailSectionState extends State<ServiceDetailSection> {
   final selectedIssue = ValueNotifier<ServiceTypeEnums?>(null);
 
-  Future<void> pickCameraPhoto(BuildContext context) async {
-    final images = await AppFilePicker.pickMultiImages() ?? [];
+  Future<void> pickImages(BuildContext context) async {
+    final images = await AppFilePicker.pickMultiImages(limit: 10) ?? [];
     if (images.isNotEmpty) widget.onImagesPicked(images);
   }
 
@@ -220,16 +221,17 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
           valueListenable: selectedIssue,
           builder: (context, selected, _) {
             return Column(
-              children: ServiceTypeEnums.values.map((type) {
-                return IssueRadio(
-                  label: type.name.capitalize,
-                  selected: selected == type,
-                  onTap: () {
-                    selectedIssue.value = type;
-                    widget.onServiceSelected(type);
-                  },
-                );
-              }).toList(),
+              children:
+                  ServiceTypeEnums.values.map((type) {
+                    return IssueRadio(
+                      label: type.name.capitalize,
+                      selected: selected == type,
+                      onTap: () {
+                        selectedIssue.value = type;
+                        widget.onServiceSelected(type);
+                      },
+                    );
+                  }).toList(),
             );
           },
         ),
@@ -252,7 +254,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
             itemBuilder: (context, index) {
               if (index == widget.pickedImages.length) {
                 return GestureDetector(
-                  onTap: () => pickCameraPhoto(context),
+                  onTap: () => pickImages(context),
                   child: Container(
                     height: 110,
                     width: 115,
@@ -311,7 +313,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
         ),
         10.verticalSpace,
         GenText(
-          'You can upload up to 3 images',
+          'You can upload more than 3 images',
           textAlign: TextAlign.center,
           color: appColors.textColor.shade300,
         ),
@@ -363,7 +365,8 @@ class WorkingHoursSection extends StatelessWidget {
                 const Spacer(),
                 CustomSwitchWidget(
                   value: workingDays[day] ?? false,
-                  onChanged: ({required value}) => onToggleDay(day: day, value: value),
+                  onChanged:
+                      ({required value}) => onToggleDay(day: day, value: value),
                   activeThumbColor: appColors.primary.shade500,
                   disabledThumbColor: appColors.textColor.shade100,
                   tapColor: appColors.whiteColor,
@@ -415,14 +418,15 @@ class WorkingHoursSection extends StatelessWidget {
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: context.appColors.primary.shade500,
+      builder:
+          (context, child) => Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: context.appColors.primary.shade500,
+              ),
+            ),
+            child: child!,
           ),
-        ),
-        child: child!,
-      ),
     );
 
     if (picked != null) {
