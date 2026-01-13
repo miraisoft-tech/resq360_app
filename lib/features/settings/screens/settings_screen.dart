@@ -20,6 +20,7 @@ import 'package:resq360/features/settings/screens/refer_screen.dart';
 import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
+import 'package:resq360/features/settings/widgets/profile_section_header.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -259,7 +260,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   await showErrorSnackbar(context, state.message);
                 }
               },
-              child: _ProfileSection(
+              child: ProfileSection(
                 isProvider: isProvider,
                 refreshProfile: _refreshProfile,
                 onPickImage: () => _pickProfileImage(context),
@@ -414,147 +415,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ProfileSection extends StatelessWidget {
-  const _ProfileSection({
-    required this.isProvider,
-    required this.refreshProfile,
-    required this.onPickImage,
-  });
-
-  final bool isProvider;
-  final void Function()? refreshProfile;
-  final void Function() onPickImage;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-
-    if (isProvider) {
-      return BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
-        builder: (context, state) {
-          if (state is ProviderProfileLoadedState) {
-            final fullName = state.user.fullName?.trim();
-            final name =
-                (fullName != null && fullName.isNotEmpty)
-                    ? fullName.capitalize
-                    : 'Provider User';
-
-            return ProfileView(
-              name: name.capitalize,
-              imageUrl: state.user.profileImage,
-              onPickImage: onPickImage,
-            );
-          }
-
-          if (state is ProviderAuthLoadingState) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: colors.primary,
-              ),
-            );
-          }
-
-          return const SizedBox.shrink();
-        },
-      );
-    }
-
-    return BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
-      builder: (context, state) {
-        if (state is CustomerProfileLoaded) {
-          final fullName = state.user.fullName?.trim();
-          final name =
-              (fullName != null && fullName.isNotEmpty)
-                  ? fullName.capitalize
-                  : 'Customer User';
-
-          return ProfileView(
-            name: name.capitalize,
-            imageUrl: state.user.profileImage,
-            onPickImage: onPickImage,
-          );
-        }
-
-        if (state is CustomerAuthLoading) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: colors.primary,
-            ),
-          );
-        }
-
-        if (state is CustomerAuthFailure) {
-          return ErrorMessageAndButton(
-            error: state.error,
-            onPressed: refreshProfile,
-          );
-        }
-
-        return const SizedBox.shrink();
-      },
-    );
-  }
-}
-
-class ProfileView extends StatelessWidget {
-  const ProfileView({
-    required this.name,
-    required this.imageUrl,
-    required this.onPickImage,
-    super.key,
-  });
-
-  final String name;
-  final String? imageUrl;
-  final VoidCallback onPickImage;
-
-  @override
-  Widget build(BuildContext context) {
-    final appColors = context.appColors;
-
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.bottomRight,
-          clipBehavior: Clip.none,
-          children: [
-            PictureWidget(
-              image: imageUrl,
-              radius: 50,
-            ),
-            Positioned(
-              bottom: 5,
-              right: 5,
-              child: GestureDetector(
-                onTap: onPickImage,
-                child: Container(
-                  padding: pad(vertical: 4, horizontal: 4),
-                  decoration: BoxDecoration(
-                    color: appColors.primary.shade500,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: appColors.whiteColor,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        15.verticalSpace,
-        UrbText(
-          name,
-          size: 16,
-          weight: FontWeight.w700,
-          color: appColors.black,
-        ),
-      ],
     );
   }
 }
