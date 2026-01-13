@@ -129,10 +129,11 @@ class _BookingList extends StatelessWidget {
     return BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
       builder: (context, state) {
         if (state is CustomerBookingLoading) {
-          return  Center(child: CircularProgressIndicator(
-            color: appColors.primary,
-
-          ));
+          return Center(
+            child: CircularProgressIndicator(
+              color: appColors.primary,
+            ),
+          );
         }
 
         if (state is CustomerBookingError) {
@@ -210,30 +211,32 @@ class _BookingCardState extends State<BookingCard> {
     });
   }
 
-    Future<void> _navigateToChatByServiceRequest(
-  BuildContext context,
-  int serviceRequestId,
-) async {
-  try {
-     unawaited(showLoadingDialog(context));
-    
-    final response = await ChatRepo().getChatByserviceRequestId(serviceRequestId);
-    
-    Navigator.pop(context);
-    
-    if (response.data != null) {
-      final chatId = response.data?.id; 
-      if(chatId != null){
-      await pushScreen(context, ChatDetailScreen(chatId: chatId));
+  Future<void> _navigateToChatByServiceRequest(
+    BuildContext context,
+    int serviceRequestId,
+  ) async {
+    try {
+      unawaited(showLoadingDialog(context));
+
+      final response = await ChatRepo().getChatByserviceRequestId(
+        serviceRequestId,
+      );
+
+      Navigator.pop(context);
+
+      if (response.data != null) {
+        final chatId = response.data?.id;
+        if (chatId != null) {
+          await pushScreen(context, ChatDetailScreen(chatId: chatId));
+        }
+      } else {
+        await showErrorSnackbar(context, 'Unable to open chat');
       }
-    } else {
-      await showErrorSnackbar(context, 'Unable to open chat');
+    } on Exception catch (e) {
+      Navigator.pop(context);
+      await showErrorSnackbar(context, 'Failed to load chat: $e');
     }
-  } on Exception catch (e) {
-    Navigator.pop(context);
-    await showErrorSnackbar(context, 'Failed to load chat: $e');
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +246,7 @@ class _BookingCardState extends State<BookingCard> {
     final providerName = data.assignedProvider?.fullName ?? 'Unknown Provider';
 
     final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
-        final amount = data.amount ?? '';
+    final amount = data.amount ?? '';
 
     final date = data.createdAt?.formatDate ?? 'N/A';
     final start = data.providerStartedAt?.formatTime ?? '--';
@@ -255,7 +258,6 @@ class _BookingCardState extends State<BookingCard> {
 
     final phonenumber = data.assignedProvider?.phoneNumber ?? '';
     final serviceRequest = data.id;
-    
 
     return Container(
       padding: pad(vertical: 18, horizontal: 14),
@@ -270,14 +272,8 @@ class _BookingCardState extends State<BookingCard> {
           /// --- Header Row
           Row(
             children: [
-              CircleAvatar(
-                radius: 25,
-                backgroundImage:
-                    data.assignedProvider?.profileImage != null
-                        ? NetworkImage(data.assignedProvider!.profileImage!)
-                        : const NetworkImage(
-                          'https://randomuser.me/api/portraits/men/30.jpg',
-                        ),
+              PictureWidget(
+                image: data.assignedProvider?.profileImage,
               ),
               12.horizontalSpace,
               Expanded(
@@ -303,17 +299,17 @@ class _BookingCardState extends State<BookingCard> {
                     ),
                     Row(
                       children: [
-                          if(canShow)...{
-                        AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
-                        4.horizontalSpace,
-                        GenText(
-                          amount,
-                          size: 12,
-                          height: 20.5,
-                          weight: FontWeight.w400,
-                          color: colors.black,
-                        ),
-                          }
+                        if (canShow) ...{
+                          AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
+                          4.horizontalSpace,
+                          GenText(
+                            amount,
+                            size: 12,
+                            height: 20.5,
+                            weight: FontWeight.w400,
+                            color: colors.black,
+                          ),
+                        },
                       ],
                     ),
                   ],
@@ -323,7 +319,10 @@ class _BookingCardState extends State<BookingCard> {
                 path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
                 onTap: () async {
                   if (serviceRequest != null) {
-                  await _navigateToChatByServiceRequest(context, serviceRequest);
+                    await _navigateToChatByServiceRequest(
+                      context,
+                      serviceRequest,
+                    );
                   }
                 },
               ),
@@ -382,8 +381,7 @@ class _BookingCardState extends State<BookingCard> {
                         method: 'Card',
                         onDownload:
                             canDownload
-                                ? 
-                                () async {
+                                ? () async {
                                   await BookingReceiptPdfUtil.generateBookingReceiptPdf(
                                     bookingId: data.requestId ?? 'N/A',
                                     service: serviceCategory,
