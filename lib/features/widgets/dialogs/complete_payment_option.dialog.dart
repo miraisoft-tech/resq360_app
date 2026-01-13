@@ -243,7 +243,7 @@ class _ClientPaymentConfirmDialogState
 
               GenText(
                 widget.title,
-                size: 15,
+                size: 15, 
                 weight: FontWeight.w600,
                 color: appColors.black,
               ),

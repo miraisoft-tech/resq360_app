@@ -7,7 +7,6 @@ abstract class CustomerPaymentEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// Wallet Funding Events
 class CustomerInitWalletFundingEvent extends CustomerPaymentEvent {
   const CustomerInitWalletFundingEvent({
     required this.amount,
@@ -30,7 +29,6 @@ class CustomerVerifyWalletFundingEvent extends CustomerPaymentEvent {
   List<Object?> get props => [reference];
 }
 
-// Service Payment Events
 class CustomerInitServicePaymentEvent extends CustomerPaymentEvent {
   const CustomerInitServicePaymentEvent({
     required this.amount,
@@ -63,16 +61,24 @@ class CustomerInitServiceRequestPaymentEvent extends CustomerPaymentEvent {
   List<Object?> get props => [chatId, invoiceMessageId, paymentMethod];
 }
 
-class CustomerVerifyServicePaymentEvent extends CustomerPaymentEvent {
-  const CustomerVerifyServicePaymentEvent(this.reference);
+// class CustomerVerifyServicePaymentEvent extends CustomerPaymentEvent {
+//   const CustomerVerifyServicePaymentEvent(this.reference);
+
+//   final String reference;
+
+//   @override
+//   List<Object?> get props => [reference];
+// }
+
+// New event for verifying service request payment
+class CustomerVerifyServiceRequestPaymentEvent extends CustomerPaymentEvent {
+  const CustomerVerifyServiceRequestPaymentEvent(this.reference);
 
   final String reference;
 
   @override
   List<Object?> get props => [reference];
 }
-
-// Advertisement Payment Events
 class CustomerInitAdvertisementPaymentEvent extends CustomerPaymentEvent {
   const CustomerInitAdvertisementPaymentEvent({
     required this.amount,

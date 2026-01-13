@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/dashboard/data/models/payment/payment.model.dart';
+import 'package:resq360/features/settings/data/models/service_request_payment_response.models.dart';
 
 class PaymentRepo extends BaseAPI {
   factory PaymentRepo() {
@@ -77,40 +79,35 @@ class PaymentRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<PaymentResponse>> initiatePaymentForAServiceRequest({
-    required int chatId,
-    required int invoiceMessageId,
-    required String paymentMethod,
-  }) async {
-    const url = '/requests/initiate-service-request-payment';
-    final data = {
-      'chatId': chatId,
-      'invoiceMessageId': invoiceMessageId,
-      'paymentMethod': paymentMethod,
-    };
+Future<ApiResult<ServicePaymentResponse>> initiatePaymentForAServiceRequest({
+  required int chatId,
+  required int invoiceMessageId,
+  required String paymentMethod,
+}) async {
+  const url = '/requests/initiate-service-request-payment';
 
-    log('Initiate Payment for a service Data: $data');
-    try {
-      final response = await dio().post<Map<String, dynamic>>(
-        url,
-        data: data,
-      );
+  try {
+    final res = await dio().post<Map<String, dynamic>>(
+      url,
+      data: {
+        'chatId': chatId,
+        'invoiceMessageId': invoiceMessageId,
+        'paymentMethod': paymentMethod,
+      },
+    );
 
-      if (response.statusCode == 201 && response.data != null) {
-        final json = response.data!;
-        final paymentData = PaymentResponse.fromJson(
-          json['data'] as Map<String, dynamic>,
-        );
-        return ApiResult(data: paymentData);
-      } else {
-          final error = response.data!['message'] as String;
-log(error);
-        return ApiResult(error: error);
-      }
-    } on Exception catch (e) {
-      return ApiResult(error: e.toString());
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      final data = ServicePaymentResponse.fromJson(res.data ?? {});
+      return ApiResult(data: data);
+    } else {
+      return ApiResult(error: res.data?['message'] as String);
     }
+  } on DioException catch (e) {
+    return ApiResult(
+      error: e.response?.data?['message'] as String? ?? 'Payment initiation failed',
+    );
   }
+}
 
   Future<ApiResult<PaymentVerification>> verifyPayment(String reference) async {
     final url = '/payment/verify/$reference';

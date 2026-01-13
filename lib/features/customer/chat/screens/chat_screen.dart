@@ -97,13 +97,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       separatorBuilder:
                           (_, _) => const ListDivider(verticalSpacing: 0),
                       itemBuilder: (context, index) {
-                        final filteredChats =
-                            chats
-                                .where(
-                                  (c) => c.lastMessage?.isNotEmpty ?? false,
-                                )
-                                .toList();
-                        final chat = filteredChats[index];
+                        // final filteredChats =
+                        //     chats
+                        //         .where(
+                        //           (c) => c.lastMessage?.isNotEmpty ?? false,
+                        //         )
+                        //         .toList();
+                        final chat = chats[index];
 
                         return ChatTile(
                           chat: Chat(
