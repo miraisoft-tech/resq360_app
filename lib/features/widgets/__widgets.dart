@@ -8,6 +8,7 @@ export 'general_container.dart';
 export 'inputs/__inputs.dart';
 export 'layout.widgets.dart';
 export 'list_divider.dart';
+export 'picture_widget.dart';
 export 'shimmer_custom.widget.dart';
 export 'snackbar.dart';
 export 'texts.widgets.dart';

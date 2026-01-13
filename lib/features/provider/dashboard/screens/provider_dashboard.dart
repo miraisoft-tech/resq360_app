@@ -315,12 +315,7 @@ Widget _buildHeader(BuildContext context, String name, String address) {
         onTap: () async {
           await pushScreen(context, const SettingsScreen());
         },
-        child: const CircleAvatar(
-          radius: 19,
-          backgroundImage: AssetImage(
-            AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-          ),
-        ),
+        child: const PictureWidget(),
       ),
       10.horizontalSpace,
       Column(

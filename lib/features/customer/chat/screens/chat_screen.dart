@@ -113,7 +113,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 chat.lastMessageTime != null
                                     ? _formatTime(chat.lastMessageTime!)
                                     : '',
-                            avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+                            avatar: AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG,
                           ),
                           onTap: () async {
                             context.read<ChatListBloc>().add(

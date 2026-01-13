@@ -21,12 +21,7 @@ class SupportChatScreen extends StatelessWidget {
         ),
         title: Row(
           children: [
-            const CircleAvatar(
-              backgroundImage: AssetImage(
-                AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-              ),
-              radius: 25,
-            ),
+            const PictureWidget(),
             8.horizontalSpace,
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +90,7 @@ class SupportChatScreen extends StatelessWidget {
               ),
             ),
             ChatBoxWidget(
-              onAttachment:  () async {
+              onAttachment: () async {
                 await _showAttachmentMenu(context);
               },
               onSend: (text) {},

@@ -129,7 +129,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 subtitle: serviceCategory,
                 rating: '4.9',
                 reviewCount: '(347 reviews)',
-                avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG.imageAsset(),
+                avatar: AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
                 showActions: true,
               ),
               12.verticalSpace,
@@ -138,7 +138,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 subtitle: '1.0km away',
                 rating: '4.8',
                 reviewCount: '(50 reviews)',
-                avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG.imageAsset(),
+                avatar: AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
               ),
               16.verticalSpace,
               Container(

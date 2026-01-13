@@ -19,12 +19,7 @@ class RecommendedCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
-                radius: 25,
-                backgroundImage: AssetImage(
-                  AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                ),
-              ),
+              const PictureWidget(),
               12.horizontalSpace,
               Expanded(
                 child: Column(

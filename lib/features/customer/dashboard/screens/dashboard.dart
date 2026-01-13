@@ -141,10 +141,11 @@ class _HomeScreenState extends State<HomeScreen> {
               BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
                 builder: (context, state) {
                   if (state is CustomerBookingLoading) {
-                    return  Center(child: CircularProgressIndicator(
-                       color: colors.primary,
-
-                    ));
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: colors.primary,
+                      ),
+                    );
                   }
 
                   if (state is CustomerBookingLoaded) {
@@ -195,10 +196,11 @@ class _HomeScreenState extends State<HomeScreen> {
               BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
                 builder: (context, state) {
                   if (state is ServiceCatalogLoading) {
-                   return  Center(child: CircularProgressIndicator(
-                       color: colors.primary,
-
-                    ));
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: colors.primary,
+                      ),
+                    );
                   }
 
                   if (state is ServicesLoaded) {
@@ -246,18 +248,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: colors.black,
                   ),
                   const Spacer(),
-                  // GestureDetector(
-                  //   onTap: () async {
-                  //     // await pushScreen(context, const ServiceProvidersScreen(serviceProviderId: null,));
-                  //   },
-                  //   child: UrbText(
-                  //     'View All',
-                  //     size: 12,
-                  //     height: 20.5,
-                  //     weight: FontWeight.w400,
-                  //     color: colors.primary.shade500,
-                  //   ),
-                  // ),
+                  GestureDetector(
+                    onTap: () async {
+                      // await pushScreen(context, const ServiceProvidersScreen(serviceProviderId: null,));
+                    },
+                    child: UrbText(
+                      'View All',
+                      size: 12,
+                      height: 20.5,
+                      weight: FontWeight.w400,
+                      color: colors.primary.shade500,
+                    ),
+                  ),
                 ],
               ),
               12.verticalSpace,
@@ -306,11 +308,16 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HeaderWidget extends StatelessWidget {
-  const HeaderWidget({required this.name, required this.location, super.key});
+  const HeaderWidget({
+    required this.name,
+    required this.location,
+    this.profileImage,
+    super.key,
+  });
 
   final String name;
   final String location;
-
+  final String? profileImage;
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -321,11 +328,8 @@ class HeaderWidget extends StatelessWidget {
           onTap: () async {
             await pushScreen(context, const SettingsScreen());
           },
-          child: const CircleAvatar(
-            radius: 19,
-            backgroundImage: AssetImage(
-              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-            ),
+          child: PictureWidget(
+            image: profileImage,
           ),
         ),
         10.horizontalSpace,
@@ -378,7 +382,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.88);
+    _pageController = PageController();
 
     _pageController.addListener(() {
       final newIndex = _pageController.page?.round() ?? 0;
@@ -400,10 +404,12 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 165.h,
+          height: 170.h,
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.ads.length,
+            padEnds: false,
+            pageSnapping: false,
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () async {
@@ -411,7 +417,9 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
                   if (providerId == null) return;
                   await pushScreen(
                     context,
-                    ServiceProviderDetailsScreen( providerId: providerId,),
+                    ServiceProviderDetailsScreen(
+                      providerId: providerId,
+                    ),
                   );
                 },
                 child: RecommendedCard(advertisement: widget.ads[index]),

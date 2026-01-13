@@ -1,4 +1,3 @@
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
@@ -19,7 +18,6 @@ class OngoingServiceCard extends StatefulWidget {
 }
 
 class _OngoingServiceCardState extends State<OngoingServiceCard> {
-
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -42,17 +40,8 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 25,
-                backgroundImage:
-                    widget.booking.assignedProvider?.profileImage != null
-                        ? NetworkImage(
-                          widget.booking.assignedProvider!.profileImage!,
-                        )
-                        : const AssetImage(
-                              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                            )
-                            as ImageProvider,
+              PictureWidget(
+                image: widget.booking.assignedProvider?.profileImage,
               ),
               8.horizontalSpace,
               Expanded(
@@ -124,10 +113,15 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                     ),
                   ),
                   onPressed: () async {
-                      await pushScreen(
-                        context,
-                         ContactAdminScreen(issueType: AdminIssueType.serviceIssue, serviceCategory: widget.booking.serviceCategory?.id,relatedServiceProviderId: widget.booking.assignedProvider?.id,),
-                      );
+                    await pushScreen(
+                      context,
+                      ContactAdminScreen(
+                        issueType: AdminIssueType.serviceIssue,
+                        serviceCategory: widget.booking.serviceCategory?.id,
+                        relatedServiceProviderId:
+                            widget.booking.assignedProvider?.id,
+                      ),
+                    );
                   },
                   child: GenText(
                     'Appeal',

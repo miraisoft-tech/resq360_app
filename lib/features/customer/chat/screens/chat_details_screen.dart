@@ -23,7 +23,8 @@ class ChatDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ChatDetailBloc(chatId: chatId)..add(OpenChatDetail(chatId)),
+      create:
+          (_) => ChatDetailBloc(chatId: chatId)..add(OpenChatDetail(chatId)),
       child: _ChatDetailView(chatId),
     );
   }
@@ -96,8 +97,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                               userId != null &&
                               state is ChatDetailReady) {
                             context.read<ChatDetailBloc>().add(
-                                  SendTextMessage(text, userId, 'USER'),
-                                );
+                              SendTextMessage(text, userId, 'USER'),
+                            );
                           }
                         },
                       ),
@@ -171,12 +172,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
       title: Row(
         children: [
-          const CircleAvatar(
-            backgroundImage: AssetImage(
-              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-            ),
-            radius: 22,
-          ),
+          const PictureWidget(),
           8.horizontalSpace,
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,9 +185,10 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               GenText(
                 isActive ? 'Online' : 'Offline',
                 size: 13,
-                color: isActive
-                    ? appColors.success.shade600
-                    : appColors.error.shade600,
+                color:
+                    isActive
+                        ? appColors.success.shade600
+                        : appColors.error.shade600,
               ),
             ],
           ),
@@ -238,21 +235,22 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       final completed = await Navigator.push<bool>(
         context,
         MaterialPageRoute(
-          builder: (_) => PaystackWebViewPage(
-            authorizationUrl: state.payment.authorizationUrl,
-            reference: state.payment.reference,
-            callbackUrl: 'https://example.com/callback',
-          ),
+          builder:
+              (_) => PaystackWebViewPage(
+                authorizationUrl: state.payment.authorizationUrl,
+                reference: state.payment.reference,
+                callbackUrl: 'https://example.com/callback',
+              ),
         ),
       );
 
       if (completed ?? false) {
         // Verify payment after webview completes
         context.read<CustomerPaymentBloc>().add(
-              CustomerVerifyServiceRequestPaymentEvent(
-                state.payment.reference,
-              ),
-            );
+          CustomerVerifyServiceRequestPaymentEvent(
+            state.payment.reference,
+          ),
+        );
       } else {
         await showErrorSnackbar(context, 'Payment cancelled');
       }
@@ -391,39 +389,40 @@ class _MessageList extends StatelessWidget {
 
         return Padding(
           padding: EdgeInsets.only(bottom: 8.h),
-          child: message.messageType == MessageReceivedType.invoice.value
-              ? ChatInvoiceCardWidget(
-                  message: message,
-                  chat: chat,
-                  metadata: message.metadata!,
-                  messageCreatedAt: _formatTime(message.createdAt!),
-                  onTapPay: () async {
-                    await GeneralDialogs.showCustomDialog<void>(
-                      context,
-                      body: PaymentOptionDialog(
-                        onPaymentSelected: (option) async {
-                          await GeneralDialogs.showCustomDialog<void>(
-                            context,
-                            body: ClientPaymentConfirmDialog(
-                              amount: int.parse(amount),
-                              title: chat.serviceName ?? '',
-                              invoiceNumber: message.metadata!.invoiceId!,
-                              message: message,
-                              chatId: chat.id!,
-                              paymentMethod: option.name,
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                  status: chat.paymentStatus ?? 'PENDING',
-                )
-              : ChatBubble(
-                  type: isMine ? MessageType.sent : MessageType.received,
-                  message: message.content ?? '',
-                  time: _formatTime(message.createdAt!),
-                ),
+          child:
+              message.messageType == MessageReceivedType.invoice.value
+                  ? ChatInvoiceCardWidget(
+                    message: message,
+                    chat: chat,
+                    metadata: message.metadata!,
+                    messageCreatedAt: _formatTime(message.createdAt!),
+                    onTapPay: () async {
+                      await GeneralDialogs.showCustomDialog<void>(
+                        context,
+                        body: PaymentOptionDialog(
+                          onPaymentSelected: (option) async {
+                            await GeneralDialogs.showCustomDialog<void>(
+                              context,
+                              body: ClientPaymentConfirmDialog(
+                                amount: int.parse(amount),
+                                title: chat.serviceName ?? '',
+                                invoiceNumber: message.metadata!.invoiceId!,
+                                message: message,
+                                chatId: chat.id!,
+                                paymentMethod: option.name,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    status: chat.paymentStatus ?? 'PENDING',
+                  )
+                  : ChatBubble(
+                    type: isMine ? MessageType.sent : MessageType.received,
+                    message: message.content ?? '',
+                    time: _formatTime(message.createdAt!),
+                  ),
         );
       },
     );

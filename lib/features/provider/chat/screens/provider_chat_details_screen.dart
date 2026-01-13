@@ -76,30 +76,33 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
                   child: _buildChatContent(state),
                 ),
                 if (canShowDetails)
-                GestureDetector(
-                  onTap: () async {
-                    if (state is ChatDetailReady) {
-                      final serviceMessage = state.messages.firstWhere(
-                        (m) => m.messageType == MessageReceivedType.invoice.value && m.metadata != null,
-                      );
+                  GestureDetector(
+                    onTap: () async {
+                      if (state is ChatDetailReady) {
+                        final serviceMessage = state.messages.firstWhere(
+                          (m) =>
+                              m.messageType ==
+                                  MessageReceivedType.invoice.value &&
+                              m.metadata != null,
+                        );
 
-                      await pushScreen(
-                        context,
-                        ServiceDetailScreen(
-                          chat: state.chat,
-                          message: serviceMessage,
-                        ),
-                      );
-                    }
-                  },
-                  child: GenText(
-                    'View Service details',
-                    weight: FontWeight.w500,
-                    color: appColors.primary.shade500,
-                    decoration: TextDecoration.underline,
-                    textAlign: TextAlign.center,
+                        await pushScreen(
+                          context,
+                          ServiceDetailScreen(
+                            chat: state.chat,
+                            message: serviceMessage,
+                          ),
+                        );
+                      }
+                    },
+                    child: GenText(
+                      'View Service details',
+                      weight: FontWeight.w500,
+                      color: appColors.primary.shade500,
+                      decoration: TextDecoration.underline,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
                 IgnorePointer(
                   ignoring: state is! ChatDetailReady,
                   child: Opacity(
@@ -190,12 +193,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
       ),
       title: Row(
         children: [
-          const CircleAvatar(
-            backgroundImage: AssetImage(
-              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-            ),
-            radius: 22,
-          ),
+          const PictureWidget(),
           8.horizontalSpace,
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,17 +228,17 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
     ChatDetailState state,
   ) {
     if (state is ChatDetailReady) {
-        final hasPaid = state.chat.paymentStatus == PaymentStatus.completed.value;
+      final hasPaid = state.chat.paymentStatus == PaymentStatus.completed.value;
 
-    final hasInvoice = state.messages.any(
-      (m) =>
-          m.messageType == MessageReceivedType.invoice.value &&
-          m.metadata != null,
-    );
+      final hasInvoice = state.messages.any(
+        (m) =>
+            m.messageType == MessageReceivedType.invoice.value &&
+            m.metadata != null,
+      );
 
-    setState(() {
-      canShowDetails = hasPaid && hasInvoice;
-    });
+      setState(() {
+        canShowDetails = hasPaid && hasInvoice;
+      });
       _scrollToBottom();
     }
   }
@@ -385,7 +383,7 @@ class _MessageList extends StatelessWidget {
         //  && message.senderId == currentUserId;
         log(chat.paymentStatus);
         if (message.messageType == MessageReceivedType.invoice.value) {
-        log(message.messageType);
+          log(message.messageType);
           return Column(
             children: [
               ProviderChatInvoiceCardWidget(

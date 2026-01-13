@@ -60,12 +60,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
             children: [
               Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 25,
-                    backgroundImage: AssetImage(
-                      AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                    ),
-                  ),
+                  const PictureWidget(),
                   10.horizontalSpace,
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,7 +110,10 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 color: appColors.black,
               ),
               20.verticalSpace,
-               const ReviewSummaryCard(averageRating: 0, totalReviews: 0,),
+              const ReviewSummaryCard(
+                averageRating: 0,
+                totalReviews: 0,
+              ),
               30.verticalSpace,
               ...reviews.map((r) => UserReviewCard(data: r)),
               const Spacer(),

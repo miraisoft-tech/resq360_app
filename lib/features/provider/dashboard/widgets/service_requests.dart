@@ -126,12 +126,7 @@ class _RequestTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 25,
-              backgroundImage: AssetImage(
-                AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-              ),
-            ),
+            const PictureWidget(),
             10.horizontalSpace,
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,

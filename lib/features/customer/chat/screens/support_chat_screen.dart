@@ -60,18 +60,19 @@ class _SupportChatViewState extends State<_SupportChatView> {
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: _buildAppBar(context,),
+      appBar: _buildAppBar(
+        context,
+      ),
       body: SafeArea(
         child: BlocConsumer<SupportTicketCubit, SupportTicketState>(
-          listener: (context, state) {
-
-          },
+          listener: (context, state) {},
           builder: (context, state) {
             if (state.loading && state.messages.isEmpty) {
-              return  Center(child: CircularProgressIndicator(
-            color: appColors.primary,
-
-              ));
+              return Center(
+                child: CircularProgressIndicator(
+                  color: appColors.primary,
+                ),
+              );
             }
             _scrollToBottom();
 
@@ -141,8 +142,6 @@ class _SupportChatViewState extends State<_SupportChatView> {
     );
   }
 
-
-  
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final appColors = context.appColors;
     final name = widget.providerName ?? '';
@@ -158,7 +157,7 @@ class _SupportChatViewState extends State<_SupportChatView> {
         children: [
           const CircleAvatar(
             backgroundImage: AssetImage(
-              AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
+              AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG,
             ),
             radius: 25,
           ),
