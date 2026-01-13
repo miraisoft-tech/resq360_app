@@ -428,10 +428,10 @@ class _ProviderCard extends StatelessWidget {
                               color: Colors.orange,
                             ),
                             4.horizontalSpace,
-                            GenText('4.8', size: 12, color: colors.black),
+                            GenText(provider.averageRating.toString(), size: 12, color: colors.black),
                             2.horizontalSpace,
                             GenText(
-                              '(127)',
+                              provider.totalReviews.toString(),
                               size: 12,
                               color: colors.neutral.shade300,
                             ),
