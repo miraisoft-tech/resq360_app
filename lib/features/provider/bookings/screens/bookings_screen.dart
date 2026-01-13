@@ -425,6 +425,7 @@ class _BookingCardState extends State<BookingCard> {
                   const ListDivider(verticalSpacing: 15),
                 ],
               ),
+              if(canShow)
             GestureDetector(
               onTap: expandCard,
               child: Row(

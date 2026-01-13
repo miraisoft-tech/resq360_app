@@ -241,22 +241,81 @@ class _ServiceProviderDetailsScreenState
                                           6.verticalSpace,
                                           Row(
                                             children: [
-                                              const Icon(
-                                                Icons.star,
-                                                size: 16,
-                                                color: Colors.orange,
-                                              ),
                                               4.horizontalSpace,
-                                              GenText(
-                                                '4.8',
-                                                color: colors.black,
+                                              BlocBuilder<
+                                                RatingsBloc,
+                                                RatingsState
+                                              >(
+                                                builder: (
+                                                  context,
+                                                  ratingState,
+                                                ) {
+                                                  if (ratingState
+                                                      is ProviderRatingsLoaded) {
+                                                    final ratings =
+                                                        ratingState.ratings;
+
+                                                    final avg =
+                                                        (ratings.averageRatings ??
+                                                                0)
+                                                            .toDouble();
+                                                    final total =
+                                                        ratings.totalReviews ??
+                                                        0;
+
+                                                    return Row(
+                                                      children: [
+                                                        const Icon(
+                                                          Icons.star,
+                                                          size: 16,
+                                                          color: Colors.orange,
+                                                        ),
+                                                        4.horizontalSpace,
+                                                        GenText(
+                                                          avg.toStringAsFixed(
+                                                            1,
+                                                          ),
+                                                          color: colors.black,
+                                                        ),
+
+                                                        6.horizontalSpace,
+                                                        GenText(
+                                                          '($total)',
+                                                          size: 12,
+                                                          color:
+                                                              colors
+                                                                  .neutral
+                                                                  .shade300,
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }
+                                                  return Row(
+                                                    children: [
+                                                      const Icon(
+                                                        Icons.star,
+                                                        size: 16,
+                                                        color: Colors.orange,
+                                                      ),
+                                                      4.horizontalSpace,
+                                                      GenText(
+                                                        '--',
+                                                        color: colors.black,
+                                                      ),
+                                                      6.horizontalSpace,
+                                                      GenText(
+                                                        '(...)',
+                                                        size: 12,
+                                                        color:
+                                                            colors
+                                                                .neutral
+                                                                .shade300,
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
                                               ),
-                                              2.horizontalSpace,
-                                              GenText(
-                                                '(127)',
-                                                size: 12,
-                                                color: colors.neutral.shade300,
-                                              ),
+
                                               10.horizontalSpace,
                                               AppAssets
                                                   .ASSETS_ICONS_LOCATION_SVG
@@ -289,7 +348,9 @@ class _ServiceProviderDetailsScreenState
                                     SVGButton(
                                       path:
                                           AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-                                      onTap: () {},
+                                      onTap: () async {
+                                        // await DialerUtil.open(provider.)
+                                      },
                                     ),
                                   ],
                                 ),
@@ -374,9 +435,72 @@ class _ServiceProviderDetailsScreenState
                                   color: colors.black,
                                 ),
                                 20.verticalSpace,
-                                const ReviewSummaryCard(),
-                                16.verticalSpace,
-                                ...reviews.map((r) => UserReviewCard(data: r)),
+                                BlocBuilder<RatingsBloc, RatingsState>(
+                                  builder: (context, ratingState) {
+                                    if (ratingState is RatingsLoading) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    }
+
+                                    if (ratingState is RatingsError) {
+                                      return GenText(
+                                        ratingState.message,
+                                        color: Colors.red,
+                                      );
+                                    }
+
+                                    if (ratingState is ProviderRatingsLoaded) {
+                                      final ratings = ratingState.ratings;
+                                      final reviews = ratings.reviews ?? [];
+
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ReviewSummaryCard(
+                                            averageRating:
+                                                ratings.averageRatings
+                                                    ?.toDouble() ??
+                                                0,
+                                            totalReviews:
+                                                ratings.totalReviews ?? 0,
+                                          ),
+
+                                          16.verticalSpace,
+
+                                          if (reviews.isEmpty)
+                                            GenText(
+                                              'No reviews yet',
+                                              color: colors.textColor.shade400,
+                                            ),
+
+                                          ...reviews.map(
+                                            (r) => UserReviewCard(
+                                              data: {
+                                                'name':
+                                                    r.user?.fullName ??
+                                                    'Unknown user',
+                                                'avatar': r.user?.profileImage,
+                                                'rating': r.overallRating ?? 0,
+                                                'date': r.ratingDate ?? '',
+                                                'comment': r.feedback ?? '',
+                                                'service':
+                                                    r
+                                                        .serviceRequest
+                                                        ?.serviceCategory
+                                                        ?.name ??
+                                                    '',
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }
+
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
                               ],
                             ),
                           ),
