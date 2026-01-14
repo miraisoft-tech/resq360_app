@@ -27,6 +27,8 @@ class ProviderModel {
     this.wallet,
     this.address,
     this.providerServices,
+    this.averageRating,
+    this.totalReviews
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -98,6 +100,9 @@ class ProviderModel {
   final List<dynamic>? images;
   final Wallet? wallet;
   final Address? address;
+  final int? averageRating;
+  final int? totalReviews;
+
   final List<ProviderService>? providerServices;
 
   Map<String, dynamic> toJson() => {
@@ -125,6 +130,8 @@ class ProviderModel {
     'wallet': wallet?.toJson(),
     'address': address?.toJson(),
     'ProviderService': providerServices?.map((e) => e.toJson()).toList(),
+    'averageRating':averageRating,
+    'totalReviews': totalReviews
   };
 }
 
