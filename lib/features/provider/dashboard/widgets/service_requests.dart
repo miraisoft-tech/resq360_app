@@ -77,7 +77,7 @@ class _ServiceRequestsState extends State<ServiceRequests> {
                   name: booking.user?.fullName ?? 'Unknown User',
                   service: booking.serviceCategory?.name ?? 'Unknown Service',
                   distance: '1.0 km Away',
-                  user: booking.user,
+                  user: booking.user, chatId: booking.chatId,
                 ),
               ),
 
@@ -106,12 +106,14 @@ class _RequestTile extends StatelessWidget {
     required this.service,
     required this.distance,
     required this.user,
+    required this.chatId,
   });
 
   final String name;
   final String service;
   final String distance;
   final User? user;
+  final int? chatId;
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +122,7 @@ class _RequestTile extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         if (user != null) {
-          await pushScreen(context,  CustomerDetailsScreen(user: user!,));
+          await pushScreen(context,  CustomerDetailsScreen(user: user!, chatId: chatId,));
         }
       },
       child: Container(

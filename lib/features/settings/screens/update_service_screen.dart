@@ -439,7 +439,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
                 ],
               );
             }
-            
+
             final pickedIndex = index - widget.imagesToKeep.length;
             final image = widget.pickedImages[pickedIndex];
 

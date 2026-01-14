@@ -2,38 +2,21 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/user_review_card.dart';
+import 'package:resq360/features/provider/chat/screens/provider_chat_details_screen.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/models/customer_ratings_model.dart';
-// import 'package:resq360/features/provider/chat/screens/provider_chat_details_screen.dart';
 
 class CustomerDetailsScreen extends StatefulWidget {
-  const CustomerDetailsScreen({required this.user, super.key});
+  const CustomerDetailsScreen({required this.user, required this.chatId,  super.key});
 
   final User user;
+  final int? chatId;
 
   @override
   State<CustomerDetailsScreen> createState() => _CustomerDetailsScreenState();
 }
 
 class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
-  // final List<Map<String, dynamic>> reviews = [
-  //   {
-  //     'name': 'Maria Okoro',
-  //     'avatar': 'https://randomuser.me/api/portraits/women/47.jpg',
-  //     'rating': 5,
-  //     'date': '1 day ago',
-  //     'comment':
-  //         'QuickTow Emergency is simply the best, they arrived in time and towed my vehicle to my destination. I would recommend their service',
-  //   },
-  //   {
-  //     'name': 'Maria Okoro',
-  //     'avatar': 'https://randomuser.me/api/portraits/women/47.jpg',
-  //     'rating': 5,
-  //     'date': '1 day ago',
-  //     'comment':
-  //         'QuickTow Emergency is simply the best, they arrived in time and towed my vehicle to my destination. I would recommend their service',
-  //   },
-  // ];
   @override
   void initState() {
     super.initState();
@@ -148,7 +131,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   WideButton(
                     label: 'Chat with Client',
                     onPressed: () async {
-                      // await pushScreen(context, const ProviderChatDetailScreen(chatId: null,));
+                      if(widget.chatId != null) {
+                        await pushScreen(context,  ProviderChatDetailScreen(chatId: widget.chatId!,));
+                      }
                     },
                   ),
                 ],
