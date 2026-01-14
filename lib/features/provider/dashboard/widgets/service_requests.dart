@@ -18,7 +18,7 @@ class _ServiceRequestsState extends State<ServiceRequests> {
     super.initState();
 
     context.read<ProviderServiceBloc>().add(
-      ProviderFetchBookings(status: BookingStatus.upcoming.value),
+      ProviderFetchBookings(status: BookingStatus.ongoing.value),
     );
   }
 

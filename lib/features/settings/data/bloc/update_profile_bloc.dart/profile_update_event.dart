@@ -30,11 +30,11 @@ final class UpdateUserInfoEvent extends ProfileUpdateEvent {
 }
 
 final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
-  const UpdateProviderInfoEvent( {
-     this.description,
-     this.workingDays,
-     this.openingHours,
-     this.closingHours,
+  const UpdateProviderInfoEvent({
+    this.description,
+    this.workingDays,
+    this.openingHours,
+    this.closingHours,
     this.activityStatus,
     this.fullName,
     this.phoneNumber,
@@ -43,6 +43,7 @@ final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
     this.profileImageUrl,
     this.profileImageId,
     this.images,
+    this.existingImages,
   });
   final String? fullName;
   final String? phoneNumber;
@@ -56,7 +57,7 @@ final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
   final String? profileImageUrl;
   final String? profileImageId;
   final List<File>? images;
-
+  final List<String>? existingImages;
 
   @override
   List<Object?> get props => [
@@ -70,6 +71,8 @@ final class UpdateProviderInfoEvent extends ProfileUpdateEvent {
     activityStatus,
     profileImageUrl,
     profileImageId,
+    images,
+    existingImages,
   ];
 }
 

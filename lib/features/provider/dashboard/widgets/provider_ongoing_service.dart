@@ -116,34 +116,34 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                         ),
                       ),
                     ),
-                    20.horizontalSpace,
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          log(serviceRequestId);
-                          if (serviceRequestId != null) {
-                            context.read<BookingBloc>().add(
-                              StartBooking(
-                                serviceRequestId: serviceRequestId,
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colors.primary.shade500,
-                          foregroundColor: colors.whiteColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                        ),
-                        child: GenText(
-                          'Start Service',
-                          height: 16.5,
-                          color: colors.whiteColor,
-                          weight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+                    // 20.horizontalSpace,
+                    // Expanded(
+                    //   child: ElevatedButton(
+                    //     onPressed: () {
+                    //       log(serviceRequestId);
+                    //       if (serviceRequestId != null) {
+                    //         context.read<BookingBloc>().add(
+                    //           StartBooking(
+                    //             serviceRequestId: serviceRequestId,
+                    //           ),
+                    //         );
+                    //       }
+                    //     },
+                    //     style: ElevatedButton.styleFrom(
+                    //       backgroundColor: colors.primary.shade500,
+                    //       foregroundColor: colors.whiteColor,
+                    //       shape: RoundedRectangleBorder(
+                    //         borderRadius: BorderRadius.circular(8.r),
+                    //       ),
+                    //     ),
+                    //     child: GenText(
+                    //       'Start Service',
+                    //       height: 16.5,
+                    //       color: colors.whiteColor,
+                    //       weight: FontWeight.w500,
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ],
