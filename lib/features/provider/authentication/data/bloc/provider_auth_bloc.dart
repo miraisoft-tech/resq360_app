@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
@@ -33,73 +34,82 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     on<ProviderLogout>(_onLogout);
   }
 
-  Future<void> _onLoginWithEmail(
-    ProviderLoginWithEmail event,
-    Emitter<ProviderAuthState> emit,
-  ) async {
-    emit(ProviderAuthLoadingState());
-    try {
-      final result = await providerAuthRemoteRepo.loginWithEmail(
-        email: event.email,
-        password: event.password,
-      );
-      if (result.data != null) {
-        final providerProfileResult =
-            await providerAuthRemoteRepo.getProviderProfile();
-        if (providerProfileResult.data != null) {
-          emit(ProviderAuthLoginSuccessState(result.data!.provider));
-        } else {
-          emit(
-            ProviderAuthFailureState(
-              providerProfileResult.error ?? 'Failed to load profile',
-            ),
-          );
-        }
-      } else {
-        log('bloc error ${result.error}');
-        emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
-      }
-    } on Exception catch (e) {
-      emit(ProviderAuthFailureState(e.toString()));
-    }
-  }
+Future<void> _onLoginWithEmail(
+  ProviderLoginWithEmail event,
+  Emitter<ProviderAuthState> emit,
+) async {
+  emit(ProviderAuthLoadingState());
 
-  Future<void> _onSignupWithEmail(
-    ProviderSignupWIthEmail event,
-    Emitter<ProviderAuthState> emit,
-  ) async {
-    emit(ProviderAuthLoadingState());
-    try {
-      final result = await providerAuthRemoteRepo.signupWithEmail(
-        fullname: event.fullname,
-        email: event.email,
-        password: event.password,
-        companyName: event.companyName,
-        phoneNumber: event.phoneNumber,
-        customServiceName: event.customServiceName,
-        service: event.service,
-        address: event.address,
-      );
-      if (result.data != null) {
-        final providerProfileResult =
-            await providerAuthRemoteRepo.getProviderProfile();
-        if (providerProfileResult.data != null) {
-          emit(ProviderAuthSignupSuccessState(result.data!.provider));
-        } else {
-          emit(
-            ProviderAuthFailureState(
-              providerProfileResult.error ?? 'Failed to load profile',
-            ),
-          );
-        }
-      } else {
-        emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
-      }
-    } on Exception catch (e) {
-      log('Signup Bloc Error: $e');
-      emit(ProviderAuthFailureState(e.toString()));
+  try {
+    final result = await providerAuthRemoteRepo.loginWithEmail(
+      email: event.email,
+      password: event.password,
+    );
+    if (result.data == null) {
+      log('bloc error ${result.error}');
+      emit(ProviderAuthFailureState(result.error ?? 'Login failed'));
+      return;
     }
+    final ok = await _loadAndSaveProviderProfile();
+    if (!ok) {
+      emit(const ProviderAuthFailureState('Failed to load provider profile'));
+      return;
+    }
+    emit(ProviderAuthLoginSuccessState(result.data!.provider));
+
+  } on Exception catch (e) {
+    emit(ProviderAuthFailureState(e.toString()));
   }
+}
+
+
+  Future<bool> _loadAndSaveProviderProfile() async {
+  final res = await providerAuthRemoteRepo.getProviderProfile();
+  if (res.data == null) return false;
+
+  await AuthLocalRepo.instance.storeUserDetails(
+    isProvider: true,
+    providerProfileResponse: res.data,
+  );
+
+  return true;
+}
+
+Future<void> _onSignupWithEmail(
+  ProviderSignupWIthEmail event,
+  Emitter<ProviderAuthState> emit,
+) async {
+  emit(ProviderAuthLoadingState());
+
+  try {
+    final result = await providerAuthRemoteRepo.signupWithEmail(
+      fullname: event.fullname,
+      email: event.email,
+      password: event.password,
+      companyName: event.companyName,
+      phoneNumber: event.phoneNumber,
+      customServiceName: event.customServiceName,
+      service: event.service,
+      address: event.address,
+    );
+
+    if (result.data == null) {
+      emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
+      return;
+    }
+
+    final ok = await _loadAndSaveProviderProfile();
+    if (!ok) {
+      emit(const ProviderAuthFailureState('Failed to load provider profile'));
+      return;
+    }
+    emit(ProviderAuthSignupSuccessState(result.data!.provider));
+
+  } on Exception catch (e) {
+    log('Signup Bloc Error: $e');
+    emit(ProviderAuthFailureState(e.toString()));
+  }
+}
 
   Future<void> _onRequestPasswordReset(
     ProviderRequestPasswordResetEvent event,
@@ -226,6 +236,10 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     try {
       final result = await providerAuthRemoteRepo.getProviderProfile();
       if (result.data != null) {
+          await AuthLocalRepo.instance.storeUserDetails(
+            isProvider: true,
+            providerProfileResponse: result.data,
+          );
         emit(ProviderProfileLoadedState(result.data!));
       } else {
         emit(
