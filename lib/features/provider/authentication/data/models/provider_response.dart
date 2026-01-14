@@ -57,7 +57,7 @@ class ProviderModel {
             json['kYCVerification'] as Map<String, dynamic>,
           )
         : null,
-        images: (json['images'] as List<String>?)
+        images: (json['images'] as List<dynamic>?)
             ?.map((e) => e)
             .toList(),
       wallet:
@@ -95,7 +95,7 @@ class ProviderModel {
   final String? createdAt;
   final String? updatedAt;
   final KYCVerification? kycVerification;
-  final List<String>? images;
+  final List<dynamic>? images;
   final Wallet? wallet;
   final Address? address;
   final List<ProviderService>? providerServices;

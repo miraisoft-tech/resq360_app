@@ -7,7 +7,7 @@ class ReviewCard extends StatelessWidget {
     super.key,
   });
 
-  final Review item;
+  final ProviderReview item;
 
   @override
   Widget build(BuildContext context) {

@@ -13,6 +13,7 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     on<FetchCustomerRatings>(_onFetchCustomerRatings);
     on<FetchProviderRatings>(_onFetchProviderRatings);
     on<FetchProviderRatingsById>(_onFetchProviderRatingsById);
+    on<FetchCustomerRatingsById>(_onFetchCustomerRatingsById);
     on<RateProviderEvent>(_onRateProvider);
   }
 
@@ -64,6 +65,22 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
       emit(RatingsError(result.error ?? 'Failed to load provider ratings'));
     }
   }
+
+     Future<void> _onFetchCustomerRatingsById(
+    FetchCustomerRatingsById event,
+    Emitter<RatingsState> emit,
+  ) async {
+    emit(RatingsLoading());
+
+    final result = await _repo.customerGetRatingsById(userId: event.userId);
+    final ratings = result.data;
+    if (ratings != null) {
+      emit(CustomerRatingsLoaded(ratings));
+    } else {
+      emit(RatingsError(result.error ?? 'Failed to load provider ratings'));
+    }
+  }
+
 
   Future<void> _onRateProvider(
     RateProviderEvent event,

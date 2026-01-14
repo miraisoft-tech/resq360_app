@@ -119,7 +119,9 @@ class _RequestTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        await pushScreen(context, const CustomerDetailsScreen());
+        if (user != null) {
+          await pushScreen(context,  CustomerDetailsScreen(user: user!,));
+        }
       },
       child: Container(
         padding: pad(horizontal: 12, vertical: 20),
