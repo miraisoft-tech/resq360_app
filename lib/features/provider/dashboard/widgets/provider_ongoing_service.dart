@@ -45,7 +45,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                 ),
                 Row(
                   children: [
-                    const PictureWidget(),
+                     PictureWidget(image: widget.booking.user?.profileImage ?? '',),
                     10.horizontalSpace,
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

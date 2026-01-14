@@ -165,27 +165,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await pushScreen(context, const UpdateServiceScreen());
         },
       ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
-        title: 'Manage Cards',
-        onTap: () async {
-          await pushScreen(context, const ManageCardsScreen());
-        },
-      ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
-        title: 'Add Bank Details',
-        onTap: () async {
-          await pushScreen(context, const AddBankDetailsScreen());
-        },
-      ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
-        title: 'Refer and Earn',
-        onTap: () async {
-          await pushScreen(context, const ReferScreen());
-        },
-      ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
+      //   title: 'Manage Cards',
+      //   onTap: () async {
+      //     await pushScreen(context, const ManageCardsScreen());
+      //   },
+      // ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
+      //   title: 'Add Bank Details',
+      //   onTap: () async {
+      //     await pushScreen(context, const AddBankDetailsScreen());
+      //   },
+      // ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
+      //   title: 'Refer and Earn',
+      //   onTap: () async {
+      //     await pushScreen(context, const ReferScreen());
+      //   },
+      // ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_NOTIFICATIONS_SVG.svg,
         title: 'Notification Settings',
@@ -199,7 +199,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PRIVACY_POLICY_SVG.svg,
         title: 'Terms of Use Policy',
-        onTap: () {},
+        onTap: () async{
+          await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
+        },
       ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,

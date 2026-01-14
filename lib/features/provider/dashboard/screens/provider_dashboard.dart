@@ -25,6 +25,7 @@ class ProviderHomeScreen extends StatefulWidget {
 String revenue = '-';
 bool isAproved = false;
 bool profileNotDone = false;
+// ProviderModel provider;
 
 class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   @override
@@ -77,7 +78,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               final address = provider.address?.city ?? 'N/A';
               final balance = provider.wallet?.balance.toString();
               final description = provider.description;
-              final profileImage = provider.profileImage;
+              final profileImage = provider.profileImage ?? '';
 
               if (balance != null) {
                 revenue = balance;
@@ -89,14 +90,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 isAproved = false;
               }
 
-              if (description != null && profileImage != null) {
+              if (description != null && profileImage.isEmpty) {
                 if (description.isEmpty || profileImage.isEmpty) {
                   profileNotDone = true;
                 }
               }
 
               log('provider dashboard $fullName');
-              return _buildHeader(context, fullName!, address);
+              return _buildHeader(context, fullName!, address,profileImage );
             },
           ),
           actions: [
@@ -307,7 +308,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   }
 }
 
-Widget _buildHeader(BuildContext context, String name, String address) {
+Widget _buildHeader(BuildContext context, String name, String address, String profileImage) {
   final colors = context.appColors;
   return Row(
     children: [
@@ -315,7 +316,7 @@ Widget _buildHeader(BuildContext context, String name, String address) {
         onTap: () async {
           await pushScreen(context, const SettingsScreen());
         },
-        child: const PictureWidget(),
+        child: PictureWidget(image: profileImage,),
       ),
       10.horizontalSpace,
       Column(

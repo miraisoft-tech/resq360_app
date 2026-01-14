@@ -134,7 +134,7 @@ class _RequestTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const PictureWidget(),
+             PictureWidget(image: user?.profileImage ?? '',),
             10.horizontalSpace,
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
