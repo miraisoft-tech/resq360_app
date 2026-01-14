@@ -21,7 +21,8 @@ class RecommendedCard extends StatelessWidget {
     return Column(
       children: [
         Container(
-          padding: pad(horizontal: 14, vertical: 14),
+          padding: pad(horizontal: 5, vertical: 14),
+          margin: EdgeInsets.only(right: 12.w),
           decoration: BoxDecoration(
             border: Border.all(color: colors.lightGreyColor2),
             borderRadius: BorderRadius.circular(12),
@@ -33,20 +34,23 @@ class RecommendedCard extends StatelessWidget {
               PictureWidget(
                 image: image,
               ),
-              12.horizontalSpace,
+              5.horizontalSpace,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        UrbText(
-                          title,
-                          height: 24.5,
-                          weight: FontWeight.w500,
-                          color: colors.black,
+                        Expanded(
+                          child: UrbText(
+                            title,
+                            height: 24.5,
+                            weight: FontWeight.w500,
+                            color: colors.black,
+                            maxLines: 1,
+                          ),
                         ),
-                        const Spacer(),
+                        20.horizontalSpace,
 
                         Container(
                           padding: pad(horizontal: 8, vertical: 2),

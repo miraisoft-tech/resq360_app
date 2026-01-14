@@ -401,7 +401,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(viewportFraction: 0.95);
 
     _pageController.addListener(() {
       final newIndex = _pageController.page?.round() ?? 0;
@@ -428,7 +428,8 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
             controller: _pageController,
             itemCount: widget.ads.length,
             padEnds: false,
-            pageSnapping: false,
+            clipBehavior: Clip.none,
+            //  pageSnapping: false,
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () async {
