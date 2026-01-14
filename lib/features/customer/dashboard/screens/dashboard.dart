@@ -474,6 +474,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
           ),
         ),
         5.verticalSpace,
+        if(widget.ads.length > 1)
         SmallDotIndicator(
           total: widget.ads.length,
           currentIndex: currentIndex,
