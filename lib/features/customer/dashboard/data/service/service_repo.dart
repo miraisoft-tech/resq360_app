@@ -239,7 +239,7 @@ class ServiceRepo extends BaseAPI {
     };
 
     if (status != null) {
-      queryParams['status'] = status;
+      queryParams['booking_status'] = status;
     }
 
     const url = '/services/bookings';

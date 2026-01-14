@@ -23,7 +23,7 @@ class _BookingsScreenState extends State<BookingsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchBookingsForTab(0);
@@ -41,16 +41,19 @@ class _BookingsScreenState extends State<BookingsScreen>
 
     switch (index) {
       case 0:
-        status = 'PENDING';
+        status = 'upcoming';
 
       case 1:
-        status = 'COMPLETED';
+        status = 'ongoing';
 
       case 2:
-        status = 'CANCELLED';
+        status = 'completed';
+
+       case 3:
+        status = 'cancelled';
 
       default:
-        status = 'PENDING';
+        status = 'upcoming';
     }
 
     bloc.add(
@@ -88,6 +91,7 @@ class _BookingsScreenState extends State<BookingsScreen>
           indicatorSize: TabBarIndicatorSize.tab,
           tabs: const [
             Tab(text: 'Upcoming'),
+            Tab(text: 'Ongoing'),
             Tab(text: 'Completed'),
             Tab(text: 'Cancelled'),
           ],
@@ -97,6 +101,7 @@ class _BookingsScreenState extends State<BookingsScreen>
         controller: _tabController,
         children: const [
           _BookingList(type: 'upcoming'),
+          _BookingList(type: 'ongoing'),
           _BookingList(type: 'completed'),
           _BookingList(type: 'cancelled'),
         ],
@@ -112,16 +117,17 @@ class _BookingList extends StatelessWidget {
   String _mapTypeToStatus() {
     switch (type) {
       case 'upcoming':
-        return 'PENDING';
+        return 'upcoming';
+      case 'ongoing':
+        return 'ongoing';
       case 'completed':
-        return 'COMPLETED';
+        return 'completed';
       case 'cancelled':
-        return 'CANCELLED';
+        return 'cancelled';
       default:
         return 'PENDING';
     }
   }
-
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;

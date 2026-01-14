@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
         CustomerFetchAdvertisement(),
       );
       context.read<CustomerBookingBloc>().add(
-        FetchCustomerBookings(status: BookingStatus.pending.value),
+        FetchCustomerBookings(status: BookingStatus.ongoing.value),
       );
     });
   }
@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     CustomerFetchAdvertisement(),
                   );
                   context.read<CustomerBookingBloc>().add(
-                    FetchCustomerBookings(status: BookingStatus.pending.value),
+                    FetchCustomerBookings(status: BookingStatus.ongoing.value),
                   );
                 },
                 child: ListView(

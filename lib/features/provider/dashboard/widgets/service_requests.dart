@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/bookings_screen.dart';
@@ -17,7 +18,7 @@ class _ServiceRequestsState extends State<ServiceRequests> {
     super.initState();
 
     context.read<ProviderServiceBloc>().add(
-      ProviderFetchBookings(status: BookingStatus.pending.value),
+      ProviderFetchBookings(status: BookingStatus.upcoming.value),
     );
   }
 
@@ -76,6 +77,7 @@ class _ServiceRequestsState extends State<ServiceRequests> {
                   name: booking.user?.fullName ?? 'Unknown User',
                   service: booking.serviceCategory?.name ?? 'Unknown Service',
                   distance: '1.0 km Away',
+                  user: booking.user,
                 ),
               ),
 
@@ -103,11 +105,13 @@ class _RequestTile extends StatelessWidget {
     required this.name,
     required this.service,
     required this.distance,
+    required this.user,
   });
 
   final String name;
   final String service;
   final String distance;
+  final User? user;
 
   @override
   Widget build(BuildContext context) {
