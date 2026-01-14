@@ -23,6 +23,7 @@ class ProviderModel {
     this.createdAt,
     this.updatedAt,
     this.kycVerification,
+    this.images,
     this.wallet,
     this.address,
     this.providerServices,
@@ -56,6 +57,9 @@ class ProviderModel {
             json['kYCVerification'] as Map<String, dynamic>,
           )
         : null,
+        images: (json['images'] as List<String>?)
+            ?.map((e) => e)
+            .toList(),
       wallet:
           json['wallet'] is Map<String, dynamic>
               ? Wallet.fromJson(json['wallet'] as Map<String, dynamic>)
@@ -91,6 +95,7 @@ class ProviderModel {
   final String? createdAt;
   final String? updatedAt;
   final KYCVerification? kycVerification;
+  final List<String>? images;
   final Wallet? wallet;
   final Address? address;
   final List<ProviderService>? providerServices;
@@ -116,6 +121,7 @@ class ProviderModel {
     'createdAt': createdAt,
     'updatedAt': updatedAt,
     'kYCVerification': kycVerification?.toJson(),
+    'images': images,
     'wallet': wallet?.toJson(),
     'address': address?.toJson(),
     'ProviderService': providerServices?.map((e) => e.toJson()).toList(),

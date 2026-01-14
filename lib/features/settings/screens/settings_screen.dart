@@ -34,7 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _refreshProfile() async {
     if (dashboardViewModel.userType == UserType.provider) {
-      context.read<ProviderAuthBloc>().add(const ProvidergetUserProfile());
+      context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
     } else {
       context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
     }
@@ -67,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (dashboardViewModel.userType == UserType.provider) {
-        context.read<ProviderAuthBloc>().add(const ProvidergetUserProfile());
+        context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
       } else {
         context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
       }

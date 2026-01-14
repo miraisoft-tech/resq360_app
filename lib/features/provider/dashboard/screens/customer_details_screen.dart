@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/user_review_card.dart';
+// import 'package:resq360/features/provider/chat/screens/provider_chat_details_screen.dart';
 
 class CustomerDetailsScreen extends StatefulWidget {
   const CustomerDetailsScreen({super.key});
@@ -111,8 +112,8 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               ),
               20.verticalSpace,
               const ReviewSummaryCard(
-                averageRating: 0,
-                totalReviews: 0,
+                averageRating: 3.7,
+                totalReviews: 35,
               ),
               30.verticalSpace,
               ...reviews.map((r) => UserReviewCard(data: r)),
@@ -120,7 +121,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
               WideButton(
                 label: 'Chat with Client',
                 onPressed: () async {
-                  // await pushScreen(context, const ProviderChatDetailScreen());
+                  // await pushScreen(context, const ProviderChatDetailScreen(chatId: null,));
                 },
               ),
             ],

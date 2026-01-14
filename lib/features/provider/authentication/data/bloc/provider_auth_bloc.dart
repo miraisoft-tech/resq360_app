@@ -25,7 +25,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     on<ProviderSetNewPasswordEvent>(_onSetNewPassword);
     on<ProviderVerifyEmailAddressEvent>(_onVerifyEmailAddress);
     on<ProviderResendVerificationEmailEvent>(_onResendVerificationEmail);
-    on<ProvidergetUserProfile>(_onGetUserProfile);
+    on<ProvidergetProviderProfile>(_onGetProviderProfile);
     on<ProviderSubmitKyc>(_onSubmitKyc);
     on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
     on<ProviderSubmitId>(_onSubmitKycId);
@@ -218,8 +218,8 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onGetUserProfile(
-    ProvidergetUserProfile event,
+  Future<void> _onGetProviderProfile(
+    ProvidergetProviderProfile event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
