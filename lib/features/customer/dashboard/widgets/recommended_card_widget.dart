@@ -16,7 +16,6 @@ class RecommendedCard extends StatelessWidget {
 
     final rating = advertisement.provider?.averageRating ?? 0;
     final reviewCount = advertisement.provider?.totalReviews ?? 0;
-    // const distance = '1.2km';
 
     return Column(
       children: [

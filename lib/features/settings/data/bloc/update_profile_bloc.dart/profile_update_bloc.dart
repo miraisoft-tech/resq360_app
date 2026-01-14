@@ -21,6 +21,8 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     on<UpdateProfileImageEvent>(_onUpdateProfileImage);
     on<UpdateProviderServiceEvent>(_onUpdateProviderService);
     on<UpdateProviderAddressEvent>(_onUpdateProviderAddress);
+    on<UpdateCustomerAddress>(_onUpdateCustomerAddress);
+    on<UpdateProviderAddress>(_onUpdateProviderAddressNew);
     on<UpdateBankAccountEvent>(_onUpdateBankAccount);
   }
 
@@ -43,72 +45,72 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     }
   }
 
-Future<void> _onUpdateProviderInfo(
-  UpdateProviderInfoEvent event,
-  Emitter<ProfileUpdateState> emit,
-) async {
-  emit(ProfileUpdateLoading());
+  Future<void> _onUpdateProviderInfo(
+    UpdateProviderInfoEvent event,
+    Emitter<ProfileUpdateState> emit,
+  ) async {
+    emit(ProfileUpdateLoading());
 
-  try {
-    List<String>? uploadedImagesUrls;
+    try {
+      List<String>? uploadedImagesUrls;
 
-    final imagesEvent = event.images;
-    if (imagesEvent != null && imagesEvent.isNotEmpty) {
-      final uploadedMultipleImagesResult = await uploadService.uploadMultiple(
-        files: imagesEvent,
-      );
+      final imagesEvent = event.images;
+      if (imagesEvent != null && imagesEvent.isNotEmpty) {
+        final uploadedMultipleImagesResult = await uploadService.uploadMultiple(
+          files: imagesEvent,
+        );
 
-      if (uploadedMultipleImagesResult.error != null) {
-        emit(ProfileUpdateError(uploadedMultipleImagesResult.error!));
+        if (uploadedMultipleImagesResult.error != null) {
+          emit(ProfileUpdateError(uploadedMultipleImagesResult.error!));
+          return;
+        }
+
+        final uploadedImagesList = uploadedMultipleImagesResult.data;
+
+        if (uploadedImagesList != null && uploadedImagesList.isNotEmpty) {
+          uploadedImagesUrls =
+              uploadedImagesList.map((img) => img.url).toList();
+
+          for (var i = 0; i < uploadedImagesList.length; i++) {
+            log('Uploaded image $i: ${uploadedImagesList[i].url}');
+          }
+        }
+      }
+
+      final allImages = [
+        ...?event.existingImages,
+        ...?uploadedImagesUrls,
+      ];
+
+      final provider = await AuthLocalRepo.instance.getProviderCredentials();
+      if (provider == null) {
+        log('No user');
+        emit(const ProfileUpdateError('No user credentials found'));
         return;
       }
 
-      final uploadedImagesList = uploadedMultipleImagesResult.data;
+      final result = await updateUserRepo.updateProviderInformation(
+        fullName: provider.fullName,
+        phoneNumber: provider.phoneNumber,
+        companyName: provider.companyName,
+        description: event.description,
+        workingDays: event.workingDays,
+        openingHours: event.openingHours,
+        closingHours: event.closingHours,
+        activityStatus: 'online',
+        images: allImages.isNotEmpty ? allImages : null,
+      );
 
-      if (uploadedImagesList != null && uploadedImagesList.isNotEmpty) {
-        uploadedImagesUrls =
-            uploadedImagesList.map((img) => img.url).toList();
-
-        for (var i = 0; i < uploadedImagesList.length; i++) {
-          log('Uploaded image $i: ${uploadedImagesList[i].url}');
-        }
+      if (result.error != null) {
+        emit(ProfileUpdateError(result.error!));
+      } else {
+        emit(ProfileUpdateSuccess(result.data));
       }
+    } on Exception catch (e, s) {
+      log('Update provider failed: $e\n$s');
+      emit(ProfileUpdateError(e.toString()));
     }
-
-    final allImages = [
-      ...?event.existingImages, 
-      ...?uploadedImagesUrls,  
-    ];
-
-    final provider = await AuthLocalRepo.instance.getProviderCredentials();
-    if (provider == null) {
-      log('No user');
-      emit(const ProfileUpdateError('No user credentials found'));
-      return;
-    }
-
-    final result = await updateUserRepo.updateProviderInformation(
-      fullName: provider.fullName,
-      phoneNumber: provider.phoneNumber,
-      companyName: provider.companyName,
-      description: event.description,
-      workingDays: event.workingDays,
-      openingHours: event.openingHours,
-      closingHours: event.closingHours,
-      activityStatus: 'online',
-      images: allImages.isNotEmpty ? allImages : null,
-    );
-
-    if (result.error != null) {
-      emit(ProfileUpdateError(result.error!));
-    } else {
-      emit(ProfileUpdateSuccess(result.data));
-    }
-  } on Exception catch (e, s) {
-    log('Update provider failed: $e\n$s');
-    emit(ProfileUpdateError(e.toString()));
   }
-}
 
   Future<void> _onUpdateProfileImage(
     UpdateProfileImageEvent event,
@@ -177,6 +179,43 @@ Future<void> _onUpdateProviderInfo(
 
   Future<void> _onUpdateProviderAddress(
     UpdateProviderAddressEvent event,
+    Emitter<ProfileUpdateState> emit,
+  ) async {
+    emit(ProfileUpdateLoading());
+    final result = await updateUserRepo.updateProviderAddress(
+      addressData: event.addressData,
+    );
+
+    if (result.error != null) {
+      emit(ProfileUpdateError(result.error!));
+    } else {
+      emit(ProfileUpdateSuccess(result.data));
+    }
+  }
+
+  Future<void> _onUpdateCustomerAddress(
+    UpdateCustomerAddress event,
+    Emitter<ProfileUpdateState> emit,
+  ) async {
+    emit(ProfileUpdateLoading());
+    final result = await updateUserRepo.updateUserAddress(
+      state: event.state,
+      city: event.city,
+      zipCode: event.zipCode,
+      address: event.address,
+      longitude: event.longitude,
+      latitude: event.latitude,
+    );
+
+    if (result.error != null) {
+      emit(ProfileUpdateError(result.error!));
+    } else {
+      emit(ProfileUpdateSuccess(result.data));
+    }
+  }
+
+  Future<void> _onUpdateProviderAddressNew(
+    UpdateProviderAddress event,
     Emitter<ProfileUpdateState> emit,
   ) async {
     emit(ProfileUpdateLoading());

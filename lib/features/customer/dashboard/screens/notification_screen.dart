@@ -4,6 +4,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/notification/notification_response.model.dart'
     as notif;
 import 'package:resq360/core/theme/app_color_theme.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/notification_bloc/notification_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/notification_model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/notification_tile.dart';
@@ -33,16 +34,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   void _fetchInitial() {
     _offset = 0;
-      context.read<NotificationBloc>().add(
-      FetchUnreadCount()
-    );
+    context.read<NotificationBloc>().add(FetchUnreadCount());
     context.read<NotificationBloc>().add(
       FetchRecentNotifications(
         offset: _offset,
         limit: _limit,
       ),
     );
-   
   }
 
   void _onScroll() {
@@ -89,7 +87,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    // final grouped = _groupNotifications(notifications);
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -114,20 +111,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
       body: BlocConsumer<NotificationBloc, NotificationState>(
         builder: (context, state) {
           if (state is NotificationInitial) {
-           return  Center(child: CircularProgressIndicator(
-                       color: appColors.primary,
-
-                    ));
+            return Center(
+              child: CircularProgressIndicator(
+                color: appColors.primary,
+              ),
+            );
           }
           if (state is NotificationLoading) {
-           return  Center(child: CircularProgressIndicator(
-                       color: appColors.primary,
-
-                    ));
+            return Center(
+              child: CircularProgressIndicator(
+                color: appColors.primary,
+              ),
+            );
           }
-           if (state is UnreadCountLoaded) {
+
+          if (state is UnreadCountLoaded) {
             unreadCount = state.count;
           }
+
           if (state is NotificationLoaded) {
             final notifications = state.notifications;
             _isLoadingMore = false;
@@ -144,17 +145,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
             final grouped = _groupNotifications(uiList);
 
             return RefreshIndicator(
-            color: appColors.primary,
+              color: appColors.primary,
               onRefresh: _onRefresh,
               child: Padding(
                 padding: pad(horizontal: 20, vertical: 10),
                 child: ListView(
                   controller: _scrollController,
                   children: [
-                    if (unreadCount > 0) _HeaderRow(
-                      count: unreadCount,
-                      color: appColors,
-                    ) else SizedBox.fromSize(),
+                    if (unreadCount > 0)
+                      _HeaderRow(
+                        count: unreadCount,
+                        color: appColors,
+                      )
+                    else
+                      SizedBox.fromSize(),
                     20.verticalSpace,
                     if (grouped.isEmpty)
                       const Center(
@@ -213,17 +217,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
         },
         listener: (BuildContext context, NotificationState state) {
           if (state is NotificationActionSuccess) {
-              context.read<NotificationBloc>().add(
-                  const FetchRecentNotifications(),
-                );
+            context.read<NotificationBloc>().add(
+              const FetchRecentNotifications(),
+            );
             unawaited(showSuccessSnackbar(context, state.message));
-          
           }
 
           if (state is NotificationError) {
             unawaited(showErrorSnackbar(context, state.message));
           }
-
         },
       ),
     );
@@ -278,29 +280,11 @@ NotificationModel mapToUi(notif.Notification n) {
     id: n.id!,
     title: n.user?.fullName ?? '',
     message: n.details ?? '',
-    time: timeAgo(n.createdAt),
+    time: AppTextUtil.timeAgo(n.createdAt),
     isUnread: n.status == 'UNREAD',
-    group: groupByDate(n.createdAt),
+    group: AppTextUtil.groupByDate(n.createdAt),
     icon: _iconForCategory(n.category),
   );
-}
-
-String timeAgo(DateTime? date) {
-  if (date == null) return '';
-  final diff = DateTime.now().difference(date);
-  if (diff.inMinutes < 60) return '${diff.inMinutes} mins ago';
-  if (diff.inHours < 24) return '${diff.inHours} hrs ago';
-  return '${diff.inDays} days ago';
-}
-
-String groupByDate(DateTime? date) {
-  if (date == null) return '';
-  final now = DateTime.now();
-  if (date.day == now.day) return 'Today';
-  if (date.day == now.subtract(const Duration(days: 1)).day) {
-    return 'Yesterday';
-  }
-  return '';
 }
 
 SvgPicture _iconForCategory(String? category) {

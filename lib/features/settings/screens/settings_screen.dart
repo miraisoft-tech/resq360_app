@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
+import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
@@ -21,6 +22,7 @@ import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
 import 'package:resq360/features/settings/widgets/profile_section_header.dart';
+import 'package:resq360/keys.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -67,7 +69,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (dashboardViewModel.userType == UserType.provider) {
-        context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
+        context.read<ProviderAuthBloc>().add(
+          const ProvidergetProviderProfile(),
+        );
       } else {
         context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
       }
@@ -104,24 +108,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
           );
         },
       ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
-        title: 'Manage Cards',
-        onTap: () async {
-          await pushScreen(context, const ManageCardsScreen());
-        },
-      ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
-        title: 'Refer and Earn',
-        onTap: () async {
-          await pushScreen(context, const ReferScreen());
-        },
-      ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
+      //   title: 'Manage Cards',
+      //   onTap: () async {
+      //     await pushScreen(context, const ManageCardsScreen());
+      //   },
+      // ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
+      //   title: 'Refer and Earn',
+      //   onTap: () async {
+      //     await pushScreen(context, const ReferScreen());
+      //   },
+      // ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PRIVACY_POLICY_SVG.svg,
         title: 'Terms of Use Policy',
-        onTap: () {},
+        onTap: () async {
+          await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
+        },
       ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,

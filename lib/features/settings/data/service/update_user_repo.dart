@@ -134,6 +134,34 @@ class UpdateUserRepo extends BaseAPI {
     );
   }
 
+  Future<ApiResult<dynamic>> updateUserAddress({
+    required String state,
+    required String city,
+    required String zipCode,
+    required String address,
+    required double longitude,
+    required double latitude,
+  }) async {
+    const endpoint = '/user/address';
+
+    final data = {
+      'location': {
+        'state': state,
+        'city': city,
+        'zipCode': zipCode,
+        'address': address,
+        'longitude': longitude,
+        'latitude': latitude,
+      },
+    };
+
+    return _updateData(
+      endpoint: endpoint,
+      data: data,
+      logTag: 'User Address Update',
+    );
+  }
+
   Future<ApiResult<dynamic>> updateBankAccount({
     required String accountName,
     required String accountNumber,

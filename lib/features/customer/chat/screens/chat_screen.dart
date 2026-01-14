@@ -97,12 +97,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       separatorBuilder:
                           (_, _) => const ListDivider(verticalSpacing: 0),
                       itemBuilder: (context, index) {
-                        // final filteredChats =
-                        //     chats
-                        //         .where(
-                        //           (c) => c.lastMessage?.isNotEmpty ?? false,
-                        //         )
-                        //         .toList();
                         final chat = chats[index];
 
                         return ChatTile(
@@ -113,7 +107,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 chat.lastMessageTime != null
                                     ? _formatTime(chat.lastMessageTime!)
                                     : '',
-                            avatar: AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG,
+                            imgUrl: AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG,
                           ),
                           onTap: () async {
                             context.read<ChatListBloc>().add(
@@ -139,33 +133,6 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-
-  // Widget _buildFilterRow() {
-  //   final filters = ['All', 'Unread', 'Appeal'];
-
-  //   return Row(
-  //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //     children: filters.map((filter) {
-  //       final isSelected = selectedFilter == filter;
-
-  //       return GestureDetector(
-  //         onTap: () {
-  //           setState(() => selectedFilter = filter);
-  //         },
-  //         child: Chip(
-  //           label: Text(filter),
-  //           backgroundColor: isSelected
-  //               ? context.appColors.primary
-  //               : Colors.grey[200],
-  //           labelStyle: TextStyle(
-  //             color:
-  //                 isSelected ? Colors.white : Colors.black87,
-  //           ),
-  //         ),
-  //       );
-  //     }).toList(),
-  //   );
-  // }
 
   List<ChatSummary> _applyFilter(List<ChatSummary> chats) {
     final query = _searchController.text.toLowerCase();
@@ -198,161 +165,6 @@ class _ChatScreenState extends State<ChatScreen> {
     return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
   }
 }
-
-// class ChatScreen extends StatefulWidget {
-//   const ChatScreen({super.key});
-
-//   @override
-//   State<ChatScreen> createState() => _ChatScreenState();
-// }
-
-// class _ChatScreenState extends State<ChatScreen> {
-//   final TextEditingController _searchController = TextEditingController();
-
-//   String selectedFilter = 'All';
-
-//   final List<Chat> chats = [
-//     Chat(
-//       name: 'QuickTow Emergency',
-//       message: 'I’m on my way to your location. You can...',
-//       time: 'Just Now',
-//       avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-//       unread: 1,
-//     ),
-//     Chat(
-//       name: 'You, Admin, QuickTow Emergency',
-//       message: 'Please share photos of the issue',
-//       time: '2:00 pm',
-//       avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-//       status: 'appeal',
-//     ),
-//     Chat(
-//       name: 'Homify',
-//       message: 'I’d like to give my home a deep cleaning...',
-//       time: '10:00 am',
-//       avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-//     ),
-//     Chat(
-//       name: 'Africoelectrics',
-//       message: 'Typing...',
-//       time: '9:00 am',
-//       avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-//       typing: true,
-//     ),
-//     Chat(
-//       name: 'Davi’s Mechanics',
-//       message: 'I’m on my way to your location. You can...',
-//       time: 'yesterday',
-//       avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-//       unread: 1,
-//       status: 'unread',
-//     ),
-//     Chat(
-//       name: 'The Johnsons',
-//       message: 'Thank you',
-//       time: '2/7/25',
-//       avatar: AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-//     ),
-//   ];
-
-//   List<Chat> get filteredChats {
-//     switch (selectedFilter) {
-//       case 'Unread':
-//         return chats.where((c) => c.unread > 0).toList();
-//       case 'Appeal':
-//         return chats.where((c) => c.status == 'appeal').toList();
-//       default:
-//         return chats;
-//     }
-//   }
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     context.read<ChatBloc>().add(GetChatsEvent());
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final appColors = context.appColors;
-
-//     return Scaffold(
-//       backgroundColor: appColors.whiteColor,
-//       appBar: AppBar(
-//         elevation: 0,
-//         backgroundColor: appColors.whiteColor,
-//         forceMaterialTransparency: true,
-//         automaticallyImplyLeading: false,
-//         centerTitle: false,
-//         title: UrbText(
-//           'Chats',
-//           size: 22,
-//           height: 32.5,
-//           weight: FontWeight.w700,
-//           color: appColors.black,
-//         ),
-//       ),
-//       body: Padding(
-//         padding: pad(horizontal: 16),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             FilterSearchFormField(
-//               controller: _searchController,
-//               hintText: 'Search for services',
-//               onTapSuffix: () {},
-//               onChanged: (value) {
-//                 setState(() {});
-//               },
-//               prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
-//             ),
-//             16.verticalSpace,
-//             ChatFilterTabs(
-//               selectedFilter: selectedFilter,
-//               onFilterSelected:
-//                   (value) => setState(() => selectedFilter = value),
-//             ),
-//             16.verticalSpace,
-//             BlocBuilder<ChatBloc, ChatState>(
-//               builder: (context, state) {
-
-//                 return Expanded(
-//                   child:
-//                       (chats.isEmpty)
-//                           ? const EmptyScreenWidget(
-//                             imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
-//                             message: 'No messages yet',
-//                             subMessage:
-//                                 'Start a conversation with a service provider',
-//                           )
-//                           : ListView.separated(
-//                             itemCount: chats.length,
-//                             itemBuilder: (context, index) {
-//                               return ChatTile(
-//                                 chat: chats[index],
-//                                 onTap: () async {
-//                                   await pushScreen(
-//                                     context,
-//                                     const ChatDetailScreen(),
-//                                   );
-//                                 },
-//                               );
-//                             },
-//                             separatorBuilder: (context, index) {
-//                               return const ListDivider(
-//                                 verticalSpacing: 0,
-//                               );
-//                             },
-//                           ),
-//                 );
-//               },
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 class ChatFilterTabs extends StatelessWidget {
   const ChatFilterTabs({

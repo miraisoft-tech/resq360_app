@@ -49,7 +49,7 @@ class _BookingsScreenState extends State<BookingsScreen>
       case 2:
         status = 'completed';
 
-       case 3:
+      case 3:
         status = 'cancelled';
 
       default:
@@ -89,6 +89,7 @@ class _BookingsScreenState extends State<BookingsScreen>
           labelColor: appColors.primary,
           unselectedLabelColor: appColors.textColor.shade500,
           indicatorSize: TabBarIndicatorSize.tab,
+          isScrollable: true,
           tabs: const [
             Tab(text: 'Upcoming'),
             Tab(text: 'Ongoing'),
@@ -128,6 +129,7 @@ class _BookingList extends StatelessWidget {
         return 'PENDING';
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;

@@ -1,24 +1,20 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
-import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
-import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 import 'package:resq360/features/customer/dashboard/screens/advertisement_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
+import 'package:resq360/features/customer/dashboard/widgets/advertisment_carousel.dart';
+import 'package:resq360/features/customer/dashboard/widgets/header_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
-import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
-import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
-import 'package:resq360/features/settings/screens/settings_screen.dart';
-import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
+import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -63,23 +59,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
-                    builder: (context, state) {
-                      if (state is CustomerAuthLoginSuccess) {
-                        final user = state.user;
-                        return HeaderWidget(
-                          name: user.fullName?.capitalize ?? 'user',
-                          location: 'N/A',
-                        );
-                      }
+                    builder: (context, v) {
+                      final user = v is CustomerProfileLoaded ? v.user : null;
 
-                      return FutureBuilder<CustomerUserModel?>(
-                        future: AuthLocalRepo.instance.getAuthCredentials(),
-                        builder: (context, snapshot) {
-                          final userName = snapshot.data?.fullName ?? 'user';
-                          return HeaderWidget(
-                            name: userName.capitalize,
-                            location: 'N/A',
-                          );
+                      return HeaderWidget(
+                        name: user?.fullName?.capitalize ?? 'n/a',
+                        location: user?.location?.firstOrNull?.address ?? 'N/A',
+                        profileImage: user?.profileImage ?? '',
+                        onTapAddress: () async {
+                          await pushScreen(context, const AddressScreen());
                         },
                       );
                     },
@@ -126,11 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   children: [
                     10.verticalSpace,
-                    FilterSearchFormField(
-                      controller: TextEditingController(),
-                      hintText: 'Search for services',
-                      onTapSuffix: () {},
-                      onChanged: (value) {},
+                    GestureDetector(
                       onTap: () async {
                         await AppGenUtil.offKeyboard();
 
@@ -139,7 +123,23 @@ class _HomeScreenState extends State<HomeScreen> {
                           const ServiceCategoryScreen(),
                         );
                       },
-                      prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
+                      child: Container(
+                        padding: pad(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(color: colors.neutral.shade100),
+                        ),
+                        child: Row(
+                          children: [
+                            AppAssets.ASSETS_ICONS_SEARCH_SVG.svg,
+                            20.horizontalSpace,
+                            GenText(
+                              'Search for services',
+                              color: colors.neutral.shade300,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     20.verticalSpace,
                     const PromoCardWidget(),
@@ -328,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         if (state is CustomerAdvertisementError) {
                           return ErrorMessageAndButton(
-                            error: state.error,
+                            error: 'No data currently available.',
                             onPressed: () {
                               context.read<CustomerAdvertisementBloc>().add(
                                 CustomerFetchAdvertisement(),
@@ -349,138 +349,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class HeaderWidget extends StatelessWidget {
-  const HeaderWidget({
-    required this.name,
-    required this.location,
-    this.profileImage,
-    super.key,
-  });
-
-  final String name;
-  final String location;
-  final String? profileImage;
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () async {
-            await pushScreen(context, const SettingsScreen());
-          },
-          child: PictureWidget(
-            image: profileImage,
-          ),
-        ),
-        10.horizontalSpace,
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GenText(
-              'Hello, $name 👋',
-              size: 12,
-              height: 20,
-              weight: FontWeight.w400,
-              color: colors.neutral.shade500,
-            ),
-            Row(
-              children: [
-                AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
-                4.horizontalSpace,
-                GenText(
-                  location,
-                  height: 24,
-                  color: colors.black,
-                  weight: FontWeight.w500,
-                ),
-                Icon(
-                  Icons.keyboard_arrow_down,
-                  size: 14,
-                  color: colors.textColor.shade500,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class AdvertisementCarousel extends StatefulWidget {
-  const AdvertisementCarousel({required this.ads, super.key});
-  final List<Advertisement> ads;
-
-  @override
-  State<AdvertisementCarousel> createState() => _AdvertisementCarouselState();
-}
-
-class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
-  late final PageController _pageController;
-  int currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(viewportFraction: 0.95);
-
-    _pageController.addListener(() {
-      final newIndex = _pageController.page?.round() ?? 0;
-
-      if (newIndex != currentIndex) {
-        setState(() => currentIndex = newIndex);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 170.h,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: widget.ads.length,
-            padEnds: false,
-            clipBehavior: Clip.none,
-            //  pageSnapping: false,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () async {
-                  final providerId = widget.ads[index].providerId;
-                  if (providerId == null) return;
-                  await pushScreen(
-                    context,
-                    ServiceProviderDetailsScreen(
-                      providerId: providerId,
-                    ),
-                  );
-                },
-                child: RecommendedCard(advertisement: widget.ads[index]),
-              );
-            },
-          ),
-        ),
-        5.verticalSpace,
-        if(widget.ads.length > 1)
-        SmallDotIndicator(
-          total: widget.ads.length,
-          currentIndex: currentIndex,
-        ),
-      ],
     );
   }
 }

@@ -19,6 +19,7 @@ class FilterSearchFormField extends StatefulWidget {
     this.fillColor,
     this.type = InputType.primary,
     this.enabled = true,
+    this.focusNode,
     super.key,
   });
   final InputType type;
@@ -37,6 +38,7 @@ class FilterSearchFormField extends StatefulWidget {
   final Color? fillColor;
 
   final bool enabled;
+  final FocusNode? focusNode;
 
   @override
   State<FilterSearchFormField> createState() => _FilterSearchFormFieldState();
@@ -51,7 +53,7 @@ class _FilterSearchFormFieldState extends State<FilterSearchFormField> {
   void initState() {
     super.initState();
     _obscureNotier = ValueNotifier(widget.type == InputType.password);
-    _focusNode = FocusNode();
+    _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(() {
       setState(() {});
     });
@@ -153,7 +155,9 @@ class _FilterSearchFormFieldState extends State<FilterSearchFormField> {
 
   @override
   void dispose() {
-    _focusNode.dispose();
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
     _obscureNotier.dispose();
     super.dispose();
   }

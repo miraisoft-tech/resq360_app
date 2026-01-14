@@ -7,11 +7,10 @@ sealed class ProfileUpdateEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-
 final class UpdateUserInfoEvent extends ProfileUpdateEvent {
   const UpdateUserInfoEvent({
-     this.fullName,
-     this.phoneNumber,
+    this.fullName,
+    this.phoneNumber,
     this.profileImageUrl,
     this.profileImageId,
   });
@@ -81,26 +80,66 @@ class UpdateProfileImageEvent extends ProfileUpdateEvent {
   final String filePath;
 }
 
-
 final class UpdateProviderServiceEvent extends ProfileUpdateEvent {
   const UpdateProviderServiceEvent({
-  required this.isActive,
-  required this.serviceCategoryId,
-   this.customServiceName,
-   this.minorServices, 
+    required this.isActive,
+    required this.serviceCategoryId,
+    this.customServiceName,
+    this.minorServices,
   });
-   final bool isActive;
-    final int serviceCategoryId;
-    final String? customServiceName;
-    final List<String>? minorServices;
+  final bool isActive;
+  final int serviceCategoryId;
+  final String? customServiceName;
+  final List<String>? minorServices;
 
   @override
-  List<Object?> get props => [isActive, serviceCategoryId, customServiceName, minorServices];
+  List<Object?> get props => [
+    isActive,
+    serviceCategoryId,
+    customServiceName,
+    minorServices,
+  ];
 }
-
 
 final class UpdateProviderAddressEvent extends ProfileUpdateEvent {
   const UpdateProviderAddressEvent({
+    required this.addressData,
+  });
+  final Map<String, dynamic> addressData;
+
+  @override
+  List<Object> get props => [addressData];
+}
+
+final class UpdateCustomerAddress extends ProfileUpdateEvent {
+  const UpdateCustomerAddress({
+    required this.state,
+    required this.city,
+    required this.zipCode,
+    required this.address,
+    required this.longitude,
+    required this.latitude,
+  });
+  final String state;
+  final String city;
+  final String zipCode;
+  final String address;
+  final double longitude;
+  final double latitude;
+
+  @override
+  List<Object> get props => [
+    state,
+    city,
+    zipCode,
+    address,
+    longitude,
+    latitude,
+  ];
+}
+
+final class UpdateProviderAddress extends ProfileUpdateEvent {
+  const UpdateProviderAddress({
     required this.addressData,
   });
   final Map<String, dynamic> addressData;

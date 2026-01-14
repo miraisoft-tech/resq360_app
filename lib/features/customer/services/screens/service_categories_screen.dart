@@ -1,4 +1,3 @@
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
@@ -14,6 +13,7 @@ class ServiceCategoryScreen extends StatefulWidget {
 
 class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -25,11 +25,16 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     if (currentState is! ServicesLoaded) {
       bloc.add(const FetchServices());
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchFocusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -40,7 +45,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
     return BlocListener<ServiceCatalogBloc, ServiceCatalogState>(
       listener: (context, state) {},
       child: RefreshIndicator(
-        onRefresh: ()async{
+        onRefresh: () async {
           context.read<ServiceCatalogBloc>().add(const FetchServices());
         },
         color: colors.primary,
@@ -68,12 +73,13 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
           body: BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
             builder: (context, state) {
               if (state is ServiceCatalogLoading) {
-               return  Center(child: CircularProgressIndicator(
-                       color: colors.primary,
-
-                    ));
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: colors.primary,
+                  ),
+                );
               }
-        
+
               if (state is ServiceCatalogError) {
                 return ErrorMessageAndButton(
                   error: state.error,
@@ -84,10 +90,10 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                   },
                 );
               }
-        
+
               if (state is ServicesLoaded) {
                 final services = state.services;
-        
+
                 final filteredServices =
                     _searchController.text.isEmpty
                         ? services
@@ -96,7 +102,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                             _searchController.text.toLowerCase(),
                           );
                         }).toList();
-        
+
                 return Padding(
                   padding: pad(horizontal: 16, vertical: 10),
                   child: Column(
@@ -104,6 +110,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                     children: [
                       FilterSearchFormField(
                         controller: _searchController,
+                        focusNode: _searchFocusNode,
                         hintText: 'Search for services',
                         onTapSuffix: () {
                           _searchController.clear();
@@ -144,7 +151,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                 )
                                 : GridView.builder(
                                   itemCount: filteredServices.length,
-        
+
                                   gridDelegate:
                                       const SliverGridDelegateWithFixedCrossAxisCount(
                                         crossAxisCount: 3,
@@ -154,7 +161,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                       ),
                                   itemBuilder: (context, index) {
                                     final service = filteredServices[index];
-        
+
                                     return ServiceCategoryWidget(
                                       category: service,
                                       onTap: () async {

@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
@@ -84,8 +85,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                         AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
                         4.horizontalSpace,
                         GenText(
-                          '15000',
-                          // '₦${widget.booking.price ?? 15000}',
+                          '₦${AppTextUtil.formatAmount(widget.booking.amount?.toString() ?? '0')}',
                           size: 12,
                           height: 20.5,
                           weight: FontWeight.w400,
@@ -98,7 +98,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
               ),
             ],
           ),
-          30.verticalSpace,
+          20.verticalSpace,
           Row(
             children: [
               Expanded(
