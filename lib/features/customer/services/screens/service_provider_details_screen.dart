@@ -10,7 +10,6 @@ import 'package:resq360/features/customer/dashboard/data/models/service-model/se
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/provider_review_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
-import 'package:resq360/features/customer/dashboard/widgets/user_review_card.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/widgets/gallery_image_viewer.dart';
 
