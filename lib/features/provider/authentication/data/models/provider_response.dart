@@ -23,9 +23,12 @@ class ProviderModel {
     this.createdAt,
     this.updatedAt,
     this.kycVerification,
+    this.images,
     this.wallet,
     this.address,
     this.providerServices,
+    this.averageRating,
+    this.totalReviews
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -56,6 +59,9 @@ class ProviderModel {
             json['kYCVerification'] as Map<String, dynamic>,
           )
         : null,
+        images: (json['images'] as List<dynamic>?)
+            ?.map((e) => e)
+            .toList(),
       wallet:
           json['wallet'] is Map<String, dynamic>
               ? Wallet.fromJson(json['wallet'] as Map<String, dynamic>)
@@ -91,8 +97,12 @@ class ProviderModel {
   final String? createdAt;
   final String? updatedAt;
   final KYCVerification? kycVerification;
+  final List<dynamic>? images;
   final Wallet? wallet;
   final Address? address;
+  final int? averageRating;
+  final int? totalReviews;
+
   final List<ProviderService>? providerServices;
 
   Map<String, dynamic> toJson() => {
@@ -116,9 +126,12 @@ class ProviderModel {
     'createdAt': createdAt,
     'updatedAt': updatedAt,
     'kYCVerification': kycVerification?.toJson(),
+    'images': images,
     'wallet': wallet?.toJson(),
     'address': address?.toJson(),
     'ProviderService': providerServices?.map((e) => e.toJson()).toList(),
+    'averageRating':averageRating,
+    'totalReviews': totalReviews
   };
 }
 

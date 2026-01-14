@@ -117,8 +117,8 @@ class ServiceRepo extends BaseAPI {
         if (activityStatus != null) 'activity_status': activityStatus,
         if (search != null && search.isNotEmpty) 'search': search,
         'near_you': nearYou.toString(),
-        // if (longitude != null) 'longitude': longitude.toString(),
-        // if (latitude != null) 'latitude': latitude.toString(),
+        if (longitude != null) 'longitude': longitude.toString(),
+        if (latitude != null) 'latitude': latitude.toString(),
       };
       final response = await dio().get<Map<String, dynamic>>(
         url,
@@ -239,7 +239,7 @@ class ServiceRepo extends BaseAPI {
     };
 
     if (status != null) {
-      queryParams['status'] = status;
+      queryParams['booking_status'] = status;
     }
 
     const url = '/services/bookings';

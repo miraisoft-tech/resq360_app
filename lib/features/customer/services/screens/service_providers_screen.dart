@@ -150,7 +150,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                         WidgetsBinding.instance.addPostFrameCallback((_) async {
                           await showErrorSnackbar(
                             context,
-                            ' ping providers failed',
+                            state.error,
                           );
                         });
                       }

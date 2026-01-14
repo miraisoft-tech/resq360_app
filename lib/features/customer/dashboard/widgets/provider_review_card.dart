@@ -1,14 +1,13 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/settings/data/models/customer_ratings_model.dart';
+import 'package:resq360/features/settings/data/models/provider_ratings.dart';
 
-class UserReviewCard extends StatelessWidget {
-  const UserReviewCard({required this.data, super.key});
-  final CustomerReview data;
+class ProviderReviewCard extends StatelessWidget {
+  const ProviderReviewCard({required this.data, super.key});
+  final ProviderReview data;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final date = DateTime.parse(data.ratingDate!);
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: pad(vertical: 12, horizontal: 12),
@@ -22,13 +21,13 @@ class UserReviewCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              PictureWidget(image:data.provider?.profileImage),
+              PictureWidget(image:data.user?.profileImage),
               10.horizontalSpace,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   UrbText(
-                    data.provider?.fullName ?? '',
+                    data.user?.fullName ?? '',
                     weight: FontWeight.w600,
                     color: colors.black,
                   ),
@@ -46,7 +45,7 @@ class UserReviewCard extends StatelessWidget {
               ),
               const Spacer(),
               GenText(
-                date.formatDate,
+                data.ratingDate.toString(),
                 size: 12,
                 color: colors.textColor.shade500,
               ),

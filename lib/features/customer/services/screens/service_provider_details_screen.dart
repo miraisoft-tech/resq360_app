@@ -8,8 +8,8 @@ import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/pro
 import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
+import 'package:resq360/features/customer/dashboard/widgets/provider_review_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
-import 'package:resq360/features/customer/dashboard/widgets/user_review_card.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/widgets/gallery_image_viewer.dart';
 
@@ -495,22 +495,8 @@ class _ServiceProviderDetailsScreenState
                                             ),
 
                                           ...reviews.map(
-                                            (r) => UserReviewCard(
-                                              data: {
-                                                'name':
-                                                    r.user?.fullName ??
-                                                    'Unknown user',
-                                                'avatar': r.user?.profileImage,
-                                                'rating': r.overallRating ?? 0,
-                                                'date': r.ratingDate ?? '',
-                                                'comment': r.feedback ?? '',
-                                                'service':
-                                                    r
-                                                        .serviceRequest
-                                                        ?.serviceCategory
-                                                        ?.name ??
-                                                    '',
-                                              },
+                                            (r) => ProviderReviewCard(data: r,
+                                              
                                             ),
                                           ),
                                         ],

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+
 class Advertisement {
 
     Advertisement({
@@ -46,7 +48,7 @@ class Advertisement {
         adminId: json['adminId']as int?,
         createdAt: json['createdAt'] == null ? null : DateTime.parse(json['createdAt']as String),
         updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt']as String),
-        provider: json['provider'] == null ? null : Admin.fromJson(json['provider']as Map<String, dynamic>),
+        provider: json['provider'] == null ? null : ProviderModel.fromJson(json['provider']as Map<String, dynamic>),
         admin: json['admin'] == null ? null : Admin.fromJson(json['admin'] as Map<String, dynamic>),
     );
     final int? id;
@@ -67,7 +69,7 @@ class Advertisement {
     final int? adminId;
     final DateTime? createdAt;
     final DateTime? updatedAt;
-    final Admin? provider;
+    final ProviderModel? provider;
     final Admin? admin;
 
     String toRawJson() => json.encode(toJson());

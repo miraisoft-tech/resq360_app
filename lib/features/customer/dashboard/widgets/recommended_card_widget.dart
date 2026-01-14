@@ -14,9 +14,9 @@ class RecommendedCard extends StatelessWidget {
     final image = advertisement.imageUrl;
     final serviceType = advertisement.serviceType ?? '';
 
-    const rating = 4.8;
-    const reviewCount = 127;
-    const distance = '1.2km';
+    final rating = advertisement.provider?.averageRating ?? 0;
+    final reviewCount = advertisement.provider?.totalReviews ?? 0;
+    // const distance = '1.2km';
 
     return Column(
       children: [
@@ -89,16 +89,16 @@ class RecommendedCard extends StatelessWidget {
                           size: 12,
                           color: colors.neutral.shade300,
                         ),
-                        10.horizontalSpace,
-                        AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                          color: colors.neutral.shade300,
-                        ),
-                        2.horizontalSpace,
-                        GenText(
-                          distance,
-                          size: 12,
-                          color: colors.neutral.shade300,
-                        ),
+                        // 10.horizontalSpace,
+                        // AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
+                        //   color: colors.neutral.shade300,
+                        // ),
+                        // 2.horizontalSpace,
+                        // GenText(
+                        //   distance,
+                        //   size: 12,
+                        //   color: colors.neutral.shade300,
+                        // ),
                       ],
                     ),
                     8.verticalSpace,

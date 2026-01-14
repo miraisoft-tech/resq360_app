@@ -10,6 +10,17 @@ sealed class RatingsEvent extends Equatable {
 
 class FetchCustomerRatings extends RatingsEvent {}
 
+class FetchCustomerRatingsById extends RatingsEvent {
+   const FetchCustomerRatingsById({
+    required this.userId,
+  });
+
+  final int userId;
+
+  @override
+  List<Object?> get props => [userId];
+}
+
 
 class FetchProviderRatings extends RatingsEvent {}
 

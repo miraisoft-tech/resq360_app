@@ -300,10 +300,6 @@ class AuthRemoteRepo extends BaseAPI {
           );
           log('User profile fetched: ${customerProfileResponse.fullName}');
 
-          await AuthLocalRepo.instance.storeUserDetails(
-            customerProfileResponse: customerProfileResponse,
-            isProvider: false,
-          );
           return ApiResult(data: customerProfileResponse);
         } else {
           return ApiResult(

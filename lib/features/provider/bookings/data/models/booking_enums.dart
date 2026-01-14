@@ -1,7 +1,8 @@
 enum BookingStatus {
-  pending('PENDING'),
-  completed('COMPLETED'),
-  cancelled('CANCELLED'),
+  upcoming('upcoming'),
+  ongoing('ongoing'),
+  completed('completed'),
+  cancelled('cancelled'),
   inProgress('IN_PROGRESS'),
   matching('MATCHING'),
   assigned('ASSIGNED');

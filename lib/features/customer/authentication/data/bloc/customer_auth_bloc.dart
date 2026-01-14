@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
@@ -35,26 +36,25 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     Emitter<CustomerAuthState> emit,
   ) async {
     emit(CustomerAuthLoading());
+
     try {
       final result = await authRemoteRepo.loginWithEmail(
         email: event.email,
         password: event.password,
       );
-      if (result.data != null) {
-        final profileResult = await authRemoteRepo.getUserProfile();
 
-        if (profileResult.data != null) {
-          emit(CustomerAuthLoginSuccess(result.data!.user));
-        } else {
-          emit(
-            CustomerAuthFailure(
-              profileResult.error ?? 'Failed to load profile',
-            ),
-          );
-        }
-      } else {
+      if (result.data == null) {
         emit(CustomerAuthFailure(result.error ?? 'Login failed'));
+        return;
       }
+
+      final ok = await _loadAndSaveUserProfile();
+      if (!ok) {
+        emit(const CustomerAuthFailure('Failed to load user profile'));
+        return;
+      }
+
+      emit(CustomerAuthLoginSuccess(result.data!.user));
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
@@ -65,29 +65,27 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     Emitter<CustomerAuthState> emit,
   ) async {
     emit(CustomerAuthLoading());
+
     try {
       final result = await authRemoteRepo.signupWithEmail(
         fullname: event.fullname,
         email: event.email,
         password: event.password,
       );
-      if (result.data != null) {
-        final profileResult = await authRemoteRepo.getUserProfile();
 
-        if (profileResult.data != null) {
-          emit(CustomerAuthAuthenticated(result.data!.user));
-        } else {
-          emit(
-            CustomerAuthFailure(
-              profileResult.error ?? 'Failed to load profile',
-            ),
-          );
-        }
-      } else {
+      if (result.data == null) {
         emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
+        return;
       }
+
+      final ok = await _loadAndSaveUserProfile();
+      if (!ok) {
+        emit(const CustomerAuthFailure('Failed to load user profile'));
+        return;
+      }
+
+      emit(CustomerAuthAuthenticated(result.data!.user));
     } on Exception catch (e) {
-      log('Signup Bloc Error: $e');
       emit(CustomerAuthFailure(e.toString()));
     }
   }
@@ -216,6 +214,10 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     try {
       final result = await authRemoteRepo.getUserProfile();
       if (result.data != null) {
+        await AuthLocalRepo.instance.storeUserDetails(
+          customerProfileResponse: result.data,
+          isProvider: false,
+        );
         emit(CustomerProfileLoaded(result.data!));
       } else {
         emit(CustomerAuthFailure(result.error ?? 'Failed to load profile'));
@@ -315,5 +317,20 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     } on Exception catch (e) {
       emit(CustomerKycSubmissionFailure(e.toString()));
     }
+  }
+
+  Future<bool> _loadAndSaveUserProfile() async {
+    final res = await authRemoteRepo.getUserProfile();
+
+    if (res.data == null) {
+      return false;
+    }
+
+    await AuthLocalRepo.instance.storeUserDetails(
+      customerProfileResponse: res.data,
+      isProvider: false,
+    );
+
+    return true;
   }
 }

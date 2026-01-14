@@ -24,7 +24,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchBookingsForTab(0);
     });
@@ -39,15 +39,21 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
     final bloc = context.read<ProviderServiceBloc>();
     String status;
 
-    switch (index) {
+  switch (index) {
       case 0:
-        status = 'PENDING';
+        status = 'upcoming';
+
       case 1:
-        status = 'COMPLETED';
+        status = 'ongoing';
+
       case 2:
-        status = 'CANCELLED';
+        status = 'completed';
+
+       case 3:
+        status = 'cancelled';
+
       default:
-        status = 'PENDING';
+        status = 'upcoming';
     }
 
     bloc.add(ProviderFetchBookings(status: status));
@@ -83,6 +89,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
           indicatorSize: TabBarIndicatorSize.tab,
           tabs: const [
             Tab(text: 'Upcoming'),
+            Tab(text: 'Ongoing'),
             Tab(text: 'Completed'),
             Tab(text: 'Cancelled'),
           ],
@@ -92,6 +99,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
         controller: _tabController,
         children: const [
           _BookingList(type: 'upcoming'),
+          _BookingList(type: 'ongoing'),
           _BookingList(type: 'completed'),
           _BookingList(type: 'cancelled'),
         ],
@@ -107,13 +115,15 @@ class _BookingList extends StatelessWidget {
   String _mapTypeToStatus() {
     switch (type) {
       case 'upcoming':
-        return 'PENDING';
+        return 'upcoming';
+      case 'ongoing':
+        return 'ongoing';
       case 'completed':
-        return 'COMPLETED';
+        return 'completed';
       case 'cancelled':
-        return 'CANCELLED';
+        return 'cancelled';
       default:
-        return 'PENDING';
+        return 'upcoming';
     }
   }
 
@@ -123,10 +133,11 @@ class _BookingList extends StatelessWidget {
     return BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
       builder: (context, state) {
         if (state is ProviderServicesLoading) {
-         return  Center(child: CircularProgressIndicator(
-                       color: appColors.primary,
-
-                    ));
+          return Center(
+            child: CircularProgressIndicator(
+              color: appColors.primary,
+            ),
+          );
         }
 
         if (state is ProviderServicesError) {
@@ -181,7 +192,7 @@ class _BookingList extends StatelessWidget {
                 final booking = bookings[index];
                 return BookingCard(
                   data: booking,
-                  onTap:  () async {
+                  onTap: () async {
                     await pushScreen(
                       context,
                       ProviderServiceDetailScreen(
@@ -266,7 +277,6 @@ class _BookingCardState extends State<BookingCard> {
 
     final phonenumber = data.user?.phoneNumber ?? '';
     final serviceRequest = data.id;
-
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -404,7 +414,7 @@ class _BookingCardState extends State<BookingCard> {
                                       amount: 'To be billed',
                                     );
                                   }
-                                  : null, 
+                                  : null,
                         ),
                       );
                     },
@@ -425,28 +435,28 @@ class _BookingCardState extends State<BookingCard> {
                   const ListDivider(verticalSpacing: 15),
                 ],
               ),
-              if(canShow)
-            GestureDetector(
-              onTap: expandCard,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GenText(
-                    expanded ? 'View Less' : 'View More',
-                    weight: FontWeight.w500,
-                    color: colors.primary.shade500,
-                  ),
-                  4.horizontalSpace,
-                  Transform.rotate(
-                    angle: expanded ? 3.14 : 0,
-                    child: Icon(
-                      Icons.keyboard_arrow_down,
+            if (canShow)
+              GestureDetector(
+                onTap: expandCard,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GenText(
+                      expanded ? 'View Less' : 'View More',
+                      weight: FontWeight.w500,
                       color: colors.primary.shade500,
                     ),
-                  ),
-                ],
+                    4.horizontalSpace,
+                    Transform.rotate(
+                      angle: expanded ? 3.14 : 0,
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: colors.primary.shade500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),

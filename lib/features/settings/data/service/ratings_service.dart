@@ -38,6 +38,32 @@ class RatingsRepo extends BaseAPI {
     }
   }
 
+     Future<ApiResult<CustomerRatings>> customerGetRatingsById({required int userId}) async {
+    try {
+      final endpoint = '/user/ratings/customer/$userId';
+      final res = await dio().get<Map<String, dynamic>>(endpoint);
+
+      log('Status: ${res.statusCode}');
+      log('Response: ${res.data}');
+
+      if (res.statusCode == 200 ||res.statusCode == 201  && res.data != null) {
+        final json = res.data!;
+        final ratingData = CustomerRatings.fromJson(
+          json['data'] as Map<String, dynamic>,
+        );
+        return ApiResult(data: ratingData);
+      }
+
+      final message = res.data?['message'] ?? 'Failed to update at $endpoint';
+      return ApiResult(error: message.toString());
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
+      log('Stacktrace: $s');
+      return ApiResult(error: e.toString());
+    }
+  }
+
   Future<ApiResult<ProviderRatings>> providerGetRatings() async {
     try {
       const endpoint = '/user/ratings/provider';

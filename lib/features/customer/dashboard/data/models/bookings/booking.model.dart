@@ -39,6 +39,8 @@ class Bookings {
     this.serviceCategory,
     this.paymentMethod,
     this.amount,
+    this.chatId,
+    this.invoiceId,
   });
 
   factory Bookings.fromJson(Map<String, dynamic> json) => Bookings(
@@ -102,7 +104,9 @@ class Bookings {
                 json['serviceCategory'] as Map<String, dynamic>,
               ),
               paymentMethod: json['paymentMethod'] as String?,
-              amount: json['amount'] as String?
+              amount: json['amount'] as String?,
+              chatId:  json['chatId'] as int?,
+              invoiceId:  json['invoiceId'] as String?
 
       );
 
@@ -144,6 +148,8 @@ class Bookings {
   final ServiceCategory? serviceCategory;
   final String? paymentMethod;
   final String? amount;
+  final int? chatId;
+  final String? invoiceId;
 }
 
 

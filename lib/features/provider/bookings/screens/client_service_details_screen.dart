@@ -24,7 +24,7 @@ class _ProviderServiceDetailScreenState
     final clientName = widget.booking.user?.fullName ?? '';
     final serviceRequestId = widget.booking.id;
     final amount = widget.booking.amount ?? '';
-    final invoiceNum = widget.booking.requestId ?? '';
+    final invoiceNum = widget.booking.invoiceId ?? '';
     final providerImage = widget.booking.assignedProvider?.profileImage;
     final clientImage = widget.booking.user?.profileImage;
     final serviceCategoryname = widget.booking.serviceCategory?.name;

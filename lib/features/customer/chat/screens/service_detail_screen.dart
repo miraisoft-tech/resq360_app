@@ -198,18 +198,20 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 ),
               ),
               const Spacer(),
-              // WideButton(
-              //   label: 'Start',
-              //   backgroundColor: appColors.primary.shade500,
-              //   textColor: appColors.whiteColor,
-              //   onPressed: () async {
-              //     if (serviceRequestId != null) {
-              //       context.read<BookingBloc>().add(
-              //         StartBooking(serviceRequestId: serviceRequestId),
-              //       );
-              //     }
-              //   },
-              // ),
+              if (widget.chat.serviceRequestStatus == 'PENDING')
+                WideButton(
+                  label: 'Start',
+                  backgroundColor: appColors.primary.shade500,
+                  textColor: appColors.whiteColor,
+                  onPressed: () async {
+                    if (serviceRequestId != null) {
+                      context.read<BookingBloc>().add(
+                        StartBooking(serviceRequestId: serviceRequestId),
+                      );
+                    }
+                  },
+                ),
+
               10.verticalSpace,
               Row(
                 children: [
@@ -255,20 +257,21 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 ],
               ),
               5.verticalSpace,
-              WideButton(
-                label: 'Cancel',
-                backgroundColor: appColors.primary.shade50,
-                textColor: appColors.primary.shade500,
-                onPressed: () async {
-                  if (serviceRequestId == null) return;
-                  await pushScreen(
-                    context,
-                    ServiceCancelledScreen(
-                      serviceRequestId: serviceRequestId,
-                    ),
-                  );
-                },
-              ),
+              if (widget.chat.serviceRequestStatus != 'COMPLETED')
+                WideButton(
+                  label: 'Cancel',
+                  backgroundColor: appColors.primary.shade50,
+                  textColor: appColors.primary.shade500,
+                  onPressed: () async {
+                    if (serviceRequestId == null) return;
+                    await pushScreen(
+                      context,
+                      ServiceCancelledScreen(
+                        serviceRequestId: serviceRequestId,
+                      ),
+                    );
+                  },
+                ),
             ],
           ),
         ),

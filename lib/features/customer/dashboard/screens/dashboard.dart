@@ -7,6 +7,7 @@ import 'package:resq360/features/customer/authentication/data/models/auth/custom
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
+import 'package:resq360/features/customer/dashboard/screens/advertisement_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
@@ -38,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
         CustomerFetchAdvertisement(),
       );
       context.read<CustomerBookingBloc>().add(
-        FetchCustomerBookings(status: BookingStatus.pending.value),
+        FetchCustomerBookings(status: BookingStatus.ongoing.value),
       );
     });
   }
@@ -113,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     CustomerFetchAdvertisement(),
                   );
                   context.read<CustomerBookingBloc>().add(
-                    FetchCustomerBookings(status: BookingStatus.pending.value),
+                    FetchCustomerBookings(status: BookingStatus.ongoing.value),
                   );
                 },
                 child: ListView(
@@ -264,9 +265,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: colors.black,
                         ),
                         const Spacer(),
+
+                        // FIXED VIEW ALL BUTTON
                         GestureDetector(
                           onTap: () async {
-                            // await pushScreen(context, const ServiceProvidersScreen(serviceProviderId: null,));
+                            final state =
+                                context.read<CustomerAdvertisementBloc>().state;
+
+                            if (state is CustomerAdvertisementFetched) {
+                              await pushScreen(
+                                context,
+                                RecommendedListScreen(
+                                  advertisements: state.adverisementList,
+                                ),
+                              );
+                            }
                           },
                           child: UrbText(
                             'View All',
@@ -278,7 +291,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
+
                     12.verticalSpace,
+
                     BlocBuilder<
                       CustomerAdvertisementBloc,
                       CustomerAdvertisementState
@@ -287,8 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         if (state is CustomerAdvertisementLoading) {
                           return const CircularProgressIndicator();
                         }
+
                         if (state is CustomerAdvertisementFetched) {
                           final ads = state.adverisementList;
+
                           if (ads.isEmpty) {
                             return const Center(
                               child: Text(
@@ -298,7 +315,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           }
 
-                          return AdvertisementCarousel(ads: ads);
+                          return GestureDetector(
+                            onTap: () async {
+                              await pushScreen(
+                                context,
+                                RecommendedListScreen(advertisements: ads),
+                              );
+                            },
+                            child: AdvertisementCarousel(ads: ads),
+                          );
                         }
 
                         if (state is CustomerAdvertisementError) {
@@ -311,9 +336,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           );
                         }
+
                         return const SizedBox.shrink();
                       },
                     ),
+
                     30.verticalSpace,
                   ],
                 ),
@@ -448,6 +475,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
           ),
         ),
         5.verticalSpace,
+        if(widget.ads.length > 1)
         SmallDotIndicator(
           total: widget.ads.length,
           currentIndex: currentIndex,

@@ -30,7 +30,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<ProviderServiceBloc>().add(const ProviderFetchBookings());
+    context.read<ProviderServiceBloc>().add( ProviderFetchBookings(status: BookingStatus.ongoing.value,));
   }
 
   @override
@@ -46,7 +46,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           );
           context.read<ProviderServiceBloc>().add(
             ProviderFetchBookings(
-              status: BookingStatus.pending.value,
+              status: BookingStatus.ongoing.value,
             ),
           );
         }
@@ -118,7 +118,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         body: RefreshIndicator(
           onRefresh: () async {
             context.read<ProviderServiceBloc>().add(
-              const ProviderFetchBookings(),
+               ProviderFetchBookings(status: BookingStatus.ongoing.value,),
             );
           },
 

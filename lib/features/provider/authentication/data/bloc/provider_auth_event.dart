@@ -98,8 +98,8 @@ class ProviderResendVerificationEmailEvent extends ProviderAuthEvent {
   List<Object> get props => [email];
 }
 
-class ProvidergetUserProfile extends ProviderAuthEvent {
-  const ProvidergetUserProfile();
+class ProvidergetProviderProfile extends ProviderAuthEvent {
+  const ProvidergetProviderProfile();
 
   @override
   List<Object> get props => [];

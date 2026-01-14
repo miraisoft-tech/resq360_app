@@ -322,10 +322,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
           final providerProfileResponse = ProviderModel.fromJson(
             res.data!['data'] as Map<String, dynamic>,
           );
-          await AuthLocalRepo.instance.storeUserDetails(
-            isProvider: true,
-            providerProfileResponse: providerProfileResponse,
-          );
 
           return ApiResult(data: providerProfileResponse);
         }
