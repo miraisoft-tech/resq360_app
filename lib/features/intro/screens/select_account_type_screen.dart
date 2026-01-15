@@ -29,8 +29,6 @@ class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
 
     if (!mounted) return;
 
-    log('saved the type $selectedType');
-
     dashboardViewModel.userType = selectedType;
 
     if (_selectedIndex == 0) {

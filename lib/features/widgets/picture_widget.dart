@@ -10,7 +10,7 @@ class PictureWidget extends StatelessWidget {
     return CircleAvatar(
       radius: radius,
       backgroundImage:
-          image != null
+          (image != null && image != '')
               ? NetworkImage(image!)
               : const AssetImage(
                     AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG,

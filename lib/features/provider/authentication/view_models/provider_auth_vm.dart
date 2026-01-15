@@ -68,10 +68,7 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
     notifyListeners();
 
     unawaited(loadProviderProfile());
-    // Load any other necessary data after login
   }
-
-  //
 
   Future<void> loadProviderProfile() async {
     if (authInfo == null) return;
