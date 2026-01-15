@@ -69,6 +69,7 @@ class ServiceProvider {
     required this.totalReviews,
     required this.serviceName,
     required this.providerServiceId,
+    this.phoneNumber,
   });
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
@@ -101,6 +102,8 @@ class ServiceProvider {
       totalReviews: json['totalReviews'] as int?,
       serviceName: json['serviceName']?.toString(),
       providerServiceId: json['providerServiceId'] as int?,
+      phoneNumber: json['phoneNumber'] as String?,
+
     );
   }
 
@@ -120,6 +123,7 @@ class ServiceProvider {
   final int? totalReviews;
   final String? serviceName;
   final int? providerServiceId;
+  final String? phoneNumber;
 }
 
 class ProviderService {
