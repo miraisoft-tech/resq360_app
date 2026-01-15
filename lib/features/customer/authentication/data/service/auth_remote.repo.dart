@@ -40,26 +40,16 @@ class AuthRemoteRepo extends BaseAPI {
       log(res.statusCode);
       log(res.data);
 
-      if (res.statusCode == 200 || res.statusCode == 201) {
-        final body = res.data!;
-        final success = body['success'] == true;
-
-        if (!success) {
-          return ApiResult(
-            error: body['message']?.toString() ?? 'Login failed',
+      switch (res.statusCode) {
+        case 200:
+        case 201:
+          final authResponse = AuthResponse.fromJson(
+            res.data?['data'] as Map<String, dynamic>,
           );
-        }
 
-        final token = body['data']?['access_token'];
-        if (token == null) {
-          return ApiResult(error: 'No token returned from server');
-        }
-
-        final authResponse = AuthResponse.fromJson(res.data!);
-
-        return ApiResult(data: authResponse);
-      } else {
-        return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
+          return ApiResult(data: authResponse);
+        default:
+          return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
       }
     } on DioException catch (e) {
       return handleDioError(e);
@@ -83,7 +73,6 @@ class AuthRemoteRepo extends BaseAPI {
         'password': password,
       };
 
-      log('credentials stored locally $email / ****');
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
       log(res.statusCode);

@@ -43,12 +43,17 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         password: event.password,
       );
 
+      if (result.data == null) {
+        emit(CustomerAuthFailure(result.error ?? 'Login failed'));
+        return;
+      }
+
       final ok = await _loadAndSaveUserProfile(
         authResponse: result.data!,
       );
 
-      if (result.data == null || !ok) {
-        emit(CustomerAuthFailure(result.error ?? 'Login failed'));
+      if (!ok) {
+        emit(const CustomerAuthFailure('Failed to load user profile'));
         return;
       }
 
@@ -76,12 +81,17 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         password: event.password,
       );
 
+      if (result.data == null) {
+        emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
+        return;
+      }
+
       final ok = await _loadAndSaveUserProfile(
         authResponse: result.data!,
       );
 
-      if (result.data == null || !ok) {
-        emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
+      if (!ok) {
+        emit(const CustomerAuthFailure('Failed to load provider profile'));
         return;
       }
 

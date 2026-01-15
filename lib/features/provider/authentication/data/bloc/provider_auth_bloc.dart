@@ -46,13 +46,18 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         password: event.password,
       );
 
+      if (result.data == null) {
+        log('bloc error ${result.error}');
+        emit(ProviderAuthFailureState(result.error ?? 'Login failed'));
+        return;
+      }
+
       final ok = await _loadAndSaveProviderProfile(
         authResponse: result.data!,
       );
 
-      if (result.data == null || !ok) {
-        log('bloc error ${result.error}');
-        emit(ProviderAuthFailureState(result.error ?? 'Login failed'));
+      if (!ok) {
+        emit(const ProviderAuthFailureState('Failed to load profile'));
         return;
       }
 
@@ -103,14 +108,14 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         address: event.address,
       );
 
-      final ok = await _loadAndSaveProviderProfile(
-        authResponse: result.data!,
-      );
-
-      if (result.data == null || !ok) {
+      if (result.data == null) {
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
         return;
       }
+
+      final ok = await _loadAndSaveProviderProfile(
+        authResponse: result.data!,
+      );
 
       if (!ok) {
         emit(const ProviderAuthFailureState('Failed to load provider profile'));
