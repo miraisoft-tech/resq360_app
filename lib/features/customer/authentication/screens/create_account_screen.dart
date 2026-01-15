@@ -64,8 +64,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         if (state is CustomerAuthAuthenticated && context.mounted) {
           Navigator.pop(context);
 
-          await pushScreen(
-            context,
+          await pushAndReplaceScreen(
+            context: context,
             ConfirmEmailScreen(
               email: emailController.text,
             ),
