@@ -38,11 +38,17 @@ class BaseAPI {
       InterceptorsWrapper(
         onRequest: (res, handler) async {
           final token = await AuthLocalRepo.instance.getAccessToken();
+
+          if (BuildConfig.isDev) {
+            log('${res.uri}\nTOKEN: $token\n${res.data ?? 'N/A'}');
+          }
+
+          if (customAccessToken != null) {
+            res.headers['Authorization'] = 'Bearer $customAccessToken';
+          }
+
           if (token != null) {
             res.headers['Authorization'] = 'Bearer $token';
-            log('Using token: $token');
-          } else {
-            log('No token found for ${res.uri}');
           }
 
           return handler.next(res);
