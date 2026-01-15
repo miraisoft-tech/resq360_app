@@ -1,3 +1,4 @@
+import 'dart:async';
 
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
@@ -81,8 +82,9 @@ class _ProviderConfirmEmailScreenState
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
         if (!context.mounted) return;
+
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+          unawaited(showLoadingDialog(context));
         }
 
         if (state is ProviderAuthFailureState) {
@@ -109,12 +111,13 @@ class _ProviderConfirmEmailScreenState
         }
 
         if (state is ProviderEmailVerifiedState) {
-          if (!context.mounted) return;
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
+          await pop(context);
+
           log('Email verified, navigating to main layout');
-          await replaceScreen(context, const ProviderVerificationStepsScreen());
+          await pushAndReplaceScreen(
+            context: context,
+            const ProviderVerificationStepsScreen(),
+          );
         }
       },
       child: AppScaffold(

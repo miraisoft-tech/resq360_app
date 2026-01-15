@@ -114,7 +114,7 @@ class ChangePasswordScreen extends StatelessWidget {
                           context,
                           'All fields are required',
                         );
-                        return; 
+                        return;
                       }
 
                       if (newPass.length < 8) {

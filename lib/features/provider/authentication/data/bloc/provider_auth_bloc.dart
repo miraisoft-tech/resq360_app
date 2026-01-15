@@ -1,7 +1,5 @@
-import 'dart:developer';
-
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
@@ -36,9 +34,10 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
 
   Future<void> _onLoginWithEmail(
     ProviderLoginWithEmail event,
-    Emitter<ProviderAuthState> emit,
-  ) async {
-    emit(ProviderAuthLoadingState());
+    Emitter<ProviderAuthState> emit, [
+    bool showLoading = true,
+  ]) async {
+    if (showLoading) emit(ProviderAuthLoadingState());
 
     try {
       final result = await providerAuthRemoteRepo.loginWithEmail(
@@ -69,6 +68,24 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       emit(ProviderAuthLoginSuccessState(result.data!.provider));
     } on Exception catch (e) {
       emit(ProviderAuthFailureState(e.toString()));
+    }
+  }
+
+  Future<void> _loginWithEmailSilently() async {
+    try {
+      final localCredentials =
+          await AuthLocalRepo.instance.getLocalCredentials();
+
+      final result = await providerAuthRemoteRepo.loginWithEmail(
+        email: localCredentials?.userName ?? '',
+        password: localCredentials?.password ?? '',
+      );
+
+      await _loadAndSaveProviderProfile(
+        authResponse: result.data!,
+      );
+    } on Exception catch (e) {
+      log(e);
     }
   }
 
@@ -110,15 +127,6 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
 
       if (result.data == null) {
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
-        return;
-      }
-
-      final ok = await _loadAndSaveProviderProfile(
-        authResponse: result.data!,
-      );
-
-      if (!ok) {
-        emit(const ProviderAuthFailureState('Failed to load provider profile'));
         return;
       }
 
@@ -217,6 +225,8 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
 
       if (result) {
         emit(ProviderEmailVerifiedState());
+
+        await _loginWithEmailSilently();
       } else {
         emit(
           const ProviderAuthFailureState(

@@ -48,31 +48,29 @@ class _StepIDScreenState extends State<StepIDScreen> {
         }
 
         if (state is CustomerKycSubmissionFailure) {
-          if (!context.mounted) return;
+          Navigator.pop(context);
+
           await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerKycSubmitted) {
-          if (!context.mounted) return;
-          await pop(context);
+          Navigator.pop(context);
 
-          if (context.mounted) {
-            await GeneralDialogs.showCustomBottomSheet(
-              context,
-              body: StepModal(
-                title: 'You’re Almost Done!',
-                description: 'Just one more step to complete your verification',
-                icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
-                onContinuePressed: () async {
-                  await pop(context);
+          await GeneralDialogs.showCustomBottomSheet(
+            context,
+            body: StepModal(
+              title: 'You’re Almost Done!',
+              description: 'Just one more step to complete your verification',
+              icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
+              onContinuePressed: () async {
+                await pop(context);
 
-                  if (context.mounted) {
-                    await pushScreen(context, const StepAddressScreen());
-                  }
-                },
-              ),
-            );
-          }
+                if (context.mounted) {
+                  await pushScreen(context, const StepAddressScreen());
+                }
+              },
+            ),
+          );
         }
       },
       child: Scaffold(

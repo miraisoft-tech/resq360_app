@@ -146,8 +146,6 @@ Future<void> showLoadingDialog(BuildContext context) async {
     barrierDismissible: false,
     builder: (BuildContext context) {
       return const Center(child: ActivityDialogWidget());
-
-      // return const Center(child: LoadingDialogWidget());
     },
   );
 }

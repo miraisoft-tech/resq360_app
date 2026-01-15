@@ -46,7 +46,7 @@ class HeaderWidget extends StatelessWidget {
                   AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
                   4.horizontalSpace,
                   SizedBox(
-                    width: 100.w,
+                    width: location.length > 20 ? 140.w : 30.w,
                     child: GenText(
                       location,
                       height: 24,

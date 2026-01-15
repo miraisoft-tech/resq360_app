@@ -1,4 +1,3 @@
-
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
@@ -63,7 +62,9 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
     }
 
     context.read<CustomerAuthBloc>().add(
-      CustomerVerifyEmailAddressEvent(emailVerificationToken: _otpController1.text),
+      CustomerVerifyEmailAddressEvent(
+        emailVerificationToken: _otpController1.text,
+      ),
     );
     log('pushing to verification steps');
   }
@@ -81,14 +82,14 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
 
         if (state is CustomerAuthFailure) {
           log(state.error);
-          Navigator.of(context).pop();
+          Navigator.pop(context);
+
           await showErrorSnackbar(context, state.error);
         }
 
         if (state is CustomerVerificationEmailResentState) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
+          Navigator.pop(context);
+
           await showSuccessSnackbar(context, state.message);
 
           controller
@@ -105,7 +106,10 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           log('Email verified');
 
           await pop(context);
-          await replaceScreen(context, const VerificationStepsScreen());
+          await pushAndReplaceScreen(
+            context: context,
+            const VerificationStepsScreen(),
+          );
         }
       },
       child: AppScaffold(
