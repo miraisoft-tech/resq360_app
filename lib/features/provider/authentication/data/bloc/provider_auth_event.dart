@@ -144,3 +144,5 @@ class ProviderSubmitId extends ProviderAuthEvent {
 }
 
 class ProviderGetProividerKycInfo extends ProviderAuthEvent {}
+
+class ProviderGetStates extends ProviderAuthEvent {}

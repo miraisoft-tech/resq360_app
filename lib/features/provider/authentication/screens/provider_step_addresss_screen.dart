@@ -1,9 +1,13 @@
+import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/authentication/data/models/state_model.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
@@ -22,26 +26,39 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
   final TextEditingController _streetCtrl = TextEditingController();
   final TextEditingController _cityCtrl = TextEditingController();
 
-  final List<String> states = [
-    'Lagos',
-    'Abuja',
-    'Kano',
-    'Rivers',
-    'Oyo',
-    'Enugu',
-  ];
+  ProviderModel? userInfo;
 
   Future<void> initializeLocation() async {
     final locationData = await LocationHelper.getCurrentLocation();
 
     _streetCtrl.text = (locationData['address'] as String?) ?? '';
     _cityCtrl.text = (locationData['city'] as String?) ?? '';
+    _selectState.value = (locationData['state'] as String?) ?? '';
+
+    userInfo = await AuthLocalRepo.instance.getProviderAuthCredentials();
+
+    setState(() {});
   }
+
+  List<StateModel> states = [];
 
   bool get isFormValid =>
       _streetCtrl.text.isNotEmpty &&
       _cityCtrl.text.isNotEmpty &&
       _selectState.value != null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(initializeLocation());
+
+      context.read<ProviderAuthBloc>().add(
+        ProviderGetStates(),
+      );
+    });
+  }
 
   @override
   void dispose() {
@@ -56,37 +73,55 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
-        if (!context.mounted) return;
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is ProviderKycSubmissionFailure) {
-          await showSnackBar(context, 'Error', state.error);
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+
+          await showErrorSnackbar(context, state.error);
         }
+
         if (state is ProviderKycAddressSubmitted) {
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
               title: 'Verification Complete!',
               description:
-                  'Welcome to ResQ360, Jane! You can now book a service and browse service providers.',
+                  'Welcome to ResQ360, ${userInfo?.fullName ?? ''}! You can now book a service and browse service providers.',
               icon: AppAssets.ASSETS_LOGO_LOGO_PNG,
               buttonText: 'Go to Dashboard',
               onContinuePressed: () async {
-                await pop(context);
+                Navigator.pop(context);
 
                 if (context.mounted) {
-                  await replaceScreen(
-                    context,
-                    const MainLayoutPage(
-                      userType: UserType.provider,
-                    ),
-                  );
+                  final hasMainLayout =
+                      Navigator.of(context).canPop() &&
+                      ModalRoute.of(context)?.settings.name != '/';
+
+                  if (hasMainLayout) {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  } else {
+                    await replaceScreen(
+                      context,
+                      const MainLayoutPage(
+                        userType: UserType.provider,
+                      ),
+                    );
+                  }
                 }
               },
             ),
           );
+        }
+
+        if (state is ProviderStatesLoadedState) {
+          setState(() {
+            states = state.states;
+          });
         }
       },
       child: Scaffold(
@@ -152,10 +187,14 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
                             return ObjectKDropDown(
                               label: 'State',
                               hintText: 'State',
-                              displayStringForOption: (String? id) => id ?? '',
+                              displayStringForOption:
+                                  (String? name) => name ?? '',
                               showPrefix: false,
                               value: value,
-                              dropdownItems: states,
+                              dropdownItems:
+                                  states
+                                      .map((state) => state.name ?? '')
+                                      .toList(),
                               onChanged: (value) {
                                 setState(() {
                                   _selectState.value = value;

@@ -81,23 +81,22 @@ class _ProviderConfirmEmailScreenState
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
-        if (!context.mounted) return;
-
         if (state is ProviderAuthLoadingState) {
-          unawaited(showLoadingDialog(context));
+          showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
+          if (context.mounted) {
+            Navigator.pop(context);
           }
 
           await showSnackBar(context, 'Error', state.error);
         }
         if (state is ProviderVerificationEmailResentState) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
+          if (context.mounted) {
+            Navigator.pop(context);
           }
+
           await showSuccessSnackbar(context, state.message);
 
           controller

@@ -1,13 +1,16 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
+import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/authentication/data/models/state_model.dart';
 import 'package:resq360/features/provider/authentication/data/service/provider_auth_remote.repo.dart';
 
 part 'provider_auth_event.dart';
@@ -30,6 +33,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     on<ProviderSubmitId>(_onSubmitKycId);
     on<ProviderGetProividerKycInfo>(_onGetProviderKycInfo);
     on<ProviderLogout>(_onLogout);
+    on<ProviderGetStates>(_getLocalStates);
   }
 
   Future<void> _onLoginWithEmail(
@@ -294,7 +298,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await authRemoteRepo.uploadAndSubmitFaceId(
+      final result = await providerAuthRemoteRepo.uploadAndSubmitFaceId(
         filePath: event.filePath,
       );
       if (result.data != null) {
@@ -315,7 +319,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await authRemoteRepo.getUserKycInfo();
+      final result = await providerAuthRemoteRepo.getUserKycInfo();
       if (result.data != null) {
         emit(ProviderKycInfoLoaded(result.data!));
       } else {
@@ -335,7 +339,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await authRemoteRepo.submitKycAddress(
+      final result = await providerAuthRemoteRepo.submitKycAddress(
         address: event.address,
         city: event.city,
         state: event.state,
@@ -358,7 +362,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await authRemoteRepo.uploadAndSubmitIdentity(
+      final result = await providerAuthRemoteRepo.uploadAndSubmitIdentity(
         documentType: event.documentType,
         filePath: event.filePath,
       );
@@ -373,6 +377,45 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       }
     } on Exception catch (e) {
       emit(ProviderKycSubmissionFailure(e.toString()));
+    }
+  }
+
+  Future<void> _getLocalStates(
+    ProviderGetStates event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    final tempStatesList = <StateModel>[];
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/json/states_list.json',
+      );
+      final json = jsonDecode(jsonString);
+
+      if (json == null || json is! List) {
+        emit(ProviderStatesLoadedState(tempStatesList));
+        return;
+      }
+
+      final statesListJson = json;
+      log('states ${statesListJson.length}');
+
+      for (var i = 0; i < statesListJson.length; i++) {
+        final stateJson = statesListJson[i];
+        if (stateJson is String) {
+          tempStatesList.add(StateModel.fromJson(stateJson));
+        }
+      }
+
+      tempStatesList.sort((a, b) {
+        final nameA = a.name ?? '';
+        final nameB = b.name ?? '';
+        return nameA.compareTo(nameB);
+      });
+
+      emit(ProviderStatesLoadedState(tempStatesList));
+    } on Exception catch (e) {
+      log('Error loading states: $e');
+      emit(ProviderStatesLoadedState(tempStatesList));
     }
   }
 }

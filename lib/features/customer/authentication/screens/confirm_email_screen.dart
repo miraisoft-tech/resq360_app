@@ -77,7 +77,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {

@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/identity_enums.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_step_addresss_screen.dart';
@@ -22,20 +23,26 @@ class ProviderStepIDScreen extends StatefulWidget {
 class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
   final ValueNotifier<String?> _selectType = ValueNotifier(null);
 
-  final List<String> idTypes = [
-    'National ID',
-    "Driver's License",
-    'Passport',
-  ];
   File? pickedImage;
 
   Future<void> pickCameraPhoto(BuildContext context) async {
+    if (_selectType.value == null) {
+      showErrorSnackbar(context, 'Please select an ID type');
+      return;
+    }
+
     pickedImage = await AppFilePicker.pickImage();
-   if (!context.mounted) return;
+    if (!context.mounted) return;
+
+    setState(() {});
+
     if (pickedImage != null) {
       context.read<ProviderAuthBloc>().add(
-      ProviderSubmitKyc(filePath: pickedImage!.path),
-    );
+        ProviderSubmitId(
+          documentType: _selectType.value!,
+          filePath: pickedImage!.path,
+        ),
+      );
     }
   }
 
@@ -45,68 +52,42 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
-               if (state is ProviderAuthLoadingState) {
-         showLoadingDialog(context);
-      }  
-      
-      
-      if (state is ProviderKycSubmissionFailure) {
-        if(!context.mounted) return;
-        showSnackBar(context, 'Error', state.error);
-      }
+        if (state is ProviderAuthLoadingState) {
+          showLoadingDialog(context);
+        }
 
+        if (state is ProviderKycSubmissionFailure) {
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
 
-      if (state is ProviderKycSubmitted) {
-        if(!context.mounted) return;
-       if (context.mounted) {
-      await GeneralDialogs.showCustomBottomSheet(
-        context,
-        body: StepModal(
-          title: 'You’re Almost Done!',
-          description: 'Just one more step to complete your verification',
-          icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
-          onContinuePressed: () async {
-            await pop(context);
+          showErrorSnackbar(context, state.error);
+        }
 
-            if (context.mounted) {
-              await pushScreen(context, const ProviderStepAddressScreen());
-            }
-          },
-        ),
-      );
-    }
-      }       if (state is ProviderAuthLoadingState) {
-         if (!context.mounted) return;
-         showLoadingDialog(context);
-      }  
-      
-      
-      if (state is ProviderKycSubmissionFailure) {
-        if(!context.mounted) return;
-        showSnackBar(context, 'Error', state.error);
-      }
+        if (state is ProviderIdentitySubmitted) {
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
 
+          await GeneralDialogs.showCustomBottomSheet(
+            context,
+            body: StepModal(
+              title: 'You’re Almost Done!',
+              description: 'Just one more step to complete your verification',
+              icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
+              onContinuePressed: () async {
+                await pop(context);
 
-      if (state is ProviderKycSubmitted) {
-        if(!context.mounted) return;
-       if (context.mounted) {
-      await GeneralDialogs.showCustomBottomSheet(
-        context,
-        body: StepModal(
-          title: 'You’re Almost Done!',
-          description: 'Just one more step to complete your verification',
-          icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
-          onContinuePressed: () async {
-            await pop(context);
-
-            if (context.mounted) {
-              await pushScreen(context, const ProviderStepAddressScreen());
-            }
-          },
-        ),
-      );
-    }
-      }
+                if (context.mounted) {
+                  await pushAndReplaceScreen(
+                    context: context,
+                    const ProviderStepAddressScreen(),
+                  );
+                }
+              },
+            ),
+          );
+        }
       },
       child: Scaffold(
         backgroundColor: colors.whiteColor,
@@ -147,10 +128,17 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
                     return ObjectKDropDown(
                       label: 'ID type',
                       hintText: 'select ID type',
-                      displayStringForOption: (String? id) => id ?? '',
+                      displayStringForOption:
+                          (String? id) =>
+                              id?.replaceAll('_', ' ').toUpperCase() ?? '',
                       showPrefix: false,
                       value: value,
-                      dropdownItems: idTypes,
+                      dropdownItems:
+                          IdentityEnums.values
+                              .map(
+                                (e) => e.name,
+                              )
+                              .toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectType.value = value;
@@ -201,7 +189,14 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
                   label: 'Proceed',
                   onPressed:
                       (_selectType.value != null && (pickedImage != null))
-                          ? () {}
+                          ? () {
+                            context.read<ProviderAuthBloc>().add(
+                              ProviderSubmitId(
+                                documentType: _selectType.value!,
+                                filePath: pickedImage!.path,
+                              ),
+                            );
+                          }
                           : null,
                 ),
                 20.verticalSpace,

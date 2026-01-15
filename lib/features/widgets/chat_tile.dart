@@ -11,11 +11,14 @@ class ChatTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: EdgeInsets.only(top: 12.h, bottom: 16.h),
         child: Row(
           children: [
-           PictureWidget(image: chat.imgUrl,),
+            PictureWidget(
+              image: chat.imgUrl,
+            ),
             10.horizontalSpace,
             Expanded(
               child: Column(

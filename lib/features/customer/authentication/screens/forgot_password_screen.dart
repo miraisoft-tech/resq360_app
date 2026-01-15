@@ -41,13 +41,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           }
         }
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
-        } 
+          showLoadingDialog(context);
+        }
 
         if (state is CustomerAuthFailure) {
           await pop(context);
-          Future.delayed(const Duration(seconds: 2), () async{
-             await showSnackBar(context, 'Error', state.error);
+          Future.delayed(const Duration(seconds: 2), () async {
+            await showSnackBar(context, 'Error', state.error);
           });
           log(state.error);
         }
@@ -115,7 +115,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 label: 'Send Reset Code',
                 onPressed: () async {
                   if (emailController.text.isEmpty) {
-                    await showErrorSnackbar(context, 'Please enter a valid email.');
+                    await showErrorSnackbar(
+                      context,
+                      'Please enter a valid email.',
+                    );
                     return;
                   } else {
                     context.read<CustomerAuthBloc>().add(

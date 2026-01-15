@@ -1,13 +1,16 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/kyc_enums.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
@@ -105,6 +108,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           );
         },
       ),
+      SettingsItem(
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
+        title: 'KYC',
+        onTap: () async {
+          final userInfo =
+              await AuthLocalRepo.instance.getCustomerAuthCredentials();
+          if (userInfo?.kycStatus == KycEnums.approved.name) {
+            await showSuccessSnackbar(context, 'Your KYC is already approved');
+          } else {
+            await pushScreen(
+              context,
+              const VerificationStepsScreen(),
+            );
+          }
+        },
+      ),
       // SettingsItem(
       //   icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
       //   title: 'Manage Cards',
@@ -162,6 +181,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await pushScreen(context, const UpdateServiceScreen());
         },
       ),
+      SettingsItem(
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
+        title: 'KYC',
+        onTap: () async {
+          final userInfo =
+              await AuthLocalRepo.instance.getProviderAuthCredentials();
+          if (userInfo?.kycStatus == KycEnums.approved.name) {
+            await showSuccessSnackbar(context, 'Your KYC is already approved');
+          } else {
+            await pushScreen(
+              context,
+              const ProviderVerificationStepsScreen(),
+            );
+          }
+        },
+      ),
       // SettingsItem(
       //   icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
       //   title: 'Manage Cards',
@@ -196,7 +231,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PRIVACY_POLICY_SVG.svg,
         title: 'Terms of Use Policy',
-        onTap: () async{
+        onTap: () async {
           await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
         },
       ),
@@ -253,7 +288,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             BlocListener<ProfileUpdateBloc, ProfileUpdateState>(
               listener: (context, state) async {
                 if (state is ProfileUpdateLoading) {
-                  await showLoadingDialog(context);
+                  showLoadingDialog(context);
                 }
                 if (state is ProfileUpdateSuccess) {
                   Navigator.pop(context);

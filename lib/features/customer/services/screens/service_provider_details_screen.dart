@@ -158,7 +158,7 @@ class _ServiceProviderDetailsScreenState
           return BlocListener<ServiceRequestBloc, ServiceRequestState>(
             listener: (context, state) async {
               if (state is ServiceRequestLoading) {
-                await showLoadingDialog(context);
+                showLoadingDialog(context);
               }
 
               if (state is ServiceRequestCreated) {
@@ -495,8 +495,8 @@ class _ServiceProviderDetailsScreenState
                                             ),
 
                                           ...reviews.map(
-                                            (r) => ProviderReviewCard(data: r,
-                                              
+                                            (r) => ProviderReviewCard(
+                                              data: r,
                                             ),
                                           ),
                                         ],

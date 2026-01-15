@@ -14,7 +14,6 @@ class ProviderCreateAccountScreen extends StatefulWidget {
 
 class _ProviderCreateAccountScreenState
     extends State<ProviderCreateAccountScreen> {
-      
   late TextEditingController nameController;
   late TextEditingController emailController;
   late TextEditingController passwordController;
@@ -62,8 +61,8 @@ class _ProviderCreateAccountScreenState
               onChanged: (a) {
                 setState(() {});
               },
-              validator: (value) =>
-                  Validators.validateNotEmpty(value, 'full name'),
+              validator:
+                  (value) => Validators.validateNotEmpty(value, 'full name'),
             ),
             16.verticalSpace,
             KFormField(
@@ -74,8 +73,7 @@ class _ProviderCreateAccountScreenState
               onChanged: (a) {
                 setState(() {});
               },
-              validator: 
-                  Validators.validateEmail
+              validator: Validators.validateEmail,
             ),
             16.verticalSpace,
             KFormField(
@@ -86,8 +84,8 @@ class _ProviderCreateAccountScreenState
               onChanged: (a) {
                 setState(() {});
               },
-              validator: (value) =>
-                  Validators.validateNotEmpty(value, 'phone number'),
+              validator:
+                  (value) => Validators.validateNotEmpty(value, 'phone number'),
             ),
             16.verticalSpace,
             KFormField(
@@ -197,7 +195,10 @@ class _ProviderCreateAccountScreenState
             Center(
               child: GestureDetector(
                 onTap: () async {
-                  await pushScreen(context, const ProviderLoginScreen());
+                  await pushAndReplaceScreen(
+                    context: context,
+                    const ProviderLoginScreen(),
+                  );
                 },
                 child: RichText(
                   text: TextSpan(

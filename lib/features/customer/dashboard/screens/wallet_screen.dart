@@ -43,7 +43,7 @@ class _WalletScreenState extends State<WalletScreen> {
         if (state is WalletFundingLoadingState) {
           if (!isLoadingDialogShown) {
             isLoadingDialogShown = true;
-            await showLoadingDialog(context);
+            showLoadingDialog(context);
             log(isLoadingDialogShown);
           }
           return;
@@ -143,10 +143,11 @@ class _WalletScreenState extends State<WalletScreen> {
                 BlocBuilder<WalletBloc, WalletState>(
                   builder: (context, state) {
                     if (state is FetchWalletLoading) {
-                     return  Center(child: CircularProgressIndicator(
-                       color: appColors.primary,
-
-                    ));
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: appColors.primary,
+                        ),
+                      );
                     }
                     if (state is FetchingWalletInfoError) {
                       return Center(
@@ -229,10 +230,11 @@ class _WalletScreenState extends State<WalletScreen> {
                 BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
                   builder: (context, state) {
                     if (state is WalletTransactionsLoading) {
-                     return  Center(child: CircularProgressIndicator(
-                       color: appColors.primary,
-
-                    ));
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: appColors.primary,
+                        ),
+                      );
                     }
 
                     if (state is WalletTransactionsError) {

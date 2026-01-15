@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
@@ -39,13 +38,13 @@ class _ProviderForgotPasswordScreenState
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
-       if (state is ProviderAuthFailureState) {
+        if (state is ProviderAuthFailureState) {
           await pop(context);
-          Future.delayed(const Duration(seconds: 2), () async{
-             await showSnackBar(context, 'Error', state.error);
+          Future.delayed(const Duration(seconds: 2), () async {
+            await showSnackBar(context, 'Error', state.error);
           });
           log(state.error);
         }
@@ -116,7 +115,9 @@ class _ProviderForgotPasswordScreenState
                     return;
                   } else {
                     context.read<ProviderAuthBloc>().add(
-                      ProviderRequestPasswordResetEvent(email: emailController.text),
+                      ProviderRequestPasswordResetEvent(
+                        email: emailController.text,
+                      ),
                     );
                   }
                 },

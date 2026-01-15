@@ -39,7 +39,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
     final bloc = context.read<ProviderServiceBloc>();
     String status;
 
-  switch (index) {
+    switch (index) {
       case 0:
         status = 'upcoming';
 
@@ -49,7 +49,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
       case 2:
         status = 'completed';
 
-       case 3:
+      case 3:
         status = 'cancelled';
 
       default:
@@ -235,7 +235,7 @@ class _BookingCardState extends State<BookingCard> {
     int serviceRequestId,
   ) async {
     try {
-      unawaited(showLoadingDialog(context));
+      showLoadingDialog(context);
 
       final response = await ChatRepo().getChatByserviceRequestId(
         serviceRequestId,
