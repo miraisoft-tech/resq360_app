@@ -51,7 +51,7 @@ class BaseAPI {
           final statusCode = res.statusCode;
           final data = res.data?.toString() ?? '';
 
-          if (statusCode == 200 && data.contains('Unauthorized') ||
+          if ((statusCode == 200 && data.contains('Unauthorized')) ||
               data.contains('DOCTYPE')) {
             final authBloc = BlocRegistry.authBloc;
             if (authBloc == null) return handler.next(res);

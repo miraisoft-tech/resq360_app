@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
@@ -48,22 +50,25 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
+
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          unawaited(showLoadingDialog(context));
         }
 
         if (state is CustomerAuthFailure) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }
+
           log(state.error);
           await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerAuthLoginSuccess) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
           }
+
           await replaceScreen(
             context,
             const MainLayoutPage(

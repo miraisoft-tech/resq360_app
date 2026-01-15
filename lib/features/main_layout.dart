@@ -1,11 +1,8 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 
 class MainLayoutPage extends StatefulWidget {
   const MainLayoutPage({required this.userType, super.key});
@@ -20,28 +17,6 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
   late DashboardViewModel dashboardVM;
 
   DateTime currentBackPressTime = DateTime.now();
-
-  bool _hasHandledLogout = false;
-
-  void _checkAuthState() {
-    if (_hasHandledLogout) return;
-
-    final hasCustomerAuth = CustomerAuthProvider.instance.authInfo != null;
-    final hasProviderAuth = ProviderAuthProvider.instance.authInfo != null;
-
-    if (!hasCustomerAuth && !hasProviderAuth) {
-      _hasHandledLogout = true;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted) return;
-
-        await pushAndReplaceScreen(
-          const SelectAccountTypeScreen(),
-          context: context,
-        );
-      });
-    }
-  }
 
   Future<bool> onWillPop() async {
     if (dashboardVM.currentIndex == 0) {
@@ -61,13 +36,8 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
   @override
   void initState() {
     super.initState();
-    dashboardVM = DashboardViewModel(userType: widget.userType);
-  }
 
-  @override
-  void dispose() {
-    _hasHandledLogout = false;
-    super.dispose();
+    dashboardVM = DashboardViewModel(userType: widget.userType);
   }
 
   @override
@@ -84,7 +54,6 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
       child: AnimatedBuilder(
         animation: dashboardVM,
         builder: (context, _) {
-          _checkAuthState();
           final selectedIndex = dashboardVM.currentIndex;
 
           return Scaffold(
