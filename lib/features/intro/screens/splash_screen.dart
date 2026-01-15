@@ -50,8 +50,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
-    // EDIT AGAIN HERE FOR USER TYPE LOGIC
-
     final userTypeString = await AuthLocalRepo.instance.getUserType();
     final userType =
         userTypeString == UserType.provider.name
