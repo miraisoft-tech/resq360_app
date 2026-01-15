@@ -8,6 +8,12 @@ abstract class CustomerAdvertisementEvent extends Equatable {
 }
 
 class CustomerFetchAdvertisement extends CustomerAdvertisementEvent {}
+class FetchProviderActiveAdvertisements extends CustomerAdvertisementEvent {
+  const FetchProviderActiveAdvertisements({required this.providerId});
+
+  final int providerId;
+}
+
 
 class CreateAdvertisement extends CustomerAdvertisementEvent {
   const CreateAdvertisement({

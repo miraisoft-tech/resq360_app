@@ -37,6 +37,9 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<CustomerBookingBloc>().add(
         FetchCustomerBookings(status: BookingStatus.ongoing.value),
       );
+      context.read<CustomerAuthBloc>().add(
+        const CustomergetUserProfile(),
+      );
     });
   }
 

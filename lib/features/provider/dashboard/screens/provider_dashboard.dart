@@ -1,19 +1,20 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
+import 'package:resq360/features/provider/dashboard/widgets/advertisement_countdown_timer.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_ongoing_service.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_stats_card.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_todo.dart';
 import 'package:resq360/features/provider/dashboard/widgets/service_requests.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
-import 'package:resq360/features/widgets/promo_card_widget.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -25,13 +26,33 @@ class ProviderHomeScreen extends StatefulWidget {
 String revenue = '-';
 bool isAproved = false;
 bool profileNotDone = false;
-// ProviderModel provider;
+ProviderModel? providerData;
 
 class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
+  int? providerId;
   @override
   void initState() {
     super.initState();
-    context.read<ProviderServiceBloc>().add( ProviderFetchBookings(status: BookingStatus.ongoing.value,));
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _initializeProvider();
+      context.read<ProviderServiceBloc>().add(
+        ProviderFetchBookings(
+          status: BookingStatus.ongoing.value,
+        ),
+      );
+    });
+  }
+
+  Future<void> _initializeProvider() async {
+    final provider = await AuthLocalRepo.instance.getProviderCredentials();
+    if (provider?.id != null) {
+      setState(() {
+        providerId = provider!.id;
+      });
+      context.read<CustomerAdvertisementBloc>().add(
+        FetchProviderActiveAdvertisements(providerId: provider!.id!),
+      );
+    }
   }
 
   @override
@@ -72,7 +93,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
                 return const Center(child: Text('No user found'));
               }
-
+               providerData = asyncSnapshot.data;
               final provider = asyncSnapshot.data!;
               final fullName = provider.fullName?.trim();
               final address = provider.address?.city ?? 'N/A';
@@ -90,14 +111,18 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 isAproved = false;
               }
 
-              if (description != null && profileImage.isEmpty) {
-                if (description.isEmpty || profileImage.isEmpty) {
-                  profileNotDone = true;
-                }
+              profileNotDone = false;
+
+              if (description == null || description.trim().isEmpty) {
+                profileNotDone = true;
+              }
+
+              if (profileImage.trim().isEmpty) {
+                profileNotDone = true;
               }
 
               log('provider dashboard $fullName');
-              return _buildHeader(context, fullName!, address,profileImage );
+              return _buildHeader(context, fullName!, address, profileImage);
             },
           ),
           actions: [
@@ -119,7 +144,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         body: RefreshIndicator(
           onRefresh: () async {
             context.read<ProviderServiceBloc>().add(
-               ProviderFetchBookings(status: BookingStatus.ongoing.value,),
+              ProviderFetchBookings(
+                status: BookingStatus.ongoing.value,
+              ),
             );
           },
 
@@ -177,7 +204,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 ],
               ),
               20.verticalSpace,
-              const PromoCardWidget(),
+              // const PromoCardWidget(),
               30.verticalSpace,
               if (!isAproved) ...[
                 const ProviderAccountProgress(),
@@ -187,7 +214,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               if (profileNotDone) ...[
                 GestureDetector(
                   onTap: () => pushScreen(context, const SettingsScreen()),
-                  child: const ToDoSection(),
+                  child:  ToDoSection(provider: providerData! ,),
                 ),
                 30.verticalSpace,
               ],
@@ -217,19 +244,41 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 },
               ),
               30.verticalSpace,
-              Container(
-                padding: pad(horizontal: 10, vertical: 10),
-                decoration: BoxDecoration(
-                  color: colors.error.shade50,
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: UrbText(
-                  '⏳ Promotion ends in 6hrs-45mins',
-                  color: colors.black,
-                  weight: FontWeight.w700,
-                  size: 16,
-                ),
+              BlocBuilder<
+                CustomerAdvertisementBloc,
+                CustomerAdvertisementState
+              >(
+                builder: (context, state) {
+                  if (state is ProviderActiveAdvertisementsFetched) {
+                    final activeAds = state.advertisements;
+                    if (activeAds.isNotEmpty &&
+                        activeAds.first.endDate != null) {
+                      return Column(
+                        children: [
+                          AdvertCountdownTimer(
+                            endDate: activeAds.first.endDate!,
+                          ),
+                          30.verticalSpace,
+                        ],
+                      );
+                    }
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
+              // Container(
+              //   padding: pad(horizontal: 10, vertical: 10),
+              //   decoration: BoxDecoration(
+              //     color: colors.error.shade50,
+              //     borderRadius: BorderRadius.circular(8.r),
+              //   ),
+              //   child: UrbText(
+              //     '⏳ Promotion ends in 6hrs-45mins',
+              //     color: colors.black,
+              //     weight: FontWeight.w700,
+              //     size: 16,
+              //   ),
+              // ),
               30.verticalSpace,
               const ServiceRequests(),
               20.verticalSpace,
@@ -308,7 +357,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   }
 }
 
-Widget _buildHeader(BuildContext context, String name, String address, String profileImage) {
+Widget _buildHeader(
+  BuildContext context,
+  String name,
+  String address,
+  String profileImage,
+) {
   final colors = context.appColors;
   return Row(
     children: [
@@ -316,7 +370,9 @@ Widget _buildHeader(BuildContext context, String name, String address, String pr
         onTap: () async {
           await pushScreen(context, const SettingsScreen());
         },
-        child: PictureWidget(image: profileImage,),
+        child: PictureWidget(
+          image: profileImage,
+        ),
       ),
       10.horizontalSpace,
       Column(

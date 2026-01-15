@@ -32,6 +32,36 @@ class AdvertisementRepo extends BaseAPI {
     }
   }
 
+
+Future<ApiResult<List<Advertisement>>> fetchProviderActiveAdvertisements({
+  required int providerId,
+}) async {
+  final url = '/advertisements?providerId=$providerId&isActive=true&status=APPROVED';
+
+  try {
+    final res = await dio().get<Map<String, dynamic>>(url);
+    if (res.statusCode == 200) {
+      final json = res.data;
+      final advertisementList =
+          (json?['data'] as List)
+              .map(
+                (item) =>
+                    Advertisement.fromJson(item as Map<String, dynamic>),
+              )
+              .toList();
+      return ApiResult(data: advertisementList);
+    } else {
+      return ApiResult(error: res.data?['message'].toString());
+    }
+  } on DioException catch (e) {
+    final message =
+        e.response?.data?['message'] ?? e.message ?? 'Network error';
+    return ApiResult(error: message.toString());
+  } on Exception catch (e) {
+    return ApiResult(error: e.toString());
+  }
+}
+
   Future<ApiResult<CreateAvertisementResponse>> createAdvertisement({
     required int discountPercentage,
     required int durationInMilliSeconds,

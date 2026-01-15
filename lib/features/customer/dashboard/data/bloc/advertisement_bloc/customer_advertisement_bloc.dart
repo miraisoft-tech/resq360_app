@@ -19,6 +19,7 @@ class CustomerAdvertisementBloc
     on<CreateAdvertisement>(_onCreateAdvertisement);
     on<FetchAdvertisementPrice>(_onGetAdvertPrice);
     on<VerifyAdvertisementPayment>(_onVerifyAdvertisementPayment);
+    on<FetchProviderActiveAdvertisements>(_fetchProviderActiveAdvertisements);
   }
 
   Future<void> _fetchAdvertisement(
@@ -36,6 +37,27 @@ class CustomerAdvertisementBloc
       emit(CustomerAdvertisementError(error: e.toString()));
     }
   }
+
+  Future<void> _fetchProviderActiveAdvertisements(
+  FetchProviderActiveAdvertisements event,
+  Emitter<CustomerAdvertisementState> emit,
+) async {
+  emit(CustomerAdvertisementLoading());
+  
+  try {
+    final result = await advertisementRepo.fetchProviderActiveAdvertisements(
+      providerId: event.providerId,
+    );
+    
+    if (result.data != null) {
+      emit(ProviderActiveAdvertisementsFetched(advertisements: result.data!));
+    } else {
+      emit(CustomerAdvertisementError(error: result.error ?? 'Failed to fetch advertisements'));
+    }
+  } on Exception catch (e) {
+    emit(CustomerAdvertisementError(error: e.toString()));
+  }
+}
 
   Future<void> _onCreateAdvertisement(
     CreateAdvertisement event,

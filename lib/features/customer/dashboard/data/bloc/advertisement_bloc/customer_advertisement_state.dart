@@ -20,6 +20,14 @@ class CustomerAdvertisementFetched extends CustomerAdvertisementState {
   List<Object?> get props => [adverisementList];
 }
 
+class ProviderActiveAdvertisementsFetched extends CustomerAdvertisementState {
+  const ProviderActiveAdvertisementsFetched({required this.advertisements});
+
+  final List<Advertisement> advertisements;
+
+  @override
+  List<Object?> get props => [advertisements];
+}
 class AdvertisementCreated extends CustomerAdvertisementState {}
 
 class CustomerAdvertisementError extends CustomerAdvertisementState {
