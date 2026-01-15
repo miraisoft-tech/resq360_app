@@ -137,7 +137,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
       title: chat.title!,
       lastMessage: chat.lastMessage,
       lastMessageTime: chat.lastMessageAt,
-      // status: chat.paymentStatus!
+      imgurl: chat.image ?? ''
     );
   }
 }

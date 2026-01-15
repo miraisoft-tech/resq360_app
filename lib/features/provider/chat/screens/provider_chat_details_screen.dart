@@ -59,15 +59,17 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
         var title = '';
         var isActive = false;
         var phone = '';
+        var imageurl = '';
         if (state is ChatDetailReady) {
           final chat = state.chat;
           title = chat.title ?? 'Chat';
           phone = chat.user?.phoneNumber ?? '';
           isActive = chat.isActive ?? false;
+            imageurl = chat.image ?? '';
         }
         return Scaffold(
           backgroundColor: appColors.whiteColor,
-          appBar: _buildAppBar(title, isActive, phone),
+          appBar: _buildAppBar(title, isActive, phone, imageurl),
           body: SafeArea(
             child: Column(
               children: [
@@ -180,6 +182,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
     String title,
     bool isActive,
     String phoneNumber,
+    String imageUrl,
   ) {
     final appColors = context.appColors;
 
@@ -193,7 +196,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
       ),
       title: Row(
         children: [
-          const PictureWidget(),
+           PictureWidget(image: imageUrl,),
           8.horizontalSpace,
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

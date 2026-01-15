@@ -113,7 +113,7 @@ class _ProviderChatScreenState extends State<ProviderChatScreen> {
                                 chat.lastMessageTime != null
                                     ? _formatTime(chat.lastMessageTime!)
                                     : '',
-                            imgUrl: AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG,
+                            imgUrl: chat.imgurl,
                           ),
                           onTap: () async {
                             context.read<ChatListBloc>().add(

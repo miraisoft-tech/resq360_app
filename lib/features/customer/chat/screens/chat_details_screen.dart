@@ -65,16 +65,19 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           var title = '';
           var isActive = false;
           var phone = '';
+          var imageurl = '';
 
           if (state is ChatDetailReady) {
             final chat = state.chat;
             title = chat.title ?? 'Chat';
             phone = chat.provider?.phoneNumber ?? '';
             isActive = chat.isActive ?? false;
+            imageurl = chat.image ?? '';
+            log(imageurl);
           }
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(title, isActive, phone),
+            appBar: _buildAppBar(title, isActive, phone,imageurl ),
             body: SafeArea(
               child: Column(
                 children: [
@@ -159,6 +162,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     String title,
     bool isActive,
     String phoneNumber,
+    String imageurl,
   ) {
     final appColors = context.appColors;
 
@@ -172,25 +176,28 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
       title: Row(
         children: [
-          const PictureWidget(),
+          PictureWidget(image: imageurl,),
           8.horizontalSpace,
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GenText(
-                title.capitalizeWords(),
-                weight: FontWeight.w500,
-                color: appColors.black,
-              ),
-              GenText(
-                isActive ? 'Online' : 'Offline',
-                size: 13,
-                color:
-                    isActive
-                        ? appColors.success.shade600
-                        : appColors.error.shade600,
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GenText(
+                  title.capitalizeWords(),
+                  weight: FontWeight.w500,
+                  color: appColors.black,
+                  maxLines: 1,
+                ),
+                GenText(
+                  isActive ? 'Online' : 'Offline',
+                  size: 13,
+                  color:
+                      isActive
+                          ? appColors.success.shade600
+                          : appColors.error.shade600,
+                ),
+              ],
+            ),
           ),
         ],
       ),
