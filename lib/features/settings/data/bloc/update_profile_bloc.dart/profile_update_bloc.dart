@@ -24,6 +24,8 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     on<UpdateCustomerAddress>(_onUpdateCustomerAddress);
     on<UpdateProviderAddress>(_onUpdateProviderAddressNew);
     on<UpdateBankAccountEvent>(_onUpdateBankAccount);
+    on<UpdatePasswordEvent>(_onUpdatePassword);
+
   }
 
   Future<void> _onUpdateUserInfo(
@@ -241,6 +243,24 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
       accountNumber: event.accountNumber,
       bankName: event.bankName,
       bankCode: event.bankCode,
+    );
+
+    if (result.error != null) {
+      emit(ProfileUpdateError(result.error!));
+    } else {
+      emit(ProfileUpdateSuccess(result.data));
+    }
+  }
+
+  Future<void> _onUpdatePassword(
+    UpdatePasswordEvent event,
+    Emitter<ProfileUpdateState> emit,
+  ) async {
+    emit(ProfileUpdateLoading());
+    final result = await updateUserRepo.updatePassword(
+      newPassword: event.newPassword, 
+      oldPassword: event.oldPassword
+
     );
 
     if (result.error != null) {

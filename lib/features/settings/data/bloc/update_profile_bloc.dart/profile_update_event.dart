@@ -163,3 +163,17 @@ final class UpdateBankAccountEvent extends ProfileUpdateEvent {
   @override
   List<Object> get props => [accountName, accountNumber, bankName, bankCode];
 }
+
+final class UpdatePasswordEvent extends ProfileUpdateEvent {
+  const UpdatePasswordEvent({
+    required this.oldPassword,
+    required this.newPassword,
+
+  });
+  final String oldPassword;
+  final String newPassword;
+
+
+  @override
+  List<Object> get props => [oldPassword, newPassword];
+}

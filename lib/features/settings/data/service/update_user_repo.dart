@@ -217,4 +217,23 @@ class UpdateUserRepo extends BaseAPI {
       logTag: 'Change Phone Number',
     );
   }
+
+    Future<ApiResult<dynamic>> updatePassword({
+    required String newPassword,
+    required String oldPassword,
+
+  }) async {
+    const endpoint = '/auth/change-password';
+
+    final data = {
+      'oldPassword': oldPassword,
+      'newPassword': newPassword,
+    };
+
+    return _updateData(
+      endpoint: endpoint,
+      data: data,
+      logTag: 'Change Password',
+    );
+  }
 }
