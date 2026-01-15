@@ -5,10 +5,8 @@ class DBKeys {
   static const String userTypeKey = 'user_type';
   static const String otp = 'otp';
 
-
-
   static const String appTheme = 'appTheme';
-  static const String authData = 'authData';
+  static const String customerAuthData = 'authData';
   static const String providerAuthData = 'providerAuthData';
 
   static const String accessTokenKey = 'accessTokenKey';

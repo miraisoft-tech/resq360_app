@@ -25,7 +25,7 @@ class AuthResponse extends EmptyResponse implements BaseAuthResponse {
   }
 
   @override
-  final String accessToken;
+  final String? accessToken;
   final ProviderUserModel provider;
 
   @override

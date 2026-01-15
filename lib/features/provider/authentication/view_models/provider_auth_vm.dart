@@ -40,19 +40,16 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
 
   ProviderModel? authInfo;
 
-  Future<void> init() async {
-    final authData = await AuthLocalRepo.instance.getProviderCredentials();
+  ////======================AUTH INITIALIZATION=========================////
 
-    if (authData != null) {
-      log('Restored AuthResponse for provider');
-      authInfo = authData;
-    } else {
-      log('No saved AuthResponse for provider — user not logged in');
-      authInfo = null;
-    }
+  Future<void> init() async {
+    final authData = await AuthLocalRepo.instance.getProviderAuthCredentials();
 
     await initLocalRepo();
-    notifyListeners();
+
+    if (authData != null) {
+      await afterLogIn(authData);
+    }
   }
 
   Future<void> initLocalRepo() async {
@@ -60,6 +57,21 @@ class ProviderAuthProvider extends BaseViewModel with LocationMixin {
     useBiometics = await AuthLocalRepo.instance.getAccountBiometricsLogin();
     notifyListeners();
   }
+
+  Future<void> afterLogIn(ProviderModel auth) async {
+    authInfo = auth;
+    await AuthLocalRepo.instance.storeUserDetails(
+      isProvider: true,
+      providerProfileResponse: auth,
+    );
+
+    notifyListeners();
+
+    unawaited(loadProviderProfile());
+    // Load any other necessary data after login
+  }
+
+  //
 
   Future<void> loadProviderProfile() async {
     if (authInfo == null) return;

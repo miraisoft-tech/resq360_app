@@ -82,7 +82,8 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
         ...?uploadedImagesUrls,
       ];
 
-      final provider = await AuthLocalRepo.instance.getProviderCredentials();
+      final provider =
+          await AuthLocalRepo.instance.getProviderAuthCredentials();
       if (provider == null) {
         log('No user');
         emit(const ProfileUpdateError('No user credentials found'));
@@ -139,7 +140,7 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
           profileImageUrl: uploaded.url,
         );
       } else {
-        final user = await AuthLocalRepo.instance.getAuthCredentials();
+        final user = await AuthLocalRepo.instance.getCustomerAuthCredentials();
 
         if (user == null) {
           emit(const ProfileUpdateError('No user found'));

@@ -44,7 +44,7 @@ class AuthLocalRepo {
   Future<bool> storeUserDetails({required AuthResponse authResponse}) async {
     try {
       return await pref.saveMap(
-        key: DBKeys.authData,
+        key: DBKeys.customerAuthData,
         value: authResponse.toJson(),
       );
     } on Exception catch (e) {
@@ -56,7 +56,8 @@ class AuthLocalRepo {
   Future<AuthResponse?> getAuthCredentials() async {
     try {
       final result =
-          await pref.getValue(key: DBKeys.authData) as Map<String, dynamic>?;
+          await pref.getValue(key: DBKeys.customerAuthData)
+              as Map<String, dynamic>?;
       return result != null ? AuthResponse.fromJson(result) : null;
     } on Exception catch (e) {
       log(e);
@@ -66,7 +67,7 @@ class AuthLocalRepo {
 
   Future<bool> clearAuthCredentials() async {
     try {
-      await pref.deleteKey(key: DBKeys.authData);
+      await pref.deleteKey(key: DBKeys.customerAuthData);
       return true;
     } on Exception catch (e) {
       log(e);

@@ -8,8 +8,6 @@ import 'package:resq360/features/provider/authentication/data/models/address.mod
 import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 
-final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
-
 class ProviderAuthRemoteRepo extends BaseAPI {
   factory ProviderAuthRemoteRepo() {
     return instance;
@@ -26,7 +24,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     try {
       const url = '/auth/login';
 
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
       final data = {
@@ -44,14 +42,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         final success = res.data!['success'] == true;
         final token = res.data!['data']?['access_token'];
         log('Token: $token');
-        await authLocalDataSource.storeAccessToken(
-          token.toString(),
-        );
-        await authLocalDataSource.storeLocalCredentials(
-          email: email,
-          password: password,
-        );
-
 
         if (success) {
           final authResponse = AuthResponse.fromJson(res.data!);
@@ -103,11 +93,6 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         'address': address.toJson(),
       };
 
-      await authLocalDataSource.storeLocalCredentials(
-        email: email,
-        password: password,
-      );
-
       final res = await dio().post<Map<String, dynamic>>(
         url,
         data: data,
@@ -151,7 +136,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
   }) async {
     try {
       const url = '/auth/forgot-password';
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
       final data = {'email': email, 'userType': userType};
 
@@ -178,10 +163,13 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     required String token,
   }) async {
     try {
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
-      final otp = await authLocalDataSource.storeForgotPasswordOtp(otp: token);
+      final otp = await AuthLocalRepo.instance.storeForgotPasswordOtp(
+        otp: token,
+      );
+
       log('otp: $otp');
 
       const url = '/auth/forgot-password/verify';
@@ -210,9 +198,9 @@ class ProviderAuthRemoteRepo extends BaseAPI {
   }) async {
     try {
       const url = '/auth/reset-password';
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
-      final token = await authLocalDataSource.getForgotPaswwordOtp();
+      final token = await AuthLocalRepo.instance.getForgotPaswwordOtp();
       if (token != null) {
         log('Reset Password Token: $token');
       } else {
@@ -247,7 +235,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     required String emailVerificationToken,
   }) async {
     try {
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
       final url = '/auth/verify-email/$emailVerificationToken?type=$userType';
@@ -256,7 +244,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         url,
       );
 
-      final userCred = await authLocalDataSource.getLocalCredentials();
+      final userCred = await AuthLocalRepo.instance.getLocalCredentials();
       if (userCred != null) {
         await loginWithEmail(
           email: userCred.userName!,
@@ -286,7 +274,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
   Future<ApiResult<dynamic>> resendVerificationEmail(String email) async {
     try {
       const url = '/auth/resend-verification-otp';
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
       final res = await dio().post<Map<String, dynamic>>(
         url,

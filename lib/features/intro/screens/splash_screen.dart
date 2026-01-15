@@ -20,11 +20,14 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   Future<void> _goToNext() async {
     try {
-      unawaited(CustomerAuthProvider.instance.init());
-      unawaited(ProviderAuthProvider.instance.init());
+      await CustomerAuthProvider.instance.init();
+      await ProviderAuthProvider.instance.init();
 
       final isIntroCompleted =
           await AuthLocalRepo.instance.getIsIntroCompleted();
+
+      final hasCustomerAuth = CustomerAuthProvider.instance.authInfo != null;
+      final hasProviderAuth = ProviderAuthProvider.instance.authInfo != null;
 
       Future.delayed(const Duration(seconds: 2), () async {
         if (!mounted) return;
@@ -32,25 +35,10 @@ class _SplashScreenState extends State<SplashScreen> {
         if (!isIntroCompleted) {
           await replaceScreen(context, const IntroScreen());
           return;
-        }
-
-        final hasCustomerAuth = CustomerAuthProvider.instance.authInfo != null;
-        final hasProviderAuth = ProviderAuthProvider.instance.authInfo != null;
-        log(
-          'Splash AuthProvider hash: ${CustomerAuthProvider.instance.hashCode}',
-        );
-
-        log('Auth info: ${CustomerAuthProvider.instance.authInfo}');
-
-        if (hasCustomerAuth || hasProviderAuth) {
+        } else if (hasCustomerAuth || hasProviderAuth) {
           await _navigateToNext();
         } else {
           await replaceScreen(context, const SelectAccountTypeScreen());
-        }
-        if (hasCustomerAuth && hasProviderAuth) {
-          await AuthLocalRepo.instance.clearAuthCredentials();
-          await replaceScreen(context, const SelectAccountTypeScreen());
-          return;
         }
       });
     } on Exception catch (e, t) {
@@ -62,7 +50,13 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
+    // EDIT AGAIN HERE FOR USER TYPE LOGIC
+
     final userTypeString = await AuthLocalRepo.instance.getUserType();
+    final userType =
+        userTypeString == UserType.provider.name
+            ? UserType.provider
+            : UserType.customer;
 
     if (userTypeString == null && mounted) {
       await replaceScreen(
@@ -72,18 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    final userType =
-        userTypeString == 'provider' ? UserType.provider : UserType.customer;
-
     dashboardViewModel.userType = userType;
-
-    if (userType == UserType.provider) {
-      await ProviderAuthProvider.instance.loadProviderProfile();
-    } else {
-      await CustomerAuthProvider.instance.loadCustomerProfile();
-    }
-
-    if (!mounted) return;
 
     await replaceScreen(
       context,

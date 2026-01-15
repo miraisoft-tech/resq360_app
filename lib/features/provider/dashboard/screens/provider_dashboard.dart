@@ -44,7 +44,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   }
 
   Future<void> _initializeProvider() async {
-    final provider = await AuthLocalRepo.instance.getProviderCredentials();
+    final provider = await AuthLocalRepo.instance.getProviderAuthCredentials();
     if (provider?.id != null) {
       setState(() {
         providerId = provider!.id;
@@ -84,7 +84,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           elevation: 0,
           automaticallyImplyLeading: false,
           title: FutureBuilder<ProviderModel?>(
-            future: AuthLocalRepo.instance.getProviderCredentials(),
+            future: AuthLocalRepo.instance.getProviderAuthCredentials(),
             builder: (context, asyncSnapshot) {
               if (asyncSnapshot.hasError) {
                 return Center(child: Text('Error: ${asyncSnapshot.error}'));
@@ -93,7 +93,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
                 return const Center(child: Text('No user found'));
               }
-               providerData = asyncSnapshot.data;
+              providerData = asyncSnapshot.data;
               final provider = asyncSnapshot.data!;
               final fullName = provider.fullName?.trim();
               final address = provider.address?.city ?? 'N/A';
@@ -213,7 +213,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               if (profileNotDone) ...[
                 GestureDetector(
                   onTap: () => pushScreen(context, const SettingsScreen()),
-                  child:  ToDoSection(provider: providerData! ,),
+                  child: ToDoSection(
+                    provider: providerData!,
+                  ),
                 ),
                 30.verticalSpace,
               ],

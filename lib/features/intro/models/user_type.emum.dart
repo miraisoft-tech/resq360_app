@@ -1,1 +1,7 @@
-enum UserType { customer, provider }
+enum UserType {
+  customer('customer'),
+  provider('provider');
+
+  const UserType(this.name);
+  final String name;
+}

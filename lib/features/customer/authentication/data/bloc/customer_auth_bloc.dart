@@ -43,16 +43,19 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         password: event.password,
       );
 
-      if (result.data == null) {
+      final ok = await _loadAndSaveUserProfile(
+        authResponse: result.data!,
+      );
+
+      if (result.data == null || !ok) {
         emit(CustomerAuthFailure(result.error ?? 'Login failed'));
         return;
       }
 
-      final ok = await _loadAndSaveUserProfile();
-      if (!ok) {
-        emit(const CustomerAuthFailure('Failed to load user profile'));
-        return;
-      }
+      await AuthLocalRepo.instance.storeLocalCredentials(
+        email: event.email,
+        password: event.password,
+      );
 
       emit(CustomerAuthLoginSuccess(result.data!.user));
     } on Exception catch (e) {
@@ -73,16 +76,19 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         password: event.password,
       );
 
-      if (result.data == null) {
+      final ok = await _loadAndSaveUserProfile(
+        authResponse: result.data!,
+      );
+
+      if (result.data == null || !ok) {
         emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
         return;
       }
 
-      final ok = await _loadAndSaveUserProfile();
-      if (!ok) {
-        emit(const CustomerAuthFailure('Failed to load user profile'));
-        return;
-      }
+      await AuthLocalRepo.instance.storeLocalCredentials(
+        email: event.email,
+        password: event.password,
+      );
 
       emit(CustomerAuthAuthenticated(result.data!.user));
     } on Exception catch (e) {
@@ -319,7 +325,13 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     }
   }
 
-  Future<bool> _loadAndSaveUserProfile() async {
+  Future<bool> _loadAndSaveUserProfile({
+    required AuthResponse authResponse,
+  }) async {
+    await AuthLocalRepo.instance.storeAccessToken(
+      authResponse.accessToken ?? '',
+    );
+
     final res = await authRemoteRepo.getUserProfile();
 
     if (res.data == null) {

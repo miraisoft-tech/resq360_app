@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
@@ -27,9 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
 
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
-    // );
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
+    );
   }
 
   @override
