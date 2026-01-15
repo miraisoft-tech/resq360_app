@@ -204,7 +204,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 ],
               ),
               20.verticalSpace,
-              // const PromoCardWidget(),
               30.verticalSpace,
               if (!isAproved) ...[
                 const ProviderAccountProgress(),
@@ -266,19 +265,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   return const SizedBox.shrink();
                 },
               ),
-              // Container(
-              //   padding: pad(horizontal: 10, vertical: 10),
-              //   decoration: BoxDecoration(
-              //     color: colors.error.shade50,
-              //     borderRadius: BorderRadius.circular(8.r),
-              //   ),
-              //   child: UrbText(
-              //     '⏳ Promotion ends in 6hrs-45mins',
-              //     color: colors.black,
-              //     weight: FontWeight.w700,
-              //     size: 16,
-              //   ),
-              // ),
               30.verticalSpace,
               const ServiceRequests(),
               20.verticalSpace,
