@@ -13,10 +13,9 @@ class LogoutDialog extends StatelessWidget {
     try {
       await AuthLocalRepo.instance.clearAuthCredentials();
       await AuthLocalRepo.instance.clearAccessToken();
-      await AuthLocalRepo.instance.clearLocalCred();
       await AuthLocalRepo.instance.clearUserType();
 
-      log(' Cleared all local auth data successfully');
+      log('Cleared all local auth data successfully');
 
       if (Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();

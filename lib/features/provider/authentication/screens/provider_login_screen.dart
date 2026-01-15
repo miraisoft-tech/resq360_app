@@ -1,11 +1,14 @@
+import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_forgot_password_screen.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderLoginScreen extends StatefulWidget {
@@ -28,9 +31,23 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
 
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
-    // );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await AppTrackingPermissionHandler.requestTrackingPermisssion();
+    });
+
+    unawaited(init());
+  }
+
+  Future<void> init() async {
+    final customerRef = ProviderAuthProvider.instance;
+
+    await customerRef.init();
+
+    if (customerRef.isLocalCredStored) {
+      emailController.text = customerRef.localCred?.userName ?? '';
+
+      setState(() {});
+    }
   }
 
   @override

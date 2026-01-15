@@ -6,6 +6,7 @@ import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/forgot_password_screen.dart';
+import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -30,9 +31,23 @@ class _LoginScreenState extends State<LoginScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await AppTrackingPermissionHandler.requestTrackingPermisssion();
+    });
+
+    unawaited(init());
+  }
+
+  Future<void> init() async {
+    final customerRef = CustomerAuthProvider.instance;
+
+    await customerRef.init();
+
+    if (customerRef.isLocalCredStored) {
+      emailController.text = customerRef.localCred?.userName ?? '';
+
+      setState(() {});
+    }
   }
 
   @override

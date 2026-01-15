@@ -68,10 +68,7 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
     notifyListeners();
 
     unawaited(loadCustomerProfile());
-    // Load any other necessary data after login
   }
-
-  //
 
   Future<void> loadCustomerProfile() async {
     if (authInfo == null) return;
