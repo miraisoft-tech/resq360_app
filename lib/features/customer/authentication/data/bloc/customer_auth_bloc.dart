@@ -68,6 +68,24 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     }
   }
 
+  Future<void> _loginWithEmailSilently() async {
+    try {
+      final localCredentials =
+          await AuthLocalRepo.instance.getLocalCredentials();
+
+      final result = await authRemoteRepo.loginWithEmail(
+        email: localCredentials?.userName ?? '',
+        password: localCredentials?.password ?? '',
+      );
+
+      await _loadAndSaveUserProfile(
+        authResponse: result.data!,
+      );
+    } on Exception catch (e) {
+      log(e);
+    }
+  }
+
   Future<void> _onSignupWithEmail(
     CustomerSignupWIthEmail event,
     Emitter<CustomerAuthState> emit,
@@ -83,15 +101,6 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
 
       if (result.data == null) {
         emit(CustomerAuthFailure(result.error ?? 'Signup failed'));
-        return;
-      }
-
-      final ok = await _loadAndSaveUserProfile(
-        authResponse: result.data!,
-      );
-
-      if (!ok) {
-        emit(const CustomerAuthFailure('Failed to load provider profile'));
         return;
       }
 
@@ -189,6 +198,8 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
 
       if (result) {
         emit(CustomerEmailVerified());
+
+        await _loginWithEmailSilently();
       } else {
         emit(
           const CustomerAuthFailure(

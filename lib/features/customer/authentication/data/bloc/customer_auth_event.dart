@@ -40,7 +40,7 @@ class CustomerRequestPasswordResetEvent extends CustomerAuthEvent {
   });
 
   final String email;
-  
+
   @override
   List<Object> get props => [email];
 }
@@ -49,9 +49,9 @@ class CustomerValidateResetTokenEvent extends CustomerAuthEvent {
   const CustomerValidateResetTokenEvent({
     required this.token,
   });
-  
+
   final String token;
-  
+
   @override
   List<Object> get props => [token];
 }
@@ -61,7 +61,7 @@ class CustomerSetNewPasswordEvent extends CustomerAuthEvent {
     required this.password,
   });
   final String password;
-  
+
   @override
   List<Object> get props => [password];
 }
@@ -72,7 +72,7 @@ class CustomerVerifyEmailAddressEvent extends CustomerAuthEvent {
   });
 
   final String emailVerificationToken;
-  
+
   @override
   List<Object> get props => [emailVerificationToken];
 }
@@ -81,13 +81,12 @@ class CustomerResendVerificationEmailEvent extends CustomerAuthEvent {
   const CustomerResendVerificationEmailEvent({
     required this.email,
   });
-  
+
   final String email;
-  
+
   @override
   List<Object> get props => [email];
 }
-
 
 class CustomergetUserProfile extends CustomerAuthEvent {
   const CustomergetUserProfile();
@@ -106,8 +105,8 @@ class CustomerSubmitKyc extends CustomerAuthEvent {
   List<Object> get props => [filePath];
 }
 
-class CustomerSubmitIdentity extends CustomerAuthEvent{ 
-  const CustomerSubmitIdentity ({
+class CustomerSubmitIdentity extends CustomerAuthEvent {
+  const CustomerSubmitIdentity({
     required this.filePath,
     required this.documentType,
   });
@@ -116,17 +115,23 @@ class CustomerSubmitIdentity extends CustomerAuthEvent{
 }
 
 class CustomerSubmitKycAddress extends CustomerAuthEvent {
-  const CustomerSubmitKycAddress({required this.state, required this.city, required this.address});
+  const CustomerSubmitKycAddress({
+    required this.state,
+    required this.city,
+    required this.address,
+  });
 
   final String state;
   final String city;
   final String address;
 }
+
 class CustomerSubmitId extends CustomerAuthEvent {
-  const CustomerSubmitId( {required this.documentType, required this.filePath});
+  const CustomerSubmitId({required this.documentType, required this.filePath});
   final String documentType;
   final String filePath;
   @override
   List<Object> get props => [filePath];
 }
+
 class CustomerGetUserKycInfo extends CustomerAuthEvent {}

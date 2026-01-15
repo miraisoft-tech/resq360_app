@@ -244,21 +244,12 @@ class ProviderAuthRemoteRepo extends BaseAPI {
         url,
       );
 
-      final userCred = await AuthLocalRepo.instance.getLocalCredentials();
-      if (userCred != null) {
-        await loginWithEmail(
-          email: userCred.userName!,
-          password: userCred.password!,
-        );
-      } else {
-        log('No local credentials found during email verification.');
-      }
-
       log(res.statusCode);
       log(res.data);
 
       switch (res.statusCode) {
         case 200:
+        case 201:
           return true;
         default:
           return false;

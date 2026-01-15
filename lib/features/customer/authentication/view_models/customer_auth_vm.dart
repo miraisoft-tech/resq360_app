@@ -71,8 +71,6 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
   }
 
   Future<void> loadCustomerProfile() async {
-    if (authInfo == null) return;
-
     try {
       setBusy(isBusy: true);
 

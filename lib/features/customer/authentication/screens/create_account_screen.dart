@@ -55,18 +55,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         }
 
         if (state is CustomerAuthFailure) {
-          if (Navigator.canPop(context)) {
-            await pop(context);
-          }
+          Navigator.pop(context);
 
           log(state.error);
           await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerAuthAuthenticated && context.mounted) {
-          if (Navigator.canPop(context)) {
-            await pop(context);
-          }
+          Navigator.pop(context);
 
           await pushScreen(
             context,

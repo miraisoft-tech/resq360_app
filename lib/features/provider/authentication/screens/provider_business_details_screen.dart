@@ -144,7 +144,7 @@ class _ProviderBusinessDetailsScreenState
       listener: (context, state) async {
         if (!mounted) return;
         if (state is ProviderAuthLoadingState) {
-          showLoadingDialog(context);
+          await showLoadingDialog(context);
         }
         if (state is ProviderAuthFailureState) {
           if (Navigator.canPop(context)) {
@@ -155,8 +155,9 @@ class _ProviderBusinessDetailsScreenState
 
         if (state is ProviderAuthSignupSuccessState) {
           if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
+            await pop(context);
           }
+
           pushScreen(
             context,
             ProviderConfirmEmailScreen(

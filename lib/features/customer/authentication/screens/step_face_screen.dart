@@ -1,6 +1,5 @@
 import 'dart:io';
 
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
@@ -40,15 +39,16 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
         }
 
         if (state is CustomerKycSubmissionFailure) {
-          await pop(context);
-          if (!context.mounted) return;
+          Navigator.pop(context);
+
           await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerKycSubmitted) {
-          await pop(context);
+          Navigator.pop(context);
 
           if (!context.mounted) return;
+
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
