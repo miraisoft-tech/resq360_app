@@ -8,6 +8,7 @@ import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal
 import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
+import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -174,7 +175,7 @@ class _BookingList extends StatelessWidget {
         if (state is CustomerBookingLoaded) {
           final bookings = state.bookings;
           if (bookings.isEmpty) {
-            return const Center(child: GenText('No bookings found.'));
+            return const EmptyScreenWidget(imagePath:  AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG, message: 'No booking found', subMessage: '',);
           }
 
           return RefreshIndicator(

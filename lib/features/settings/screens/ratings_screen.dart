@@ -5,6 +5,7 @@ import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.da
 import 'package:resq360/features/settings/data/models/customer_ratings_model.dart';
 import 'package:resq360/features/settings/data/models/provider_ratings.dart';
 import 'package:resq360/features/settings/widgets/reviews_card.dart';
+import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class RatingScreen extends StatefulWidget {
   const RatingScreen({required this.isProvider, super.key});
@@ -91,11 +92,10 @@ class _RatingScreenState extends State<RatingScreen> {
             final reviews = state.ratings.reviews ?? [];
 
             if (reviews.isEmpty) {
-              return Center(
-                child: GenText(
-                  'No reviews available.',
-                  color: appColors.textColor.shade300,
-                ),
+              return const EmptyScreenWidget(
+                imagePath: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG,
+                message: 'You do not have any review',
+                subMessage: '',
               );
             }
 
@@ -141,18 +141,17 @@ class _RatingScreenState extends State<RatingScreen> {
             final reviews = state.ratings.reviews ?? [];
 
             if (reviews.isEmpty) {
-              return Center(
-                child: GenText(
-                  'No reviews available.',
-                  color: appColors.textColor.shade300,
-                ),
+              return const EmptyScreenWidget(
+                imagePath: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG,
+                message: 'You do not have any review',
+                subMessage: '',
               );
             }
-
+            log(state.ratings.averageRatings );
             return Padding(
               padding: pad(horizontal: 20, vertical: 16),
               child: ListView(
-                children: [
+                children: [ 
                   RatingSummaryWidget<CustomerReview>(
                     average: state.ratings.averageRatings ?? 0,
                     totalReviews: state.ratings.totalReviews ?? 0,
@@ -175,7 +174,7 @@ class _RatingScreenState extends State<RatingScreen> {
                             (r) =>
                                 r.serviceRequest?.serviceCategory?.name ??
                                 'General',
-                        getDate: (r) => r.ratingDate ?? 'N/A',
+                        getDate: (r) => DateTime.tryParse(r.ratingDate ??'')?.formatDate ?? 'N/A',
                         getRating: (r) => r.overallRating ?? 0,
                         getFeedback: (r) => r.feedback ?? '',
                       );
@@ -205,7 +204,7 @@ class RatingSummaryWidget<T> extends StatelessWidget {
     required this.totalReviews,
     required this.reviews,
     required this.extractRating,
-     super.key,
+    super.key,
   });
 
   final num average;
@@ -284,7 +283,6 @@ class RatingSummaryWidget<T> extends StatelessWidget {
                       const Icon(Icons.star, size: 14, color: Colors.orange),
                       6.horizontalSpace,
 
-                      
                       Expanded(
                         child: Stack(
                           children: [

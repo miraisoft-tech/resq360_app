@@ -85,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                     if (chats.isEmpty) {
                       return const EmptyScreenWidget(
-                        imagePath: AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG,
+                        imagePath: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG,
                         message: 'No messages yet',
                         subMessage:
                             'Start a conversation with a service provider',

@@ -9,6 +9,7 @@ import 'package:resq360/features/customer/dashboard/data/models/bookings/booking
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/provider/bookings/widgets/booking_receipt_modal.dart';
+import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class ProviderBookingsScreen extends StatefulWidget {
   const ProviderBookingsScreen({super.key});
@@ -172,7 +173,8 @@ class _BookingList extends StatelessWidget {
         if (state is ProviderBookingsLoaded) {
           final bookings = state.bookings;
           if (bookings.isEmpty) {
-            return const Center(child: GenText('No bookings found.'));
+          return  EmptyScreenWidget(imagePath:  AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG, message: 'No booking found', subMessage: '',);
+
           }
 
           return RefreshIndicator(
