@@ -59,12 +59,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
+                    buildWhen: (previous, current) {
+                      return !(previous is CustomerProfileLoaded &&
+                          current is CustomerAuthLoading);
+                    },
                     builder: (context, v) {
                       final user = v is CustomerProfileLoaded ? v.user : null;
-
                       return HeaderWidget(
-                        name: user?.fullName?.capitalize ?? 'n/a',
-                        location: user?.location?.firstOrNull?.address ?? 'N/A',
+                        name: user?.fullName?.capitalize ?? 'N/A',
+                        location:
+                            user?.location?.firstOrNull?.address ??
+                            'N/A',
                         profileImage: user?.profileImage ?? '',
                         onTapAddress: () async {
                           await pushScreen(context, const AddressScreen());
@@ -72,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
+
                   const Spacer(),
                   IconButton(
                     icon: AppAssets.ASSETS_ICONS_WALLET_SVG.svg,
