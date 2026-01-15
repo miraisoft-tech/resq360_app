@@ -76,7 +76,7 @@ class _ServiceRequestsState extends State<ServiceRequests> {
                 (booking) => _RequestTile(
                   name: booking.user?.fullName ?? 'Unknown User',
                   service: booking.serviceCategory?.name ?? 'Unknown Service',
-                  distance: '1.0 km Away',
+                  // distance: '1.0 km Away',
                   user: booking.user, chatId: booking.chatId,
                 ),
               ),
@@ -104,14 +104,14 @@ class _RequestTile extends StatelessWidget {
   const _RequestTile({
     required this.name,
     required this.service,
-    required this.distance,
     required this.user,
     required this.chatId,
+    this.distance,
   });
 
   final String name;
   final String service;
-  final String distance;
+  final String? distance;
   final User? user;
   final int? chatId;
 
@@ -150,20 +150,20 @@ class _RequestTile extends StatelessWidget {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                      color: colors.neutral.shade400,
-                    ),
-                    4.horizontalSpace,
-                    GenText(
-                      distance,
-                      size: 12,
-                      weight: FontWeight.w400,
-                      color: colors.neutral.shade400,
-                    ),
-                  ],
-                ),
+                // Row(
+                //   children: [
+                //     AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
+                //       color: colors.neutral.shade400,
+                //     ),
+                //     4.horizontalSpace,
+                //     GenText(
+                //       distance ?? '',
+                //       size: 12,
+                //       weight: FontWeight.w400,
+                //       color: colors.neutral.shade400,
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ],
