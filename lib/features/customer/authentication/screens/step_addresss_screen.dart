@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
@@ -68,7 +67,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
       listener: (context, state) async {
         if (!context.mounted) return;
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is CustomerKycSubmissionFailure) {

@@ -44,7 +44,7 @@ class _StepIDScreenState extends State<StepIDScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is CustomerKycSubmissionFailure) {

@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
 
         if (state is CustomerAuthLoading) {
-          unawaited(showLoadingDialog(context));
+          showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {

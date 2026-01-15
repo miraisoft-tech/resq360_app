@@ -1,4 +1,3 @@
-
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
@@ -77,7 +76,7 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
           }
         }
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {

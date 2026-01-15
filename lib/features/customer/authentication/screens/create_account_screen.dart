@@ -51,7 +51,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {

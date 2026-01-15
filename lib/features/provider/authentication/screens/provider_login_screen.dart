@@ -66,7 +66,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {
@@ -74,7 +74,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
             Navigator.of(context, rootNavigator: true).pop();
           }
           log(state.error);
-          await showSnackBar(context, 'Error', state.error);
+          await showErrorSnackbar(context, state.error);
         }
 
         if (state is ProviderAuthLoginSuccessState) {
@@ -153,9 +153,9 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
               Center(
                 child: GestureDetector(
                   onTap: () async {
-                    await pushScreen(
-                      context,
+                    await pushAndReplaceScreen(
                       const ProviderCreateAccountScreen(),
+                      context: context,
                     );
                   },
                   child: RichText(

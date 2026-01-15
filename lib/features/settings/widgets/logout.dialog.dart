@@ -8,7 +8,7 @@ class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
 
   Future<void> _handleLogout(BuildContext context) async {
-    unawaited(showLoadingDialog(context));
+    showLoadingDialog(context);
 
     try {
       await AuthLocalRepo.instance.clearAuthCredentials();

@@ -40,7 +40,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
         if (state is WalletFundingLoadingState) {
           if (!isLoadingDialogShown) {
             isLoadingDialogShown = true;
-            await showLoadingDialog(context);
+            showLoadingDialog(context);
             log(isLoadingDialogShown);
           }
           return;

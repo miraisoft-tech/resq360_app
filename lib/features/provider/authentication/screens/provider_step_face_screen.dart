@@ -23,7 +23,7 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
 
   Future<void> pickCameraPhoto(BuildContext context) async {
     pickedImage = await AppFilePicker.pickImage();
-   if (!context.mounted) return;
+    if (!context.mounted) return;
     if (pickedImage != null) {
       context.read<ProviderAuthBloc>().add(
         ProviderSubmitKyc(filePath: pickedImage!.path),
@@ -36,20 +36,24 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
     final colors = context.appColors;
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
-      listener: (context, state) async{
+      listener: (context, state) async {
         if (state is ProviderAuthLoadingState) {
           showLoadingDialog(context);
         }
 
         if (state is ProviderKycSubmissionFailure) {
-          pop(context);
-          if (!context.mounted) return;
-          showSnackBar(context, 'Error', state.error);
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+
+          showErrorSnackbar(context, state.error);
         }
 
         if (state is ProviderKycSubmitted) {
-          pop(context);
-          if (!context.mounted) return;
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
@@ -57,10 +61,10 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
               description: 'Let’s confirm your identification',
               icon: AppAssets.ASSETS_IMAGES_STEP_1_PNG,
               onContinuePressed: () async {
-                await pop(context);
+                Navigator.pop(context);
 
                 if (context.mounted) {
-                  await pushScreen(context, const ProviderStepIDScreen());
+                  await replaceScreen(context, const ProviderStepIDScreen());
                 }
               },
             ),

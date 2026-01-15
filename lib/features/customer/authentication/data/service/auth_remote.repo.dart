@@ -407,12 +407,12 @@ class AuthRemoteRepo extends BaseAPI {
     required String documentType,
     required String documentUrl,
   }) async {
-    const url = '/kyc/submit/identity';
+    const url = '/kyc/submit/identity-information';
 
     try {
       final data = {
         'documentType': documentType,
-        'documentUrl': documentUrl,
+        'documentImageUrl': documentUrl,
       };
 
       log('Submitting identity with data: $data');

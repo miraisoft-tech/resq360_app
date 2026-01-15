@@ -186,8 +186,7 @@ class _PromoteServiceReviewScreenState
                             builder: (context, state) {
                               if (state is AdvertisementPriceFetched) {
                                 final price = state.price ?? 0;
-                                final total =
-                                    price * widget.duration.value;
+                                final total = price * widget.duration.value;
                                 return GenText(
                                   total.toString(),
                                   height: 24.5,
@@ -284,7 +283,7 @@ class _PromoteServiceReviewScreenState
   ) async {
     if (state is CustomerAdvertisementLoading ||
         state is AdvertisementPaymentVerifying) {
-      unawaited(showLoadingDialog(context));
+      showLoadingDialog(context);
       return;
     }
 

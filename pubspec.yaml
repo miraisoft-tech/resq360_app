@@ -94,6 +94,7 @@ flutter:
     - assets/images/
     - assets/logo/
     - assets/navigation/
+    - assets/json/states_list.json
 
   fonts:
     - family: "inter"

@@ -41,7 +41,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
         if (state is BookingLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
         if (state is BookingStarted) {
           Navigator.pop(context);

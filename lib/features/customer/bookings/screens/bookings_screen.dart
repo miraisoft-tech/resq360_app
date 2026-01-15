@@ -225,7 +225,7 @@ class _BookingCardState extends State<BookingCard> {
     int serviceRequestId,
   ) async {
     try {
-      unawaited(showLoadingDialog(context));
+      showLoadingDialog(context);
 
       final response = await ChatRepo().getChatByserviceRequestId(
         serviceRequestId,

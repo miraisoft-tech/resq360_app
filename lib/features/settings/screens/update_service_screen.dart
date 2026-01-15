@@ -23,7 +23,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
 
   final descController = TextEditingController();
   List<File> pickedImages = [];
-  List<String> existingImageUrls = []; 
+  List<String> existingImageUrls = [];
   List<String> imagesToKeep = [];
   ServiceTypeEnums? selectedServiceType;
 
@@ -52,7 +52,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProviderData();
     });
@@ -62,7 +62,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
     final providerState = context.read<ProviderAuthBloc>().state;
     if (providerState is ProviderProfileLoadedState) {
       final provider = providerState.user;
-      
+
       if (provider.images != null && provider.images!.isNotEmpty) {
         setState(() {
           existingImageUrls = List<String>.from(provider.images!);
@@ -74,36 +74,31 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
         descController.text = provider.description!;
       }
 
+      if (provider.openingHours != null) {
+        try {
+          final dateTime = DateTime.parse(provider.openingHours!);
+          startTime = TimeOfDay(
+            hour: dateTime.hour,
+            minute: dateTime.minute,
+          );
+          startTimeController.text = startTime!.format(context);
+        } on Exception catch (e) {
+          log(e.toString());
+        }
+      }
 
-if (provider.openingHours != null) {
-
-  try {
-    final dateTime = DateTime.parse(provider.openingHours!);
-    startTime = TimeOfDay(
-      hour: dateTime.hour,
-      minute: dateTime.minute,
-    );
-  startTimeController.text = startTime!.format(context); 
-  } on Exception catch (e) {
-    log(e.toString());
-  }
-}
-
-if (provider.closingHours != null) {
-
-  try {
-    final dateTime = DateTime.parse(provider.closingHours!);
-    endTime = TimeOfDay(
-      hour: dateTime.hour,
-      minute: dateTime.minute,
-    );
-    endTimeController.text = endTime!.format(context);
-  } on Exception catch (e) {
-    log(e.toString());
-  }
-}
-
-
+      if (provider.closingHours != null) {
+        try {
+          final dateTime = DateTime.parse(provider.closingHours!);
+          endTime = TimeOfDay(
+            hour: dateTime.hour,
+            minute: dateTime.minute,
+          );
+          endTimeController.text = endTime!.format(context);
+        } on Exception catch (e) {
+          log(e.toString());
+        }
+      }
 
       if (provider.workingDays != null) {
         setState(() {
@@ -115,39 +110,39 @@ if (provider.closingHours != null) {
     }
   }
 
-Future<void> handleUpdateService() async {
-  final bloc = context.read<ProfileUpdateBloc>();
+  Future<void> handleUpdateService() async {
+    final bloc = context.read<ProfileUpdateBloc>();
 
-  final selectedDays =
-      workingDays.entries.where((e) => e.value).map((e) => e.key).toList();
+    final selectedDays =
+        workingDays.entries.where((e) => e.value).map((e) => e.key).toList();
 
-  final startDateTime = DateTime(
-    DateTime.now().year,
-    DateTime.now().month,
-    DateTime.now().day,
-    startTime?.hour ?? 9,
-    startTime?.minute ?? 0,
-  );
-  final endDateTime = DateTime(
-    DateTime.now().year,
-    DateTime.now().month,
-    DateTime.now().day,
-    endTime?.hour ?? 17,
-    endTime?.minute ?? 0,
-  );
+    final startDateTime = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+      startTime?.hour ?? 9,
+      startTime?.minute ?? 0,
+    );
+    final endDateTime = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+      endTime?.hour ?? 17,
+      endTime?.minute ?? 0,
+    );
 
-  bloc.add(
-    UpdateProviderInfoEvent(
-      description: descController.text.trim(),
-      workingDays: selectedDays,
-      openingHours: startDateTime,
-      closingHours: endDateTime,
-      filePath: pickedImages.isNotEmpty ? pickedImages.first.path : null,
-      images: pickedImages,
-      existingImages: imagesToKeep,
-    ),
-  );
-}
+    bloc.add(
+      UpdateProviderInfoEvent(
+        description: descController.text.trim(),
+        workingDays: selectedDays,
+        openingHours: startDateTime,
+        closingHours: endDateTime,
+        filePath: pickedImages.isNotEmpty ? pickedImages.first.path : null,
+        images: pickedImages,
+        existingImages: imagesToKeep,
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -165,7 +160,7 @@ Future<void> handleUpdateService() async {
     return BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
       listener: (context, state) async {
         if (state is ProfileUpdateLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         } else {
           Navigator.pop(context);
         }
@@ -179,7 +174,9 @@ Future<void> handleUpdateService() async {
             ),
           );
 
-          context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
+          context.read<ProviderAuthBloc>().add(
+            const ProvidergetProviderProfile(),
+          );
         } else if (state is ProfileUpdateError) {
           unawaited(showErrorSnackbar(context, state.message));
         }
@@ -222,7 +219,8 @@ Future<void> handleUpdateService() async {
                 pickedImages: pickedImages,
                 existingImageUrls: existingImageUrls,
                 imagesToKeep: imagesToKeep,
-                onImagesPicked: (images) => setState(() => pickedImages = images),
+                onImagesPicked:
+                    (images) => setState(() => pickedImages = images),
                 onExistingImageRemoved: (url) {
                   setState(() {
                     imagesToKeep.remove(url);
@@ -309,16 +307,17 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
           valueListenable: selectedIssue,
           builder: (context, selected, _) {
             return Column(
-              children: ServiceTypeEnums.values.map((type) {
-                return IssueRadio(
-                  label: type.name.capitalize,
-                  selected: selected == type,
-                  onTap: () {
-                    selectedIssue.value = type;
-                    widget.onServiceSelected(type);
-                  },
-                );
-              }).toList(),
+              children:
+                  ServiceTypeEnums.values.map((type) {
+                    return IssueRadio(
+                      label: type.name.capitalize,
+                      selected: selected == type,
+                      onTap: () {
+                        selectedIssue.value = type;
+                        widget.onServiceSelected(type);
+                      },
+                    );
+                  }).toList(),
             );
           },
         ),
@@ -332,7 +331,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
         30.verticalSpace,
         GenText('Service image', color: appColors.black),
         10.verticalSpace,
-        
+
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -341,7 +340,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
             crossAxisSpacing: 10.w,
             mainAxisSpacing: 10.h,
           ),
-          itemCount: totalImages + 1, 
+          itemCount: totalImages + 1,
           itemBuilder: (context, index) {
             if (index == totalImages) {
               return GestureDetector(
@@ -369,7 +368,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
 
             if (index < widget.imagesToKeep.length) {
               final imageUrl = widget.imagesToKeep[index];
-              
+
               return Stack(
                 children: [
                   ClipRRect(
@@ -403,10 +402,11 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
                           ),
                           child: Center(
                             child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
+                              value:
+                                  loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
                               color: appColors.primary.shade500,
                               strokeWidth: 2,
                             ),
@@ -481,7 +481,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
             );
           },
         ),
-        
+
         10.verticalSpace,
         GenText(
           'You can upload more than 3 images',
@@ -536,7 +536,8 @@ class WorkingHoursSection extends StatelessWidget {
                 const Spacer(),
                 CustomSwitchWidget(
                   value: workingDays[day] ?? false,
-                  onChanged: ({required value}) => onToggleDay(day: day, value: value),
+                  onChanged:
+                      ({required value}) => onToggleDay(day: day, value: value),
                   activeThumbColor: appColors.primary.shade500,
                   disabledThumbColor: appColors.textColor.shade100,
                   tapColor: appColors.whiteColor,
@@ -588,14 +589,15 @@ class WorkingHoursSection extends StatelessWidget {
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: context.appColors.primary.shade500,
+      builder:
+          (context, child) => Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: context.appColors.primary.shade500,
+              ),
+            ),
+            child: child!,
           ),
-        ),
-        child: child!,
-      ),
     );
 
     if (picked != null) {
