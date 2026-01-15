@@ -141,7 +141,6 @@ class _LoginScreenState extends State<LoginScreen> {
               WideButton(
                 label: 'Log in',
                 onPressed: () async {
-                  log('Login pressed');
                   if (_formKey.currentState!.validate()) {
                     context.read<CustomerAuthBloc>().add(
                       CustomerLoginWithEmail(
