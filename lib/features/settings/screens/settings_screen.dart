@@ -11,13 +11,10 @@ import 'package:resq360/features/provider/authentication/data/bloc/provider_auth
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
-import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
-import 'package:resq360/features/settings/screens/manage_cards_screen.dart';
 import 'package:resq360/features/settings/screens/notification_settings_screen.dart';
 import 'package:resq360/features/settings/screens/ratings_screen.dart';
-import 'package:resq360/features/settings/screens/refer_screen.dart';
 import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
