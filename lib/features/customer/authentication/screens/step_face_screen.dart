@@ -39,15 +39,17 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
         }
 
         if (state is CustomerKycSubmissionFailure) {
-          Navigator.pop(context);
+           if (context.mounted) {
+            Navigator.pop(context);
+          }
 
           await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerKycSubmitted) {
-          Navigator.pop(context);
-
-          if (!context.mounted) return;
+            if (context.mounted) {
+            Navigator.pop(context);
+          }
 
           await GeneralDialogs.showCustomBottomSheet(
             context,
@@ -59,7 +61,7 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
                 await pop(context);
 
                 if (context.mounted) {
-                  await pushScreen(context, const StepIDScreen());
+                  await replaceScreen(context, const StepIDScreen());
                 }
               },
             ),

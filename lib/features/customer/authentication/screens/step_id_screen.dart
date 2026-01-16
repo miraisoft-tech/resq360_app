@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/identity_enums.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/step_addresss_screen.dart';
@@ -18,18 +19,20 @@ class StepIDScreen extends StatefulWidget {
 class _StepIDScreenState extends State<StepIDScreen> {
   final ValueNotifier<String?> _selectType = ValueNotifier(null);
 
-  final List<String> idTypes = [
-    'National ID',
-    "Driver's License",
-    'Passport',
-  ];
   File? pickedImage;
 
   Future<void> pickCameraPhoto(BuildContext context) async {
+    if (_selectType.value == null) {
+      await showErrorSnackbar(context, 'Please select an ID type');
+      return;
+    }
+
     pickedImage = await AppFilePicker.pickImage();
 
     if (!context.mounted) return;
-
+  
+    setState(() {});
+    
     if (pickedImage != null) {
       context.read<CustomerAuthBloc>().add(
         CustomerSubmitKyc(filePath: pickedImage!.path),
@@ -48,14 +51,17 @@ class _StepIDScreenState extends State<StepIDScreen> {
         }
 
         if (state is CustomerKycSubmissionFailure) {
-          Navigator.pop(context);
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
 
           await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerKycSubmitted) {
-          Navigator.pop(context);
-
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
@@ -66,7 +72,10 @@ class _StepIDScreenState extends State<StepIDScreen> {
                 await pop(context);
 
                 if (context.mounted) {
-                  await pushScreen(context, const StepAddressScreen());
+                  await pushAndReplaceScreen(
+                    context: context,
+                    const StepAddressScreen(),
+                  );
                 }
               },
             ),
@@ -112,10 +121,17 @@ class _StepIDScreenState extends State<StepIDScreen> {
                     return ObjectKDropDown(
                       label: 'ID type',
                       hintText: 'select ID type',
-                      displayStringForOption: (String? id) => id ?? '',
+                      displayStringForOption:
+                          (String? id) =>
+                              id?.replaceAll('_', ' ').toUpperCase() ?? '',
                       showPrefix: false,
                       value: value,
-                      dropdownItems: idTypes,
+                      dropdownItems:
+                          IdentityEnums.values
+                              .map(
+                                (e) => e.name,
+                              )
+                              .toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectType.value = value;
