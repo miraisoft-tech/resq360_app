@@ -2,9 +2,13 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/data/models/state_model.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
@@ -22,14 +26,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
   final TextEditingController _streetCtrl = TextEditingController();
   final TextEditingController _cityCtrl = TextEditingController();
 
-  final List<String> states = [
-    'Lagos',
-    'Abuja',
-    'Kano',
-    'Rivers',
-    'Oyo',
-    'Enugu',
-  ];
+  CustomerUserModel? userInfo;
 
   bool get isFormValid =>
       _streetCtrl.text.isNotEmpty &&
@@ -42,6 +39,9 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(initializeLocation());
+      context.read<ProviderAuthBloc>().add(
+        ProviderGetStates(),
+      );
     });
   }
 
@@ -50,6 +50,8 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
 
     _streetCtrl.text = (locationData['address'] as String?) ?? '';
     _cityCtrl.text = (locationData['city'] as String?) ?? '';
+
+    userInfo = await AuthLocalRepo.instance.getCustomerAuthCredentials();
   }
 
   @override
@@ -59,23 +61,25 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
     super.dispose();
   }
 
+  List<StateModel> states = [];
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-        if (!context.mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
         }
 
         if (state is CustomerKycSubmissionFailure) {
-          await showSnackBar(context, 'Error', state.error);
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+
+          await showErrorSnackbar(context, state.error);
         }
         if (state is CustomerKycAddressSubmitted) {
-          await pop(context);
-
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
@@ -85,15 +89,25 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
               icon: AppAssets.ASSETS_LOGO_LOGO_PNG,
               buttonText: 'Go to Dashboard',
               onContinuePressed: () async {
-                await pop(context);
+                Navigator.pop(context);
 
                 if (context.mounted) {
-                  await replaceScreen(
-                    context,
-                    const MainLayoutPage(
-                      userType: UserType.customer,
-                    ),
-                  );
+                  final hasMainLayout =
+                      Navigator.of(context).canPop() &&
+                      ModalRoute.of(context)?.settings.name != '/';
+
+                  if (hasMainLayout) {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  } else {
+                    if (context.mounted) {
+                      await replaceScreen(
+                        context,
+                        const MainLayoutPage(
+                          userType: UserType.customer,
+                        ),
+                      );
+                    }
+                  }
                 }
               },
             ),
@@ -160,10 +174,12 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
                       return ObjectKDropDown(
                         label: 'State',
                         hintText: 'State',
-                        displayStringForOption: (String? id) => id ?? '',
+                        displayStringForOption: (String? name) =>  name ?? '',
                         showPrefix: false,
                         value: value,
-                        dropdownItems: states,
+                        dropdownItems: states
+                                      .map((state) => state.name ?? '')
+                                      .toList(),
                         onChanged: (value) {
                           setState(() {
                             _selectState.value = value;

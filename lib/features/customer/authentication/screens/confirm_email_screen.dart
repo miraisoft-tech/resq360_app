@@ -75,21 +75,23 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-        if (!mounted) return;
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
           log(state.error);
-          Navigator.pop(context);
+            if (context.mounted) {
+            Navigator.pop(context);
+          }
 
           await showErrorSnackbar(context, state.error);
         }
 
         if (state is CustomerVerificationEmailResentState) {
-          Navigator.pop(context);
-
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
           await showSuccessSnackbar(context, state.message);
 
           controller
