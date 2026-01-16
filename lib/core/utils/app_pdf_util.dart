@@ -6,6 +6,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/gen/assets.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -139,7 +140,7 @@ class BookingReceiptPdfUtil {
               ),
               pw.SizedBox(height: 10),
               pw.Text(
-                hasAmount ? 'Amount Paid: ₦$amount' : 'Amount: To be billed',
+                hasAmount ? 'Amount Paid: ₦${AppTextUtil.formatAmount(amount)} app' : 'Amount: To be billed',
                 style: const pw.TextStyle(
                   // font: interBold,
                   fontSize: 18,

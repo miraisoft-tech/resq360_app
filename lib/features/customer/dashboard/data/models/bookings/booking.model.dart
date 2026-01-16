@@ -41,6 +41,7 @@
       this.amount,
       this.chatId,
       this.invoiceId,
+      this.expectedStartDate,
     });
 
     factory Bookings.fromJson(Map<String, dynamic> json) => Bookings(
@@ -106,8 +107,8 @@
                 paymentMethod: json['paymentMethod'] as String?,
                 amount: json['amount'] as String?,
                 chatId:  json['chatId'] as int?,
-                invoiceId:  json['invoiceId'] as String?
-
+                invoiceId:  json['invoiceId'] as String?,
+                expectedStartDate: json['expectedStartDate'] == null ?  null :DateTime.parse(json['expectedStartDate'] as String),
         );
 
     final int? id;
@@ -150,6 +151,7 @@
     final String? amount;
     final int? chatId;
     final String? invoiceId;
+    final DateTime? expectedStartDate;
   }
 
 

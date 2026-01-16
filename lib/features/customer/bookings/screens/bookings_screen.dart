@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/booking_enums.dart';
 import 'package:resq360/core/utils/app_pdf_util.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
@@ -269,13 +270,14 @@ class _BookingCardState extends State<BookingCard> {
     final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
     final amount = data.amount ?? '';
 
-    final date = data.createdAt?.formatDate ?? 'N/A';
+    final date = data.expectedStartDate?.formatDate ?? 'N/A';
     final start = data.providerStartedAt?.formatTime ?? '--';
     final end = data.completedAt?.formatTime ?? '--';
 
     final status = data.status?.capitalize ?? 'Unknown';
     final canDownload = data.status == 'COMPLETED';
-    final canShow = data.status == 'COMPLETED' || data.status == 'CANCELLED';
+    final canShow = data.status == BookingEnums.completed.name || data.status == BookingEnums.cancelled.name;
+
 
     final phonenumber = data.assignedProvider?.phoneNumber ?? '';
     final serviceRequest = data.id;
@@ -361,7 +363,7 @@ class _BookingCardState extends State<BookingCard> {
           const ListDivider(
             verticalSpacing: 10,
           ),
-
+          
           if (expanded)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,6 +439,7 @@ class _BookingCardState extends State<BookingCard> {
                 ),
               ],
             ),
+            if (canShow)
           GestureDetector(
             onTap: expandCard,
             child: Row(

@@ -278,7 +278,7 @@ class _BookingCardState extends State<BookingCard> {
     final clientName = data.user?.fullName ?? 'Unknown Client';
     final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
     final amount = data.amount ?? '';
-    final date = data.createdAt?.formatDate ?? 'N/A';
+    final date = data.expectedStartDate?.formatDate ?? 'N/A';
     final start = data.providerStartedAt?.formatTime ?? '--';
     final end = data.completedAt?.formatTime ?? '--';
 
@@ -306,15 +306,7 @@ class _BookingCardState extends State<BookingCard> {
             /// --- Header Row
             Row(
               children: [
-                CircleAvatar(
-                  radius: 25,
-                  backgroundImage:
-                      data.user?.profileImage != null
-                          ? NetworkImage(data.user!.profileImage!)
-                          : const NetworkImage(
-                            'https://randomuser.me/api/portraits/men/30.jpg',
-                          ),
-                ),
+                PictureWidget(image: data.user!.profileImage,),
                 12.horizontalSpace,
                 Expanded(
                   child: Column(

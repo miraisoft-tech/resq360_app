@@ -1,9 +1,11 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/core/models/booking_enums.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 
@@ -26,6 +28,20 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {});
   }
+  //todo: add ratings
+
+  //   void _fetchRatings() {
+  //   final providerId = widget.chat.provider?.id;
+  //   final userId = widget.chat.user?.;
+
+  //   if (providerId != null) {
+  //     context.read<RatingsBloc>().add(FetchProviderRatingsById(providerId: providerId));
+  //   }
+
+  //   if (userId != null) {
+  //     context.read<RatingsBloc>().add(FetchCustomerRatingsById(userId: userId));
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -125,22 +141,56 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               // ),
               // ),
               16.verticalSpace,
-              _ServiceCard(
-                name: companyName,
-                subtitle: serviceCategory,
-                rating: '4.9',
-                reviewCount: '(347 reviews)',
-                avatar: AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
-                showActions: true,
+              BlocBuilder<RatingsBloc, RatingsState>(
+                builder: (context, state) {
+                  var providerRating = '0.0';
+                  var providerReviews = '(0 reviews)';
+
+                  if (state is ProviderRatingsLoaded) {
+                    providerRating =
+                        state.ratings.averageRatings?.toStringAsFixed(1) ??
+                        '0.0';
+                    providerReviews =
+                        '(${state.ratings.totalReviews ?? 0} reviews)';
+                  }
+
+                  return _ServiceCard(
+                    name: companyName,
+                    subtitle: serviceCategory,
+                    rating: providerRating,
+                    reviewCount: providerReviews,
+                    avatar:
+                        AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
+                    showActions: true,
+                  );
+                },
               ),
               12.verticalSpace,
-              _ServiceCard(
-                name: clientName,
-                subtitle: '1.0km away',
-                rating: '4.8',
-                reviewCount: '(50 reviews)',
-                avatar: AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
+              BlocBuilder<RatingsBloc, RatingsState>(
+                builder: (context, state) {
+                  var customerRating = '0.0';
+                  var customerReviews = '(0 reviews)';
+
+                  if (state is CustomerRatingsLoaded) {
+                    customerRating =
+                        state.ratings.averageRatings?.toStringAsFixed(1) ??
+                        '0.0';
+                    final count = state.ratings.totalReviews ?? 0;
+                    customerReviews =
+                        count == 1 ? '($count review)' : '($count reviews)';
+                  }
+
+                  return _ServiceCard(
+                    name: clientName,
+                    subtitle: '1.0km away',
+                    rating: customerRating,
+                    reviewCount: customerReviews,
+                    avatar:
+                        AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
+                  );
+                },
               ),
+
               16.verticalSpace,
               Container(
                 width: double.infinity,
@@ -199,7 +249,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 ),
               ),
               const Spacer(),
-              if (widget.chat.serviceRequestStatus == 'ASSIGNED')
+              if (widget.chat.serviceRequestStatus ==
+                  BookingEnums.assigned.name)
                 WideButton(
                   label: 'Start',
                   backgroundColor: appColors.primary.shade500,
@@ -234,7 +285,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     ),
                   ),
                   12.horizontalSpace,
-                  if (widget.chat.serviceRequestStatus != 'COMPLETED')
+                  if (widget.chat.serviceRequestStatus ==
+                      BookingEnums.progress.name)
                     Expanded(
                       child: WideButton(
                         label: 'Complete',
@@ -257,7 +309,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 ],
               ),
               5.verticalSpace,
-              if (widget.chat.serviceRequestStatus != 'COMPLETED')
+              if (widget.chat.serviceRequestStatus ==
+                      BookingEnums.assigned.name ||
+                  widget.chat.serviceRequestStatus ==
+                      BookingEnums.progress.name)
                 WideButton(
                   label: 'Cancel',
                   backgroundColor: appColors.primary.shade50,

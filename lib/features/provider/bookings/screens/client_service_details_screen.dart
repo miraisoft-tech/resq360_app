@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/core/models/booking_enums.dart';
 // import 'package:resq360/features/chat/data/services/chat_repo.dart';
 // import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
@@ -21,7 +22,6 @@ class ProviderServiceDetailScreen extends StatefulWidget {
 
 class _ProviderServiceDetailScreenState
     extends State<ProviderServiceDetailScreen> {
-  
   @override
   void initState() {
     super.initState();
@@ -32,10 +32,12 @@ class _ProviderServiceDetailScreenState
     // Fetch provider ratings if provider ID is available
     if (widget.booking.assignedProviderId != null) {
       context.read<RatingsBloc>().add(
-        FetchProviderRatingsById(providerId: widget.booking.assignedProviderId!),
+        FetchProviderRatingsById(
+          providerId: widget.booking.assignedProviderId!,
+        ),
       );
     }
-    
+
     // Fetch customer ratings if user ID is available
     if (widget.booking.userId != null) {
       context.read<RatingsBloc>().add(
@@ -109,11 +111,13 @@ class _ProviderServiceDetailScreenState
                 builder: (context, ratingsState) {
                   var providerRating = '0.0';
                   var providerReviewCount = '(0 reviews)';
-                  
+
                   if (ratingsState is ProviderRatingsLoaded) {
                     final ratings = ratingsState.ratings;
-                    providerRating = ratings.averageRatings?.toStringAsFixed(1) ?? '0.0';
-                    providerReviewCount = '(${ratings.totalReviews ?? 0} reviews)';
+                    providerRating =
+                        ratings.averageRatings?.toStringAsFixed(1) ?? '0.0';
+                    providerReviewCount =
+                        '(${ratings.totalReviews ?? 0} reviews)';
                   }
 
                   return _ServiceCard(
@@ -132,9 +136,13 @@ class _ProviderServiceDetailScreenState
                   var customerReviewCount = '(0 reviews)';
                   if (ratingsState is CustomerRatingsLoaded) {
                     final ratings = ratingsState.ratings;
-                   final totalreviews = ratings.totalReviews ?? 0;
-                    customerRating = ratings.averageRatings?.toStringAsFixed(1) ?? '0.0';
-                    customerReviewCount = totalreviews > 1?  '(${ratings.totalReviews ?? 0} reviews)': '(${ratings.totalReviews ?? 0} review)';
+                    final totalreviews = ratings.totalReviews ?? 0;
+                    customerRating =
+                        ratings.averageRatings?.toStringAsFixed(1) ?? '0.0';
+                    customerReviewCount =
+                        totalreviews > 1
+                            ? '(${ratings.totalReviews ?? 0} reviews)'
+                            : '(${ratings.totalReviews ?? 0} review)';
                   }
 
                   return _ServiceCard(
@@ -195,9 +203,25 @@ class _ProviderServiceDetailScreenState
               const Spacer(),
               Row(
                 children: [
-                  if (widget.booking.status == 'PENDING' ||
-                      widget.booking.status == 'ASSIGNED' ||
-                      widget.booking.status == 'IN_PROGRESS')
+                  if (widget.booking.status == BookingEnums.assigned.name)
+                    Expanded(
+                      child: WideButton(
+                        label: 'Start',
+                        backgroundColor: appColors.primary.shade500,
+                        textColor: appColors.whiteColor,
+                        onPressed: () async {
+                          if (serviceRequestId != null) {
+                            context.read<BookingBloc>().add(
+                              StartBooking(serviceRequestId: serviceRequestId),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+
+                  10.verticalSpace,
+                  if (widget.booking.status == BookingEnums.progress.name ||
+                      widget.booking.status == BookingEnums.assigned.name)
                     Expanded(
                       child: WideButton(
                         label: 'Cancel',
@@ -240,8 +264,8 @@ class _ProviderServiceDetailScreenState
                     ),
                   ),
                   12.horizontalSpace,
-                  if (widget.booking.status == 'PENDING' ||
-                      widget.booking.status == 'IN_PROGRESS')
+                  if (widget.booking.status ==BookingEnums.progress.name
+                      )
                     Expanded(
                       child: WideButton(
                         label: 'Complete',

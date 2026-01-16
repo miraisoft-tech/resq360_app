@@ -210,7 +210,7 @@ class _ClientPaymentConfirmDialogState
       child: Material(
         color: Colors.transparent,
         child: Container(
-          margin: pad(horizontal: 20),
+          margin: pad(horizontal: 20, vertical: 100),
           padding: pad(horizontal: 25, vertical: 25),
           decoration: BoxDecoration(
             color: appColors.whiteColor,
