@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
+import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
@@ -171,7 +170,14 @@ class ChatRepo extends BaseAPI {
       );
 
       if (response.statusCode == 201 && response.data != null) {
-        final messageData = response.data!;
+        final responseData = response.data!;
+        debugPrint('Invoice API response: $responseData');
+
+        final messageData = responseData['data'] as Map<String, dynamic>?;
+        if (messageData == null) {
+          return ApiResult(error: 'Invalid response: missing data field');
+        }
+
         final message = MessageResponse.fromJson(messageData);
         return ApiResult(data: message);
       } else {

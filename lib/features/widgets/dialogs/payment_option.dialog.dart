@@ -37,7 +37,7 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
     return Padding(
       padding: EdgeInsets.only(
         top: 225.h,
-        bottom: selectedPayment != null ? 170.h : 230.h,
+        bottom: selectedPayment != null ? 250.h : 300.h,
       ),
       child: Material(
         color: Colors.transparent,
@@ -86,7 +86,10 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
                     title: 'Pay from Wallet',
                     subtitle: subtitle,
                     isSelected: selectedPayment == PaymentMethod.wallet,
-                    onTap: disabled ? null: () => _selectPayment(PaymentMethod.wallet),
+                    onTap:
+                        disabled
+                            ? null
+                            : () => _selectPayment(PaymentMethod.wallet),
                   );
                 },
               ),

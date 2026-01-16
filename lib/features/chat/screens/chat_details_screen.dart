@@ -593,8 +593,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
     ];
 
-    // Provider can generate invoices if payment not completed
-    // Check case-insensitively to handle potential API inconsistencies
     final isPaymentCompleted = chat.paymentStatus?.toUpperCase() == 'COMPLETED';
     if (isProvider && !isPaymentCompleted) {
       menuItems.add(
