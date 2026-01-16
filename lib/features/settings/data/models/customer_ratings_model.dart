@@ -13,7 +13,7 @@ class CustomerRatings {
 
   factory CustomerRatings.fromJson(Map<String, dynamic> json) =>
       CustomerRatings(
-        averageRatings: json['averageRatings'] as int?,
+        averageRatings: json['averageRating'] as int?,
         totalReviews: json['totalReviews'] as int?,
         reviews: json['reviews'] == null
             ? <CustomerReview>[]
