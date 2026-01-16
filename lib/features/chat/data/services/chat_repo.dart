@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
