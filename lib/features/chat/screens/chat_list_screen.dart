@@ -1,23 +1,33 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/core/models/chat_summary.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
-import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/widgets/chat_tile.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+/// Unified chat list screen for both customer and provider users.
+class ChatListScreen extends StatefulWidget {
+  const ChatListScreen({
+    required this.userType,
+    super.key,
+  });
+
+  final UserType userType;
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<ChatListScreen> createState() => _ChatListScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatListScreenState extends State<ChatListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String selectedFilter = 'All';
+
+  bool get isCustomer => widget.userType == UserType.customer;
+  bool get isProvider => widget.userType == UserType.provider;
 
   @override
   void initState() {
@@ -42,10 +52,17 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: appColors.whiteColor,
         forceMaterialTransparency: true,
         automaticallyImplyLeading: false,
-        title: const Text('Chats'),
+        centerTitle: false,
+        title: UrbText(
+          'Chats',
+          size: 22,
+          height: 32.5,
+          weight: FontWeight.w700,
+          color: appColors.black,
+        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: pad(horizontal: 16),
         child: RefreshIndicator(
           color: appColors.primary,
           onRefresh: _onRefresh,
@@ -55,13 +72,13 @@ class _ChatScreenState extends State<ChatScreen> {
                 controller: _searchController,
                 onChanged: (_) => setState(() {}),
                 prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
-                hintText: 'Search',
+                hintText: isCustomer ? 'Search' : 'Search chats...',
                 onTapSuffix: () {
                   _searchController.clear();
                   setState(() {});
                 },
               ),
-              const SizedBox(height: 12),
+              16.verticalSpace,
               Row(
                 children:
                     filters.map((f) {
@@ -101,7 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       );
                     }).toList(),
               ),
-              const SizedBox(height: 12),
+              16.verticalSpace,
               Expanded(
                 child: BlocBuilder<ChatListBloc, ChatListState>(
                   builder: (context, state) {
@@ -130,14 +147,18 @@ class _ChatScreenState extends State<ChatScreen> {
                             AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG.imageAsset(),
                         message: 'No messages yet',
                         subMessage:
-                            'Start a conversation with a service provider',
+                            isCustomer
+                                ? 'Start a conversation with a service provider'
+                                : 'Start a conversation with a customer',
                       );
                     }
 
                     return ListView.separated(
                       itemCount: chats.length,
                       separatorBuilder:
-                          (_, _) => const ListDivider(verticalSpacing: 0),
+                          (_, _) => const ListDivider(
+                            verticalSpacing: 0,
+                          ),
                       itemBuilder: (context, index) {
                         final chat = chats[index];
 
@@ -157,10 +178,12 @@ class _ChatScreenState extends State<ChatScreen> {
                             context.read<ChatListBloc>().add(
                               ClearUnreadCount(chat.chatId),
                             );
+
                             await pushScreen(
                               context,
                               ChatDetailScreen(
                                 chatId: chat.chatId,
+                                userType: widget.userType,
                               ),
                             );
                           },

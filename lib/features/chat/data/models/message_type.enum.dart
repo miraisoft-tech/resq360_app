@@ -1,3 +1,4 @@
+/// Enum for message types in chat
 enum MessageReceivedType {
   invoice('INVOICE'),
   system('SYSTEM'),

@@ -1,7 +1,6 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/send_invoice_request.dart';
+import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
 
 class ProviderInvoiceConfirmDialog extends StatefulWidget {
   const ProviderInvoiceConfirmDialog({
@@ -20,19 +19,17 @@ class ProviderInvoiceConfirmDialog extends StatefulWidget {
 
 class _ProviderGenerateInvoiceDialogState
     extends State<ProviderInvoiceConfirmDialog> {
-
-
   bool viewMore = false;
   final now = DateTime.now();
-  
-late final DateTime parsedDate = widget.invoice['date'] != null
-    ? DateTime.parse(widget.invoice['date'] as String)
-    : now;
 
-late final String formattedDate =
-    '${parsedDate.month}/${parsedDate.day}/${parsedDate.year}';
+  late final DateTime parsedDate =
+      widget.invoice['date'] != null
+          ? DateTime.parse(widget.invoice['date'] as String)
+          : now;
 
-    
+  late final String formattedDate =
+      '${parsedDate.month}/${parsedDate.day}/${parsedDate.year}';
+
   // Future<void> sendInvoice() async {
   //   final meta = {
   //     'InvoiceNo': widget.invoice['invoiceNo'],

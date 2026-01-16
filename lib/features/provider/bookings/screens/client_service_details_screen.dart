@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
-import 'package:resq360/features/customer/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
@@ -28,7 +28,6 @@ class _ProviderServiceDetailScreenState
     final providerImage = widget.booking.assignedProvider?.profileImage;
     final clientImage = widget.booking.user?.profileImage;
     final serviceCategoryname = widget.booking.serviceCategory?.name;
-    
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {

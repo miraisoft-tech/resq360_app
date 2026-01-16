@@ -13,6 +13,7 @@ part 'chat_details_state.dart';
 class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   ChatDetailBloc({
     required this.chatId,
+    required this.currentUserId,
     ChatRepo? chatRepo,
     ChatSocketService? socket,
     ChatCacheService? cache,
@@ -29,6 +30,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   }
 
   final int chatId;
+  final int? currentUserId;
   final ChatRepo _repo;
   final ChatSocketService _socket;
   final ChatCacheService _cache;
@@ -164,8 +166,13 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       await _socketSub?.cancel();
       _socketSub = _socket.messageStream.listen(
         (msg) {
-          if ((msg.chatId == chatId) &&
-              !(msg.senderType?.contains('USER') ?? false)) {
+          // Only add incoming messages that are for this chat
+          // and NOT from the current user (to avoid duplicates from optimistic updates)
+          final isForThisChat = msg.chatId == chatId;
+          final isFromCurrentUser =
+              currentUserId != null && msg.senderId == currentUserId;
+
+          if (isForThisChat && !isFromCurrentUser) {
             add(_IncomingMessage(msg));
           }
         },
@@ -182,11 +189,12 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     final current = state;
     if (current is! ChatDetailReady) return;
 
+    final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
     final localMessage = MessageResponse(
-      id: DateTime.now().millisecondsSinceEpoch * -1,
+      id: localMessageId,
       chatId: current.chat.id,
       senderType: 'PROVIDER',
-      messageType: 'SYSTEM',
+      messageType: 'INVOICE',
       content: event.invoice.description ?? 'Invoice',
       createdAt: DateTime.now(),
       metadata: Metadata(
@@ -213,26 +221,42 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       invoiceRequest: event.invoice,
     );
 
+    // Get the CURRENT state after API call (not the old captured state)
+    final latestState = state;
+    if (latestState is! ChatDetailReady) return;
+
     if (result.data == null) {
+      // Remove the local message on failure
+      final messagesWithoutLocal =
+          latestState.messages.where((m) => m.id != localMessageId).toList();
       emit(
-        current.copyWith(
-          messages: current.messages,
+        latestState.copyWith(
+          messages: messagesWithoutLocal,
         ),
       );
       return;
     }
 
-    final confirmedMessages = [
-      result.data!,
-      ...current.messages.where((m) => m.id != localMessage.id),
-    ];
+    // Replace local message with confirmed message from server
+    // Also remove any duplicate that might have come from socket
+    final confirmedId = result.data!.id;
+    final confirmedMessages =
+        latestState.messages
+            .where((m) => m.id != localMessageId && m.id != confirmedId)
+            .toList();
+
+    final finalMessages = [result.data!, ...confirmedMessages]..sort((a, b) {
+      final aTime = a.createdAt ?? DateTime.now();
+      final bTime = b.createdAt ?? DateTime.now();
+      return bTime.compareTo(aTime); // Descending: newest first
+    });
 
     // Update cache with confirmed message
-    _cache.updateMessages(chatId: chatId, messages: confirmedMessages);
+    _cache.updateMessages(chatId: chatId, messages: finalMessages);
 
     emit(
-      current.copyWith(
-        messages: confirmedMessages,
+      latestState.copyWith(
+        messages: finalMessages,
       ),
     );
   }
@@ -283,10 +307,18 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final current = state as ChatDetailReady;
 
-    final confirmedMessages =
-        current.messages.where((m) => m.id == null || m.id! > 0).toList();
+    // Check if message already exists (avoid duplicates)
+    final messageExists = current.messages.any(
+      (m) => m.id == event.message.id,
+    );
+    if (messageExists) return;
 
-    final newMessages = [event.message, ...confirmedMessages];
+    // Add new message and sort by createdAt descending (newest first)
+    final newMessages = [event.message, ...current.messages]..sort((a, b) {
+      final aTime = a.createdAt ?? DateTime.now();
+      final bTime = b.createdAt ?? DateTime.now();
+      return bTime.compareTo(aTime); // Descending: newest first
+    });
 
     // Update cache with new messages
     _cache.updateMessages(chatId: chatId, messages: newMessages);

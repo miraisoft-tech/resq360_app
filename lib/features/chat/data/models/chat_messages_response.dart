@@ -1,7 +1,6 @@
-import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
+import 'package:resq360/features/chat/data/models/message_response.dart';
 
 class ChatMessagesResponse {
-
   ChatMessagesResponse({
     required this.messages,
     required this.total,
@@ -12,9 +11,10 @@ class ChatMessagesResponse {
 
   factory ChatMessagesResponse.fromJson(Map<String, dynamic> json) {
     return ChatMessagesResponse(
-      messages: (json['messages'] as List<dynamic>)
-          .map((e) => MessageResponse.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      messages:
+          (json['messages'] as List<dynamic>)
+              .map((e) => MessageResponse.fromJson(e as Map<String, dynamic>))
+              .toList(),
       total: json['total'] as int,
       page: json['page'] as int,
       limit: json['limit'] as int,

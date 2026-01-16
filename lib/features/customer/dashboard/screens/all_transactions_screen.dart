@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
-import 'package:resq360/features/customer/chat/screens/payment_appeal.dialog.dart';
-import 'package:resq360/features/customer/chat/screens/support_chat_screen.dart';
+import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
+import 'package:resq360/features/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';

@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
 
 class ChatTile extends StatelessWidget {
   const ChatTile({required this.chat, required this.onTap, super.key});

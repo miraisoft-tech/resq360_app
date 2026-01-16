@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/chat/data/models/duration.enum.dart';
+import 'package:resq360/features/provider/dashboard/models/duration.enum.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_review.dart';
 
 class PromoteServiceScreen extends StatefulWidget {

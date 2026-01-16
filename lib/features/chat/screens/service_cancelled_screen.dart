@@ -2,7 +2,7 @@
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
-import 'package:resq360/features/customer/chat/data/models/cancel_reason_enum.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/widgets/dialogs/cancelled.modal.dart';
 
 class ServiceCancelledScreen extends StatefulWidget {

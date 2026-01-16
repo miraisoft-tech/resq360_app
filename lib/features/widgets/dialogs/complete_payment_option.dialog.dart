@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 
 class CompletePaymentDialog extends StatefulWidget {
@@ -164,10 +164,10 @@ class ClientPaymentConfirmDialog extends StatefulWidget {
   const ClientPaymentConfirmDialog({
     required this.title,
     required this.amount,
-    required this.invoiceNumber, 
+    required this.invoiceNumber,
     required this.message,
-     required this.chatId,
-     required this.paymentMethod,
+    required this.chatId,
+    required this.paymentMethod,
     super.key,
   });
 
@@ -243,7 +243,7 @@ class _ClientPaymentConfirmDialogState
 
               GenText(
                 widget.title,
-                size: 15, 
+                size: 15,
                 weight: FontWeight.w600,
                 color: appColors.black,
               ),
@@ -281,7 +281,7 @@ class _ClientPaymentConfirmDialogState
                       textColor: appColors.whiteColor,
                       onPressed: () {
                         Navigator.pop(context);
-                          
+
                         context.read<CustomerPaymentBloc>().add(
                           CustomerInitServiceRequestPaymentEvent(
                             chatId: widget.chatId,

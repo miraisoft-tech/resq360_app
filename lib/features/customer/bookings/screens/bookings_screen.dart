@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_pdf_util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
+import 'package:resq360/features/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
-import 'package:resq360/features/customer/chat/data/services/chat_repo.dart';
-import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class BookingsScreen extends StatefulWidget {
@@ -240,7 +241,13 @@ class _BookingCardState extends State<BookingCard> {
       if (response.data != null) {
         final chatId = response.data?.id;
         if (chatId != null) {
-          await pushScreen(context, ChatDetailScreen(chatId: chatId));
+          await pushScreen(
+            context,
+            ChatDetailScreen(
+              chatId: chatId,
+              userType: UserType.customer,
+            ),
+          );
         }
       } else {
         await showErrorSnackbar(context, 'Unable to open chat');

@@ -2,27 +2,25 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/helpers/location_helper.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
+import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/screens/invoice_confirm.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
-import 'package:resq360/features/provider/chat/screens/provider_invoice_confirm.dart';
 
-class ProviderGenerateInvoiceDialog extends StatefulWidget {
-  const ProviderGenerateInvoiceDialog({required this.chat, super.key});
+class GenerateInvoiceDialog extends StatefulWidget {
+  const GenerateInvoiceDialog({required this.chat, super.key});
 
   final ChatResponse chat;
 
   @override
-  State<ProviderGenerateInvoiceDialog> createState() =>
-      _ProviderGenerateInvoiceDialogState();
+  State<GenerateInvoiceDialog> createState() => _GenerateInvoiceDialogState();
 }
 
-class _ProviderGenerateInvoiceDialogState
-    extends State<ProviderGenerateInvoiceDialog> {
+class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
   final ValueNotifier<Service?> _selectType = ValueNotifier(null);
   final ValueNotifier<DateTime?> _selectedDate = ValueNotifier(null);
   final TextEditingController dateController = TextEditingController();
@@ -180,12 +178,10 @@ class _ProviderGenerateInvoiceDialogState
                 valueListenable: _selectedDate,
                 builder: (_, value, _) {
                   return KFormField(
-                    label: 'Invoice Date',
+                    label: 'Task date',
                     hintText: 'Select date',
                     controller: dateController,
-                    type:
-                        InputType
-                            .dob, 
+                    type: InputType.dob,
                     onTapSuffix: () async {
                       final now = DateTime.now();
 

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
 
 // it's how it was done in the documentaton
 // ignore: library_prefixes
@@ -99,10 +99,6 @@ class ChatSocketService {
 
     _socket!.onReconnectError((error) {
       log(' Failed to reconnect: $error');
-    });
-
-    _socket!.onAny((event, data) {
-      log('Event: $event | Data: $data');
     });
 
     _socket!.onAny((event, data) {

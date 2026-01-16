@@ -1,17 +1,16 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/metadata.dart';
-import 'package:resq360/features/provider/chat/data/models/payment_status.enum.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
 
 class ChatInvoiceCardWidget extends StatelessWidget {
   const ChatInvoiceCardWidget({
     required this.onTapPay,
     required this.metadata,
     required this.messageCreatedAt,
-    required this.message, 
+    required this.message,
     required this.chat,
-    required this.status, super.key, 
+    required this.status,
+    super.key,
   });
 
   final void Function() onTapPay;
@@ -107,7 +106,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                   chat.user?.fullName ?? '',
+                    chat.user?.fullName ?? '',
                     size: 12,
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
@@ -142,8 +141,8 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                 color: appColors.textColor.shade400,
               ),
               GenText(
-                metadata.amount?.toString() ?? '0',
-                size: 16,
+                'NGN${AppTextUtil.formatAmount(metadata.amount?.toString() ?? '0')}',
+                size: 15,
                 weight: FontWeight.w700,
                 color: appColors.black,
               ),
@@ -152,7 +151,8 @@ class ChatInvoiceCardWidget extends StatelessWidget {
           16.verticalSpace,
           WideButton(
             label: status == PaymentStatus.completed.value ? 'Paid' : 'Pay Now',
-            onPressed: status != PaymentStatus.completed.value ? onTapPay : null,
+            onPressed:
+                status != PaymentStatus.completed.value ? onTapPay : null,
           ),
           6.verticalSpace,
           GenText(

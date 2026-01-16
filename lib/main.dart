@@ -1,10 +1,10 @@
 import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc_registry.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
@@ -15,6 +15,7 @@ import 'package:resq360/core/services/auth_session_killer.dart';
 import 'package:resq360/core/theme/app_theme.preferences.dart';
 import 'package:resq360/core/theme/cubit/theme_cubit.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
+import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
@@ -38,7 +39,7 @@ import 'package:resq360/features/settings/data/service/ratings_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   late final AuthBloc globalAuthBloc;
 
   globalAuthBloc = AuthBloc();
@@ -69,7 +70,7 @@ Future<void> main() async {
   Bloc.observer = AppBlocObserver();
   final themePreferences = ThemePreferences();
   final ratingsRepo = RatingsRepo.instance;
-  final serviceRepo = ServiceRepo(); 
+  final serviceRepo = ServiceRepo();
 
   runApp(
     TranslationProvider(
@@ -93,12 +94,24 @@ Future<void> main() async {
           BlocProvider(create: (_) => GalleryBloc()),
           BlocProvider(create: (_) => WalletTransactionsBloc()),
           BlocProvider(create: (_) => BookingBloc(serviceRepo: serviceRepo)),
-          BlocProvider(create: (_) => ServiceCatalogBloc(serviceRepo: serviceRepo)),
-          BlocProvider(create: (_) => ServiceCatalogBloc(serviceRepo: serviceRepo)),
-          BlocProvider(create: (_) => ServiceRequestBloc(serviceRepo: serviceRepo)),
-          BlocProvider(create: (_) => NotificationSettingsBloc(),),
-          BlocProvider(create: (_) => ProviderBloc(),),
-          BlocProvider(create: (_) => PhoneUpdateBloc(),),
+          BlocProvider(
+            create: (_) => ServiceCatalogBloc(serviceRepo: serviceRepo),
+          ),
+          BlocProvider(
+            create: (_) => ServiceCatalogBloc(serviceRepo: serviceRepo),
+          ),
+          BlocProvider(
+            create: (_) => ServiceRequestBloc(serviceRepo: serviceRepo),
+          ),
+          BlocProvider(
+            create: (_) => NotificationSettingsBloc(),
+          ),
+          BlocProvider(
+            create: (_) => ProviderBloc(),
+          ),
+          BlocProvider(
+            create: (_) => PhoneUpdateBloc(),
+          ),
         ],
         child: const MyApp(),
       ),

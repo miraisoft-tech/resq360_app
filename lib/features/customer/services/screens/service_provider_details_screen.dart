@@ -4,13 +4,14 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/gallery_item_model.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
-import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/provider_review_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/widgets/gallery_image_viewer.dart';
 
@@ -166,7 +167,10 @@ class _ServiceProviderDetailsScreenState
                 await pop(context);
                 await pushScreen(
                   context,
-                  ChatDetailScreen(chatId: state.chatId),
+                  ChatDetailScreen(
+                    chatId: state.chatId,
+                    userType: UserType.customer,
+                  ),
                 );
               } else if (state is ServiceRequestError) {
                 await pop(context);
@@ -369,7 +373,9 @@ class _ServiceProviderDetailsScreenState
                                       path:
                                           AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
                                       onTap: () async {
-                                        await DialerUtil.open(provider.phoneNumber ?? '');
+                                        await DialerUtil.open(
+                                          provider.phoneNumber ?? '',
+                                        );
                                       },
                                     ),
                                   ],

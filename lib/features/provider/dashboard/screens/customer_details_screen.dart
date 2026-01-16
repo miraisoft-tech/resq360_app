@@ -1,8 +1,9 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/user_review_card.dart';
-import 'package:resq360/features/provider/chat/screens/provider_chat_details_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/models/customer_ratings_model.dart';
 
@@ -141,8 +142,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                       if (widget.chatId != null) {
                         await pushScreen(
                           context,
-                          ProviderChatDetailScreen(
+                          ChatDetailScreen(
                             chatId: widget.chatId!,
+                            userType: UserType.provider,
                           ),
                         );
                       }

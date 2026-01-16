@@ -1,5 +1,4 @@
-import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
 
 /// A simple in-memory cache for chat data to avoid reloading on every screen visit.
 /// Cache entries expire after [_cacheExpiry] duration.

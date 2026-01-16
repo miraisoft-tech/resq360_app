@@ -5,7 +5,7 @@ import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
-import 'package:resq360/features/provider/chat/data/models/duration.enum.dart';
+import 'package:resq360/features/provider/dashboard/models/duration.enum.dart';
 import 'package:resq360/features/widgets/dialogs/payment_fiished.modal.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
