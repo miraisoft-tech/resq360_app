@@ -138,17 +138,20 @@ class ProviderInfo {
 
 class UserInfo {
   UserInfo({
+    this.id,
     this.fullName,
     this.profileImage,
     this.phoneNumber
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) => UserInfo(
+        id:json['id'] as int?,
         fullName: json['fullName'] as String?,
         profileImage: json['profileImage'] as String?,
         phoneNumber: json['phoneNumber'] as String?,
       );
 
+  final int? id;
   final String? fullName;
   final String? profileImage;
   final String? phoneNumber;

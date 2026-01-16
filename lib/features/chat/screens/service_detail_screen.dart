@@ -26,22 +26,23 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {});
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _fetchRatings();
+    });
   }
-  //todo: add ratings
 
-  //   void _fetchRatings() {
-  //   final providerId = widget.chat.provider?.id;
-  //   final userId = widget.chat.user?.;
+    void _fetchRatings() {
+    final providerId = widget.chat.provider?.id;
+    final userId = widget.chat.user?.id;
 
-  //   if (providerId != null) {
-  //     context.read<RatingsBloc>().add(FetchProviderRatingsById(providerId: providerId));
-  //   }
+    if (providerId != null) {
+      context.read<RatingsBloc>().add(FetchProviderRatingsById(providerId: providerId));
+    }
 
-  //   if (userId != null) {
-  //     context.read<RatingsBloc>().add(FetchCustomerRatingsById(userId: userId));
-  //   }
-  // }
+    if (userId != null) {
+      context.read<RatingsBloc>().add(FetchCustomerRatingsById(userId: userId));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +162,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     reviewCount: providerReviews,
                     avatar:
                         AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
-                    showActions: true,
                   );
                 },
               ),
@@ -182,7 +182,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
                   return _ServiceCard(
                     name: clientName,
-                    subtitle: '1.0km away',
+                    subtitle: '',
                     rating: customerRating,
                     reviewCount: customerReviews,
                     avatar:
@@ -375,6 +375,7 @@ class _ServiceCard extends StatelessWidget {
                   weight: FontWeight.w500,
                   color: appColors.black,
                 ),
+                if(subtitle.isNotEmpty)...{
                 2.verticalSpace,
                 GenText(
                   subtitle,
@@ -382,6 +383,7 @@ class _ServiceCard extends StatelessWidget {
                   size: 12,
                   height: 20.5,
                 ),
+                },
                 2.verticalSpace,
                 Row(
                   children: [

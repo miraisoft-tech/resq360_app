@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 
 class BookingReceiptModal extends StatelessWidget {
   const BookingReceiptModal({
@@ -72,7 +73,7 @@ class BookingReceiptModal extends StatelessWidget {
           ),
           30.verticalSpace,
           UrbText(
-            amount,
+           'NGN ${AppTextUtil.formatAmount(amount)}',
             size: 18,
             height: 28.5,
             weight: FontWeight.w700,

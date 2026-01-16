@@ -1,11 +1,13 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/models/booking_enums.dart';
-// import 'package:resq360/features/chat/data/services/chat_repo.dart';
-// import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/core/utils/dialer_util.dart';
+import 'package:resq360/features/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
-// import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
@@ -29,7 +31,6 @@ class _ProviderServiceDetailScreenState
   }
 
   void _fetchRatings() {
-    // Fetch provider ratings if provider ID is available
     if (widget.booking.assignedProviderId != null) {
       context.read<RatingsBloc>().add(
         FetchProviderRatingsById(
@@ -38,7 +39,6 @@ class _ProviderServiceDetailScreenState
       );
     }
 
-    // Fetch customer ratings if user ID is available
     if (widget.booking.userId != null) {
       context.read<RatingsBloc>().add(
         FetchCustomerRatingsById(userId: widget.booking.userId!),
@@ -57,6 +57,8 @@ class _ProviderServiceDetailScreenState
     final providerImage = widget.booking.assignedProvider?.profileImage;
     final clientImage = widget.booking.user?.profileImage;
     final serviceCategoryname = widget.booking.serviceCategory?.name;
+    final chatId = widget.booking.chatId;
+    final clientPhoneNumber  = widget.booking.user?.phoneNumber ?? '';
 
     return MultiBlocListener(
       listeners: [
@@ -125,7 +127,7 @@ class _ProviderServiceDetailScreenState
                     subtitle: serviceCategoryname ?? '',
                     rating: providerRating,
                     reviewCount: providerReviewCount,
-                    avatar: providerImage ?? '',
+                    avatar: providerImage ?? '', 
                   );
                 },
               ),
@@ -151,6 +153,9 @@ class _ProviderServiceDetailScreenState
                     rating: customerRating,
                     reviewCount: customerReviewCount,
                     avatar: clientImage ?? '',
+                    showActions: true,
+                    chatId: chatId,
+                    phoneNumber: clientPhoneNumber,
                   );
                 },
               ),
@@ -190,7 +195,7 @@ class _ProviderServiceDetailScreenState
                           weight: FontWeight.w500,
                         ),
                         GenText(
-                          amount,
+                          'NGN ${AppTextUtil.formatAmount(amount)}',
                           color: appColors.black,
                           weight: FontWeight.w500,
                         ),
@@ -300,6 +305,7 @@ class _ServiceCard extends StatelessWidget {
     required this.rating,
     required this.reviewCount,
     required this.avatar,
+     this.chatId,
     this.phoneNumber,
     this.showActions = false,
   });
@@ -311,6 +317,7 @@ class _ServiceCard extends StatelessWidget {
   final String avatar;
   final bool showActions;
   final String? phoneNumber;
+  final int? chatId;
 
   @override
   Widget build(BuildContext context) {
@@ -337,6 +344,7 @@ class _ServiceCard extends StatelessWidget {
                   weight: FontWeight.w500,
                   color: appColors.black,
                 ),
+                if(subtitle.isNotEmpty)...{
                 2.verticalSpace,
                 GenText(
                   subtitle,
@@ -344,6 +352,7 @@ class _ServiceCard extends StatelessWidget {
                   size: 12,
                   height: 20.5,
                 ),
+                },
                 2.verticalSpace,
                 Row(
                   children: [
@@ -365,19 +374,25 @@ class _ServiceCard extends StatelessWidget {
               ],
             ),
           ),
-          if (!showActions) ...[
+          if (showActions) ...[
             8.horizontalSpace,
             SVGButton(
               path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-              onTap: () {
-                // _navigateToChatByServiceRequest();
+              onTap: () async {
+                if (chatId != null) {
+                await _navigateToChatByServiceRequest(context, chatId!);
+                  
+                }
               },
             ),
             8.horizontalSpace,
             SVGButton(
               path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
               onTap: () async {
-                // await DialerUtil.open(phoneNumber);
+                if (phoneNumber != null) {
+                await DialerUtil.open(phoneNumber!);
+                  
+                }
               },
               color: appColors.primary.shade500,
             ),
@@ -388,35 +403,35 @@ class _ServiceCard extends StatelessWidget {
   }
 }
 
-// Future<void> _navigateToChatByServiceRequest(
-//     BuildContext context,
-//     int serviceRequestId,
-//   ) async {
-//     try {
-//       showLoadingDialog(context);
+Future<void> _navigateToChatByServiceRequest(
+    BuildContext context,
+    int serviceRequestId,
+  ) async {
+    try {
+      showLoadingDialog(context);
 
-//       final response = await ChatRepo().getChatByserviceRequestId(
-//         serviceRequestId,
-//       );
+      final response = await ChatRepo().getChatByserviceRequestId(
+        serviceRequestId,
+      );
 
-//       Navigator.pop(context);
+      Navigator.pop(context);
 
-//       if (response.data != null) {
-//         final chatId = response.data?.id;
-//         if (chatId != null) {
-//           await pushScreen(
-//             context,
-//             ChatDetailScreen(
-//               chatId: chatId,
-//               userType: UserType.customer,
-//             ),
-//           );
-//         }
-//       } else {
-//         await showErrorSnackbar(context, 'Unable to open chat');
-//       }
-//     } on Exception catch (e) {
-//       Navigator.pop(context);
-//       await showErrorSnackbar(context, 'Failed to load chat: $e');
-//     }
-//   }
+      if (response.data != null) {
+        final chatId = response.data?.id;
+        if (chatId != null) {
+          await pushScreen(
+            context,
+            ChatDetailScreen(
+              chatId: chatId,
+              userType: UserType.customer,
+            ),
+          );
+        }
+      } else {
+        await showErrorSnackbar(context, 'Unable to open chat');
+      }
+    } on Exception catch (e) {
+      Navigator.pop(context);
+      await showErrorSnackbar(context, 'Failed to load chat: $e');
+    }
+  }
