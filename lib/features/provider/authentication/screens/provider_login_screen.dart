@@ -6,6 +6,7 @@ import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_confirm_email_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_forgot_password_screen.dart';
 import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
@@ -76,6 +77,20 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
           log(state.error);
           await showErrorSnackbar(context, state.error);
         }
+
+         if (state is ProviderAuthEmailPendingState) {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+
+            await pushAndReplaceScreen(
+            context: context,
+            ProviderConfirmEmailScreen(
+              email: emailController.text,
+            ),
+          );
+        }
+
 
         if (state is ProviderAuthLoginSuccessState) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {

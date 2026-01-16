@@ -4,6 +4,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/confirm_email_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/forgot_password_screen.dart';
 import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
@@ -77,6 +78,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
           log(state.error);
           await showSnackBar(context, 'Error', state.error);
+        }
+
+        if (state is CustomerAuthEmailPending) {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+
+         await pushAndReplaceScreen(
+            context: context,
+            ConfirmEmailScreen(
+              email: emailController.text,
+            ),
+          );
         }
 
         if (state is CustomerAuthLoginSuccess) {

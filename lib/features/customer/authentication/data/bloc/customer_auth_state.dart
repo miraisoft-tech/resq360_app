@@ -46,6 +46,8 @@ class CustomerAuthSignupSuccess extends CustomerAuthState {
   List<Object> get props => [userId];
 }
 
+final class CustomerAuthEmailPending extends CustomerAuthState {}
+
 class CustomerAuthLoginSuccess extends CustomerAuthState {
   const CustomerAuthLoginSuccess(this.user);
   final UserModel user;
@@ -104,4 +106,12 @@ class CustomerUserKycInfoLoaded extends CustomerAuthState {
   @override
   List<Object> get props => [userKycInfo];
   
+}
+
+class CustomerStatesLoadedState extends CustomerAuthState {
+  const CustomerStatesLoadedState(this.states);
+  final List<StateModel> states;
+
+  @override
+  List<Object> get props => [states];
 }

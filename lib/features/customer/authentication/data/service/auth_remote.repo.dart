@@ -44,9 +44,8 @@ class AuthRemoteRepo extends BaseAPI {
         case 200:
         case 201:
           final authResponse = AuthResponse.fromJson(
-            res.data?['data'] as Map<String, dynamic>,
+            res.data!,
           );
-
           return ApiResult(data: authResponse);
         default:
           return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');

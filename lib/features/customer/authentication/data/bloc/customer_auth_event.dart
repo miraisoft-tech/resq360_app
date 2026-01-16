@@ -135,3 +135,5 @@ class CustomerSubmitId extends CustomerAuthEvent {
 }
 
 class CustomerGetUserKycInfo extends CustomerAuthEvent {}
+
+class CustomerGetStates extends CustomerAuthEvent {}

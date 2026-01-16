@@ -1,43 +1,60 @@
-import 'dart:convert';
 
-import 'package:resq360/core/models/api_response.dart';
-import 'package:resq360/core/models/auth_base_response.dart.dart';
-
-AuthResponse userFromJson(String str) =>
-    AuthResponse.fromJson(json.decode(str) as Map<String, dynamic>);
-
-String userToJson(AuthResponse data) => json.encode(data.toJson());
-
-class AuthResponse extends EmptyResponse implements BaseAuthResponse {
-  AuthResponse(
-    this.accessToken, {
-    required this.message,
-    required this.user,
-    required this.success,
+class AuthData {
+  AuthData({
+    this.accessToken,
+    this.user,
+    this.isEmailVerified,
   });
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) => AuthResponse(
-    json['access_token'] as String?,
-    message: json['message'] as String? ?? '',
-    user:
-        json['user'] != null
-            ? UserModel.fromJson(json['user'] as Map<String, dynamic>)
-            : UserModel(),
-    success: json['success'] as bool? ?? true,
-  );
-  String message;
-  UserModel user;
-  bool success;
-  @override
-  final String? accessToken;
+  factory AuthData.fromJson(Map<String, dynamic> json) {
+    return AuthData(
+      accessToken: json['access_token'] as String?,
+      user:
+          json['user'] != null
+              ? UserModel.fromJson(json['user'] as Map<String, dynamic>)
+              : null,
+      isEmailVerified:
+          json['isEmailVerified'] as bool?,
+    );
+  }
 
-  @override
-  Map<String, dynamic> toJson() => {
-    'message': message,
-    'user': user.toJson(),
-    'success': success,
-  };
+  final String? accessToken;
+  final UserModel? user;
+  final bool? isEmailVerified;
 }
+
+
+class AuthResponse {
+  AuthResponse({
+    required this.success,
+    required this.message,
+    this.data,
+    this.user,
+  });
+
+  factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    return AuthResponse(
+      success: json['success'] as bool? ?? false,
+      message: json['message'] as String? ?? '',
+      data:
+          json['data'] != null
+              ? AuthData.fromJson(json['data'] as Map<String, dynamic>)
+              : null,
+      user:
+          json['user'] != null
+              ? UserModel.fromJson(json['user'] as Map<String, dynamic>)
+              : null,
+    );
+  }
+
+  final bool success;
+  final String message;
+
+  final AuthData? data;
+
+  final UserModel? user;
+}
+
 
 class UserModel {
   UserModel({

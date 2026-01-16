@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/services.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
@@ -8,6 +11,7 @@ import 'package:resq360/features/customer/authentication/data/models/auth/identi
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
+import 'package:resq360/features/provider/authentication/data/models/state_model.dart';
 
 part 'customer_auth_event.dart';
 part 'customer_auth_state.dart';
@@ -29,6 +33,8 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     on<CustomerGetUserKycInfo>(_onGetUserKycInfo);
     on<CustomerSubmitKycAddress>(_onSubmitKycAddress);
     on<CustomerSubmitId>(_onSubmitKycId);
+    on<CustomerGetStates>(_getLocalStates);
+
   }
 
   Future<void> _onLoginWithEmail(
@@ -47,6 +53,18 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         emit(CustomerAuthFailure(result.error ?? 'Login failed'));
         return;
       }
+      final response = result.data!;
+      final authData = response.data;
+
+      if (authData?.isEmailVerified == false) {
+        emit(CustomerAuthEmailPending());
+        return;
+      }
+
+      if (authData?.accessToken == null || authData?.user == null) {
+        emit(const CustomerAuthFailure('Invalid login response'));
+        return;
+      }
 
       final ok = await _loadAndSaveUserProfile(
         authResponse: result.data!,
@@ -62,7 +80,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         password: event.password,
       );
 
-      emit(CustomerAuthLoginSuccess(result.data!.user));
+      emit(CustomerAuthLoginSuccess(authData!.user!));
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
@@ -104,12 +122,18 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         return;
       }
 
-      await AuthLocalRepo.instance.storeLocalCredentials(
+      log(result.data.toString());
+
+     
+      final user = result.data?.user;
+      if (user != null) {
+
+      emit(CustomerAuthAuthenticated(user));
+       await AuthLocalRepo.instance.storeLocalCredentials(
         email: event.email,
         password: event.password,
       );
-
-      emit(CustomerAuthAuthenticated(result.data!.user));
+      }
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
@@ -350,7 +374,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     required AuthResponse authResponse,
   }) async {
     await AuthLocalRepo.instance.storeAccessToken(
-      authResponse.accessToken ?? '',
+      authResponse.data?.accessToken ?? '',
     );
 
     final res = await authRemoteRepo.getUserProfile();
@@ -365,5 +389,44 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     );
 
     return true;
+  }
+
+    Future<void> _getLocalStates(
+    CustomerGetStates event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
+    final tempStatesList = <StateModel>[];
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/json/states_list.json',
+      );
+      final json = jsonDecode(jsonString);
+
+      if (json == null || json is! List) {
+        emit(CustomerStatesLoadedState(tempStatesList));
+        return;
+      }
+
+      final statesListJson = json;
+      log('states ${statesListJson.length}');
+
+      for (var i = 0; i < statesListJson.length; i++) {
+        final stateJson = statesListJson[i];
+        if (stateJson is String) {
+          tempStatesList.add(StateModel.fromJson(stateJson));
+        }
+      }
+
+      tempStatesList.sort((a, b) {
+        final nameA = a.name ?? '';
+        final nameB = b.name ?? '';
+        return nameA.compareTo(nameB);
+      });
+
+      emit(CustomerStatesLoadedState(tempStatesList));
+    } on Exception catch (e) {
+      log('Error loading states: $e');
+      emit(CustomerStatesLoadedState(tempStatesList));
+    }
   }
 }

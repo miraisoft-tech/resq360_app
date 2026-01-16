@@ -1,44 +1,61 @@
-import 'dart:convert';
-
-import 'package:resq360/core/models/api_response.dart';
-import 'package:resq360/core/models/auth_base_response.dart.dart';
-
-AuthResponse userFromJson(String str) =>
-    AuthResponse.fromJson(json.decode(str) as Map<String, dynamic>);
-
-String userToJson(AuthResponse data) => json.encode(data.toJson());
-
-class AuthResponse extends EmptyResponse implements BaseAuthResponse {
-  AuthResponse({
-    required this.accessToken,
-    required this.provider,
+class ProviderAuthData {
+  ProviderAuthData({
+    this.accessToken,
+    this.provider,
+    this.isEmailVerified,
   });
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>? ?? {};
-    return AuthResponse(
-      accessToken: (data['access_token'] as String?) ?? '',
-      provider: ProviderUserModel.fromJson(
-        (data['provider'] ?? <String, dynamic>{}) as Map<String, dynamic>,
-      ),
+  factory ProviderAuthData.fromJson(Map<String, dynamic> json) {
+    return ProviderAuthData(
+      accessToken: json['access_token'] as String?,
+      provider:
+          json['provider'] != null
+              ? ProviderUserModel.fromJson(
+                  json['provider'] as Map<String, dynamic>,
+                )
+              : null,
+      isEmailVerified: json['isEmailVerified'] as bool?,
     );
   }
 
-  @override
   final String? accessToken;
-  final ProviderUserModel provider;
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'data': {
-      'access_token': accessToken,
-      'provider': provider.toJson(),
-    },
-  };
-
-  @override
-  String toString() => jsonEncode(toJson());
+  final ProviderUserModel? provider;
+  final bool? isEmailVerified;
 }
+
+class AuthResponse {
+  AuthResponse({
+    required this.success,
+    required this.message,
+    this.data,
+    this.provider,
+
+  });
+
+  factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    return AuthResponse(
+      success: json['success'] as bool? ?? false,
+      message: json['message'] as String? ?? '',
+      data:
+          json['data'] != null
+              ? ProviderAuthData.fromJson(
+                  json['data'] as Map<String, dynamic>,
+                )
+              : null,
+      provider: json['provider'] != null
+              ? ProviderUserModel.fromJson(json['provider'] as Map<String, dynamic>)
+              : null,
+    );
+  }
+
+  final bool success;
+  final String message;
+  final ProviderAuthData? data;
+  final ProviderUserModel? provider;
+
+
+}
+
 
 class ProviderUserModel {
   ProviderUserModel({

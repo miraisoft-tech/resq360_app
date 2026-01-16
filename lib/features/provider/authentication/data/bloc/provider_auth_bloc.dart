@@ -8,7 +8,7 @@ import 'package:resq360/features/customer/authentication/data/models/auth/identi
 import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
-import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/features/provider/authentication/data/models/auth_provider.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/authentication/data/models/state_model.dart';
 import 'package:resq360/features/provider/authentication/data/service/provider_auth_remote.repo.dart';
@@ -55,21 +55,38 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         return;
       }
 
-      final ok = await _loadAndSaveProviderProfile(
-        authResponse: result.data!,
-      );
+      final response = result.data;
+      final authData = response?.data;
 
-      if (!ok) {
-        emit(const ProviderAuthFailureState('Failed to load profile'));
+      if (response == null || authData == null) {
+        emit(ProviderAuthFailureState(result.error ?? 'Login failed'));
         return;
       }
 
-      await AuthLocalRepo.instance.storeLocalCredentials(
-        email: event.email,
-        password: event.password,
-      );
+      if (authData.isEmailVerified == false) {
+        emit(ProviderAuthEmailPendingState());
+        return;
+      }
 
-      emit(ProviderAuthLoginSuccessState(result.data!.provider));
+      if (authData.accessToken != null && authData.provider != null) {
+        await AuthLocalRepo.instance.storeAccessToken(authData.accessToken!);
+        final ok = await _loadAndSaveProviderProfile(
+          authResponse: result.data!,
+        );
+
+        if (!ok) {
+          emit(const ProviderAuthFailureState('Failed to load profile'));
+          return;
+        }
+
+        await AuthLocalRepo.instance.storeLocalCredentials(
+          email: event.email,
+          password: event.password,
+        );
+
+        emit(ProviderAuthLoginSuccessState(authData.provider!));
+        return;
+      }
     } on Exception catch (e) {
       emit(ProviderAuthFailureState(e.toString()));
     }
@@ -97,7 +114,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     required AuthResponse authResponse,
   }) async {
     await AuthLocalRepo.instance.storeAccessToken(
-      authResponse.accessToken ?? '',
+      authResponse.data?.accessToken ?? '',
     );
 
     final res = await providerAuthRemoteRepo.getProviderProfile();
@@ -129,17 +146,24 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         address: event.address,
       );
 
-      if (result.data == null) {
+      final response = result.data;
+      if (response == null) {
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
         return;
       }
 
+      final provider = result.data?.provider;
+      if (provider == null) {
+        emit(const ProviderAuthFailureState('Invalid signup response'));
+        return;
+      }
+
+      emit(ProviderAuthSignupSuccessState(provider));
       await AuthLocalRepo.instance.storeLocalCredentials(
         email: event.email,
         password: event.password,
       );
-
-      emit(ProviderAuthSignupSuccessState(result.data!.provider));
+      
     } on Exception catch (e) {
       log('Signup Bloc Error: $e');
       emit(ProviderAuthFailureState(e.toString()));

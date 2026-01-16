@@ -19,6 +19,8 @@ class ProviderAuthAuthenticatedState extends ProviderAuthState {
   List<Object> get props => [user];
 }
 
+class ProviderAuthEmailPendingState extends ProviderAuthState {}
+
 class ProviderAuthFailureState extends ProviderAuthState {
   const ProviderAuthFailureState(this.error);
   final String error;

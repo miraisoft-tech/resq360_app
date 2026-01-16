@@ -7,7 +7,6 @@ import 'package:resq360/features/customer/authentication/data/bloc/customer_auth
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
-import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/data/models/state_model.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
@@ -39,8 +38,8 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(initializeLocation());
-      context.read<ProviderAuthBloc>().add(
-        ProviderGetStates(),
+      context.read<CustomerAuthBloc>().add(
+        CustomerGetStates(),
       );
     });
   }
@@ -50,8 +49,11 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
 
     _streetCtrl.text = (locationData['address'] as String?) ?? '';
     _cityCtrl.text = (locationData['city'] as String?) ?? '';
+    _selectState.value = (locationData['state'] as String?) ?? '';
 
     userInfo = await AuthLocalRepo.instance.getCustomerAuthCredentials();
+    setState(() {});
+
   }
 
   @override
@@ -112,6 +114,11 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
               },
             ),
           );
+        }
+          if (state is CustomerStatesLoadedState) {
+          setState(() {
+            states = state.states;
+          });
         }
       },
       child: Scaffold(
