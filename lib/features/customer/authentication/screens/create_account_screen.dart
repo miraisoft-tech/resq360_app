@@ -30,10 +30,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     nameController = TextEditingController();
     emailController = TextEditingController();
     passwordController = TextEditingController();
-
-    //  .instance.addPostFrameCallback(
-    //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
-    // );
   }
 
   @override
