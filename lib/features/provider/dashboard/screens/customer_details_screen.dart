@@ -7,7 +7,11 @@ import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.da
 import 'package:resq360/features/settings/data/models/customer_ratings_model.dart';
 
 class CustomerDetailsScreen extends StatefulWidget {
-  const CustomerDetailsScreen({required this.user, required this.chatId,  super.key});
+  const CustomerDetailsScreen({
+    required this.user,
+    required this.chatId,
+    super.key,
+  });
 
   final User user;
   final int? chatId;
@@ -21,10 +25,12 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   void initState() {
     super.initState();
     if (widget.user.id != null) {
-    context.read<RatingsBloc>().add(FetchCustomerRatingsById(userId: widget.user.id!));
-      
+      context.read<RatingsBloc>().add(
+        FetchCustomerRatingsById(userId: widget.user.id!),
+      );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -32,12 +38,11 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
     var totalReviews = 0;
     var reviews = <CustomerReview>[];
 
-
     return BlocBuilder<RatingsBloc, RatingsState>(
       builder: (context, state) {
         if (state is CustomerRatingsLoaded) {
           averageRating = state.ratings.averageRatings ?? 0;
-          totalReviews = state.ratings.reviews?.length ?? 0;  
+          totalReviews = state.ratings.reviews?.length ?? 0;
           reviews = state.ratings.reviews ?? [];
         }
         return Scaffold(
@@ -67,7 +72,9 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                 children: [
                   Row(
                     children: [
-                      const PictureWidget(),
+                      PictureWidget(
+                        image: widget.user.profileImage,
+                      ),
                       10.horizontalSpace,
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +94,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                               ),
                               4.horizontalSpace,
                               GenText(
-                                averageRating.toString(),
+                                averageRating.toStringAsFixed(1),
                                 size: 12,
                                 color: appColors.textColor.shade400,
                               ),
@@ -96,17 +103,17 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                                 size: 12,
                                 color: appColors.neutral.shade300,
                               ),
-                              // 10.horizontalSpace,
-                              // AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                              //   color: appColors.neutral.shade400,
-                              // ),
-                              // 4.horizontalSpace,
-                              // GenText(
-                              //   '1.0km away',
-                              //   size: 12,
-                              //   weight: FontWeight.w400,
-                              //   color: appColors.neutral.shade400,
-                              // ),
+                              10.horizontalSpace,
+                              AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
+                                color: appColors.neutral.shade400,
+                              ),
+                              4.horizontalSpace,
+                              GenText(
+                                ' away',
+                                size: 12,
+                                weight: FontWeight.w400,
+                                color: appColors.neutral.shade400,
+                              ),
                             ],
                           ),
                         ],
@@ -121,7 +128,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                     color: appColors.black,
                   ),
                   20.verticalSpace,
-                   ReviewSummaryCard(
+                  ReviewSummaryCard(
                     averageRating: averageRating.toDouble(),
                     totalReviews: totalReviews,
                   ),
@@ -131,8 +138,13 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   WideButton(
                     label: 'Chat with Client',
                     onPressed: () async {
-                      if(widget.chatId != null) {
-                        await pushScreen(context,  ProviderChatDetailScreen(chatId: widget.chatId!,));
+                      if (widget.chatId != null) {
+                        await pushScreen(
+                          context,
+                          ProviderChatDetailScreen(
+                            chatId: widget.chatId!,
+                          ),
+                        );
                       }
                     },
                   ),

@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/core/models/chat_summary.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
 import 'package:resq360/features/customer/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/widgets/chat_tile.dart';
@@ -32,6 +33,8 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
+    final filters = ['All', 'Unread', 'Appeal'];
+
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
@@ -53,12 +56,50 @@ class _ChatScreenState extends State<ChatScreen> {
                 onChanged: (_) => setState(() {}),
                 prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
                 hintText: 'Search',
+                onTapSuffix: () {
+                  _searchController.clear();
+                  setState(() {});
+                },
               ),
               const SizedBox(height: 12),
-              ChatFilterTabs(
-                selectedFilter: selectedFilter,
-                onFilterSelected:
-                    (value) => setState(() => selectedFilter = value),
+              Row(
+                children:
+                    filters.map((f) {
+                      final isActive = selectedFilter == f;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() => selectedFilter = f);
+                          },
+                          child: Container(
+                            padding: pad(vertical: 4, horizontal: 10),
+                            decoration: BoxDecoration(
+                              color:
+                                  isActive
+                                      ? appColors.primary
+                                      : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                color:
+                                    isActive
+                                        ? Colors.transparent
+                                        : appColors.textColor.shade200,
+                              ),
+                            ),
+                            child: GenText(
+                              f,
+                              color:
+                                  isActive
+                                      ? appColors.whiteColor
+                                      : appColors.textColor.shade500,
+                              height: 16.5,
+                              weight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -84,8 +125,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     final chats = _applyFilter(state.chats);
 
                     if (chats.isEmpty) {
-                      return const EmptyScreenWidget(
-                        imagePath: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG,
+                      return EmptyScreenWidget(
+                        image:
+                            AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG.imageAsset(),
                         message: 'No messages yet',
                         subMessage:
                             'Start a conversation with a service provider',
@@ -102,10 +144,12 @@ class _ChatScreenState extends State<ChatScreen> {
                         return ChatTile(
                           chat: Chat(
                             name: chat.title,
-                            message: chat.lastMessage?.capitalizeWords() ?? '',
+                            message: chat.lastMessage ?? '',
                             time:
                                 chat.lastMessageTime != null
-                                    ? _formatTime(chat.lastMessageTime!)
+                                    ? AppTextUtil.formatChatListTime(
+                                      chat.lastMessageTime!,
+                                    )
                                     : '',
                             imgUrl: chat.imgurl,
                           ),
@@ -150,68 +194,5 @@ class _ChatScreenState extends State<ChatScreen> {
           return true;
       }
     }).toList();
-  }
-
-  String _formatTime(DateTime dateTime) {
-    final now = DateTime.now();
-
-    if (dateTime.year == now.year &&
-        dateTime.month == now.month &&
-        dateTime.day == now.day) {
-      return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
-    }
-
-    return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
-  }
-}
-
-class ChatFilterTabs extends StatelessWidget {
-  const ChatFilterTabs({
-    required this.selectedFilter,
-    required this.onFilterSelected,
-    super.key,
-  });
-  final String selectedFilter;
-  final ValueChanged<String> onFilterSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final appColors = context.appColors;
-    final filters = ['All', 'Unread', 'Appeal'];
-
-    return Row(
-      children:
-          filters.map((f) {
-            final isActive = selectedFilter == f;
-            return Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: GestureDetector(
-                onTap: () => onFilterSelected(f),
-                child: Container(
-                  padding: pad(vertical: 4, horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: isActive ? appColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                      color:
-                          isActive
-                              ? Colors.transparent
-                              : appColors.textColor.shade200,
-                    ),
-                  ),
-                  child: GenText(
-                    f,
-                    color:
-                        isActive
-                            ? appColors.whiteColor
-                            : appColors.textColor.shade500,
-                    height: 16.5,
-                    weight: FontWeight.w400,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-    );
   }
 }

@@ -62,6 +62,8 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
                 color: appColors.textColor.shade900,
               ),
               controller: _controller,
+              minLines: 1,
+              maxLines: 3,
               decoration: InputDecoration(
                 hintText: 'Type your message...',
                 hintStyle: TextStyle(

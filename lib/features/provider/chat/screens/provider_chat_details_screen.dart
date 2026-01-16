@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
 import 'package:resq360/features/customer/chat/screens/service_detail_screen.dart';
@@ -44,6 +45,17 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
 
   int? get _currentUserId => ProviderAuthProvider.instance.authInfo?.id;
   bool canShowDetails = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await ProviderAuthProvider.instance.init();
+    });
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -65,7 +77,7 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
           title = chat.title ?? 'Chat';
           phone = chat.user?.phoneNumber ?? '';
           isActive = chat.isActive ?? false;
-            imageurl = chat.image ?? '';
+          imageurl = chat.image ?? '';
         }
         return Scaffold(
           backgroundColor: appColors.whiteColor,
@@ -196,13 +208,15 @@ class _ProviderChatDetailViewState extends State<_ProviderChatDetailView> {
       ),
       title: Row(
         children: [
-           PictureWidget(image: imageUrl,),
+          PictureWidget(
+            image: imageUrl,
+          ),
           8.horizontalSpace,
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GenText(
-                title.capitalizeWords(),
+                title.capitalize,
                 weight: FontWeight.w500,
                 color: appColors.black,
               ),
@@ -409,7 +423,9 @@ class _MessageList extends StatelessWidget {
             ChatBubble(
               type: isMine ? MessageType.sent : MessageType.received,
               message: message.content ?? '',
-              time: _formatTime(message.createdAt ?? DateTime.now()),
+              time: AppTextUtil.formatChatTime(
+                message.createdAt ?? DateTime.now(),
+              ),
             ),
             20.verticalSpace,
           ],
@@ -438,7 +454,4 @@ class _MessageList extends StatelessWidget {
       ),
     );
   }
-
-  String _formatTime(DateTime dt) =>
-      '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
 }

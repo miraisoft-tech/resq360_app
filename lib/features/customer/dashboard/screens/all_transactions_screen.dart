@@ -51,7 +51,6 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     }
   }
 
-
   Future<void> _handleAppeal(
     BuildContext context,
     WalletTransaction walletTx,
@@ -145,10 +144,11 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
         child: BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
           builder: (context, state) {
             if (state is WalletTransactionsLoading) {
-              return  Center(child: CircularProgressIndicator(
-            color: appColors.primary,
-
-              ));
+              return Center(
+                child: CircularProgressIndicator(
+                  color: appColors.primary,
+                ),
+              );
             }
 
             if (state is WalletTransactionsError) {
@@ -180,9 +180,10 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                   (state.pagination.hasNextPage ?? false);
 
               if (transactions.isEmpty) {
-                return const Center(
+                return Center(
                   child: EmptyScreenWidget(
-                    imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
+                    image:
+                        AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG.imageAsset(),
                     message: 'No Transactions Yet',
                     subMessage:
                         'Your wallet history will appear here after your first payment or credit',

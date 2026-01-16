@@ -3,13 +3,13 @@ import 'package:resq360/core/theme/app_color_theme.dart';
 
 class ReviewSummaryCard extends StatelessWidget {
   const ReviewSummaryCard({
-    required this.averageRating, required this.totalReviews, super.key,
+    required this.averageRating,
+    required this.totalReviews,
+    super.key,
     this.starCounts,
   });
 
-
   final double averageRating;
-
 
   final int totalReviews;
 
@@ -19,22 +19,20 @@ class ReviewSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-
-    final total = totalReviews == 0 ? 1 : totalReviews;
-    final starPercents = List<double>.generate(
-      5,
-      (i) {
-        final star = 5 - i; 
-        final count = starCounts?[star] ?? 0;
-        return count / total;
-      },
-    );
+    //  final total = totalReviews == 0 ? 1 : totalReviews;
+    // final starPercents = List<double>.generate(
+    //   5,
+    //   (i) {
+    //     final star = 5 - i;
+    //     final count = starCounts?[star] ?? 0;
+    //     return count / total;
+    //   },
+    // );
 
     return SizedBox(
       width: double.infinity,
       child: Row(
         children: [
-
           Col(
             children: [
               Padding(
@@ -65,19 +63,18 @@ class ReviewSummaryCard extends StatelessWidget {
 
           15.horizontalSpace,
 
-          Expanded(
-            child: Column(
-              children: starPercents
-                  .map((value) => _buildProgress(colors, value))
-                  .toList(),
-            ),
-          )
+          // Expanded(
+          //   child: Column(
+          //     children: starPercents
+          //         .map((value) => _buildProgress(colors, value))
+          //         .toList(),
+          //   ),
+          // )
         ],
       ),
     );
   }
 }
-
 
 List<Widget> _buildStars(double rating, AppColorPalette colors) {
   final icons = <Widget>[];
@@ -86,16 +83,20 @@ List<Widget> _buildStars(double rating, AppColorPalette colors) {
     if (rating >= i) {
       icons.add(Icon(Icons.star, color: colors.primary.shade400, size: 18));
     } else if (rating >= i - 0.5) {
-      icons.add(Icon(Icons.star_half, color: colors.primary.shade400, size: 18));
+      icons.add(
+        Icon(Icons.star_half, color: colors.primary.shade400, size: 18),
+      );
     } else {
-      icons.add(Icon(Icons.star_border, color: colors.primary.shade400, size: 18));
+      icons.add(
+        Icon(Icons.star_border, color: colors.primary.shade400, size: 18),
+      );
     }
   }
 
   return icons;
 }
 
-Widget _buildProgress(AppColorPalette colors, double value) {
+Widget buildProgress(AppColorPalette colors, double value) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: LinearProgressIndicator(

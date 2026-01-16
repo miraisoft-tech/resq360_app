@@ -2,14 +2,14 @@ import 'package:resq360/__lib.dart';
 
 class EmptyScreenWidget extends StatelessWidget {
   const EmptyScreenWidget({
-    required this.imagePath,
+    required this.image,
     required this.message,
     required this.subMessage,
     this.height = 100,
     super.key,
   });
 
-  final String imagePath;
+  final Widget image;
   final String message;
   final String subMessage;
   final double height;
@@ -22,7 +22,7 @@ class EmptyScreenWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            imagePath.imageAsset(),
+            image,
             2.verticalSpace,
             GenText(
               message,

@@ -133,8 +133,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
             final notifications = state.notifications;
             _isLoadingMore = false;
             if (notifications.isEmpty) {
-              return const EmptyScreenWidget(
-                imagePath: AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG,
+              return EmptyScreenWidget(
+                image:
+                    AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG
+                        .imageAsset(),
                 message: 'No Notifications Yet',
                 subMessage:
                     "You'll see updates about your bookings and payments here.",
@@ -161,10 +163,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       SizedBox.fromSize(),
                     20.verticalSpace,
                     if (grouped.isEmpty)
-                      const Center(
+                      Center(
                         child: EmptyScreenWidget(
-                          imagePath:
-                              AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG,
+                          image:
+                              AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG
+                                  .imageAsset(),
                           message: 'No Notifications Yet',
                           subMessage:
                               "You'll see updates about your bookings and payments here. ",

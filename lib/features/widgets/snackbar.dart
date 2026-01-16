@@ -144,7 +144,7 @@ void showLoadingDialog(BuildContext context) {
     showDialog<void>(
       context: context,
       barrierColor: const Color.fromRGBO(173, 173, 173, 0.23),
-      // barrierDismissible: false,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return const Center(child: ActivityDialogWidget());
       },

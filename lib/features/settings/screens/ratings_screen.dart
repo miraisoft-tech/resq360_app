@@ -33,35 +33,6 @@ class _RatingScreenState extends State<RatingScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    // final reviews = [
-    //   ReviewModel(
-    //     name: 'QuickTow Emergency',
-    //     category: 'Towing Service',
-    //     date: 'Aug 12, 2025',
-    //     rating: 5,
-    //     review:
-    //         'Jane Doe was an easy client, we had no back and forth and she trusted me to do the job right.',
-    //     avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
-    //   ),
-    //   ReviewModel(
-    //     name: 'Homify',
-    //     category: 'Cleaning Service',
-    //     date: 'Aug 12, 2025',
-    //     rating: 3,
-    //     review:
-    //         'An easy going client, no arguments whatsoever, I had a smooth working experience.',
-    //     avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
-    //   ),
-    //   ReviewModel(
-    //     name: 'The Johnson’s',
-    //     category: 'Locksmith',
-    //     date: 'Aug 12, 2025',
-    //     rating: 3,
-    //     review:
-    //         'An easy going client, no arguments whatsoever, I had a smooth working experience.',
-    //     avatar: 'https://randomuser.me/api/portraits/men/30.jpg',
-    //   ),
-    // ];
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -92,8 +63,8 @@ class _RatingScreenState extends State<RatingScreen> {
             final reviews = state.ratings.reviews ?? [];
 
             if (reviews.isEmpty) {
-              return const EmptyScreenWidget(
-                imagePath: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG,
+              return EmptyScreenWidget(
+                image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
                 message: 'You do not have any review',
                 subMessage: '',
               );
@@ -141,17 +112,17 @@ class _RatingScreenState extends State<RatingScreen> {
             final reviews = state.ratings.reviews ?? [];
 
             if (reviews.isEmpty) {
-              return const EmptyScreenWidget(
-                imagePath: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG,
+              return EmptyScreenWidget(
+                image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
                 message: 'You do not have any review',
                 subMessage: '',
               );
             }
-            log(state.ratings.averageRatings );
+            log(state.ratings.averageRatings);
             return Padding(
               padding: pad(horizontal: 20, vertical: 16),
               child: ListView(
-                children: [ 
+                children: [
                   RatingSummaryWidget<CustomerReview>(
                     average: state.ratings.averageRatings ?? 0,
                     totalReviews: state.ratings.totalReviews ?? 0,
@@ -174,7 +145,12 @@ class _RatingScreenState extends State<RatingScreen> {
                             (r) =>
                                 r.serviceRequest?.serviceCategory?.name ??
                                 'General',
-                        getDate: (r) => DateTime.tryParse(r.ratingDate ??'')?.formatDate ?? 'N/A',
+                        getDate:
+                            (r) =>
+                                DateTime.tryParse(
+                                  r.ratingDate ?? '',
+                                )?.formatDate ??
+                                'N/A',
                         getRating: (r) => r.overallRating ?? 0,
                         getFeedback: (r) => r.feedback ?? '',
                       );

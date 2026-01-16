@@ -175,7 +175,11 @@ class _BookingList extends StatelessWidget {
         if (state is CustomerBookingLoaded) {
           final bookings = state.bookings;
           if (bookings.isEmpty) {
-            return const EmptyScreenWidget(imagePath:  AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG, message: 'No booking found', subMessage: '',);
+            return EmptyScreenWidget(
+              image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
+              message: 'No booking found',
+              subMessage: '',
+            );
           }
 
           return RefreshIndicator(

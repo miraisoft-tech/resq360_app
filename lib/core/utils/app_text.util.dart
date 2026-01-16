@@ -77,4 +77,28 @@ class AppTextUtil {
     }
     return '${km.toStringAsFixed(0)} km';
   }
+
+  // CHAT
+
+  static String formatChatTime(DateTime dt) {
+    return DateFormat('hh:mm a').format(
+      dt,
+    );
+  }
+
+  static String formatChatListTime(DateTime incomingDate) {
+    final dateTime = incomingDate.toLocal();
+
+    final now = DateTime.now();
+
+    if (dateTime.year == now.year &&
+        dateTime.month == now.month &&
+        dateTime.day == now.day) {
+      return DateFormat('hh:mm a').format(
+        dateTime,
+      );
+    }
+
+    return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
+  }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/chat_cache_service.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_response.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/message_response.dart';
@@ -18,8 +19,10 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     required this.chatId,
     ChatRepo? chatRepo,
     ChatSocketService? socket,
+    ChatCacheService? cache,
   }) : _repo = chatRepo ?? ChatRepo(),
        _socket = socket ?? ChatSocketService.instance,
+       _cache = cache ?? ChatCacheService.instance,
        super(ChatDetailInitial()) {
     on<OpenChatDetail>(_onOpenChatDetail);
     on<SendTextMessage>(_onSendMessage);
@@ -32,6 +35,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   final int chatId;
   final ChatRepo _repo;
   final ChatSocketService _socket;
+  final ChatCacheService _cache;
   StreamSubscription<dynamic>? _socketSub;
 
   Future<void> _onOpenChatDetail(
@@ -39,6 +43,28 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     Emitter<ChatDetailState> emit,
   ) async {
     try {
+      // Check cache first - show cached data immediately if available
+      final cachedData = _cache.getCachedData(event.chatId);
+      if (cachedData != null) {
+        // Emit cached data immediately (no loading state)
+        emit(
+          ChatDetailReady(
+            chat: cachedData.chat,
+            messages: cachedData.messages,
+            currentPage: cachedData.currentPage,
+            totalPages: cachedData.totalPages,
+            hasMoreMessages: cachedData.hasMoreMessages,
+          ),
+        );
+
+        // Connect socket
+        await _connectSocket();
+
+        await _refreshInBackground(event.chatId, emit);
+        return;
+      }
+
+      // No cache - show loading and fetch fresh data
       emit(ChatDetailLoading());
 
       final chatResult = await _repo.getChatById(event.chatId);
@@ -62,6 +88,16 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final chat = chatResult.data!;
       final messagesData = messagesResult.data!;
 
+      // Cache the data
+      _cache.cacheData(
+        chatId: event.chatId,
+        chat: chat,
+        messages: messagesData.messages,
+        currentPage: messagesData.page,
+        totalPages: messagesData.totalPages,
+        hasMoreMessages: messagesData.page < messagesData.totalPages,
+      );
+
       emit(
         ChatDetailReady(
           chat: chat,
@@ -73,6 +109,53 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       );
     } on Exception catch (e) {
       emit(ChatDetailFailure(e.toString()));
+    }
+  }
+
+  /// Refresh data in background without showing loading state
+  Future<void> _refreshInBackground(
+    int chatId,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    try {
+      final chatResult = await _repo.getChatById(chatId);
+      final messagesResult = await _repo.getChatMessages(chatId);
+
+      if (chatResult.data == null || messagesResult.data == null) return;
+
+      final chat = chatResult.data!;
+      final messagesData = messagesResult.data!;
+
+      // Update cache
+      _cache.cacheData(
+        chatId: chatId,
+        chat: chat,
+        messages: messagesData.messages,
+        currentPage: messagesData.page,
+        totalPages: messagesData.totalPages,
+        hasMoreMessages: messagesData.page < messagesData.totalPages,
+      );
+
+      // Only update if still in ready state and messages have changed
+      if (state is ChatDetailReady) {
+        final current = state as ChatDetailReady;
+        // Check if there are newer messages
+        if (messagesData.messages.isNotEmpty &&
+            current.messages.isNotEmpty &&
+            messagesData.messages.first.id != current.messages.first.id) {
+          emit(
+            current.copyWith(
+              chat: chat,
+              messages: messagesData.messages,
+              currentPage: messagesData.page,
+              totalPages: messagesData.totalPages,
+              hasMoreMessages: messagesData.page < messagesData.totalPages,
+            ),
+          );
+        }
+      }
+    } on Exception catch (e) {
+      log('Background refresh failed: $e');
     }
   }
 
@@ -119,12 +202,14 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       ),
     );
 
+    final newMessages = [localMessage, ...current.messages];
+
+    // Update cache
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+
     emit(
       current.copyWith(
-        messages: [
-          localMessage,
-          ...current.messages,
-        ],
+        messages: newMessages,
       ),
     );
 
@@ -141,14 +226,17 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       return;
     }
 
+    final confirmedMessages = [
+      result.data!,
+      ...current.messages.where((m) => m.id != localMessage.id),
+    ];
+
+    // Update cache with confirmed message
+    _cache.updateMessages(chatId: chatId, messages: confirmedMessages);
+
     emit(
       current.copyWith(
-        messages: [
-          result.data!,
-          ...current.messages.where(
-            (m) => m.id != localMessage.id,
-          ),
-        ],
+        messages: confirmedMessages,
       ),
     );
   }
@@ -170,9 +258,15 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       content: event.content,
       createdAt: DateTime.now(),
     );
+
+    final newMessages = [localMessage, ...current.messages];
+
+    // Update cache
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+
     emit(
       current.copyWith(
-        messages: [localMessage, ...current.messages],
+        messages: newMessages,
       ),
     );
 
@@ -196,9 +290,14 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     final confirmedMessages =
         current.messages.where((m) => m.id == null || m.id! > 0).toList();
 
+    final newMessages = [event.message, ...confirmedMessages];
+
+    // Update cache with new messages
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+
     emit(
       current.copyWith(
-        messages: [event.message, ...confirmedMessages],
+        messages: newMessages,
       ),
     );
   }
@@ -215,6 +314,15 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     if (result.data == null) return;
 
     final messagesData = result.data!;
+
+    // Update cache
+    _cache.updateMessages(
+      chatId: chatId,
+      messages: messagesData.messages,
+      currentPage: messagesData.page,
+      totalPages: messagesData.totalPages,
+      hasMoreMessages: messagesData.page < messagesData.totalPages,
+    );
 
     emit(
       current.copyWith(
@@ -251,6 +359,15 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     // Append older messages to the end of the list
     final allMessages = [...current.messages, ...messagesData.messages];
 
+    // Update cache
+    _cache.updateMessages(
+      chatId: chatId,
+      messages: allMessages,
+      currentPage: messagesData.page,
+      totalPages: messagesData.totalPages,
+      hasMoreMessages: messagesData.page < messagesData.totalPages,
+    );
+
     emit(
       current.copyWith(
         messages: allMessages,
@@ -262,8 +379,24 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     );
   }
 
+  /// Save current state to cache before closing
+  void _saveToCache() {
+    if (state is ChatDetailReady) {
+      final current = state as ChatDetailReady;
+      _cache.cacheData(
+        chatId: chatId,
+        chat: current.chat,
+        messages: current.messages,
+        currentPage: current.currentPage,
+        totalPages: current.totalPages,
+        hasMoreMessages: current.hasMoreMessages,
+      );
+    }
+  }
+
   @override
   Future<void> close() async {
+    _saveToCache();
     await _socketSub?.cancel();
     return super.close();
   }

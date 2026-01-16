@@ -73,7 +73,7 @@ class ChatTile extends StatelessWidget {
                             color: appColors.whiteColor,
                           ),
                         )
-                      else if (!chat.typing)
+                      else if (!chat.typing && chat.message != '')
                         Icon(
                           Icons.check,
                           size: 16,

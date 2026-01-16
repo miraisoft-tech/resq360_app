@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general-chat-bloc/chat_details_bloc/bloc/chat_details_bloc.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
@@ -105,6 +106,11 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           position.pixels >= position.maxScrollExtent - 80) {
         _requestLoadMore();
       }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await CustomerAuthProvider.instance.init();
     });
   }
 
@@ -272,7 +278,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GenText(
-                  title.capitalizeWords(),
+                  title.capitalize,
                   weight: FontWeight.w500,
                   color: appColors.black,
                   maxLines: 1,
@@ -403,7 +409,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       );
 
       if (completed ?? false) {
-        // Verify payment after webview completes
         context.read<CustomerPaymentBloc>().add(
           CustomerVerifyServiceRequestPaymentEvent(
             state.payment.reference,
@@ -421,7 +426,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chatId));
       context.read<ChatDetailBloc>().add(RefreshMessages());
 
-      // Show success dialog
       await GeneralDialogs.showCustomDialog<void>(
         context,
         body: const PaymentCompleted(),
@@ -429,9 +433,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       return;
     }
 
-    // Error occurred
     if (state is ServicePaymentFailureState) {
-      Navigator.pop(context); // Close loading dialog
+      Navigator.pop(context);
       await showErrorSnackbar(context, state.error);
     }
   }
@@ -557,7 +560,9 @@ class _MessageList extends StatelessWidget {
                     message: message,
                     chat: chat,
                     metadata: message.metadata!,
-                    messageCreatedAt: _formatTime(message.createdAt!),
+                    messageCreatedAt: AppTextUtil.formatChatTime(
+                      message.createdAt!,
+                    ),
                     onTapPay: () async {
                       await GeneralDialogs.showCustomDialog<void>(
                         context,
@@ -583,13 +588,10 @@ class _MessageList extends StatelessWidget {
                   : ChatBubble(
                     type: isMine ? MessageType.sent : MessageType.received,
                     message: message.content ?? '',
-                    time: _formatTime(message.createdAt!),
+                    time: AppTextUtil.formatChatTime(message.createdAt!),
                   ),
         );
       },
     );
   }
-
-  String _formatTime(DateTime dt) =>
-      '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
 }

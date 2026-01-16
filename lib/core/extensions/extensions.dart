@@ -44,20 +44,3 @@ extension DateFormatting on DateTime {
   String get formatDate => '$day/$month/$year';
   String get formatTime => '$hour:${minute.toString().padLeft(2, '0')}';
 }
-
-// extension StringExtension on String {
-//   String get capitalize =>
-//       isEmpty ? this : '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
-// }
-
-extension CapitalizeWordsExtension on String {
-  String capitalizeWords() {
-    if (trim().isEmpty) return this;
-
-    return split(' ')
-        .map((word) => word.isEmpty
-            ? word
-            : word[0].toUpperCase() + word.substring(1).toLowerCase())
-        .join(' ');
-  }
-}

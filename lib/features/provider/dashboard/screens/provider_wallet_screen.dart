@@ -227,8 +227,10 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                       final transactions = state.transactions;
 
                       if (transactions.isEmpty) {
-                        return const EmptyScreenWidget(
-                          imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
+                        return EmptyScreenWidget(
+                          image:
+                              AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG
+                                  .imageAsset(),
                           message: 'No Transactions Yet',
                           subMessage:
                               'Your wallet history will appear here after your first payment or credit',
