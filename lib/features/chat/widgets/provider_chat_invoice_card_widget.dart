@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/extensions/invoice_date_formatter.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 
 class ProviderChatInvoiceCardWidget extends StatelessWidget {
@@ -196,7 +197,9 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                               : Colors.white,
                     ),
                     GenText(
-                      metadata.amount?.toString() ?? '0',
+                      'NGN${AppTextUtil.formatAmount(
+                        metadata.amount?.toString() ?? '0',
+                      )}',
                       size: 16,
                       weight: FontWeight.w700,
                       color:

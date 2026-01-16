@@ -166,11 +166,9 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       await _socketSub?.cancel();
       _socketSub = _socket.messageStream.listen(
         (msg) {
-          // Only add incoming messages that are for this chat
-          // and NOT from the current user (to avoid duplicates from optimistic updates)
           final isForThisChat = msg.chatId == chatId;
           final isFromCurrentUser =
-              currentUserId != null && msg.senderId == currentUserId;
+              currentUserId != null && (msg.senderId == currentUserId);
 
           if (isForThisChat && !isFromCurrentUser) {
             add(_IncomingMessage(msg));

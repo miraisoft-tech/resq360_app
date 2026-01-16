@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 
@@ -311,7 +312,9 @@ class _ProviderGenerateInvoiceDialogState
                           color: appColors.textColor.shade400,
                         ),
                         GenText(
-                          widget.invoice['price'].toString(),
+                          'NGN${AppTextUtil.formatAmount(
+                            widget.invoice['price'].toString(),
+                          )}',
                           size: 16,
                           weight: FontWeight.w700,
                           color: appColors.black,

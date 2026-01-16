@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_pdf_util.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
@@ -338,7 +339,7 @@ class _BookingCardState extends State<BookingCard> {
                             AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
                             4.horizontalSpace,
                             GenText(
-                              amount,
+                              'NGN${AppTextUtil.formatAmount(amount)}',
                               size: 12,
                               height: 20.5,
                               weight: FontWeight.w400,

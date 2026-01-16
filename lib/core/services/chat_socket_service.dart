@@ -174,9 +174,11 @@ class ChatSocketService {
 
     switch (type) {
       case 'NEW_MESSAGE':
-        final message = MessageResponse.fromJson(
-          data['data'] as Map<String, dynamic>,
-        );
+        final messageData = data['data'] as Map<String, dynamic>;
+        debugPrint('Socket NEW_MESSAGE raw data: $messageData');
+        debugPrint('Socket NEW_MESSAGE metadata: ${messageData['metadata']}');
+        final message = MessageResponse.fromJson(messageData);
+        debugPrint('Socket parsed message metadata: ${message.metadata?.toJson()}');
         _messageController.add(message);
 
       case 'USER_TYPING':

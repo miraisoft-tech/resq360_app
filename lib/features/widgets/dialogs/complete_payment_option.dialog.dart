@@ -27,7 +27,7 @@ class _CompletePaymentDialogState extends State<CompletePaymentDialog> {
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 230.h, bottom: 140.h),
+      padding: EdgeInsets.only(top: 200.h, bottom: 200.h),
       child: Material(
         color: Colors.transparent,
         child: Container(

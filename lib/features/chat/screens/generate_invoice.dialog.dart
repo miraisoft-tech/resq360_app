@@ -92,18 +92,18 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 170.h, bottom: 90.h),
+      padding: EdgeInsets.only(top: 180.h, bottom: 90.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
-          margin: pad(horizontal: 20),
+          margin: pad(horizontal: 30),
           padding: pad(horizontal: 20, vertical: 20),
           decoration: BoxDecoration(
             color: appColors.whiteColor,
             borderRadius: BorderRadius.circular(12.r),
           ),
           child: ListView(
-            // mainAxisSize: MainAxisSize.min,
+            padding: EdgeInsets.zero,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
