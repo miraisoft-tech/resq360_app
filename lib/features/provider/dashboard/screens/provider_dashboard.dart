@@ -204,13 +204,13 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 ],
               ),
               20.verticalSpace,
-              30.verticalSpace,
               if (!isAproved) ...[
-                const ProviderAccountProgress(),
-                30.verticalSpace,
+                if(providerData != null)
+                 ProviderAccountProgress(provider: providerData!,),
               ],
 
               if (profileNotDone) ...[
+                if(providerData != null)
                 GestureDetector(
                   onTap: () => pushScreen(context, const SettingsScreen()),
                   child: ToDoSection(

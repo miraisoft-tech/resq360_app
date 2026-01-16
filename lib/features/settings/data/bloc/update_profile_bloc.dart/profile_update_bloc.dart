@@ -119,7 +119,7 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     UpdateProfileImageEvent event,
     Emitter<ProfileUpdateState> emit,
   ) async {
-    emit(ProfileUpdateLoading());
+    emit(Loading());
     log('loading');
     try {
       log('uploading');

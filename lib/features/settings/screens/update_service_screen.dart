@@ -161,17 +161,15 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
       listener: (context, state) async {
         if (state is ProfileUpdateLoading) {
           showLoadingDialog(context);
-        } else {
-          Navigator.pop(context);
-        }
+        } 
+      
 
         if (state is ProfileUpdateSuccess) {
-          unawaited(
-            showSnackBar(
+            
+            await showSuccessSnackbar(
               context,
-              'Success',
               'Service updated successfully',
-            ),
+          
           );
 
           context.read<ProviderAuthBloc>().add(

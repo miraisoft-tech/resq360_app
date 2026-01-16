@@ -287,7 +287,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             10.verticalSpace,
             BlocListener<ProfileUpdateBloc, ProfileUpdateState>(
               listener: (context, state) async {
-                if (state is ProfileUpdateLoading) {
+                if (state is Loading) {
                   showLoadingDialog(context);
                 }
                 if (state is ProfileUpdateSuccess) {

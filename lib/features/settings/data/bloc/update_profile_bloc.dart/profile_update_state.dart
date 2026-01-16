@@ -11,6 +11,8 @@ final class ProfileUpdateInitial extends ProfileUpdateState {}
 
 
 final class ProfileUpdateLoading extends ProfileUpdateState {}
+final class Loading extends ProfileUpdateState {}
+
 
 final class ProfileUpdateSuccess extends ProfileUpdateState { 
   const ProfileUpdateSuccess(this.response);
