@@ -35,7 +35,10 @@ class _ProviderServiceDetailScreenState
         }
 
         if (state is BookingCompleted) {
-          await showSuccessSnackbar(context, 'Service has been marked as completed');
+          await showSuccessSnackbar(
+            context,
+            'Service has been marked as completed',
+          );
           // await pushScreen(
           //   context,
           //   ServiceCompletedScreen(serviceRequestId: state.serviceRequestId),
@@ -112,8 +115,7 @@ class _ProviderServiceDetailScreenState
                 rating: '4.9',
                 reviewCount: '(347 reviews)',
                 avatar:
-                    providerImage ??
-                    'https://randomuser.me/api/portraits/men/30.jpg',
+                    providerImage ?? ''
               ),
               12.verticalSpace,
               _ServiceCard(
@@ -121,9 +123,7 @@ class _ProviderServiceDetailScreenState
                 subtitle: '1.0km away',
                 rating: '4.8',
                 reviewCount: '(50 reviews)',
-                avatar:
-                    clientImage ??
-                    'https://randomuser.me/api/portraits/men/30.jpg',
+                avatar: clientImage ?? '',
               ),
               16.verticalSpace,
               Container(
@@ -185,7 +185,9 @@ class _ProviderServiceDetailScreenState
               const Spacer(),
               Row(
                 children: [
-                  if (widget.booking.status == 'PENDING' || widget.booking.status == 'ASSIGNED' || widget.booking.status == 'IN_PROGRESS')
+                  if (widget.booking.status == 'PENDING' ||
+                      widget.booking.status == 'ASSIGNED' ||
+                      widget.booking.status == 'IN_PROGRESS')
                     Expanded(
                       child: WideButton(
                         label: 'Cancel',
@@ -247,14 +249,14 @@ class _ProviderServiceDetailScreenState
                     ),
                   ),
                   12.horizontalSpace,
-                  if (widget.booking.status == 'PENDING' ||  widget.booking.status == 'IN_PROGRESS')
+                  if (widget.booking.status == 'PENDING' ||
+                      widget.booking.status == 'IN_PROGRESS')
                     Expanded(
                       child: WideButton(
                         label: 'Complete',
                         backgroundColor: appColors.primary.shade500,
                         textColor: appColors.whiteColor,
                         onPressed: () async {
-
                           // if (serviceRequestId != null) {
                           //   context.read<BookingBloc>().add(
                           //     CompleteBooking(
@@ -315,11 +317,8 @@ class _ServiceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundImage: NetworkImage(
-              avatar,
-            ),
+          PictureWidget(
+            image: avatar,
           ),
           12.horizontalSpace,
           Expanded(
