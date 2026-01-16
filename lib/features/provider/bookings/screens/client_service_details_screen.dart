@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
@@ -114,8 +115,7 @@ class _ProviderServiceDetailScreenState
                 subtitle: serviceCategoryname ?? '',
                 rating: '4.9',
                 reviewCount: '(347 reviews)',
-                avatar:
-                    providerImage ?? ''
+                avatar: providerImage ?? '',
               ),
               12.verticalSpace,
               _ServiceCard(
@@ -257,15 +257,14 @@ class _ProviderServiceDetailScreenState
                         backgroundColor: appColors.primary.shade500,
                         textColor: appColors.whiteColor,
                         onPressed: () async {
-                          // if (serviceRequestId != null) {
-                          //   context.read<BookingBloc>().add(
-                          //     CompleteBooking(
-                          //       serviceRequestId: serviceRequestId,
-                          //       ratings: 0,
-                          //       review: '',
-                          //     ),
-                          //   );
-                          // }
+                          if (widget.booking.id != null) {
+                            await pushScreen(
+                            context,
+                            ServiceCompletedScreen(
+                              serviceRequestId: widget.booking.id!,
+                            ),
+                          );
+                          }
                         },
                       ),
                     ),

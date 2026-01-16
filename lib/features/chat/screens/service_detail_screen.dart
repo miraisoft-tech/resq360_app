@@ -3,6 +3,7 @@ import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
+import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 
@@ -241,11 +242,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         textColor: appColors.whiteColor,
                         onPressed: () async {
                           if (serviceRequestId != null) {
-                            context.read<BookingBloc>().add(
-                              CompleteBooking(
+                            await pushScreen(
+                              context,
+                              ServiceCompletedScreen(
                                 serviceRequestId: serviceRequestId,
-                                ratings: 4,
-                                review: 'okay',
                               ),
                             );
                           }
