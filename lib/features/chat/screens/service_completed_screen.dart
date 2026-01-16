@@ -1,5 +1,6 @@
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/features/chat/screens/thank_you.modal.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 
@@ -151,7 +152,7 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
               },
             ),
             40.verticalSpace,
-            BlocConsumer<RatingsBloc, RatingsState>(
+            BlocConsumer<BookingBloc, BookingState>(
               listener: (context, state) async {
                 if (state is RateProviderSuccess) {
                   await GeneralDialogs.showCustomBottomSheet(
@@ -165,22 +166,21 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
                     ),
                   );
                 }
-                if (state is RatingsError) {
-                  await showErrorSnackbar(context, state.message);
+                if (state is BookingError) {
+                  await showErrorSnackbar(context, state.error);
                 }
               },
               builder: (context, state) {
                 return WideButton(
                   label: 'Submit',
-                  loading: state is RatingsLoading,
+                  loading: state is BookingLoading,
                   backgroundColor: appColors.primary.shade500,
                   onPressed:
                       reviewController.text.isNotEmpty && rating > 0
                           ? () async {
-                            context.read<RatingsBloc>().add(
-                              RateProviderEvent(
-                                serviceRequestId:
-                                    widget.serviceRequestId.toString(),
+                            context.read<BookingBloc>().add(
+                              CompleteBooking(
+                                serviceRequestId: widget.serviceRequestId,
                                 ratings: rating.toInt(),
                                 review: reviewController.text,
                               ),

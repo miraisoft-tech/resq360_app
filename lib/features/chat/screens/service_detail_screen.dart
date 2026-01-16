@@ -198,7 +198,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 ),
               ),
               const Spacer(),
-              if (widget.chat.serviceRequestStatus == 'PENDING')
+              if (widget.chat.serviceRequestStatus == 'ASSIGNED')
                 WideButton(
                   label: 'Start',
                   backgroundColor: appColors.primary.shade500,

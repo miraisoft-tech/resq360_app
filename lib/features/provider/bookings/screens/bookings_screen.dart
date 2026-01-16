@@ -283,7 +283,7 @@ class _BookingCardState extends State<BookingCard> {
 
     final status = data.status?.capitalize ?? 'Unknown';
     final canDownload = data.status == 'COMPLETED';
-    final canShow = data.status == 'COMPLETED' || data.status == 'CANCELLED';
+    final canShow = data.status == 'COMPLETED' || data.status == 'CANCELLED' || data.status == 'ASSIGNED';
 
     final method = data.paymentMethod ?? 'Unknown';
 

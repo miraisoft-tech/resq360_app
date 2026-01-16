@@ -36,10 +36,11 @@ class _ProviderServiceDetailScreenState
         }
 
         if (state is BookingCompleted) {
-          await pushScreen(
-            context,
-            ServiceCompletedScreen(serviceRequestId: state.serviceRequestId),
-          );
+          await showSuccessSnackbar(context, 'Service has been marked as completed');
+          // await pushScreen(
+          //   context,
+          //   ServiceCompletedScreen(serviceRequestId: state.serviceRequestId),
+          // );
         }
 
         if (state is BookingError) {
@@ -185,7 +186,7 @@ class _ProviderServiceDetailScreenState
               const Spacer(),
               Row(
                 children: [
-                  if (widget.booking.status == 'PENDING')
+                  if (widget.booking.status == 'PENDING' || widget.booking.status == 'ASSIGNED' || widget.booking.status == 'IN_PROGRESS')
                     Expanded(
                       child: WideButton(
                         label: 'Cancel',
@@ -247,22 +248,23 @@ class _ProviderServiceDetailScreenState
                     ),
                   ),
                   12.horizontalSpace,
-                  if (widget.booking.status == 'PENDING')
+                  if (widget.booking.status == 'PENDING' ||  widget.booking.status == 'IN_PROGRESS')
                     Expanded(
                       child: WideButton(
                         label: 'Complete',
                         backgroundColor: appColors.primary.shade500,
                         textColor: appColors.whiteColor,
                         onPressed: () async {
-                          if (serviceRequestId != null) {
-                            context.read<BookingBloc>().add(
-                              CompleteBooking(
-                                serviceRequestId: serviceRequestId,
-                                ratings: 0,
-                                review: '',
-                              ),
-                            );
-                          }
+
+                          // if (serviceRequestId != null) {
+                          //   context.read<BookingBloc>().add(
+                          //     CompleteBooking(
+                          //       serviceRequestId: serviceRequestId,
+                          //       ratings: 0,
+                          //       review: '',
+                          //     ),
+                          //   );
+                          // }
                         },
                       ),
                     ),

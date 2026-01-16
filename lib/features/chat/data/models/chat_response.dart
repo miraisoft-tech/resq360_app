@@ -21,6 +21,7 @@ class ChatResponse {
     this.serviceCategoryId,
     this.paymentStatus,
     this.image,
+    this.paymentInvoiceId
   });
 
   factory ChatResponse.fromJson(Map<String, dynamic> json) => ChatResponse(
@@ -59,7 +60,9 @@ class ChatResponse {
             : UserInfo.fromJson(json['user'] as Map<String, dynamic>),
         serviceCategoryId: json['serviceCategoryId'] as int?,
         paymentStatus: json['paymentStatus'] as String?,
-        image: json['image'] as String?
+        image: json['image'] as String?,
+        paymentInvoiceId: json['paymentInvoiceId'] as String?,
+
       );
 
   final int? id;
@@ -80,6 +83,7 @@ class ChatResponse {
   final int? serviceCategoryId;
   final String? paymentStatus;
   final String? image; 
+  final String? paymentInvoiceId;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -99,7 +103,9 @@ class ChatResponse {
         'user': user?.toJson(),
         'serviceCategoryId': serviceCategoryId,
         'paymentStatus': paymentStatus,
-        'image': image
+        'image': image,
+        'paymentInvoiceId': paymentInvoiceId,
+
       };
 }
 

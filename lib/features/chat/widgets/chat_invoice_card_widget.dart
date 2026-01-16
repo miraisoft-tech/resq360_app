@@ -22,7 +22,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
+    log(status);
     return Container(
       width: double.infinity,
       padding: pad(horizontal: 14, vertical: 14),
