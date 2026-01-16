@@ -1,10 +1,10 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
-import 'package:resq360/features/chat/data/services/chat_repo.dart';
-import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+// import 'package:resq360/features/chat/data/services/chat_repo.dart';
+// import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
-import 'package:resq360/features/intro/models/user_type.emum.dart';
+// import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
@@ -364,35 +364,35 @@ class _ServiceCard extends StatelessWidget {
   }
 }
 
-Future<void> _navigateToChatByServiceRequest(
-    BuildContext context,
-    int serviceRequestId,
-  ) async {
-    try {
-      showLoadingDialog(context);
+// Future<void> _navigateToChatByServiceRequest(
+//     BuildContext context,
+//     int serviceRequestId,
+//   ) async {
+//     try {
+//       showLoadingDialog(context);
 
-      final response = await ChatRepo().getChatByserviceRequestId(
-        serviceRequestId,
-      );
+//       final response = await ChatRepo().getChatByserviceRequestId(
+//         serviceRequestId,
+//       );
 
-      Navigator.pop(context);
+//       Navigator.pop(context);
 
-      if (response.data != null) {
-        final chatId = response.data?.id;
-        if (chatId != null) {
-          await pushScreen(
-            context,
-            ChatDetailScreen(
-              chatId: chatId,
-              userType: UserType.customer,
-            ),
-          );
-        }
-      } else {
-        await showErrorSnackbar(context, 'Unable to open chat');
-      }
-    } on Exception catch (e) {
-      Navigator.pop(context);
-      await showErrorSnackbar(context, 'Failed to load chat: $e');
-    }
-  }
+//       if (response.data != null) {
+//         final chatId = response.data?.id;
+//         if (chatId != null) {
+//           await pushScreen(
+//             context,
+//             ChatDetailScreen(
+//               chatId: chatId,
+//               userType: UserType.customer,
+//             ),
+//           );
+//         }
+//       } else {
+//         await showErrorSnackbar(context, 'Unable to open chat');
+//       }
+//     } on Exception catch (e) {
+//       Navigator.pop(context);
+//       await showErrorSnackbar(context, 'Failed to load chat: $e');
+//     }
+//   }
