@@ -22,7 +22,8 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
   File? pickedImage;
 
   Future<void> pickCameraPhoto(BuildContext context) async {
-    pickedImage = await AppFilePicker.pickImage();
+    pickedImage = await AppFilePicker.pickImage(source: ImageSource.camera);
+
     if (!context.mounted) return;
     if (pickedImage != null) {
       context.read<ProviderAuthBloc>().add(

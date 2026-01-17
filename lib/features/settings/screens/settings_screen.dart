@@ -21,6 +21,7 @@ import 'package:resq360/features/settings/screens/ratings_screen.dart';
 import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
+import 'package:resq360/features/settings/widgets/pick_image.modal.dart';
 import 'package:resq360/features/settings/widgets/profile_section_header.dart';
 import 'package:resq360/keys.dart';
 
@@ -43,24 +44,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _pickProfileImage(BuildContext context) async {
-    final image = await AppFilePicker.pickImage();
+    await GeneralDialogs.showCustomBottomSheet(
+      context,
+      body: CameraModal(
+        onTapGallery: () async {
+          Navigator.pop(context);
+          await _processPickedImage(context, ImageSource.gallery);
+        },
+        onTapCamera: () async {
+          Navigator.pop(context);
+          await _processPickedImage(context, ImageSource.camera);
+        },
+      ),
+    );
+  }
+
+  Future<void> _processPickedImage(
+    BuildContext context,
+    ImageSource source,
+  ) async {
+    final image = await AppFilePicker.pickImage(source: source);
     if (image == null) return;
 
     pickedImage = image;
 
-    if (dashboardViewModel.userType == UserType.provider) {
-      context.read<ProfileUpdateBloc>().add(
-        UpdateProfileImageEvent(
-          filePath: image.path,
-        ),
-      );
-    } else {
-      context.read<ProfileUpdateBloc>().add(
-        UpdateProfileImageEvent(
-          filePath: image.path,
-        ),
-      );
-    }
+    if (!context.mounted) return;
+
+    context.read<ProfileUpdateBloc>().add(
+      UpdateProfileImageEvent(filePath: image.path),
+    );
   }
 
   @override

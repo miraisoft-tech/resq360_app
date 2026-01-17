@@ -18,7 +18,7 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
   File? pickedImage;
 
   Future<void> pickCameraPhoto(BuildContext context) async {
-    pickedImage = await AppFilePicker.pickImage();
+    pickedImage = await AppFilePicker.pickImage(source: ImageSource.camera);
 
     if (!context.mounted) return;
     if (pickedImage != null) {
@@ -39,7 +39,7 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
         }
 
         if (state is CustomerKycSubmissionFailure) {
-           if (context.mounted) {
+          if (context.mounted) {
             Navigator.pop(context);
           }
 
@@ -47,7 +47,7 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
         }
 
         if (state is CustomerKycSubmitted) {
-            if (context.mounted) {
+          if (context.mounted) {
             Navigator.pop(context);
           }
 

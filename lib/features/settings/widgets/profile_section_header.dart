@@ -103,19 +103,19 @@ class ProfileView extends StatelessWidget {
 
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.bottomRight,
-          clipBehavior: Clip.none,
-          children: [
-            PictureWidget(
-              image: imageUrl,
-              radius: 50,
-            ),
-            Positioned(
-              bottom: 5,
-              right: 5,
-              child: GestureDetector(
-                onTap: onPickImage,
+       GestureDetector(
+          onTap: onPickImage,
+          child: Stack(
+            alignment: Alignment.bottomRight,
+            clipBehavior: Clip.none,
+            children: [
+              PictureWidget(
+                image: imageUrl,
+                radius: 50,
+              ),
+              Positioned(
+                bottom: 5,
+                right: 5,
                 child: Container(
                   padding: pad(vertical: 4, horizontal: 4),
                   decoration: BoxDecoration(
@@ -129,8 +129,8 @@ class ProfileView extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         15.verticalSpace,
         UrbText(

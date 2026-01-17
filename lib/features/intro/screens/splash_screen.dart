@@ -81,7 +81,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _stageController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1000),
     );
 
     _icon2SlideAnimation = Tween<double>(begin: 1.5, end: 0).animate(
