@@ -16,7 +16,7 @@ class SendMessageRequest {
   final String content;
   final String? fileName;
   final String? fileUrl;
-  final int? fileSize;
+  final double? fileSize;
   final String? mimeType;
   final Map<String, dynamic>? metadata;
 

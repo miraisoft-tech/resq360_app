@@ -2,13 +2,17 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/__services.dart';
 import 'package:resq360/core/services/chat_cache_service.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
+import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 
 part 'chat_details_event.dart';
 part 'chat_details_state.dart';
+
+final UploadService _uploadService = UploadService.instance;
 
 class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   ChatDetailBloc({
@@ -27,6 +31,9 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     on<RefreshMessages>(_onRefreshMessages);
     on<LoadMoreMessages>(_onLoadMoreMessages);
     on<_IncomingMessage>(_onIncomingMessage);
+    on<SendImageMessage>(_onSendImageMessage);
+    on<SendDocumentMessage>(_onSendDocumentMessage);
+    on<SendLocationMessage>(_onSendLocationMessage);
   }
 
   final int chatId;
@@ -433,5 +440,262 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     _saveToCache();
     await _socketSub?.cancel();
     return super.close();
+  }
+
+  Future<void> _onSendImageMessage(
+    SendImageMessage event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    if (state is! ChatDetailReady) return;
+
+    final current = state as ChatDetailReady;
+
+    final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
+    final localMessage = MessageResponse(
+      id: localMessageId,
+      chatId: chatId,
+      senderType: event.userType,
+      senderId: event.senderId,
+      messageType: 'TEXT',
+      content: event.caption ?? 'Image',
+      createdAt: DateTime.now(),
+      fileName: event.filePath.split('/').last,
+      fileUrl: event.filePath,
+      metadata: MetadataFactories.custom(
+      type: 'IMAGE',
+      data: {},
+    ),
+    );
+
+    final newMessages = [localMessage, ...current.messages];
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+
+    emit(current.copyWith(messages: newMessages));
+
+    final uploadResult = await _uploadService.uploadSingle(
+      filePath: event.filePath,
+    );
+
+    final latestState = state;
+    if (latestState is! ChatDetailReady) return;
+
+    if (uploadResult.data == null) {
+      final messagesWithoutLocal =
+          latestState.messages.where((m) => m.id != localMessageId).toList();
+      emit(latestState.copyWith(messages: messagesWithoutLocal));
+      return;
+    }
+
+    final upload = uploadResult.data!;
+
+    final file = File(event.filePath);
+    final fileSize = await file.length();
+    final fileSizeInMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
+
+    
+    _socket.sendMessage(
+      SendMessageRequest(
+        chatId: chatId,
+        messageType: 'TEXT',
+        content: event.caption ?? 'Image',
+        fileName: file.path.split('/').last,
+        fileUrl: upload.url,
+        fileSize: double.parse(fileSizeInMB),
+        mimeType: _getMimeType(file.path),
+        metadata: {
+        'type': 'IMAGE',
+      },
+      ),
+    );
+
+    final updatedMessages =
+        latestState.messages.map((m) {
+          if (m.id == localMessageId) {
+            return MessageResponse(
+              id: m.id,
+              chatId: m.chatId,
+              senderType: m.senderType,
+              senderId: m.senderId,
+              messageType: m.messageType,
+              content: m.content,
+              createdAt: m.createdAt,
+              fileName: m.fileName,
+              fileUrl: upload.url,
+              fileSize: m.fileSize,
+              mimeType: m.mimeType,
+              metadata: m.metadata,
+            );
+          }
+          return m;
+        }).toList();
+
+    _cache.updateMessages(chatId: chatId, messages: updatedMessages);
+    emit(latestState.copyWith(messages: updatedMessages));
+  }
+
+  Future<void> _onSendDocumentMessage(
+    SendDocumentMessage event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    if (state is! ChatDetailReady) return;
+
+    final current = state as ChatDetailReady;
+
+    final file = File(event.filePath);
+    final fileName = file.path.split('/').last;
+
+    final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
+    final localMessage = MessageResponse(
+      id: localMessageId,
+      chatId: chatId,
+      senderType: event.userType,
+      senderId: event.senderId,
+      messageType: 'TEXT',
+      content: fileName,
+      createdAt: DateTime.now(),
+      fileName: fileName,
+      fileUrl: event.filePath,
+      metadata:MetadataFactories.custom(
+      type: 'DOCUMENT',
+      data: {},
+    ),
+    );
+
+    final newMessages = [localMessage, ...current.messages];
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+
+    emit(current.copyWith(messages: newMessages));
+
+    final uploadResult = await _uploadService.uploadSingle(
+      filePath: event.filePath,
+    );
+
+    final latestState = state;
+    if (latestState is! ChatDetailReady) return;
+
+    if (uploadResult.data == null) {
+      final messagesWithoutLocal =
+          latestState.messages.where((m) => m.id != localMessageId).toList();
+      emit(latestState.copyWith(messages: messagesWithoutLocal));
+      return;
+    }
+
+    final upload = uploadResult.data!;
+
+
+    final fileSize = await file.length();
+    final fileSizeInMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
+    final mimeType = _getMimeType(file.path);
+
+    _socket.sendMessage(
+      SendMessageRequest(
+        chatId: chatId,
+        messageType: 'TEXT',
+        content: fileName,
+        fileName: fileName,
+        fileUrl: upload.url,
+        fileSize: double.parse(fileSizeInMB),
+        mimeType: mimeType,
+        metadata:{
+        'type': 'DOCUMENT',
+      },
+      ),
+    );
+
+    final updatedMessages =
+        latestState.messages.map((m) {
+          if (m.id == localMessageId) {
+            return MessageResponse(
+              id: m.id,
+              chatId: m.chatId,
+              senderType: m.senderType,
+              senderId: m.senderId,
+              messageType: m.messageType,
+              content: m.content,
+              createdAt: m.createdAt,
+              fileName: m.fileName,
+              fileUrl: upload.url,
+              fileSize: m.fileSize,
+              mimeType: mimeType,
+              metadata: m.metadata,
+            );
+          }
+          return m;
+        }).toList();
+
+    _cache.updateMessages(chatId: chatId, messages: updatedMessages);
+    emit(latestState.copyWith(messages: updatedMessages));
+  }
+
+  Future<void> _onSendLocationMessage(
+    SendLocationMessage event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    if (state is! ChatDetailReady) return;
+
+    final current = state as ChatDetailReady;
+
+    final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
+    final localMessage = MessageResponse(
+      id: localMessageId,
+      chatId: chatId,
+      senderType: event.userType,
+      senderId: event.senderId,
+      messageType: 'TEXT',
+      content: event.address,
+      createdAt: DateTime.now(),
+      metadata: MetadataFactories.location(
+      latitude: event.latitude,
+      longitude: event.longitude,
+      address: event.address,
+    ),
+    );
+
+    final newMessages = [localMessage, ...current.messages];
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+
+    emit(current.copyWith(messages: newMessages));
+
+    _socket.sendMessage(
+      SendMessageRequest(
+        chatId: chatId,
+        messageType: 'TEXT',
+        content: event.address,
+        metadata:  {
+        'type': 'LOCATION',
+        'latitude': event.latitude,
+        'longitude': event.longitude,
+        'address': event.address,
+      },
+      ),
+    );
+  }
+
+  String _getMimeType(String filePath) {
+    final extension = filePath.split('.').last.toLowerCase();
+
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'pdf':
+        return 'application/pdf';
+      case 'doc':
+        return 'application/msword';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'xls':
+        return 'application/vnd.ms-excel';
+      case 'xlsx':
+        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case 'txt':
+        return 'text/plain';
+      default:
+        return 'application/octet-stream';
+    }
   }
 }

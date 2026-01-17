@@ -67,7 +67,7 @@ class MessageResponse {
   final String? content;
   final String? fileName;
   final String? fileUrl;
-  final int? fileSize;
+  final num? fileSize;
   final String? mimeType;
   final bool? isEdited;
   final DateTime? editedAt;

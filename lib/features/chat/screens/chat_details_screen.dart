@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/helpers/media_helper.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
@@ -8,7 +9,10 @@ import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/generate_invoice.dialog.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/chat/screens/service_detail_screen.dart';
+import 'package:resq360/features/chat/widgets/chat_document.dart';
+import 'package:resq360/features/chat/widgets/chat_image_bubble.dart';
 import 'package:resq360/features/chat/widgets/chat_invoice_card_widget.dart';
+import 'package:resq360/features/chat/widgets/chat_location_bubble.dart';
 import 'package:resq360/features/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
@@ -546,6 +550,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
   }
 
+  // Replace the attachment menu handlers in _ChatDetailViewState
+
   Future<void> _showAttachmentMenu(
     BuildContext context,
     ChatResponse chat,
@@ -624,11 +630,11 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       if (result != null) {
         switch (result) {
           case 'media':
-            _onMediaTap();
+            await _onMediaTap(context);
           case 'location':
-            _onLocationTap();
+            await _onLocationTap(context);
           case 'document':
-            _onDocumentTap();
+            await _onDocumentTap(context);
           case 'invoice':
             await _onInvoiceTap(context, chat);
         }
@@ -636,9 +642,119 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     });
   }
 
-  void _onMediaTap() {}
-  void _onLocationTap() {}
-  void _onDocumentTap() {}
+  Future<void> _onMediaTap(BuildContext context) async {
+    final file = await MediaPickerHelper.showImageSourceDialog(
+      context: context,
+    );
+
+    if (file == null || !context.mounted) return;
+
+    final userId = _currentUserId;
+    if (userId == null) {
+      await showErrorSnackbar(context, 'User not authenticated');
+      return;
+    }
+
+    // Optionally show caption dialog
+    final caption = await _showCaptionDialog(context);
+
+    if (context.mounted) {
+      context.read<ChatDetailBloc>().add(
+        SendImageMessage(
+          filePath: file.path,
+          senderId: userId,
+          userType: _senderType,
+          caption: caption,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onLocationTap(BuildContext context) async {
+    final locationData = await MediaPickerHelper.getCurrentLocation(
+      context: context,
+    );
+
+    if (locationData == null || !context.mounted) return;
+
+    final userId = _currentUserId;
+    if (userId == null) {
+      await showErrorSnackbar(context, 'User not authenticated');
+      return;
+    }
+
+    context.read<ChatDetailBloc>().add(
+      SendLocationMessage(
+        latitude: locationData.latitude,
+        longitude: locationData.longitude,
+        address: locationData.address,
+        senderId: userId,
+        userType: _senderType,
+      ),
+    );
+  }
+
+  Future<void> _onDocumentTap(BuildContext context) async {
+    final file = await MediaPickerHelper.pickDocument(context: context);
+
+    if (file == null || !context.mounted) return;
+
+    final userId = _currentUserId;
+    if (userId == null) {
+      await showErrorSnackbar(context, 'User not authenticated');
+      return;
+    }
+
+    context.read<ChatDetailBloc>().add(
+      SendDocumentMessage(
+        filePath: file.path,
+        senderId: userId,
+        userType: _senderType,
+      ),
+    );
+  }
+
+  Future<String?> _showCaptionDialog(BuildContext context) async {
+    final controller = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        final appColors = context.appColors;
+        return AlertDialog(
+          title: const GenText('Add Caption (Optional)'),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: 'Enter caption...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            maxLines: 3,
+            maxLength: 200,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: GenText(
+                'Skip',
+                color: appColors.neutral.shade600,
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: GenText(
+                'Add',
+                color: appColors.primary.shade600,
+                weight: FontWeight.w600,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _onInvoiceTap(BuildContext context, ChatResponse chat) async {
     await GeneralDialogs.showCustomDialog<void>(
@@ -697,30 +813,85 @@ class _MessageList extends StatelessWidget {
 
         final message = messages[index];
         final isMine = message.senderType == _senderType;
+        final time = AppTextUtil.formatChatTime(
+          message.createdAt ?? DateTime.now(),
+        );
 
         return Padding(
           key: ValueKey(
             message.id ?? message.createdAt?.millisecondsSinceEpoch,
           ),
           padding: EdgeInsets.only(bottom: 15.h),
-          child:
-              message.messageType == MessageReceivedType.invoice.value
-                  ? _buildInvoiceCard(context, message)
-                  : ChatBubble(
-                    type: isMine ? MessageType.sent : MessageType.received,
-                    message: message.content ?? '',
-                    time: AppTextUtil.formatChatTime(
-                      message.createdAt ?? DateTime.now(),
-                    ),
-                  ),
+          child: _buildMessageWidget(context, message, isMine, time),
         );
       },
     );
   }
 
+Widget _buildMessageWidget(
+  BuildContext context,
+  MessageResponse message,
+  bool isMine,
+  String time,
+) {
+  final type = message.messageType?.toUpperCase() ?? 'TEXT';
+  final metaType = message.metadata?.type?.toUpperCase();
+
+  if (type == 'INVOICE') {
+    return _buildInvoiceCard(context, message);
+  }
+
+  switch (metaType) {
+    case 'IMAGE':
+      return ChatImageBubble(
+        imageUrl: message.fileUrl ?? '',
+        time: time,
+        isMine: isMine,
+        caption: message.content != 'Image' ? message.content : null,
+      );
+
+    case 'DOCUMENT':
+      return ChatDocumentBubble(
+        fileName: message.fileName ?? 'Unknown file',
+        fileUrl: message.fileUrl ?? '',
+        fileSize: message.fileSize,
+        time: time,
+        isMine: isMine,
+        mimeType: message.mimeType,
+      );
+
+    case 'LOCATION':
+      final lat = message.metadata?.latitude;
+      final long = message.metadata?.longitude;
+
+      if (lat == null || long == null) {
+        return ChatBubble(
+          type: isMine ? MessageType.sent : MessageType.received,
+          message: 'Invalid location data',
+          time: time,
+        );
+      }
+
+      return ChatLocationBubble(
+        latitude: lat,
+        longitude: long,
+        address: message.metadata?.address ?? 'Unknown location',
+        time: time,
+        isMine: isMine,
+      );
+
+    default:
+      return ChatBubble(
+        type: isMine ? MessageType.sent : MessageType.received,
+        message: message.content ?? '',
+        time: time,
+      );
+  }
+}
+
   Widget _buildInvoiceCard(BuildContext context, MessageResponse message) {
     final amount = message.metadata?.amount?.toString() ?? '';
-    log(chat.paymentStatus);
+
     if (isCustomer) {
       return ChatInvoiceCardWidget(
         message: message,

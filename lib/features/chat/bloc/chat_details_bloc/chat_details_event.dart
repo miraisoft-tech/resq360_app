@@ -1,5 +1,6 @@
 part of 'chat_details_bloc.dart';
 
+
 sealed class ChatDetailsEvent extends Equatable {
   const ChatDetailsEvent();
 
@@ -39,6 +40,56 @@ class SendInvoiceMessage extends ChatDetailEvent {
 
   @override
   List<Object?> get props => [invoice];
+}
+
+class SendImageMessage extends ChatDetailEvent {
+  const SendImageMessage({
+    required this.filePath,
+    required this.senderId,
+    required this.userType,
+    this.caption,
+  });
+
+  final String filePath;
+  final int senderId;
+  final String userType;
+  final String? caption;
+
+  @override
+  List<Object?> get props => [filePath, senderId, userType, caption];
+}
+class SendDocumentMessage extends ChatDetailEvent {
+  const SendDocumentMessage({
+    required this.filePath,
+    required this.senderId,
+    required this.userType,
+  });
+
+  final String filePath;
+  final int senderId;
+  final String userType;
+
+  @override
+  List<Object?> get props => [filePath, senderId, userType];
+}
+
+class SendLocationMessage extends ChatDetailEvent {
+  const SendLocationMessage({
+    required this.latitude,
+    required this.longitude,
+    required this.address,
+    required this.senderId,
+    required this.userType,
+  });
+
+  final double latitude;
+  final double longitude;
+  final String address;
+  final int senderId;
+  final String userType;
+
+  @override
+  List<Object?> get props => [latitude, longitude, address, senderId, userType];
 }
 
 class RefreshMessages extends ChatDetailEvent {}
