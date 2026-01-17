@@ -87,17 +87,72 @@ class _BookingsScreenState extends State<BookingsScreen>
                 )
                 : null,
         bottom: TabBar(
+          onTap: (value) {
+            setState(() {});
+          },
           controller: _tabController,
           indicatorColor: appColors.primary,
           labelColor: appColors.primary,
           unselectedLabelColor: appColors.textColor.shade500,
           indicatorSize: TabBarIndicatorSize.tab,
-          isScrollable: true,
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Ongoing'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Cancelled'),
+          padding: EdgeInsets.only(bottom: 10.h),
+          tabs: [
+            SizedBox(
+              width: double.infinity,
+              child: GenText(
+                'Upcoming',
+                textAlign: TextAlign.center,
+                weight: FontWeight.w500,
+                size: 12,
+                height: 30,
+                color:
+                    _tabController.index == 0
+                        ? appColors.primary
+                        : appColors.neutral.shade500,
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: GenText(
+                'Ongoing',
+                textAlign: TextAlign.center,
+                weight: FontWeight.w500,
+                size: 12,
+                height: 30,
+                color:
+                    _tabController.index == 1
+                        ? appColors.primary
+                        : appColors.neutral.shade500,
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: GenText(
+                'Completed',
+                textAlign: TextAlign.center,
+                weight: FontWeight.w500,
+                size: 12,
+                height: 30,
+                color:
+                    _tabController.index == 2
+                        ? appColors.primary
+                        : appColors.neutral.shade500,
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: GenText(
+                'Cancelled',
+                textAlign: TextAlign.center,
+                weight: FontWeight.w500,
+                size: 12,
+                height: 30,
+                color:
+                    _tabController.index == 3
+                        ? appColors.primary
+                        : appColors.neutral.shade500,
+              ),
+            ),
           ],
         ),
       ),

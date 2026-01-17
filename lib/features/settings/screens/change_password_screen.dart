@@ -1,5 +1,4 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 
@@ -33,38 +32,42 @@ class ChangePasswordScreen extends StatelessWidget {
         backgroundColor: appColors.whiteColor,
       ),
       body: BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
+        listenWhen:
+            (previous, current) =>
+                current is PasswordUpdateLoading ||
+                current is PasswordUpdateSuccess ||
+                current is PasswordUpdateError,
+        buildWhen:
+            (previous, current) =>
+                current is PasswordUpdateLoading ||
+                current is PasswordUpdateSuccess ||
+                current is PasswordUpdateError ||
+                current is ProfileUpdateInitial,
         listener: (context, state) async {
-          if (state is ProfileUpdateError) {
+          if (state is PasswordUpdateError) {
             await showErrorSnackbar(
               context,
               state.message,
             );
           }
 
-          if (state is ProfileUpdateSuccess) {
+          if (state is PasswordUpdateSuccess) {
             await GeneralDialogs.showCustomBottomSheet(
               context,
               body: StepModal(
                 title: 'Password Changed Successfully!',
-                description: 'Please log in again to continue',
-                buttonText: 'Log in',
+                description: 'Use your new password on your next login.',
                 icon: AppAssets.ASSETS_IMAGES_PASSWORD_RESET_SUCCESS_PNG,
                 onContinuePressed: () async {
-                  await pop(context);
-
-                  if (context.mounted) {
-                    await replaceScreen(
-                      context,
-                      const LoginScreen(),
-                    );
-                  }
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                 },
               ),
             );
           }
         },
         builder: (context, state) {
-          final isLoading = state is ProfileUpdateLoading;
+          final isLoading = state is PasswordUpdateLoading;
 
           return SafeArea(
             child: Padding(
