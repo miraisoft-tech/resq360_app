@@ -716,7 +716,7 @@ class _MessageList extends StatelessWidget {
 
   Widget _buildInvoiceCard(BuildContext context, MessageResponse message) {
     final amount = message.metadata?.amount?.toString() ?? '';
-      log(chat.paymentStatus);
+    log(chat.paymentStatus);
     if (isCustomer) {
       return ChatInvoiceCardWidget(
         message: message,

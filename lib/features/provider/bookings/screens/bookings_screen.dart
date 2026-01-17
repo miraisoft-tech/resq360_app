@@ -283,8 +283,10 @@ class _BookingCardState extends State<BookingCard> {
     final end = data.completedAt?.formatTime ?? '--';
 
     final status = data.status?.capitalize ?? 'Unknown';
-    final canDownload = data.status == 'COMPLETED';
-    final canShow = data.status == 'COMPLETED' || data.status == 'CANCELLED' || data.status == 'ASSIGNED';
+    final canShow =
+        data.status == 'COMPLETED' ||
+        data.status == 'CANCELLED' ||
+        data.status == 'ASSIGNED';
 
     final method = data.paymentMethod ?? 'Unknown';
 
@@ -306,7 +308,9 @@ class _BookingCardState extends State<BookingCard> {
             /// --- Header Row
             Row(
               children: [
-                PictureWidget(image: data.user!.profileImage,),
+                PictureWidget(
+                  image: data.user!.profileImage,
+                ),
                 12.horizontalSpace,
                 Expanded(
                   child: Column(
@@ -367,7 +371,6 @@ class _BookingCardState extends State<BookingCard> {
             ),
             const ListDivider(verticalSpacing: 10),
 
-            /// --- Expanded Details
             if (expanded)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,20 +409,17 @@ class _BookingCardState extends State<BookingCard> {
                           amount: amount,
                           dateTime: '$date - $end',
                           method: method,
-                          onDownload:
-                              canDownload
-                                  ? () async {
-                                    await BookingReceiptPdfUtil.generateBookingReceiptPdf(
-                                      bookingId: data.requestId ?? 'N/A',
-                                      service: serviceCategory,
-                                      clientName: clientName,
-                                      status: status,
-                                      dateTime: '$date - $end',
-                                      paymentMethod: method,
-                                      amount: 'To be billed',
-                                    );
-                                  }
-                                  : null,
+                          onDownload: () async {
+                            await BookingReceiptPdfUtil.generateBookingReceiptPdf(
+                              bookingId: data.requestId ?? 'N/A',
+                              service: serviceCategory,
+                              clientName: clientName,
+                              status: status,
+                              dateTime: '$date - $end',
+                              paymentMethod: method,
+                              amount: 'To be billed',
+                            );
+                          },
                         ),
                       );
                     },

@@ -3,7 +3,10 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 
 class ClientServiceCompletedScreen extends StatefulWidget {
-  const ClientServiceCompletedScreen({required this.serviceRequestId, super.key});
+  const ClientServiceCompletedScreen({
+    required this.serviceRequestId,
+    super.key,
+  });
   final int serviceRequestId;
   @override
   State<ClientServiceCompletedScreen> createState() =>

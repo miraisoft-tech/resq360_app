@@ -35,14 +35,14 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    var averageRating = 0;
+    var averageRating = 0.0;
     var totalReviews = 0;
     var reviews = <CustomerReview>[];
 
     return BlocBuilder<RatingsBloc, RatingsState>(
       builder: (context, state) {
         if (state is CustomerRatingsLoaded) {
-          averageRating = state.ratings.averageRatings ?? 0;
+          averageRating = state.ratings.averageRatings?.toDouble() ?? 0.0;
           totalReviews = state.ratings.reviews?.length ?? 0;
           reviews = state.ratings.reviews ?? [];
         }
@@ -130,7 +130,7 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
                   ),
                   20.verticalSpace,
                   ReviewSummaryCard(
-                    averageRating: averageRating.toDouble(),
+                    averageRating: averageRating,
                     totalReviews: totalReviews,
                   ),
                   30.verticalSpace,

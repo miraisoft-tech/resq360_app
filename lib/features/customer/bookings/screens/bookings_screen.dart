@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/models/booking_enums.dart';
 import 'package:resq360/core/utils/app_pdf_util.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
@@ -198,7 +197,17 @@ class _BookingList extends StatelessWidget {
               separatorBuilder: (_, _) => 16.verticalSpace,
               itemBuilder: (_, index) {
                 final booking = bookings[index];
-                return BookingCard(data: booking);
+                return BookingCard(
+                  data: booking,
+                  onTap: () async {
+                    // await pushScreen(
+                    //   context,
+                    //   ProviderServiceDetailScreen(
+                    //     booking: booking,
+                    //   ),
+                    // );
+                  },
+                );
               },
             ),
           );
@@ -211,8 +220,9 @@ class _BookingList extends StatelessWidget {
 }
 
 class BookingCard extends StatefulWidget {
-  const BookingCard({required this.data, super.key});
+  const BookingCard({required this.data, required this.onTap, super.key});
   final Bookings data;
+  final VoidCallback onTap;
 
   @override
   State<BookingCard> createState() => _BookingCardState();
@@ -275,54 +285,52 @@ class _BookingCardState extends State<BookingCard> {
     final end = data.completedAt?.formatTime ?? '--';
 
     final status = data.status?.capitalize ?? 'Unknown';
-    final canDownload = data.status == 'COMPLETED';
-    final canShow = data.status == BookingEnums.completed.name || data.status == BookingEnums.cancelled.name;
-
 
     final phonenumber = data.assignedProvider?.phoneNumber ?? '';
     final serviceRequest = data.id;
 
-    return Container(
-      padding: pad(vertical: 18, horizontal: 14),
-      decoration: BoxDecoration(
-        color: colors.whiteColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.lightGreyColor2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// --- Header Row
-          Row(
-            children: [
-              PictureWidget(
-                image: data.assignedProvider?.profileImage,
-              ),
-              12.horizontalSpace,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        GenText(
-                          providerName,
-                          height: 24.5,
-                          weight: FontWeight.w500,
-                          color: colors.black,
-                        ),
-                      ],
-                    ),
-                    GenText(
-                      serviceCategory,
-                      size: 12,
-                      height: 20.5,
-                      weight: FontWeight.w500,
-                      color: colors.neutral.shade400,
-                    ),
-                    Row(
-                      children: [
-                        if (canShow) ...{
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        padding: pad(vertical: 18, horizontal: 14),
+        decoration: BoxDecoration(
+          color: colors.whiteColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colors.lightGreyColor2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// --- Header Row
+            Row(
+              children: [
+                PictureWidget(
+                  image: data.assignedProvider?.profileImage,
+                ),
+                12.horizontalSpace,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          GenText(
+                            providerName,
+                            height: 24.5,
+                            weight: FontWeight.w500,
+                            color: colors.black,
+                          ),
+                        ],
+                      ),
+                      GenText(
+                        serviceCategory,
+                        size: 12,
+                        height: 20.5,
+                        weight: FontWeight.w500,
+                        color: colors.neutral.shade400,
+                      ),
+                      Row(
+                        children: [
                           AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
                           4.horizontalSpace,
                           GenText(
@@ -332,136 +340,132 @@ class _BookingCardState extends State<BookingCard> {
                             weight: FontWeight.w400,
                             color: colors.black,
                           ),
-                        },
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              SVGButton(
-                path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                onTap: () async {
-                  if (serviceRequest != null) {
-                    await _navigateToChatByServiceRequest(
-                      context,
-                      serviceRequest,
-                    );
-                  }
-                },
-              ),
-              15.horizontalSpace,
-              SVGButton(
-                path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-                color: colors.primary.shade500,
-                onTap: () async {
-                  await DialerUtil.open(phonenumber);
-                },
-              ),
-              10.horizontalSpace,
-            ],
-          ),
-          const ListDivider(
-            verticalSpacing: 10,
-          ),
-          
-          if (expanded)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CALENDER_SVG.svgColor(
-                    color: colors.textColor.shade600,
-                  ),
-                  label: 'Date',
-                  value: date,
-                ),
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
-                    color: colors.textColor.shade600,
-                  ),
-                  label: 'Time Started',
-                  value: start,
-                ),
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
-                    color: colors.textColor.shade600,
-                  ),
-                  label: 'Time Completed',
-                  value: end,
-                ),
-                8.verticalSpace,
-                GestureDetector(
-                  onTap: () async {
-                    await GeneralDialogs.showCustomBottomSheet(
-                      context,
-                      body: BookingReceiptModal(
-                        service: serviceCategory,
-                        provider: providerName,
-                        serviceId: data.requestId ?? 'N/A',
-                        status: status,
-                        invoice: data.requestId ?? 'N/A',
-                        dateTime: '$date - $end',
-                        method: 'Card',
-                        onDownload:
-                            canDownload
-                                ? () async {
-                                  await BookingReceiptPdfUtil.generateBookingReceiptPdf(
-                                    bookingId: data.requestId ?? 'N/A',
-                                    service: serviceCategory,
-                                    providerName: providerName,
-                                    status: status,
-                                    dateTime: '$date - $end',
-                                    paymentMethod: 'Card',
-                                    amount: 'To be billed',
-                                  );
-                                }
-                                : null,
-                      ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      AppAssets.ASSETS_ICONS_RECEIPT_SVG.svg,
-                      5.horizontalSpace,
-                      GenText(
-                        'View Receipt',
-                        size: 12,
-                        weight: FontWeight.w400,
-                        color: colors.primary.shade500,
-                        decoration: TextDecoration.underline,
+                        ],
                       ),
                     ],
                   ),
                 ),
-
-                const ListDivider(
-                  verticalSpacing: 15,
+                SVGButton(
+                  path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
+                  onTap: () async {
+                    if (serviceRequest != null) {
+                      await _navigateToChatByServiceRequest(
+                        context,
+                        serviceRequest,
+                      );
+                    }
+                  },
                 ),
+                15.horizontalSpace,
+                SVGButton(
+                  path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
+                  color: colors.primary.shade500,
+                  onTap: () async {
+                    await DialerUtil.open(phonenumber);
+                  },
+                ),
+                10.horizontalSpace,
               ],
             ),
-            if (canShow)
-          GestureDetector(
-            onTap: expandCard,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GenText(
-                  expanded ? 'View Less' : 'View More',
-                  weight: FontWeight.w500,
-                  color: colors.primary.shade500,
-                ),
-                4.horizontalSpace,
-                Transform.rotate(
-                  angle: expanded ? 3.14 : 0,
-                  child: Icon(
-                    Icons.keyboard_arrow_down,
+            const ListDivider(
+              verticalSpacing: 10,
+            ),
+
+            if (expanded)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _InfoRow(
+                    icon: AppAssets.ASSETS_ICONS_CALENDER_SVG.svgColor(
+                      color: colors.textColor.shade600,
+                    ),
+                    label: 'Date',
+                    value: date,
+                  ),
+                  _InfoRow(
+                    icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
+                      color: colors.textColor.shade600,
+                    ),
+                    label: 'Time Started',
+                    value: start,
+                  ),
+                  _InfoRow(
+                    icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
+                      color: colors.textColor.shade600,
+                    ),
+                    label: 'Time Completed',
+                    value: end,
+                  ),
+                  8.verticalSpace,
+                  GestureDetector(
+                    onTap: () async {
+                      await GeneralDialogs.showCustomBottomSheet(
+                        context,
+                        body: BookingReceiptModal(
+                          service: serviceCategory,
+                          provider: providerName,
+                          serviceId: data.requestId ?? 'N/A',
+                          status: status,
+                          invoice: data.requestId ?? 'N/A',
+                          dateTime: '$date - $end',
+                          method: 'Card',
+                          onDownload: () async {
+                            await BookingReceiptPdfUtil.generateBookingReceiptPdf(
+                              bookingId: data.requestId ?? 'N/A',
+                              service: serviceCategory,
+                              providerName: providerName,
+                              status: status,
+                              dateTime: '$date - $end',
+                              paymentMethod: 'Card',
+                              amount: 'To be billed',
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        AppAssets.ASSETS_ICONS_RECEIPT_SVG.svg,
+                        5.horizontalSpace,
+                        GenText(
+                          'View Receipt',
+                          size: 12,
+                          weight: FontWeight.w400,
+                          color: colors.primary.shade500,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const ListDivider(
+                    verticalSpacing: 15,
+                  ),
+                ],
+              ),
+            GestureDetector(
+              onTap: expandCard,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GenText(
+                    expanded ? 'View Less' : 'View More',
+                    weight: FontWeight.w500,
                     color: colors.primary.shade500,
                   ),
-                ),
-              ],
+                  4.horizontalSpace,
+                  Transform.rotate(
+                    angle: expanded ? 3.14 : 0,
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: colors.primary.shade500,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

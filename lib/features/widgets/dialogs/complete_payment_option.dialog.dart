@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
@@ -206,7 +207,7 @@ class _ClientPaymentConfirmDialogState
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 200.h, bottom: 150.h),
+      padding: EdgeInsets.only(top: 220.h, bottom: 160.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -247,15 +248,15 @@ class _ClientPaymentConfirmDialogState
                 weight: FontWeight.w600,
                 color: appColors.black,
               ),
-              4.verticalSpace,
+              10.verticalSpace,
               GenText(
                 'Invoice No: ${widget.invoiceNumber}',
                 size: 13,
                 color: appColors.textColor.shade400,
               ),
-              4.verticalSpace,
+              10.verticalSpace,
               GenText(
-                '₦${widget.amount}',
+                '₦${AppTextUtil.formatAmount(widget.amount.toString())}',
                 size: 22,
                 weight: FontWeight.w700,
                 color: appColors.black,

@@ -134,13 +134,21 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
         hasMoreMessages: messagesData.page < messagesData.totalPages,
       );
 
-      // Only update if still in ready state and messages have changed
+      // Only update if still in ready state
       if (state is ChatDetailReady) {
         final current = state as ChatDetailReady;
-        // Check if there are newer messages
-        if (messagesData.messages.isNotEmpty &&
+
+        // Check if messages changed
+        final hasNewerMessages =
+            messagesData.messages.isNotEmpty &&
             current.messages.isNotEmpty &&
-            messagesData.messages.first.id != current.messages.first.id) {
+            messagesData.messages.first.id != current.messages.first.id;
+
+        // Check if chat data changed (e.g., paymentStatus)
+        final chatDataChanged =
+            current.chat.paymentStatus != chat.paymentStatus;
+
+        if (hasNewerMessages || chatDataChanged) {
           emit(
             current.copyWith(
               chat: chat,

@@ -342,7 +342,12 @@ class _ProviderList extends StatelessWidget {
 
     return ListView.builder(
       itemCount: providers.length,
-      padding: pad(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 8.h,
+        bottom: 100.h,
+      ),
       itemBuilder: (context, index) {
         final provider = providers[index];
         return Padding(
