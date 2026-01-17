@@ -25,13 +25,6 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
   final ValueNotifier<DateTime?> _selectedDate = ValueNotifier(null);
   final TextEditingController dateController = TextEditingController();
 
-  // final List<String> categoryTypes = [
-  //   'Towing',
-  //   'Cleaning',
-  //   'Mechanic',
-  //   'Electrician',
-  // ];
-
   late TextEditingController locationController = TextEditingController();
   late TextEditingController priceController;
   late TextEditingController serviceController;
