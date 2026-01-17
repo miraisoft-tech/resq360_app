@@ -15,7 +15,6 @@ import 'package:resq360/features/customer/services/screens/service_categories_sc
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
-import 'package:resq360/features/widgets/promo_card_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -150,8 +149,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    20.verticalSpace,
-                    const PromoCardWidget(),
+                    // 20.verticalSpace,
+                    // const PromoCardWidget(),
                     20.verticalSpace,
                     UrbText(
                       'Ongoing Service',

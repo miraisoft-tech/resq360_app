@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/models/kyc/identity_response.dart';
+import 'package:resq360/core/models/kyc/kyc_response.model.dart';
+import 'package:resq360/core/models/kyc/user_kyc.model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-
 import 'package:resq360/core/services/base_api.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_provider.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';

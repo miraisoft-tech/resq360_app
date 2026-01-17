@@ -7,6 +7,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc_registry.dart';
+import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
@@ -111,6 +112,9 @@ Future<void> main() async {
           ),
           BlocProvider(
             create: (_) => PhoneUpdateBloc(),
+          ),
+           BlocProvider(
+            create: (_) => KycBloc(),
           ),
         ],
         child: const MyApp(),

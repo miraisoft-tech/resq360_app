@@ -164,34 +164,34 @@ class _ProviderCreateAccountScreenState
                         : null,
               ),
               30.verticalSpace,
-              Row(
-                children: [
-                  const Expanded(child: Divider()),
-                  Padding(
-                    padding: pad(horizontal: 8),
-                    child: GenText(
-                      'or sign up with',
-                      color: colors.textColor.shade500,
-                    ),
-                  ),
-                  const Expanded(child: Divider()),
-                ],
-              ),
-              20.verticalSpace,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _SocialButton(
-                    icon: AppAssets.ASSETS_IMAGES_GOOGLE_PNG,
-                    onTap: () {},
-                  ),
-                  40.horizontalSpace,
-                  _SocialButton(
-                    icon: AppAssets.ASSETS_IMAGES_APPLE_PNG,
-                    onTap: () {},
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     const Expanded(child: Divider()),
+              //     Padding(
+              //       padding: pad(horizontal: 8),
+              //       child: GenText(
+              //         'or sign up with',
+              //         color: colors.textColor.shade500,
+              //       ),
+              //     ),
+              //     const Expanded(child: Divider()),
+              //   ],
+              // ),
+              // 20.verticalSpace,
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     _SocialButton(
+              //       icon: AppAssets.ASSETS_IMAGES_GOOGLE_PNG,
+              //       onTap: () {},
+              //     ),
+              //     40.horizontalSpace,
+              //     _SocialButton(
+              //       icon: AppAssets.ASSETS_IMAGES_APPLE_PNG,
+              //       onTap: () {},
+              //     ),
+              //   ],
+              // ),
               Center(
                 child: GestureDetector(
                   onTap: () async {
@@ -237,20 +237,20 @@ class _ProviderCreateAccountScreenState
   }
 }
 
-class _SocialButton extends StatelessWidget {
-  const _SocialButton({
-    required this.icon,
-    required this.onTap,
-  });
-  final String icon;
-  final void Function() onTap;
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        child: icon.imageAsset(height: 40, width: 40),
-      ),
-    );
-  }
-}
+// class _SocialButton extends StatelessWidget {
+//   const _SocialButton({
+//     required this.icon,
+//     required this.onTap,
+//   });
+//   final String icon;
+//   final void Function() onTap;
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: onTap,
+//       child: SizedBox(
+//         child: icon.imageAsset(height: 40, width: 40),
+//       ),
+//     );
+//   }
+// }

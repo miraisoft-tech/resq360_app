@@ -5,8 +5,8 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
-import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_step_id_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
@@ -26,8 +26,8 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
 
     if (!context.mounted) return;
     if (pickedImage != null) {
-      context.read<ProviderAuthBloc>().add(
-        ProviderSubmitKyc(filePath: pickedImage!.path),
+      context.read<KycBloc>().add(
+        SubmitKyc(filePath: pickedImage!.path),
       );
     }
   }
@@ -36,13 +36,13 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<ProviderAuthBloc, ProviderAuthState>(
+    return BlocListener<KycBloc, KycState>(
       listener: (context, state) async {
-        if (state is ProviderAuthLoadingState) {
+        if (state is KycFaceLoading) {
           showLoadingDialog(context);
         }
 
-        if (state is ProviderKycSubmissionFailure) {
+        if (state is KycFailure) {
           if (context.mounted) {
             Navigator.pop(context);
           }
@@ -50,7 +50,7 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
           showErrorSnackbar(context, state.error);
         }
 
-        if (state is ProviderKycSubmitted) {
+        if (state is KycSubmitted) {
           if (context.mounted) {
             Navigator.pop(context);
           }
@@ -65,7 +65,7 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
                 Navigator.pop(context);
 
                 if (context.mounted) {
-                  await replaceScreen(context, const ProviderStepIDScreen());
+                  await pushScreen(context, const ProviderStepIDScreen());
                 }
               },
             ),

@@ -61,7 +61,7 @@ class _ProviderBusinessDetailsScreenState
       (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
     );
   }
-
+bool isFetchingAddress = false;
   @override
   void dispose() {
     super.dispose();
@@ -77,6 +77,9 @@ class _ProviderBusinessDetailsScreenState
     }
 
     try {
+      setState(() {
+        isFetchingAddress = true;
+      });
       final locationData = await LocationHelper.getCurrentLocation();
 
       if (!context.mounted) return;
@@ -137,7 +140,9 @@ class _ProviderBusinessDetailsScreenState
           }
 
           log(state.error);
-
+  setState(() {
+    isFetchingAddress = false;
+  });
           await showErrorSnackbar(context, state.error);
         }
 
@@ -145,6 +150,10 @@ class _ProviderBusinessDetailsScreenState
           if (context.mounted) {
             Navigator.pop(context);
           }
+
+            setState(() {
+    isFetchingAddress = false;
+  });
 
           await pushAndReplaceScreen(
             context: context,
@@ -287,8 +296,8 @@ class _ProviderBusinessDetailsScreenState
                 ),
               ),
               WideButton(
-                label: 'Continue',
-                onPressed: () => _handleSignup(context),
+                label: !isFetchingAddress ? 'Continue': 'Creating',
+                onPressed: !isFetchingAddress ? () => _handleSignup(context) : null,
               ),
               30.verticalSpace,
               Center(

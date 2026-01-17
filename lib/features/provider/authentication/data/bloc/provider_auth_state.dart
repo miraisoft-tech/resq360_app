@@ -75,29 +75,29 @@ class ProviderProfileLoadedState extends ProviderAuthState {
   final ProviderModel user;
 }
 
-class ProviderKycSubmitted extends ProviderAuthState {
-  const ProviderKycSubmitted(this.kycResponse);
-  final KycResponse kycResponse;
+// class ProviderKycSubmitted extends ProviderAuthState {
+//   const ProviderKycSubmitted(this.kycResponse);
+//   final KycResponse kycResponse;
 
-  @override
-  List<Object> get props => [kycResponse];
-}
+//   @override
+//   List<Object> get props => [kycResponse];
+// }
 
-class ProviderIdentitySubmitted extends ProviderAuthState {
-  const ProviderIdentitySubmitted({required this.data});
+// class ProviderIdentitySubmitted extends ProviderAuthState {
+//   const ProviderIdentitySubmitted({required this.data});
 
-  final IdentityResponse data;
-}
+//   final IdentityResponse data;
+// }
 
-class ProviderKycAddressSubmitted extends ProviderAuthState {}
+// class ProviderKycAddressSubmitted extends ProviderAuthState {}
 
-class ProviderKycInfoLoaded extends ProviderAuthState {
-  const ProviderKycInfoLoaded(this.userKycInfo);
-  final UserKycInfo userKycInfo;
+// class ProviderKycInfoLoaded extends ProviderAuthState {
+//   const ProviderKycInfoLoaded(this.userKycInfo);
+//   final UserKycInfo userKycInfo;
 
-  @override
-  List<Object> get props => [userKycInfo];
-}
+//   @override
+//   List<Object> get props => [userKycInfo];
+// }
 
 class ProviderStatesLoadedState extends ProviderAuthState {
   const ProviderStatesLoadedState(this.states);

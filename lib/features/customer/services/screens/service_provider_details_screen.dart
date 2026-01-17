@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/gallery_item_model.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
@@ -360,24 +359,24 @@ class _ServiceProviderDetailsScreenState
                                         ],
                                       ),
                                     ),
-
-                                    SVGButton(
-                                      path:
-                                          AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                                      onTap: () async {
-                                        await _createServiceRequest();
-                                      },
-                                    ),
-                                    15.horizontalSpace,
-                                    SVGButton(
-                                      path:
-                                          AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-                                      onTap: () async {
-                                        await DialerUtil.open(
-                                          provider.phoneNumber ?? '',
-                                        );
-                                      },
-                                    ),
+                                    // if(provider.)
+                                    // SVGButton(
+                                    //   path:
+                                    //       AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
+                                    //   onTap: () async {
+                                    //     await _createServiceRequest();
+                                    //   },
+                                    // ),
+                                    // 15.horizontalSpace,
+                                    // SVGButton(
+                                    //   path:
+                                    //       AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
+                                    //   onTap: () async {
+                                    //     await DialerUtil.open(
+                                    //       provider.phoneNumber ?? '',
+                                    //     );
+                                    //   },
+                                    // ),
                                   ],
                                 ),
 

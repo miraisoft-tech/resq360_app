@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/models/kyc/identity_response.dart';
+import 'package:resq360/core/models/kyc/kyc_response.model.dart';
+import 'package:resq360/core/models/kyc/user_kyc.model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 
 final UploadService uploadService = UploadService.instance;
 

@@ -1,17 +1,18 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
 import 'package:resq360/core/models/identity_enums.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
-import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/step_addresss_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 import 'package:resq360/features/widgets/images.widgets.dart';
 
 class StepIDScreen extends StatefulWidget {
-  const StepIDScreen({super.key});
-
+  const StepIDScreen({required this.source, super.key});
+  final VerificationSource source;
   @override
   State<StepIDScreen> createState() => _StepIDScreenState();
 }
@@ -34,8 +35,11 @@ class _StepIDScreenState extends State<StepIDScreen> {
     setState(() {});
     
     if (pickedImage != null) {
-      context.read<CustomerAuthBloc>().add(
-        CustomerSubmitKyc(filePath: pickedImage!.path),
+      context.read<KycBloc>().add(
+        SubmitId(
+          documentType: _selectType.value!,
+          filePath: pickedImage!.path,
+        ),
       );
     }
   }
@@ -44,13 +48,13 @@ class _StepIDScreenState extends State<StepIDScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<CustomerAuthBloc, CustomerAuthState>(
+    return BlocListener<KycBloc, KycState>(
       listener: (context, state) async {
-        if (state is CustomerAuthLoading) {
+        if (state is KycIdLoading) {
           showLoadingDialog(context);
         }
 
-        if (state is CustomerKycSubmissionFailure) {
+        if (state is KycFailure) {
           if (context.mounted) {
             Navigator.pop(context);
           }
@@ -58,23 +62,23 @@ class _StepIDScreenState extends State<StepIDScreen> {
           await showSnackBar(context, 'Error', state.error);
         }
 
-        if (state is CustomerKycSubmitted) {
+        if (state is IdentitySubmitted) {
           if (context.mounted) {
             Navigator.pop(context);
           }
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
-              title: 'You’re Almost Done!',
+              title: "You're Almost Done!",
               description: 'Just one more step to complete your verification',
               icon: AppAssets.ASSETS_IMAGES_STEP_2_PNG,
               onContinuePressed: () async {
                 await pop(context);
 
                 if (context.mounted) {
-                  await pushAndReplaceScreen(
-                    context: context,
-                    const StepAddressScreen(),
+                  await pushScreen(
+                     context,
+                    StepAddressScreen(source: widget.source),
                   );
                 }
               },
@@ -184,8 +188,8 @@ class _StepIDScreenState extends State<StepIDScreen> {
                       (_selectType.value != null && (pickedImage != null))
                           ? () {
                             log('Proceed to next step');
-                            context.read<CustomerAuthBloc>().add(
-                              CustomerSubmitId(
+                            context.read<KycBloc>().add(
+                              SubmitId(
                                 documentType: _selectType.value!,
                                 filePath: pickedImage!.path,
                               ),

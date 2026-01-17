@@ -1,15 +1,10 @@
-import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/services.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
 import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 import 'package:resq360/features/provider/authentication/data/models/state_model.dart';
 
@@ -29,11 +24,11 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     on<CustomerResendVerificationEmailEvent>(_onResendVerificationEmail);
     on<CustomergetUserProfile>(_onGetUserProfile);
     on<CustomerLogout>(_onLogout);
-    on<CustomerSubmitKyc>(_onSubmitKyc);
-    on<CustomerGetUserKycInfo>(_onGetUserKycInfo);
-    on<CustomerSubmitKycAddress>(_onSubmitKycAddress);
-    on<CustomerSubmitId>(_onSubmitKycId);
-    on<CustomerGetStates>(_getLocalStates);
+    // on<CustomerSubmitKyc>(_onSubmitKyc);
+    // on<CustomerGetUserKycInfo>(_onGetUserKycInfo);
+    // on<CustomerSubmitKycAddress>(_onSubmitKycAddress);
+    // on<CustomerSubmitId>(_onSubmitKycId);
+    // on<CustomerGetStates>(_getLocalStates);
 
   }
 
@@ -283,92 +278,92 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     emit(CustomerAuthInitial());
   }
 
-  // KYC Submission
-  Future<void> _onSubmitKyc(
-    CustomerSubmitKyc event,
-    Emitter<CustomerAuthState> emit,
-  ) async {
-    emit(CustomerAuthLoading());
-    try {
-      final result = await authRemoteRepo.uploadAndSubmitFaceId(
-        filePath: event.filePath,
-      );
-      if (result.data != null) {
-        emit(CustomerKycSubmitted(result.data!));
-      } else {
-        emit(
-          CustomerKycSubmissionFailure(result.error ?? 'KYC submission failed'),
-        );
-      }
-    } on Exception catch (e) {
-      emit(CustomerKycSubmissionFailure(e.toString()));
-    }
-  }
+  // // KYC Submission
+  // Future<void> _onSubmitKyc(
+  //   CustomerSubmitKyc event,
+  //   Emitter<CustomerAuthState> emit,
+  // ) async {
+  //   emit(CustomerAuthLoading());
+  //   try {
+  //     final result = await authRemoteRepo.uploadAndSubmitFaceId(
+  //       filePath: event.filePath,
+  //     );
+  //     if (result.data != null) {
+  //       emit(CustomerKycSubmitted(result.data!));
+  //     } else {
+  //       emit(
+  //         CustomerKycSubmissionFailure(result.error ?? 'KYC submission failed'),
+  //       );
+  //     }
+  //   } on Exception catch (e) {
+  //     emit(CustomerKycSubmissionFailure(e.toString()));
+  //   }
+  // }
 
-  Future<void> _onGetUserKycInfo(
-    CustomerGetUserKycInfo event,
-    Emitter<CustomerAuthState> emit,
-  ) async {
-    emit(CustomerAuthLoading());
-    try {
-      final result = await authRemoteRepo.getUserKycInfo();
-      if (result.data != null) {
-        emit(CustomerUserKycInfoLoaded(result.data!));
-      } else {
-        emit(CustomerAuthFailure(result.error ?? 'Failed to load KYC info'));
-      }
-    } on Exception catch (e) {
-      log('CustomerGetUserKycInfo Bloc Get User KYC Info Error: $e');
-      emit(CustomerAuthFailure(e.toString()));
-    }
-  }
+  // Future<void> _onGetUserKycInfo(
+  //   CustomerGetUserKycInfo event,
+  //   Emitter<CustomerAuthState> emit,
+  // ) async {
+  //   emit(CustomerAuthLoading());
+  //   try {
+  //     final result = await authRemoteRepo.getUserKycInfo();
+  //     if (result.data != null) {
+  //       emit(CustomerUserKycInfoLoaded(result.data!));
+  //     } else {
+  //       emit(CustomerAuthFailure(result.error ?? 'Failed to load KYC info'));
+  //     }
+  //   } on Exception catch (e) {
+  //     log('CustomerGetUserKycInfo Bloc Get User KYC Info Error: $e');
+  //     emit(CustomerAuthFailure(e.toString()));
+  //   }
+  // }
 
-  Future<void> _onSubmitKycAddress(
-    CustomerSubmitKycAddress event,
-    Emitter<CustomerAuthState> emit,
-  ) async {
-    emit(CustomerAuthLoading());
-    try {
-      final result = await authRemoteRepo.submitKycAddress(
-        address: event.address,
-        city: event.city,
-        state: event.state,
-      );
-      if (result) {
-        emit(CustomerKycAddressSubmitted());
-      } else {
-        emit(
-          CustomerKycSubmissionFailure('$result KYC address submission failed'),
-        );
-      }
-    } on Exception catch (e) {
-      emit(CustomerKycSubmissionFailure(e.toString()));
-    }
-  }
+  // Future<void> _onSubmitKycAddress(
+  //   CustomerSubmitKycAddress event,
+  //   Emitter<CustomerAuthState> emit,
+  // ) async {
+  //   emit(CustomerAuthLoading());
+  //   try {
+  //     final result = await authRemoteRepo.submitKycAddress(
+  //       address: event.address,
+  //       city: event.city,
+  //       state: event.state,
+  //     );
+  //     if (result) {
+  //       emit(CustomerKycAddressSubmitted());
+  //     } else {
+  //       emit(
+  //         CustomerKycSubmissionFailure('$result KYC address submission failed'),
+  //       );
+  //     }
+  //   } on Exception catch (e) {
+  //     emit(CustomerKycSubmissionFailure(e.toString()));
+  //   }
+  // }
 
-  Future<void> _onSubmitKycId(
-    CustomerSubmitId event,
-    Emitter<CustomerAuthState> emit,
-  ) async {
-    emit(CustomerAuthLoading());
-    try {
-      final result = await authRemoteRepo.uploadAndSubmitIdentity(
-        documentType: event.documentType,
-        filePath: event.filePath,
-      );
-      if (result.data != null) {
-        emit(CustumerIdentitySubmitted(data: result.data!));
-      } else {
-        emit(
-          CustomerKycSubmissionFailure(
-            result.error ?? 'KYC ID submission failed',
-          ),
-        );
-      }
-    } on Exception catch (e) {
-      emit(CustomerKycSubmissionFailure(e.toString()));
-    }
-  }
+  // Future<void> _onSubmitKycId(
+  //   CustomerSubmitId event,
+  //   Emitter<CustomerAuthState> emit,
+  // ) async {
+  //   emit(CustomerAuthLoading());
+  //   try {
+  //     final result = await authRemoteRepo.uploadAndSubmitIdentity(
+  //       documentType: event.documentType,
+  //       filePath: event.filePath,
+  //     );
+  //     if (result.data != null) {
+  //       emit(CustumerIdentitySubmitted(data: result.data!));
+  //     } else {
+  //       emit(
+  //         CustomerKycSubmissionFailure(
+  //           result.error ?? 'KYC ID submission failed',
+  //         ),
+  //       );
+  //     }
+  //   } on Exception catch (e) {
+  //     emit(CustomerKycSubmissionFailure(e.toString()));
+  //   }
+  // }
 
   Future<bool> _loadAndSaveUserProfile({
     required AuthResponse authResponse,
@@ -391,42 +386,42 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     return true;
   }
 
-    Future<void> _getLocalStates(
-    CustomerGetStates event,
-    Emitter<CustomerAuthState> emit,
-  ) async {
-    final tempStatesList = <StateModel>[];
-    try {
-      final jsonString = await rootBundle.loadString(
-        'assets/json/states_list.json',
-      );
-      final json = jsonDecode(jsonString);
+  //   Future<void> _getLocalStates(
+  //   CustomerGetStates event,
+  //   Emitter<CustomerAuthState> emit,
+  // ) async {
+  //   final tempStatesList = <StateModel>[];
+  //   try {
+  //     final jsonString = await rootBundle.loadString(
+  //       'assets/json/states_list.json',
+  //     );
+  //     final json = jsonDecode(jsonString);
 
-      if (json == null || json is! List) {
-        emit(CustomerStatesLoadedState(tempStatesList));
-        return;
-      }
+  //     if (json == null || json is! List) {
+  //       emit(CustomerStatesLoadedState(tempStatesList));
+  //       return;
+  //     }
 
-      final statesListJson = json;
-      log('states ${statesListJson.length}');
+  //     final statesListJson = json;
+  //     log('states ${statesListJson.length}');
 
-      for (var i = 0; i < statesListJson.length; i++) {
-        final stateJson = statesListJson[i];
-        if (stateJson is String) {
-          tempStatesList.add(StateModel.fromJson(stateJson));
-        }
-      }
+  //     for (var i = 0; i < statesListJson.length; i++) {
+  //       final stateJson = statesListJson[i];
+  //       if (stateJson is String) {
+  //         tempStatesList.add(StateModel.fromJson(stateJson));
+  //       }
+  //     }
 
-      tempStatesList.sort((a, b) {
-        final nameA = a.name ?? '';
-        final nameB = b.name ?? '';
-        return nameA.compareTo(nameB);
-      });
+  //     tempStatesList.sort((a, b) {
+  //       final nameA = a.name ?? '';
+  //       final nameB = b.name ?? '';
+  //       return nameA.compareTo(nameB);
+  //     });
 
-      emit(CustomerStatesLoadedState(tempStatesList));
-    } on Exception catch (e) {
-      log('Error loading states: $e');
-      emit(CustomerStatesLoadedState(tempStatesList));
-    }
-  }
+  //     emit(CustomerStatesLoadedState(tempStatesList));
+  //   } on Exception catch (e) {
+  //     log('Error loading states: $e');
+  //     emit(CustomerStatesLoadedState(tempStatesList));
+  //   }
+  // }
 }

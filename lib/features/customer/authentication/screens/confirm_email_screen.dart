@@ -2,6 +2,7 @@ import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
@@ -110,7 +111,9 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           await pop(context);
           await pushAndReplaceScreen(
             context: context,
-            const VerificationStepsScreen(),
+           const VerificationStepsScreen(
+              source: VerificationSource.signup,
+            ),
           );
         }
       },

@@ -1,0 +1,4 @@
+enum VerificationSource {
+  signup,
+  settings,
+}

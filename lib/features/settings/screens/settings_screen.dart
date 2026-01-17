@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/kyc_enums.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
@@ -144,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           } else {
             await pushScreen(
               context,
-              const VerificationStepsScreen(),
+              const VerificationStepsScreen( source: VerificationSource.settings,),
             );
           }
         },

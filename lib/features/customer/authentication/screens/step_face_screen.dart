@@ -1,15 +1,17 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
-import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/step_id_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
 class StepFaceScreen extends StatefulWidget {
-  const StepFaceScreen({super.key});
+  const StepFaceScreen({required this.source, super.key});
 
+  final VerificationSource source;
   @override
   State<StepFaceScreen> createState() => _StepFaceScreenState();
 }
@@ -22,8 +24,8 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
 
     if (!context.mounted) return;
     if (pickedImage != null) {
-      context.read<CustomerAuthBloc>().add(
-        CustomerSubmitKyc(filePath: pickedImage!.path),
+      context.read<KycBloc>().add(
+        SubmitKyc(filePath: pickedImage!.path),
       );
     }
   }
@@ -32,13 +34,13 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<CustomerAuthBloc, CustomerAuthState>(
+    return BlocListener<KycBloc, KycState>(
       listener: (context, state) async {
-        if (state is CustomerAuthLoading) {
+        if (state is KycFaceLoading) {
           showLoadingDialog(context);
         }
 
-        if (state is CustomerKycSubmissionFailure) {
+        if (state is KycFailure) {
           if (context.mounted) {
             Navigator.pop(context);
           }
@@ -46,7 +48,7 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
           await showSnackBar(context, 'Error', state.error);
         }
 
-        if (state is CustomerKycSubmitted) {
+        if (state is KycSubmitted) {
           if (context.mounted) {
             Navigator.pop(context);
           }
@@ -55,13 +57,13 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
             context,
             body: StepModal(
               title: 'Facial Verification Successful!',
-              description: 'Let’s confirm your identification',
+              description: "Let's confirm your identification",
               icon: AppAssets.ASSETS_IMAGES_STEP_1_PNG,
               onContinuePressed: () async {
                 await pop(context);
 
                 if (context.mounted) {
-                  await replaceScreen(context, const StepIDScreen());
+                  await pushScreen(context, StepIDScreen(source: widget.source));
                 }
               },
             ),

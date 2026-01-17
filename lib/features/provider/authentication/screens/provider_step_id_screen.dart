@@ -5,9 +5,9 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
 import 'package:resq360/core/models/identity_enums.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
-import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_step_addresss_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
@@ -37,8 +37,8 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
     setState(() {});
 
     if (pickedImage != null) {
-      context.read<ProviderAuthBloc>().add(
-        ProviderSubmitId(
+      context.read<KycBloc>().add(
+        SubmitId(
           documentType: _selectType.value!,
           filePath: pickedImage!.path,
         ),
@@ -50,13 +50,13 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<ProviderAuthBloc, ProviderAuthState>(
+    return BlocListener<KycBloc, KycState>(
       listener: (context, state) async {
-        if (state is ProviderAuthLoadingState) {
+        if (state is KycIdLoading) {
           showLoadingDialog(context);
         }
 
-        if (state is ProviderKycSubmissionFailure) {
+        if (state is KycFailure) {
           if (context.mounted) {
             Navigator.pop(context);
           }
@@ -64,7 +64,7 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
           showErrorSnackbar(context, state.error);
         }
 
-        if (state is ProviderIdentitySubmitted) {
+        if (state is IdentitySubmitted) {
           if (context.mounted) {
             Navigator.pop(context);
           }
@@ -79,8 +79,8 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
                 await pop(context);
 
                 if (context.mounted) {
-                  await pushAndReplaceScreen(
-                    context: context,
+                  await pushScreen(
+                    context,
                     const ProviderStepAddressScreen(),
                   );
                 }
@@ -190,8 +190,8 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
                   onPressed:
                       (_selectType.value != null && (pickedImage != null))
                           ? () {
-                            context.read<ProviderAuthBloc>().add(
-                              ProviderSubmitId(
+                            context.read<KycBloc>().add(
+                              SubmitId(
                                 documentType: _selectType.value!,
                                 filePath: pickedImage!.path,
                               ),
