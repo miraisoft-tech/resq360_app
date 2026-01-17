@@ -119,7 +119,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
               log('the url is now: $url');
 
               if (url.toString().contains(
-                ' https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
+                'https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
               )) {
                 _finish();
               }

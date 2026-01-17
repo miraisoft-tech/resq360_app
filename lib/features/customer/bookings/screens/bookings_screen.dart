@@ -235,7 +235,7 @@ class _BookingList extends StatelessWidget {
             return EmptyScreenWidget(
               image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
               message: 'No booking found',
-              subMessage: '',
+              subMessage: 'Book a service with a service provider',
             );
           }
 

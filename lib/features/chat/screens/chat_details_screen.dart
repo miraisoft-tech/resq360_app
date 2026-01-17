@@ -175,6 +175,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           var isActive = false;
           var phone = '';
           var imageurl = '';
+          var status = '';
 
           if (state is ChatDetailReady) {
             final chat = state.chat;
@@ -185,11 +186,12 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                     : (chat.user?.phoneNumber ?? '');
             isActive = chat.isActive ?? false;
             imageurl = chat.image ?? '';
+            status = chat.paymentStatus ?? '';
           }
 
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(title, isActive, phone, imageurl),
+            appBar: _buildAppBar(title, isActive, phone, imageurl, status),
             body: SafeArea(
               child: Column(
                 children: [
@@ -342,6 +344,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     bool isActive,
     String phoneNumber,
     String imageurl,
+    String status,
   ) {
     final appColors = context.appColors;
 
@@ -383,20 +386,21 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         ],
       ),
       actions: [
-        Row(
-          children: [
-            SizedBox(
-              width: 35.w,
-              child: IconButton(
-                onPressed: () async {
-                  await DialerUtil.open(phoneNumber);
-                },
-                icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
+        if (status == 'COMPLETED')
+          Row(
+            children: [
+              SizedBox(
+                width: 35.w,
+                child: IconButton(
+                  onPressed: () async {
+                    await DialerUtil.open(phoneNumber);
+                  },
+                  icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
+                ),
               ),
-            ),
-            10.horizontalSpace,
-          ],
-        ),
+              10.horizontalSpace,
+            ],
+          ),
       ],
     );
   }
