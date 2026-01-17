@@ -274,7 +274,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const Spacer(),
 
-                        // FIXED VIEW ALL BUTTON
                         GestureDetector(
                           onTap: () async {
                             final state =

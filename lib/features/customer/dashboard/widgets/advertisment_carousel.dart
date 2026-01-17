@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
@@ -14,6 +15,7 @@ class AdvertisementCarousel extends StatefulWidget {
 class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
   late final PageController _pageController;
   int currentIndex = 0;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -22,15 +24,41 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
 
     _pageController.addListener(() {
       final newIndex = _pageController.page?.round() ?? 0;
-
       if (newIndex != currentIndex) {
         setState(() => currentIndex = newIndex);
+      }
+    });
+
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    if (widget.ads.length <= 1) return;
+
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (!_pageController.hasClients) return;
+
+      final nextPage = currentIndex + 1;
+
+      if (nextPage >= widget.ads.length) {
+        await _pageController.animateToPage(
+          0,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      } else {
+       await _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
       }
     });
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -53,9 +81,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
                   if (providerId == null) return;
                   await pushScreen(
                     context,
-                    ServiceProviderDetailsScreen(
-                      providerId: providerId,
-                    ),
+                    ServiceProviderDetailsScreen(providerId: providerId),
                   );
                 },
                 child: RecommendedCard(advertisement: widget.ads[index]),
