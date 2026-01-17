@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/kyc_enums.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
@@ -75,6 +76,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<String?> getEmail() async {
+    var email = '';
+    final cred = await AuthLocalRepo.instance.getLocalCredentials();
+    if (cred != null) {
+      email = cred.userName ?? '';
+    }
+    return email;
+  }
+
+  Future<String> getAppVersion() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final version = packageInfo.version;
+
+      return '$version(${packageInfo.buildNumber})';
+    } on Exception catch (e) {
+      log(e);
+      return '';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -88,15 +110,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
       }
     });
-  }
-
-  Future<String?> getEmail() async {
-    var email = '';
-    final cred = await AuthLocalRepo.instance.getLocalCredentials();
-    if (cred != null) {
-      email = cred.userName ?? '';
-    }
-    return email;
   }
 
   @override
@@ -462,6 +475,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: appColors.textColor.shade200,
                   ),
                 ],
+              ),
+            ),
+            20.verticalSpace,
+            Padding(
+              padding: pad(vertical: 20),
+              child: FutureBuilder<String>(
+                future: getAppVersion(),
+                builder: (_, snapshot) {
+                  return GenText(
+                    'v${snapshot.data == null ? '' : snapshot.data!}',
+                    weight: FontWeight.w500,
+                    color: Colors.black,
+                    textAlign: TextAlign.center,
+                  );
+                },
               ),
             ),
           ],

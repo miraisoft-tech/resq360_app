@@ -4,15 +4,13 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 
-// it's how it was done in the documentaton
-// ignore: library_prefixes
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io_client;
 
 class ChatSocketService {
   ChatSocketService._internal();
   static final ChatSocketService instance = ChatSocketService._internal();
 
-  IO.Socket? _socket;
+  io_client.Socket? _socket;
   DateTime? _connectedAt;
   int _retryCount = 0;
 
@@ -49,9 +47,9 @@ class ChatSocketService {
 
     _connectionCompleter = Completer<void>();
 
-    _socket = IO.io(
+    _socket = io_client.io(
       url,
-      IO.OptionBuilder()
+      io_client.OptionBuilder()
           .setTransports(['websocket'])
           .enableAutoConnect()
           .enableReconnection()
@@ -126,7 +124,7 @@ class ChatSocketService {
     );
   }
 
-  IO.Socket? get socket => _socket;
+  io_client.Socket? get socket => _socket;
 
   Future<void> joinChat(int chatId) async {
     if (!isConnected) {
@@ -178,7 +176,9 @@ class ChatSocketService {
         debugPrint('Socket NEW_MESSAGE raw data: $messageData');
         debugPrint('Socket NEW_MESSAGE metadata: ${messageData['metadata']}');
         final message = MessageResponse.fromJson(messageData);
-        debugPrint('Socket parsed message metadata: ${message.metadata?.toJson()}');
+        debugPrint(
+          'Socket parsed message metadata: ${message.metadata?.toJson()}',
+        );
         _messageController.add(message);
 
       case 'USER_TYPING':
@@ -208,7 +208,6 @@ class ChatSocketService {
     _connectedAt = null;
   }
 
-  /// Call this when user logs out to ensure fresh connection on next login
   Future<void> reset() async {
     await disconnect();
     _retryCount = 0;
