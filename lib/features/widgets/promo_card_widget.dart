@@ -19,6 +19,7 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
   @override
   void initState() {
     super.initState();
+
     _pageController = PageController();
   }
 
@@ -38,7 +39,7 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
           return const CircularProgressIndicator();
         }
         if (state is CustomerAdvertisementFetched) {
-          final ads = state.adverisementList;
+          final ads = state.adminAds;
           if (ads.isEmpty) {
             return const SizedBox.shrink();
           }
@@ -58,77 +59,88 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
                   itemBuilder: (context, index) {
                     final ad = ads[index];
 
-                    return Container(
-                      margin: pad(horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: colors.primary.shade500,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          16.horizontalSpace,
-                          Expanded(
-                            child: Padding(
-                              padding: pad(vertical: 10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  UrbText(
-                                    ad.title ?? 'N/A',
-                                    size: 18,
-                                    height: 20.5,
-                                    weight: FontWeight.w700,
-                                    color: colors.whiteColor,
-                                  ),
-                                  20.verticalSpace,
-                                  GenText(
-                                    ad.description ?? 'N/A',
-                                    size: 12,
-                                    height: 20.5,
-                                    color: colors.whiteColor,
-                                    maxLines: 2,
-                                  ),
-                                  30.verticalSpace,
-                                  SizedBox(
-                                    height: 30.h,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        padding: pad(horizontal: 14),
-                                        backgroundColor: colors.whiteColor,
-                                        foregroundColor:
-                                            colors.primary.shade500,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8.r,
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        await AppGenUtil.callPhone(
-                                          phoneNumber:
-                                              ad.provider?.phoneNumber ?? '',
-                                        );
-                                      },
-                                      child: GenText(
-                                        'Call Now',
-                                        height: 16.5,
-                                        color: colors.primary.shade500,
-                                        weight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          CacheNetworkImageWidget(
-                            imageUrl: ad.provider?.profileImage ?? '',
-                            height: 180,
-                            width: 120,
-                            fit: BoxFit.contain,
-                          ),
-                          20.horizontalSpace,
-                        ],
+                    return GestureDetector(
+                      onTap: () async {
+                        await AppGenUtil.launchUrlText(ad.targetUrl ?? '');
+                      },
+                      child: Container(
+                        margin: pad(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: colors.primary.shade500,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: CacheNetworkImageWidget(
+                          imageUrl: ad.imageUrl ?? '',
+                          height: 180,
+                          width: 120,
+                          fit: BoxFit.cover,
+                        ),
+                        // Row(
+                        //     children: [
+                        //       16.horizontalSpace,
+                        //       Expanded(
+                        //         child: Padding(
+                        //           padding: pad(vertical: 10),
+                        //           child: Column(
+                        //             crossAxisAlignment: CrossAxisAlignment.start,
+                        //             children: [
+                        //               UrbText(
+                        //                 ad.title ?? 'N/A',
+                        //                 size: 18,
+                        //                 height: 20.5,
+                        //                 weight: FontWeight.w700,
+                        //                 color: colors.whiteColor,
+                        //               ),
+                        //               20.verticalSpace,
+                        //               GenText(
+                        //                 ad.description ?? 'N/A',
+                        //                 size: 12,
+                        //                 height: 20.5,
+                        //                 color: colors.whiteColor,
+                        //                 maxLines: 2,
+                        //               ),
+                        //               30.verticalSpace,
+                        //               SizedBox(
+                        //                 height: 30.h,
+                        //                 child: ElevatedButton(
+                        //                   style: ElevatedButton.styleFrom(
+                        //                     padding: pad(horizontal: 14),
+                        //                     backgroundColor: colors.whiteColor,
+                        //                     foregroundColor:
+                        //                         colors.primary.shade500,
+                        //                     shape: RoundedRectangleBorder(
+                        //                       borderRadius: BorderRadius.circular(
+                        //                         8.r,
+                        //                       ),
+                        //                     ),
+                        //                   ),
+                        //                   onPressed: () async {
+                        //                     await AppGenUtil.callPhone(
+                        //                       phoneNumber:
+                        //                           ad.provider?.phoneNumber ?? '',
+                        //                     );
+                        //                   },
+                        //                   child: GenText(
+                        //                     'Call Now',
+                        //                     height: 16.5,
+                        //                     color: colors.primary.shade500,
+                        //                     weight: FontWeight.w500,
+                        //                   ),
+                        //                 ),
+                        //               ),
+                        //             ],
+                        //           ),
+                        //         ),
+                        //       ),
+                        //       CacheNetworkImageWidget(
+                        //         imageUrl: ad.provider?.profileImage ?? '',
+                        //         height: 180,
+                        //         width: 120,
+                        //         fit: BoxFit.contain,
+                        //       ),
+                        //       20.horizontalSpace,
+                        //     ],
+                        //   ),
                       ),
                     );
                   },

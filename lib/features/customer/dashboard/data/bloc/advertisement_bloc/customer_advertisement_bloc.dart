@@ -1,7 +1,7 @@
-
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
 import 'package:resq360/features/customer/dashboard/data/models/payment/payment.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/advertisement_repo.dart';
 import 'package:resq360/features/customer/dashboard/data/service/payment_repo.dart';
@@ -27,9 +27,25 @@ class CustomerAdvertisementBloc
     Emitter<CustomerAdvertisementState> emit,
   ) async {
     try {
-      final result = await advertisementRepo.fetchAllAdvertisement();
+      final result = await advertisementRepo.fetchAllAdvertisement(
+        creatorType: event.creatorType,
+      );
       if (result.data != null) {
-        emit(CustomerAdvertisementFetched(adverisementList: result.data!));
+        final ads = result.data;
+        if (event.creatorType == CreatorType.provider.name) {
+          emit(
+            CustomerAdvertisementFetched(
+              providerAds: ads!,
+            ),
+          );
+        }
+        if (event.creatorType == CreatorType.admin.name) {
+          emit(
+            CustomerAdvertisementFetched(
+              adminAds: ads!,
+            ),
+          );
+        }
       } else {
         emit(CustomerAdvertisementError(error: result.error!));
       }
@@ -39,25 +55,29 @@ class CustomerAdvertisementBloc
   }
 
   Future<void> _fetchProviderActiveAdvertisements(
-  FetchProviderActiveAdvertisements event,
-  Emitter<CustomerAdvertisementState> emit,
-) async {
-  emit(CustomerAdvertisementLoading());
-  
-  try {
-    final result = await advertisementRepo.fetchProviderActiveAdvertisements(
-      providerId: event.providerId,
-    );
-    
-    if (result.data != null) {
-      emit(ProviderActiveAdvertisementsFetched(advertisements: result.data!));
-    } else {
-      emit(CustomerAdvertisementError(error: result.error ?? 'Failed to fetch advertisements'));
+    FetchProviderActiveAdvertisements event,
+    Emitter<CustomerAdvertisementState> emit,
+  ) async {
+    emit(CustomerAdvertisementLoading());
+
+    try {
+      final result = await advertisementRepo.fetchProviderActiveAdvertisements(
+        providerId: event.providerId,
+      );
+
+      if (result.data != null) {
+        emit(ProviderActiveAdvertisementsFetched(advertisements: result.data!));
+      } else {
+        emit(
+          CustomerAdvertisementError(
+            error: result.error ?? 'Failed to fetch advertisements',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(CustomerAdvertisementError(error: e.toString()));
     }
-  } on Exception catch (e) {
-    emit(CustomerAdvertisementError(error: e.toString()));
   }
-}
 
   Future<void> _onCreateAdvertisement(
     CreateAdvertisement event,
@@ -83,7 +103,6 @@ class CustomerAdvertisementBloc
         return;
       }
 
-     
       if (result.data!.paymentResponse != null) {
         emit(
           AdvertisementPaymentInitiatedState(result.data!.paymentResponse!),
@@ -124,7 +143,8 @@ class CustomerAdvertisementBloc
         } else {
           emit(
             CustomerAdvertisementError(
-              error: 'Payment was not successful: ${result.data!.gatewayResponse}',
+              error:
+                  'Payment was not successful: ${result.data!.gatewayResponse}',
             ),
           );
         }
