@@ -56,12 +56,15 @@ class BaseAPI {
         onResponse: (res, handler) async {
           final statusCode = res.statusCode;
           final data = res.data?.toString() ?? '';
+          final authBloc = BlocRegistry.authBloc;
 
           if ((statusCode == 200 && data.contains('Unauthorized')) ||
               data.contains('DOCTYPE')) {
-            final authBloc = BlocRegistry.authBloc;
             if (authBloc == null) return handler.next(res);
             authBloc.add(ForceLogoutEvent());
+          } else if (res.statusCode == 401 &&
+              (res.data['message'] ?? '') == 'Unauthorized') {
+            if (authBloc != null) authBloc.add(ForceLogoutEvent());
           }
 
           return handler.next(res);

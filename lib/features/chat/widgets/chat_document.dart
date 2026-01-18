@@ -82,11 +82,12 @@ class _ChatDocumentBubbleState extends State<ChatDocumentBubble> {
                         maxLines: 2,
                       ),
                       4.verticalSpace,
-                      GenText(
-                        _formatFileSize(widget.fileSize?.toDouble()),
-                        size: 12,
-                        color: appColors.neutral.shade500,
-                      ),
+                      if (widget.fileSize != null)
+                        GenText(
+                          _formatFileSize(widget.fileSize?.toDouble()),
+                          size: 12,
+                          color: appColors.neutral.shade500,
+                        ),
                     ],
                   ),
                 ),

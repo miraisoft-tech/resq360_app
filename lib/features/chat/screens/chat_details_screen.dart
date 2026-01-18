@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/helpers/media_helper.dart';
+import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
@@ -643,37 +643,35 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     });
   }
 
-Future<void> _onMediaTap(BuildContext context) async {
-  final files = await MediaPickerHelper.pickMultipleImages(
-    context: context,
-  );
+  Future<void> _onMediaTap(BuildContext context) async {
+    final files = await AppFilePicker.pickMultiImages();
 
-  if (files == null || files.isEmpty || !context.mounted) return;
+    if (files == null || files.isEmpty || !context.mounted) return;
 
-  final userId = _currentUserId;
-  if (userId == null) {
-    await showErrorSnackbar(context, 'User not authenticated');
-    return;
+    final userId = _currentUserId;
+    if (userId == null) {
+      await showErrorSnackbar(context, 'User not authenticated');
+      return;
+    }
+
+    // final caption = await _showCaptionDialog(context);
+
+    final filePaths = files.map((f) => f.path).toList();
+
+    if (context.mounted) {
+      context.read<ChatDetailBloc>().add(
+        SendImageMessage(
+          filePaths: filePaths,
+          senderId: userId,
+          userType: _senderType,
+          caption: 'Samples',
+        ),
+      );
+    }
   }
-
-  final caption = await _showCaptionDialog(context);
-
-  final filePaths = files.map((f) => f.path).toList();
-
-  if (context.mounted) {
-    context.read<ChatDetailBloc>().add(
-      SendImageMessage(
-        filePaths: filePaths,   
-        senderId: userId,
-        userType: _senderType,
-        caption: caption,
-      ),
-    );
-  }
-}
 
   Future<void> _onLocationTap(BuildContext context) async {
-    final locationData = await MediaPickerHelper.getCurrentLocation(
+    final locationData = await AppFilePicker.getCurrentLocation(
       context: context,
     );
 
@@ -697,7 +695,7 @@ Future<void> _onMediaTap(BuildContext context) async {
   }
 
   Future<void> _onDocumentTap(BuildContext context) async {
-    final file = await MediaPickerHelper.pickDocument(context: context);
+    final file = await AppFilePicker.pickDocument(context: context);
 
     if (file == null || !context.mounted) return;
 
@@ -707,16 +705,16 @@ Future<void> _onMediaTap(BuildContext context) async {
       return;
     }
 
-    // context.read<ChatDetailBloc>().add(
-    //   SendDocumentMessage(
-    //     filePath: file.path,
-    //     senderId: userId,
-    //     userType: _senderType,
-    //   ),
-    // );
+    context.read<ChatDetailBloc>().add(
+      SendDocumentMessage(
+        filePath: file.path,
+        senderId: userId,
+        userType: _senderType,
+      ),
+    );
   }
 
-  Future<String?> _showCaptionDialog(BuildContext context) async {
+  Future<String?> showCaptionDialog(BuildContext context) async {
     final controller = TextEditingController();
 
     return showDialog<String>(
@@ -725,7 +723,10 @@ Future<void> _onMediaTap(BuildContext context) async {
         final appColors = context.appColors;
         return AlertDialog(
           backgroundColor: appColors.whiteColor,
-          title: GenText('Add Caption (Optional)', color: appColors.black,),
+          title: GenText(
+            'Add Caption (Optional)',
+            color: appColors.black,
+          ),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(
@@ -734,9 +735,9 @@ Future<void> _onMediaTap(BuildContext context) async {
                 borderRadius: BorderRadius.circular(8.r),
               ),
               focusColor: appColors.primary,
-              focusedBorder: OutlineInputBorder(borderSide: BorderSide(
-                color: appColors.primary
-              ))
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: appColors.primary),
+              ),
             ),
             maxLines: 3,
             maxLength: 200,
@@ -821,7 +822,7 @@ class _MessageList extends StatelessWidget {
         final message = messages[index];
         final isMine = message.senderType == _senderType;
         final time = AppTextUtil.formatChatTime(
-          message.createdAt ?? DateTime.now(),
+          message.createdAt?.toLocal() ?? DateTime.now().toLocal(),
         );
 
         return Padding(
@@ -835,77 +836,78 @@ class _MessageList extends StatelessWidget {
     );
   }
 
-Widget _buildMessageWidget(
-  BuildContext context,
-  MessageResponse message,
-  bool isMine,
-  String time,
-) {
-  final type = message.messageType?.toUpperCase() ?? 'TEXT';
-  final metaType = message.metadata?.type?.toUpperCase();
+  Widget _buildMessageWidget(
+    BuildContext context,
+    MessageResponse message,
+    bool isMine,
+    String time,
+  ) {
+    final type = message.messageType?.toUpperCase() ?? 'TEXT';
+    final metaType = message.metadata?.type?.toUpperCase();
 
-  if (type == 'INVOICE') {
-    return _buildInvoiceCard(context, message);
-  }
+    if (type == 'INVOICE') {
+      return _buildInvoiceCard(context, message);
+    }
 
-  switch (metaType) {
-    case 'IMAGE':
-  final files = (message.metadata?.customData?['files'] as List?)?.cast<String>() ?? [];
+    switch (metaType) {
+      case 'IMAGE':
+        final files =
+            (message.metadata?.customData?['files'] as List?)?.cast<String>() ??
+            [];
 
-  if (files.length > 1) {
+        if (files.length > 1) {
+          return ChatMultiImageBubble(
+            imageUrls: files,
+            time: time,
+            isMine: isMine,
+          );
+        }
 
-    return ChatMultiImageBubble(
-      imageUrls: files,
-      time: time,
-      isMine: isMine,
-    );
-  }
+        return ChatImageBubble(
+          imageUrl: files.isNotEmpty ? files.first : (message.fileUrl ?? ''),
+          time: time,
+          isMine: isMine,
+          caption: message.content != 'Image' ? message.content : null,
+        );
 
-  return ChatImageBubble(
-    imageUrl: files.isNotEmpty ? files.first : (message.fileUrl ?? ''),
-    time: time,
-    isMine: isMine,
-    caption: message.content != 'Image' ? message.content : null,
-  );
+      case 'DOCUMENT':
+        return ChatDocumentBubble(
+          fileName: message.fileName ?? 'Unknown file',
+          fileUrl: message.fileUrl ?? '',
+          fileSize: message.fileSize,
+          time: time,
+          isMine: isMine,
+          mimeType: message.mimeType,
+        );
 
-    case 'DOCUMENT':
-      return ChatDocumentBubble(
-        fileName: message.fileName ?? 'Unknown file',
-        fileUrl: message.fileUrl ?? '',
-        fileSize: message.fileSize,
-        time: time,
-        isMine: isMine,
-        mimeType: message.mimeType,
-      );
+      case 'LOCATION':
+        final lat = message.metadata?.latitude;
+        final long = message.metadata?.longitude;
 
-    case 'LOCATION':
-      final lat = message.metadata?.latitude;
-      final long = message.metadata?.longitude;
+        if (lat == null || long == null) {
+          return ChatBubble(
+            type: isMine ? MessageType.sent : MessageType.received,
+            message: 'Invalid location data',
+            time: time,
+          );
+        }
 
-      if (lat == null || long == null) {
+        return ChatLocationBubble(
+          latitude: lat,
+          longitude: long,
+          address: message.metadata?.address ?? 'Unknown location',
+          time: time,
+          isMine: isMine,
+        );
+
+      default:
         return ChatBubble(
           type: isMine ? MessageType.sent : MessageType.received,
-          message: 'Invalid location data',
+          message: message.content ?? '',
           time: time,
         );
-      }
-
-      return ChatLocationBubble(
-        latitude: lat,
-        longitude: long,
-        address: message.metadata?.address ?? 'Unknown location',
-        time: time,
-        isMine: isMine,
-      );
-
-    default:
-      return ChatBubble(
-        type: isMine ? MessageType.sent : MessageType.received,
-        message: message.content ?? '',
-        time: time,
-      );
+    }
   }
-}
 
   Widget _buildInvoiceCard(BuildContext context, MessageResponse message) {
     final amount = message.metadata?.amount?.toString() ?? '';

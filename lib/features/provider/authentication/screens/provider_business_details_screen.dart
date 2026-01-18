@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
-import 'package:resq360/core/helpers/location_helper.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
+import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
@@ -61,7 +61,8 @@ class _ProviderBusinessDetailsScreenState
       (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
     );
   }
-bool isFetchingAddress = false;
+
+  bool isFetchingAddress = false;
   @override
   void dispose() {
     super.dispose();
@@ -140,9 +141,9 @@ bool isFetchingAddress = false;
           }
 
           log(state.error);
-  setState(() {
-    isFetchingAddress = false;
-  });
+          setState(() {
+            isFetchingAddress = false;
+          });
           await showErrorSnackbar(context, state.error);
         }
 
@@ -151,9 +152,9 @@ bool isFetchingAddress = false;
             Navigator.pop(context);
           }
 
-            setState(() {
-    isFetchingAddress = false;
-  });
+          setState(() {
+            isFetchingAddress = false;
+          });
 
           await pushAndReplaceScreen(
             context: context,
@@ -296,8 +297,9 @@ bool isFetchingAddress = false;
                 ),
               ),
               WideButton(
-                label: !isFetchingAddress ? 'Continue': 'Creating',
-                onPressed: !isFetchingAddress ? () => _handleSignup(context) : null,
+                label: !isFetchingAddress ? 'Continue' : 'Creating',
+                onPressed:
+                    !isFetchingAddress ? () => _handleSignup(context) : null,
               ),
               30.verticalSpace,
               Center(

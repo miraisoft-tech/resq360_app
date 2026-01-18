@@ -69,9 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       final user = v is CustomerProfileLoaded ? v.user : null;
                       return HeaderWidget(
                         name: user?.fullName?.capitalize ?? 'N/A',
-                        location:
-                            user?.location?.firstOrNull?.address ??
-                            'N/A',
+                        address: user?.location?.firstOrNull?.address ?? 'N/A',
                         profileImage: user?.profileImage ?? '',
                         onTapAddress: () async {
                           await pushScreen(context, const AddressScreen());

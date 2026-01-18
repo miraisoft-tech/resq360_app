@@ -2,11 +2,14 @@ import 'dart:io' as io;
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http_package;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/location_data.dart';
 export 'package:image_picker/image_picker.dart';
 
 class AppFilePicker {
@@ -119,12 +122,14 @@ class AppFilePicker {
     }
   }
 
-  static Future<io.File?> pickDocument() async {
+  static Future<io.File?> pickDocumentZ({
+    required BuildContext context,
+    List<String>? allowedExtensions,
+  }) async {
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        withData: true,
-        allowedExtensions: ['jpg', 'pdf', 'doc', 'docx'],
+        type: allowedExtensions != null ? FileType.custom : FileType.any,
+        allowedExtensions: allowedExtensions,
       );
 
       if (result != null) {
@@ -149,6 +154,118 @@ class AppFilePicker {
     } on Exception catch (e) {
       log(e);
 
+      return null;
+    }
+  }
+
+  static Future<File?> pickDocument({
+    required BuildContext context,
+    List<String>? allowedExtensions,
+  }) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: allowedExtensions != null ? FileType.custom : FileType.any,
+        allowedExtensions: allowedExtensions,
+      );
+
+      if (result == null || result.files.isEmpty) return null;
+
+      final file = result.files.first;
+
+      if (file.path == null) return null;
+
+      return File(file.path!);
+    } on Exception catch (e) {
+      log('Error picking document: $e');
+      if (context.mounted) {
+        await showErrorSnackbar(context, 'Failed to pick document');
+      }
+      return null;
+    }
+  }
+
+  static Future<LocationData?> getCurrentLocation({
+    required BuildContext context,
+  }) async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (context.mounted) {
+          await showErrorSnackbar(
+            context,
+            'Location services are disabled. Please enable them.',
+          );
+        }
+        return null;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (context.mounted) {
+            await showErrorSnackbar(context, 'Location permission denied');
+          }
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (context.mounted) {
+          await showErrorSnackbar(
+            context,
+            'Location permissions are permanently denied',
+          );
+        }
+        return null;
+      }
+
+      if (context.mounted) {
+        showLoadingDialog(context);
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 30),
+        ),
+      );
+
+      var address = 'Unknown location';
+      try {
+        final placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+
+        if (placemarks.isNotEmpty) {
+          final place = placemarks.first;
+          address = [
+            place.street,
+            place.locality,
+            place.administrativeArea,
+            place.country,
+          ].where((e) => e != null && e.isNotEmpty).join(', ');
+        }
+      } on Exception catch (e) {
+        log('Geocoding error: $e');
+      }
+
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      return LocationData(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        address: address,
+      );
+    } on Exception catch (e) {
+      log('Error getting location: $e');
+      if (context.mounted) {
+        Navigator.pop(context);
+        await showErrorSnackbar(context, 'Failed to get location: $e');
+      }
       return null;
     }
   }

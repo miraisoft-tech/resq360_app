@@ -205,18 +205,20 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               ),
               20.verticalSpace,
               if (!isAproved) ...[
-                if(providerData != null)
-                 ProviderAccountProgress(provider: providerData!,),
+                if (providerData != null)
+                  ProviderAccountProgress(
+                    provider: providerData!,
+                  ),
               ],
 
               if (profileNotDone) ...[
-                if(providerData != null)
-                GestureDetector(
-                  onTap: () => pushScreen(context, const SettingsScreen()),
-                  child: ToDoSection(
-                    provider: providerData!,
+                if (providerData != null)
+                  GestureDetector(
+                    onTap: () => pushScreen(context, const SettingsScreen()),
+                    child: ToDoSection(
+                      provider: providerData!,
+                    ),
                   ),
-                ),
                 30.verticalSpace,
               ],
 
@@ -377,11 +379,14 @@ Widget _buildHeader(
             children: [
               AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
               4.horizontalSpace,
-              GenText(
-                address,
-                height: 24,
-                color: colors.black,
-                weight: FontWeight.w500,
+              SizedBox(
+                width: address.length > 10 ? 140.w : 30.w,
+                child: GenText(
+                  address,
+                  height: 24,
+                  color: colors.black,
+                  weight: FontWeight.w500,
+                ),
               ),
               Icon(
                 Icons.keyboard_arrow_down,

@@ -4,14 +4,14 @@ import 'package:resq360/features/settings/screens/settings_screen.dart';
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({
     required this.name,
-    required this.location,
+    required this.address,
     required this.onTapAddress,
     this.profileImage,
     super.key,
   });
 
   final String name;
-  final String location;
+  final String address;
   final void Function() onTapAddress;
   final String? profileImage;
   @override
@@ -46,9 +46,9 @@ class HeaderWidget extends StatelessWidget {
                   AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
                   4.horizontalSpace,
                   SizedBox(
-                    width: location.length > 20 ? 140.w : 30.w,
+                    width: address.length > 10 ? 140.w : 30.w,
                     child: GenText(
-                      location,
+                      address,
                       height: 24,
                       color: colors.black,
                       weight: FontWeight.w500,
