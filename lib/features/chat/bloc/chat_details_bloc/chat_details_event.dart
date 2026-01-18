@@ -44,19 +44,19 @@ class SendInvoiceMessage extends ChatDetailEvent {
 
 class SendImageMessage extends ChatDetailEvent {
   const SendImageMessage({
-    required this.filePath,
+    required this.filePaths,
     required this.senderId,
     required this.userType,
     this.caption,
   });
 
-  final String filePath;
+  final List<String> filePaths;
   final int senderId;
   final String userType;
   final String? caption;
 
   @override
-  List<Object?> get props => [filePath, senderId, userType, caption];
+  List<Object?> get props => [filePaths, senderId, userType, caption];
 }
 class SendDocumentMessage extends ChatDetailEvent {
   const SendDocumentMessage({

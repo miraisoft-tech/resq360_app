@@ -66,7 +66,35 @@ class MediaPickerHelper {
       return null;
     }
   }
+static Future<List<File>?> pickMultipleImages({
+  required BuildContext context,
+}) async {
+  try {
+    
+    final photosStatus = await Permission.photos.request();
+    if (!photosStatus.isGranted) {
+      if (context.mounted) {
+        await showErrorSnackbar(context, 'Gallery permission denied');
+      }
+      return null;
+    }
 
+    final pickedFiles = await _imagePicker.pickMultiImage(
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
+
+    if (pickedFiles.isEmpty) return null;
+    return pickedFiles.map((e) => File(e.path)).toList();
+  } on Exception catch (e) {
+    log('Error picking images: $e');
+    if (context.mounted) {
+      await showErrorSnackbar(context, 'Failed to pick images');
+    }
+    return null;
+  }
+}
  static Future<File?> pickDocument({
   required BuildContext context,
   List<String>? allowedExtensions,

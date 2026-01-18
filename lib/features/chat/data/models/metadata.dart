@@ -1,5 +1,4 @@
-/// Flexible metadata class that can store any type of message metadata
-/// Handles invoices, locations, and any future metadata types
+
 class Metadata {
   Metadata({
     this.type,

@@ -1,4 +1,6 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/chat/widgets/chat_image_loader.dart';
+import 'package:resq360/features/chat/widgets/full_image_viewer.dart';
 
 class ChatImageBubble extends StatelessWidget {
   const ChatImageBubble({
@@ -34,59 +36,18 @@ class ChatImageBubble extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: appColors.neutral.shade200,
-                  ),
+                  border: Border.all(color: appColors.neutral.shade200),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12.r),
                   child: Stack(
                     children: [
-                      Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            height: 200.h,
-                            width: double.infinity,
-                            color: appColors.neutral.shade100,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                                color: appColors.primary,
-                              ),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 200.h,
-                            width: double.infinity,
-                            color: appColors.neutral.shade100,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.broken_image,
-                                  size: 48.sp,
-                                  color: appColors.neutral.shade400,
-                                ),
-                                8.verticalSpace,
-                                GenText(
-                                  'Failed to load image',
-                                  size: 12,
-                                  color: appColors.neutral.shade500,
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                      ChatImageLoader(
+                        source: imageUrl,
+                        width: double.infinity,
+                        height: 200.h,
                       ),
-                    
+
                       Positioned(
                         bottom: 8.h,
                         right: 8.w,
@@ -111,15 +72,16 @@ class ChatImageBubble extends StatelessWidget {
                 ),
               ),
             ),
+
+            
             if (caption != null && caption!.isNotEmpty) ...[
               4.verticalSpace,
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color:
-                      isMine
-                          ? appColors.primary.shade50
-                          : appColors.neutral.shade100,
+                  color: isMine
+                      ? appColors.primary.shade50
+                      : appColors.neutral.shade100,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: GenText(
@@ -135,54 +97,9 @@ class ChatImageBubble extends StatelessWidget {
   }
 
   Future<void> _showFullImage(BuildContext context) async {
-    await pushScreen(context,  _FullImageViewer(imageUrl: imageUrl));
-    
-  }
-}
-
-class _FullImageViewer extends StatelessWidget {
-  const _FullImageViewer({required this.imageUrl});
-
-  final String imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: () {
-              //// TO Implement image download
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: InteractiveViewer(
-          minScale: 0.5,
-          maxScale: 4,
-          child: Image.network(
-            imageUrl,
-            fit: BoxFit.contain,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                      : null,
-                  color: Colors.white,
-                ),
-              );
-            },
-          ),
-        ),
-      ),
+    await pushScreen(
+      context,
+      FullImageViewer(imageUrl: imageUrl),
     );
   }
 }

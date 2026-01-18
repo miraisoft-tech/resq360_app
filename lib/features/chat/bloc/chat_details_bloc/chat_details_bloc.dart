@@ -442,96 +442,105 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     return super.close();
   }
 
-  Future<void> _onSendImageMessage(
-    SendImageMessage event,
-    Emitter<ChatDetailState> emit,
-  ) async {
-    if (state is! ChatDetailReady) return;
+Future<void> _onSendImageMessage(
+  SendImageMessage event,
+  Emitter<ChatDetailState> emit,
+) async {
+  if (state is! ChatDetailReady) return;
 
-    final current = state as ChatDetailReady;
+  final current = state as ChatDetailReady;
+  final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
 
-    final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
-    final localMessage = MessageResponse(
-      id: localMessageId,
-      chatId: chatId,
-      senderType: event.userType,
-      senderId: event.senderId,
-      messageType: 'TEXT',
-      content: event.caption ?? 'Image',
-      createdAt: DateTime.now(),
-      fileName: event.filePath.split('/').last,
-      fileUrl: event.filePath,
-      metadata: MetadataFactories.custom(
+  final localMessage = MessageResponse(
+    id: localMessageId,
+    chatId: chatId,
+    senderType: event.userType,
+    senderId: event.senderId,
+    messageType: 'TEXT',
+    content: event.caption ?? 'Image',
+    createdAt: DateTime.now(),
+    fileUrl: event.filePaths.first,
+    metadata: MetadataFactories.custom(
       type: 'IMAGE',
-      data: {},
+      data: {
+        'files': event.filePaths, 
+      },
     ),
-    );
+  );
 
-    final newMessages = [localMessage, ...current.messages];
-    _cache.updateMessages(chatId: chatId, messages: newMessages);
+  final newMessages = [localMessage, ...current.messages];
+  _cache.updateMessages(chatId: chatId, messages: newMessages);
+  emit(current.copyWith(messages: newMessages));
 
-    emit(current.copyWith(messages: newMessages));
 
-    final uploadResult = await _uploadService.uploadSingle(
-      filePath: event.filePath,
-    );
+  final uploadResult = await _uploadService.uploadMultiple(
+    files: event.filePaths.map(File.new).toList(),
+  );
 
+  if (uploadResult.data == null) {
     final latestState = state;
     if (latestState is! ChatDetailReady) return;
 
-    if (uploadResult.data == null) {
-      final messagesWithoutLocal =
-          latestState.messages.where((m) => m.id != localMessageId).toList();
-      emit(latestState.copyWith(messages: messagesWithoutLocal));
-      return;
-    }
-
-    final upload = uploadResult.data!;
-
-    final file = File(event.filePath);
-    final fileSize = await file.length();
-    final fileSizeInMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
-
-    
-    _socket.sendMessage(
-      SendMessageRequest(
-        chatId: chatId,
-        messageType: 'TEXT',
-        content: event.caption ?? 'Image',
-        fileName: file.path.split('/').last,
-        fileUrl: upload.url,
-        fileSize: double.parse(fileSizeInMB),
-        mimeType: _getMimeType(file.path),
-        metadata: {
-        'type': 'IMAGE',
-      },
-      ),
-    );
-
-    final updatedMessages =
-        latestState.messages.map((m) {
-          if (m.id == localMessageId) {
-            return MessageResponse(
-              id: m.id,
-              chatId: m.chatId,
-              senderType: m.senderType,
-              senderId: m.senderId,
-              messageType: m.messageType,
-              content: m.content,
-              createdAt: m.createdAt,
-              fileName: m.fileName,
-              fileUrl: upload.url,
-              fileSize: m.fileSize,
-              mimeType: m.mimeType,
-              metadata: m.metadata,
-            );
-          }
-          return m;
-        }).toList();
-
-    _cache.updateMessages(chatId: chatId, messages: updatedMessages);
-    emit(latestState.copyWith(messages: updatedMessages));
+    final messagesWithoutLocal =
+        latestState.messages.where((m) => m.id != localMessageId).toList();
+    emit(latestState.copyWith(messages: messagesWithoutLocal));
+    return;
   }
+
+  final uploaded = uploadResult.data!;
+  final uploadedUrls = uploaded.map((e) => e.url).toList();
+
+
+  final firstFile = File(event.filePaths.first);
+  final stat = await firstFile.length();
+  final fileSizeMB = stat / (1024 * 1024);
+
+  _socket.sendMessage(
+    SendMessageRequest(
+      chatId: chatId,
+      messageType: 'TEXT',
+      content: event.caption ?? 'Image',
+      fileUrl: uploadedUrls.first,
+      fileName: firstFile.path.split('/').last,
+      fileSize: double.parse(fileSizeMB.toStringAsFixed(2)),
+      mimeType: _getMimeType(firstFile.path),
+      metadata: {
+        'type': 'IMAGE',
+        'files': uploadedUrls,
+      },
+    ),
+  );
+
+  final latestState = state;
+  if (latestState is! ChatDetailReady) return;
+
+  final updatedMessages = latestState.messages.map((m) {
+    if (m.id == localMessageId) {
+      return MessageResponse(
+        id: m.id,
+        chatId: m.chatId,
+        senderType: m.senderType,
+        senderId: m.senderId,
+        messageType: m.messageType,
+        content: m.content,
+        createdAt: m.createdAt,
+        fileUrl: uploadedUrls.first,
+        metadata: MetadataFactories.custom(
+          type: 'IMAGE',
+          data: {
+            'files': uploadedUrls,
+          },
+        ),
+      );
+    }
+    return m;
+  }).toList();
+
+  _cache.updateMessages(chatId: chatId, messages: updatedMessages);
+  emit(latestState.copyWith(messages: updatedMessages));
+}
+
+
 
   Future<void> _onSendDocumentMessage(
     SendDocumentMessage event,

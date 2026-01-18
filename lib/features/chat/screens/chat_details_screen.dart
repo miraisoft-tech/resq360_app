@@ -13,6 +13,7 @@ import 'package:resq360/features/chat/widgets/chat_document.dart';
 import 'package:resq360/features/chat/widgets/chat_image_bubble.dart';
 import 'package:resq360/features/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/chat/widgets/chat_location_bubble.dart';
+import 'package:resq360/features/chat/widgets/multi_image_chat_bubble.dart';
 import 'package:resq360/features/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
@@ -642,33 +643,34 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     });
   }
 
-  Future<void> _onMediaTap(BuildContext context) async {
-    final file = await MediaPickerHelper.showImageSourceDialog(
-      context: context,
-    );
+Future<void> _onMediaTap(BuildContext context) async {
+  final files = await MediaPickerHelper.pickMultipleImages(
+    context: context,
+  );
 
-    if (file == null || !context.mounted) return;
+  if (files == null || files.isEmpty || !context.mounted) return;
 
-    final userId = _currentUserId;
-    if (userId == null) {
-      await showErrorSnackbar(context, 'User not authenticated');
-      return;
-    }
-
-    // Optionally show caption dialog
-    final caption = await _showCaptionDialog(context);
-
-    if (context.mounted) {
-      context.read<ChatDetailBloc>().add(
-        SendImageMessage(
-          filePath: file.path,
-          senderId: userId,
-          userType: _senderType,
-          caption: caption,
-        ),
-      );
-    }
+  final userId = _currentUserId;
+  if (userId == null) {
+    await showErrorSnackbar(context, 'User not authenticated');
+    return;
   }
+
+  final caption = await _showCaptionDialog(context);
+
+  final filePaths = files.map((f) => f.path).toList();
+
+  if (context.mounted) {
+    context.read<ChatDetailBloc>().add(
+      SendImageMessage(
+        filePaths: filePaths,   
+        senderId: userId,
+        userType: _senderType,
+        caption: caption,
+      ),
+    );
+  }
+}
 
   Future<void> _onLocationTap(BuildContext context) async {
     final locationData = await MediaPickerHelper.getCurrentLocation(
@@ -705,13 +707,13 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       return;
     }
 
-    context.read<ChatDetailBloc>().add(
-      SendDocumentMessage(
-        filePath: file.path,
-        senderId: userId,
-        userType: _senderType,
-      ),
-    );
+    // context.read<ChatDetailBloc>().add(
+    //   SendDocumentMessage(
+    //     filePath: file.path,
+    //     senderId: userId,
+    //     userType: _senderType,
+    //   ),
+    // );
   }
 
   Future<String?> _showCaptionDialog(BuildContext context) async {
@@ -843,12 +845,23 @@ Widget _buildMessageWidget(
 
   switch (metaType) {
     case 'IMAGE':
-      return ChatImageBubble(
-        imageUrl: message.fileUrl ?? '',
-        time: time,
-        isMine: isMine,
-        caption: message.content != 'Image' ? message.content : null,
-      );
+  final files = (message.metadata?.customData?['files'] as List?)?.cast<String>() ?? [];
+
+  if (files.length > 1) {
+
+    return ChatMultiImageBubble(
+      imageUrls: files,
+      time: time,
+      isMine: isMine,
+    );
+  }
+
+  return ChatImageBubble(
+    imageUrl: files.isNotEmpty ? files.first : (message.fileUrl ?? ''),
+    time: time,
+    isMine: isMine,
+    caption: message.content != 'Image' ? message.content : null,
+  );
 
     case 'DOCUMENT':
       return ChatDocumentBubble(
