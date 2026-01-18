@@ -724,7 +724,8 @@ Future<void> _onMediaTap(BuildContext context) async {
       builder: (context) {
         final appColors = context.appColors;
         return AlertDialog(
-          title: const GenText('Add Caption (Optional)'),
+          backgroundColor: appColors.whiteColor,
+          title: GenText('Add Caption (Optional)', color: appColors.black,),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(
@@ -732,6 +733,10 @@ Future<void> _onMediaTap(BuildContext context) async {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
+              focusColor: appColors.primary,
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(
+                color: appColors.primary
+              ))
             ),
             maxLines: 3,
             maxLength: 200,
