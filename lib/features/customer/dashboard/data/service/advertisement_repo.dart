@@ -5,11 +5,11 @@ import 'package:resq360/features/customer/dashboard/data/models/advertisment/adv
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement_response.dart';
 
 class AdvertisementRepo extends BaseAPI {
-  Future<ApiResult<List<Advertisement>>> fetchAllAdvertisement() async {
-    const url = '/advertisements/active';
+  Future<ApiResult<List<Advertisement>>> fetchAllAdvertisement({required String creatorType}) async {
+    const url = '/advertisements/active?';
 
     try {
-      final res = await dio().get<Map<String, dynamic>>(url);
+      final res = await dio().get<Map<String, dynamic>>(url, queryParameters: {'creatorType': creatorType},);
       if (res.statusCode == 200) {
         final json = res.data;
         final advertisementList =

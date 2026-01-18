@@ -4,6 +4,7 @@ import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
 import 'package:resq360/features/customer/dashboard/screens/advertisement_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
@@ -15,6 +16,7 @@ import 'package:resq360/features/customer/services/screens/service_categories_sc
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
+import 'package:resq360/features/widgets/promo_card_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,8 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ServiceCatalogBloc>().add(const FetchServices());
+
       context.read<CustomerAdvertisementBloc>().add(
-        CustomerFetchAdvertisement(),
+        CustomerFetchAdvertisement(creatorType: CreatorType.provider.name),
+      );
+
+      context.read<CustomerAdvertisementBloc>().add(
+        CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
       );
       context.read<CustomerBookingBloc>().add(
         FetchCustomerBookings(status: BookingStatus.ongoing.value),
@@ -105,7 +112,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   context.read<ServiceCatalogBloc>().add(const FetchServices());
                   context.read<CustomerAdvertisementBloc>().add(
-                    CustomerFetchAdvertisement(),
+                    CustomerFetchAdvertisement(
+                      creatorType: CreatorType.provider.name,
+                    ),
+                  );
+                  context.read<CustomerAdvertisementBloc>().add(
+                    CustomerFetchAdvertisement(
+                      creatorType: CreatorType.admin.name,
+                    ),
                   );
                   context.read<CustomerBookingBloc>().add(
                     FetchCustomerBookings(status: BookingStatus.ongoing.value),
@@ -147,8 +161,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    // 20.verticalSpace,
-                    // const PromoCardWidget(),
+                    20.verticalSpace,
+                    const PromoCardWidget(),
                     20.verticalSpace,
                     UrbText(
                       'Ongoing Service',
@@ -278,10 +292,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 context.read<CustomerAdvertisementBloc>().state;
 
                             if (state is CustomerAdvertisementFetched) {
+                              final ads = state.providerAds;
                               await pushScreen(
                                 context,
                                 RecommendedListScreen(
-                                  advertisements: state.adverisementList,
+                                  advertisements: ads,
                                 ),
                               );
                             }
@@ -309,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
 
                         if (state is CustomerAdvertisementFetched) {
-                          final ads = state.adverisementList;
+                          final ads = state.providerAds;
 
                           if (ads.isEmpty) {
                             return const Center(
@@ -336,7 +351,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             error: 'No data currently available.',
                             onPressed: () {
                               context.read<CustomerAdvertisementBloc>().add(
-                                CustomerFetchAdvertisement(),
+                                CustomerFetchAdvertisement(
+                                  creatorType: CreatorType.provider.name,
+                                ),
                               );
                             },
                           );

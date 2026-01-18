@@ -7,7 +7,12 @@ abstract class CustomerAdvertisementEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class CustomerFetchAdvertisement extends CustomerAdvertisementEvent {}
+class CustomerFetchAdvertisement extends CustomerAdvertisementEvent {
+  const CustomerFetchAdvertisement({required this.creatorType});
+
+  
+  final String creatorType;
+}
 class FetchProviderActiveAdvertisements extends CustomerAdvertisementEvent {
   const FetchProviderActiveAdvertisements({required this.providerId});
 
