@@ -6,13 +6,16 @@ import 'dart:io';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_step_id_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
 class ProviderStepFaceScreen extends StatefulWidget {
-  const ProviderStepFaceScreen({super.key});
+  const ProviderStepFaceScreen({required this.source, super.key});
+
+  final VerificationSource source;
 
   @override
   State<ProviderStepFaceScreen> createState() => _ProviderStepFaceScreenState();
@@ -65,7 +68,12 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
                 Navigator.pop(context);
 
                 if (context.mounted) {
-                  await pushScreen(context, const ProviderStepIDScreen());
+                  await pushScreen(
+                    context,
+                    ProviderStepIDScreen(
+                      source: widget.source,
+                    ),
+                  );
                 }
               },
             ),

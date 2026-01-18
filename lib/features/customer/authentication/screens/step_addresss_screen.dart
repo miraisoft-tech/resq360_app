@@ -169,7 +169,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
           if (context.mounted) {
             Navigator.pop(context);
           }
-          
+
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
@@ -183,20 +183,19 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
 
                 if (!context.mounted) return;
 
-                // if (widget.source == VerificationSource.settings) {
-                  await Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute<dynamic>(
-                      builder:
-                          (_) => const MainLayoutPage(
-                            userType: UserType.customer,
-                          ),
+                if (widget.source == VerificationSource.settings) {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                } else {
+                  await replaceScreen(
+                    context,
+                    const MainLayoutPage(
+                      userType: UserType.customer,
                     ),
-                    (_) => false,
                   );
-                
-                // } else {
-                //   Navigator.of(context).popUntil((route) => route.isFirst);
-                // }
+                }
               },
             ),
           );

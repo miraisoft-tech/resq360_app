@@ -30,18 +30,33 @@ class CustomerAdvertisementBloc
       final result = await advertisementRepo.fetchAllAdvertisement(
         creatorType: event.creatorType,
       );
+
       if (result.data != null) {
         final ads = result.data;
+
+        final currentState = state;
+        final existingProviderAds =
+            currentState is CustomerAdvertisementFetched
+                ? currentState.providerAds
+                : <Advertisement>[];
+
+        final existingAdminAds =
+            currentState is CustomerAdvertisementFetched
+                ? currentState.adminAds
+                : <Advertisement>[];
+
         if (event.creatorType == CreatorType.provider.name) {
           emit(
             CustomerAdvertisementFetched(
               providerAds: ads!,
+              adminAds: existingAdminAds,
             ),
           );
         }
         if (event.creatorType == CreatorType.admin.name) {
           emit(
             CustomerAdvertisementFetched(
+              providerAds: existingProviderAds,
               adminAds: ads!,
             ),
           );

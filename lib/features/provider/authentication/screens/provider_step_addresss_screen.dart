@@ -4,6 +4,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
@@ -13,15 +14,15 @@ import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
 class ProviderStepAddressScreen extends StatefulWidget {
-  const ProviderStepAddressScreen({super.key});
+  const ProviderStepAddressScreen({required this.source, super.key});
 
+  final VerificationSource source;
   @override
   State<ProviderStepAddressScreen> createState() =>
       _ProviderStepAddressScreenState();
 }
 
-class _ProviderStepAddressScreenState
-    extends State<ProviderStepAddressScreen> {
+class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
   final _formKey = GlobalKey<FormState>();
   final ValueNotifier<String?> _selectState = ValueNotifier(null);
 
@@ -54,8 +55,7 @@ class _ProviderStepAddressScreenState
     });
 
     try {
-      final serviceEnabled =
-          await geo.Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         await geo.Geolocator.openLocationSettings();
         setState(() => _isLoadingLocation = false);
@@ -102,8 +102,7 @@ class _ProviderStepAddressScreenState
 
         final stateExists = states.any(
           (state) =>
-              state.name?.toLowerCase() ==
-              stateFromLocation.toLowerCase(),
+              state.name?.toLowerCase() == stateFromLocation.toLowerCase(),
         );
 
         setState(() {
@@ -174,14 +173,19 @@ class _ProviderStepAddressScreenState
 
                 if (!context.mounted) return;
 
-                await Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute<dynamic>(
-                    builder: (_) => const MainLayoutPage(
-                      userType: UserType.provider,
+                if (widget.source == VerificationSource.settings) {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                } else {
+                  await replaceScreen(
+                    context,
+                    const MainLayoutPage(
+                      userType: UserType.customer,
                     ),
-                  ),
-                  (_) => false,
-                );
+                  );
+                }
               },
             ),
           );
@@ -268,9 +272,7 @@ class _ProviderStepAddressScreenState
                           20.verticalSpace,
                           GestureDetector(
                             onTap:
-                                _isLoadingLocation
-                                    ? null
-                                    : _getCurrentLocation,
+                                _isLoadingLocation ? null : _getCurrentLocation,
                             child: Container(
                               padding: pad(vertical: 12),
                               decoration: BoxDecoration(
@@ -289,15 +291,13 @@ class _ProviderStepAddressScreenState
                                       height: 16,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color:
-                                            colors.primary.shade500,
+                                        color: colors.primary.shade500,
                                       ),
                                     )
                                   else
                                     Icon(
                                       Icons.my_location,
-                                      color:
-                                          colors.primary.shade500,
+                                      color: colors.primary.shade500,
                                       size: 20,
                                     ),
                                   10.horizontalSpace,
@@ -306,8 +306,7 @@ class _ProviderStepAddressScreenState
                                         ? 'Getting location...'
                                         : 'Use Current Location',
                                     weight: FontWeight.w600,
-                                    color:
-                                        colors.primary.shade500,
+                                    color: colors.primary.shade500,
                                   ),
                                 ],
                               ),

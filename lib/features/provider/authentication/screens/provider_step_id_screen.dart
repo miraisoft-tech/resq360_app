@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
 import 'package:resq360/core/models/identity_enums.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_step_addresss_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
@@ -14,8 +15,10 @@ import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 import 'package:resq360/features/widgets/images.widgets.dart';
 
 class ProviderStepIDScreen extends StatefulWidget {
-  const ProviderStepIDScreen({super.key});
+  const ProviderStepIDScreen({required this.source, super.key});
 
+  final VerificationSource source;
+  @override
   @override
   State<ProviderStepIDScreen> createState() => _ProviderStepIDScreenState();
 }
@@ -81,7 +84,9 @@ class _ProviderStepIDScreenState extends State<ProviderStepIDScreen> {
                 if (context.mounted) {
                   await pushScreen(
                     context,
-                    const ProviderStepAddressScreen(),
+                    ProviderStepAddressScreen(
+                      source: widget.source,
+                    ),
                   );
                 }
               },

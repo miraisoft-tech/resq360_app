@@ -120,7 +120,13 @@ class _AddressScreenState extends State<AddressScreen> {
           _latitude = position.latitude;
           _longitude = position.longitude;
           _addressController.text =
-              '${place.street ?? ''}, ${place.subLocality ?? ''}'.trim();
+              place.street != ''
+                  ? place.street ?? ''
+                  : place.subLocality != ''
+                  ? place.subLocality ?? ''
+                  : place.thoroughfare != null
+                  ? place.thoroughfare ?? ''
+                  : '';
           _cityController.text = place.locality ?? '';
           _stateController.text = place.administrativeArea ?? '';
           _zipCodeController.text = place.postalCode ?? '';

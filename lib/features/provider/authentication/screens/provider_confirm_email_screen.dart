@@ -4,6 +4,7 @@ import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
@@ -115,7 +116,9 @@ class _ProviderConfirmEmailScreenState
           log('Email verified, navigating to main layout');
           await pushAndReplaceScreen(
             context: context,
-            const ProviderVerificationStepsScreen(),
+            const ProviderVerificationStepsScreen(
+              source: VerificationSource.signup,
+            ),
           );
         }
       },

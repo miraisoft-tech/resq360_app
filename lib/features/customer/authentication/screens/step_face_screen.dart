@@ -63,7 +63,10 @@ class _StepFaceScreenState extends State<StepFaceScreen> {
                 await pop(context);
 
                 if (context.mounted) {
-                  await pushScreen(context, StepIDScreen(source: widget.source));
+                  await pushScreen(
+                    context,
+                    StepIDScreen(source: widget.source),
+                  );
                 }
               },
             ),

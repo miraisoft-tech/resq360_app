@@ -145,7 +145,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           } else {
             await pushScreen(
               context,
-              const VerificationStepsScreen( source: VerificationSource.settings,),
+              const VerificationStepsScreen(
+                source: VerificationSource.settings,
+              ),
             );
           }
         },
@@ -218,7 +220,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           } else {
             await pushScreen(
               context,
-              const ProviderVerificationStepsScreen(),
+              const ProviderVerificationStepsScreen(
+                source: VerificationSource.settings,
+              ),
             );
           }
         },
