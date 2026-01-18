@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
-import 'package:resq360/core/helpers/location_helper.dart';
+import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/invoice_confirm.dialog.dart';
