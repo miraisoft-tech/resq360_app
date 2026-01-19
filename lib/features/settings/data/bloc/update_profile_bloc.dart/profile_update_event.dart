@@ -79,7 +79,10 @@ class UpdateProfileImageEvent extends ProfileUpdateEvent {
   const UpdateProfileImageEvent({required this.filePath});
   final String filePath;
 }
-
+class UpdateActivityStatusEvent extends ProfileUpdateEvent {
+  const UpdateActivityStatusEvent(this.status);
+  final String status;
+}
 final class UpdateProviderServiceEvent extends ProfileUpdateEvent {
   const UpdateProviderServiceEvent({
     required this.isActive,

@@ -21,6 +21,14 @@ final class ProfileUpdateSuccess extends ProfileUpdateState {
   List<Object?> get props => [response];
 }
 
+final class ProviderAcivitityChanged extends ProfileUpdateState {
+  const ProviderAcivitityChanged(this.response);
+  final dynamic response;
+
+  @override
+  List<Object?> get props => [response];
+}
+
 final class ProfileUpdateError extends ProfileUpdateState {
   const ProfileUpdateError(this.message);
   final String message;
