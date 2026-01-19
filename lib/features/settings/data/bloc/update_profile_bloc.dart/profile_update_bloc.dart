@@ -25,6 +25,7 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     on<UpdateProviderAddress>(_onUpdateProviderAddressNew);
     on<UpdateBankAccountEvent>(_onUpdateBankAccount);
     on<UpdatePasswordEvent>(_onUpdatePassword);
+    on<UpdateActivityStatusEvent>(_onUpdateActivityStatus);
   }
 
   Future<void> _onUpdateUserInfo(
@@ -110,6 +111,49 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
       }
     } on Exception catch (e, s) {
       log('Update provider failed: $e\n$s');
+      emit(ProfileUpdateError(e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateActivityStatus(
+    UpdateActivityStatusEvent event,
+    Emitter<ProfileUpdateState> emit,
+  ) async {
+    emit(ProfileUpdateLoading());
+
+    try {
+      final provider =
+          await AuthLocalRepo.instance.getProviderAuthCredentials();
+
+      if (provider == null) {
+        emit(const ProfileUpdateError('No provider found'));
+        return;
+      }
+
+      final result = await updateUserRepo.updateProviderInformation(
+        fullName: provider.fullName,
+        phoneNumber: provider.phoneNumber,
+        companyName: provider.companyName,
+        description: provider.description,
+        workingDays: provider.workingDays,
+        openingHours:
+            provider.openingHours != null
+                ? DateTime.tryParse(provider.openingHours!)
+                : null,
+        closingHours:
+            provider.closingHours != null
+                ? DateTime.tryParse(provider.closingHours!)
+                : null,
+        activityStatus: event.status,
+        images: provider.images?.map((e) => e.toString()).toList(),
+      );
+
+      if (result.error != null) {
+        emit(ProfileUpdateError(result.error!));
+      } else {
+        emit(ProviderAcivitityChanged(result.data));
+      }
+    } on Exception catch (e) {
       emit(ProfileUpdateError(e.toString()));
     }
   }

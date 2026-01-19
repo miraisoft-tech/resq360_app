@@ -25,6 +25,7 @@ import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
 import 'package:resq360/features/settings/widgets/pick_image.modal.dart';
 import 'package:resq360/features/settings/widgets/profile_section_header.dart';
+import 'package:resq360/features/widgets/custom_switch.dart';
 import 'package:resq360/keys.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -145,7 +146,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           } else {
             await pushScreen(
               context,
-              const VerificationStepsScreen( source: VerificationSource.settings,),
+              const VerificationStepsScreen(
+                source: VerificationSource.settings,
+              ),
             );
           }
         },
@@ -320,7 +323,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Navigator.pop(context);
                   await _refreshProfile();
                 }
-
+              if (state is ProviderAcivitityChanged) {
+                  await _refreshProfile();
+                }
                 if (state is ProfileUpdateError) {
                   Navigator.pop(context);
                   await showErrorSnackbar(context, state.message);
@@ -338,39 +343,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (context, state) {
                   if (state is ProviderProfileLoadedState) {
                     final status = state.user.activityStatus ?? 'UNKNOWN';
+                    final isOnline = status.toLowerCase() == 'online';
 
-                    return GestureDetector(
-                      onTap: () async {
-                        await GeneralDialogs.showCustomDialog<void>(
-                          context,
-                          body: AccountStatusDialog(
-                            onTap: () async {
-                              Navigator.pop(context);
-                              await pushScreen(
-                                context,
-                                const ContactAdminScreen(
-                                  issueType: AdminIssueType.complaint,
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          GenText(
-                            'Account Status: $status',
-                            height: 24.5,
-                            color: appColors.success.shade700,
-                            weight: FontWeight.w500,
-                          ),
-                          4.horizontalSpace,
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            await GeneralDialogs.showCustomDialog<void>(
+                              context,
+                              body: AccountStatusDialog(
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  await pushScreen(
+                                    context,
+                                    const ContactAdminScreen(
+                                      issueType: AdminIssueType.complaint,
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              GenText(
+                                'Account Status: ${isOnline ? 'Online' : 'Offline'}',
+                                height: 24.5,
+                                color:
+                                    isOnline
+                                        ? appColors.success.shade700
+                                        : appColors.error.shade500,
+                                weight: FontWeight.w500,
+                              ),
+
+                              4.horizontalSpace,
                           AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
                             color: appColors.success.shade700,
                           ),
-                        ],
-                      ),
+                            ],
+                          ),
+                        ),
+
+                        12.horizontalSpace,
+
+                        CustomSwitchWidget(
+                          value: isOnline,
+                          activeThumbColor: appColors.success.shade700,
+                          disabledThumbColor: appColors.textColor.shade200,
+                          onChanged: ({required value}) {
+                            final newStatus = value ? 'online' : 'offline';
+
+                            context.read<ProfileUpdateBloc>().add(
+                              UpdateActivityStatusEvent(newStatus),
+                            );
+                          },
+                        ),
+                      ],
                     );
                   }
 
