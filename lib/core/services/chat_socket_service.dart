@@ -212,4 +212,14 @@ class ChatSocketService {
     await disconnect();
     _retryCount = 0;
   }
+
+  Future<void> dispose() async {
+    await disconnect();
+
+    await _messageController.close();
+    await _typingController.close();
+    await _userJoinedController.close();
+    await _userLeftController.close();
+    await _messageReadController.close();
+  }
 }

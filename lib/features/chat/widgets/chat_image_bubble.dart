@@ -73,15 +73,15 @@ class ChatImageBubble extends StatelessWidget {
               ),
             ),
 
-            
             if (caption != null && caption!.isNotEmpty) ...[
               4.verticalSpace,
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: isMine
-                      ? appColors.primary.shade50
-                      : appColors.neutral.shade100,
+                  color:
+                      isMine
+                          ? appColors.primary.shade50
+                          : appColors.neutral.shade100,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: GenText(

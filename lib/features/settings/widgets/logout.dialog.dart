@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class LogoutDialog extends StatelessWidget {
@@ -11,6 +12,8 @@ class LogoutDialog extends StatelessWidget {
     showLoadingDialog(context);
 
     try {
+      await ChatSocketService.instance.dispose();
+
       await AuthLocalRepo.instance.clearAuthCredentials();
       await AuthLocalRepo.instance.clearAccessToken();
       await AuthLocalRepo.instance.clearUserType();

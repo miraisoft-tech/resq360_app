@@ -96,7 +96,7 @@ class CustomerAuthProvider extends BaseViewModel with LocationMixin {
     try {
       setBusy(isBusy: true);
 
-      await ChatSocketService.instance.reset();
+      await ChatSocketService.instance.dispose();
 
       await AuthLocalRepo.instance.clearAuthCredentials();
       await AuthLocalRepo.instance.clearAccessToken();

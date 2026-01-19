@@ -1,4 +1,3 @@
-
 import 'package:resq360/__lib.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -35,10 +34,7 @@ class ChatLocationBubble extends StatelessWidget {
           children: [
             Container(
               decoration: BoxDecoration(
-                color:
-                    isMine
-                        ? appColors.primary
-                        : appColors.neutral.shade100,
+                color: isMine ? appColors.primary : appColors.neutral.shade100,
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
                   color: appColors.neutral.shade200,
@@ -142,7 +138,7 @@ class ChatLocationBubble extends StatelessWidget {
                         GenText(
                           address,
                           size: 13,
-                          color: appColors.whiteColor,
+                          color: isMine ? appColors.whiteColor : null,
                           maxLines: 3,
                         ),
                         8.verticalSpace,
@@ -152,7 +148,7 @@ class ChatLocationBubble extends StatelessWidget {
                             GenText(
                               time,
                               size: 11,
-                              color: appColors.whiteColor,
+                              color: isMine ? appColors.whiteColor : null,
                             ),
                           ],
                         ),
@@ -168,10 +164,10 @@ class ChatLocationBubble extends StatelessWidget {
     );
   }
 
-String _getStaticMapUrl() {
-  return 'https://static-maps.yandex.ru/1.x/?'
-      'lang=en_US&ll=$longitude,$latitude&z=14&l=map&size=600,400&pt=$longitude,$latitude,pm2rdm';
-}
+  String _getStaticMapUrl() {
+    return 'https://static-maps.yandex.ru/1.x/?'
+        'lang=en_US&ll=$longitude,$latitude&z=14&l=map&size=600,400&pt=$longitude,$latitude,pm2rdm';
+  }
 
   Future<void> _openInMaps() async {
     final googleMapsUrl = Uri.parse(

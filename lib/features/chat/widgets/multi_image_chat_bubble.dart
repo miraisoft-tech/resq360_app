@@ -62,7 +62,7 @@ class ChatMultiImageBubble extends StatelessWidget {
             GenText(
               time,
               size: 12,
-              color: appColors.whiteColor,
+              color: isMine ? appColors.whiteColor : null,
             ),
           ],
         ),
@@ -70,7 +70,11 @@ class ChatMultiImageBubble extends StatelessWidget {
     );
   }
 
-  Widget _singleImage(String url, {required double radius, bool darken = false}) {
+  Widget _singleImage(
+    String url, {
+    required double radius,
+    bool darken = false,
+  }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Stack(
