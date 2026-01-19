@@ -1,11 +1,61 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 
 class ToDoSection extends StatelessWidget {
-  const ToDoSection({super.key});
+  const ToDoSection({required this.provider, super.key});
+
+  final ProviderModel provider;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+
+    final descriptionMissing =
+        provider.description == null || provider.description!.trim().isEmpty;
+
+    final servicesMissing =
+        provider.providerServices == null || provider.providerServices!.isEmpty;
+
+    final profileImageMissing =
+        provider.profileImage == null || provider.profileImage!.trim().isEmpty;
+
+    final todoItems = <Widget>[];
+
+    if (descriptionMissing || servicesMissing) {
+      todoItems.addAll([
+        GenText(
+          '⚠️ Add your service description and update your service type so clients can find you faster.',
+          height: 24.5,
+          weight: FontWeight.w400,
+          color: colors.black,
+        ),
+        GenText(
+          'Update Service Info',
+          height: 24.5,
+          weight: FontWeight.w400,
+          color: colors.primary.shade600,
+        ),
+        10.verticalSpace,
+      ]);
+    }
+
+    if (profileImageMissing) {
+      todoItems.addAll([
+        GenText(
+          '⚠️ Upload your profile photo.',
+          height: 24.5,
+          weight: FontWeight.w400,
+          color: colors.black,
+        ),
+        GenText(
+          'Upload Photo',
+          height: 24.5,
+          weight: FontWeight.w400,
+          color: colors.primary.shade600,
+        ),
+      ]);
+    }
+    if (todoItems.isEmpty) return const SizedBox.shrink();
 
     return Col(
       children: [
@@ -24,32 +74,7 @@ class ToDoSection extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GenText(
-                '⚠️ Add your service description and update your service type so clients can find you faster.',
-                height: 24.5,
-                weight: FontWeight.w400,
-                color: colors.black,
-              ),
-              GenText(
-                'Update Service Info',
-                height: 24.5,
-                weight: FontWeight.w400,
-                color: colors.primary.shade600,
-              ),
-              GenText(
-                '⚠️ Upload your profile photo.',
-                height: 24.5,
-                weight: FontWeight.w400,
-                color: colors.black,
-              ),
-              GenText(
-                'Upload Photo',
-                height: 24.5,
-                weight: FontWeight.w400,
-                color: colors.primary.shade600,
-              ),
-            ],
+            children: todoItems,
           ),
         ),
       ],

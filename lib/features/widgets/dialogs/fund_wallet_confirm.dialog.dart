@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
@@ -8,8 +7,6 @@ import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/custo
 
 class FundWalletConfirmDialog extends StatefulWidget {
   const FundWalletConfirmDialog({super.key});
-
-  // final int amount;
 
   @override
   State<FundWalletConfirmDialog> createState() =>
@@ -44,7 +41,7 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 230.h, bottom: 140.h),
+      padding: EdgeInsets.only(top: 260.h, bottom: 260.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -153,9 +150,8 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
                                     ? int.parse(
                                       cardNumberController.text,
                                     )
-                                    : 0, 
-                                    userType: userType ?? 'user',
-
+                                    : 0,
+                            userType: userType ?? 'user',
                           ),
                         );
                         // await GeneralDialogs.showCustomDialog<void>(

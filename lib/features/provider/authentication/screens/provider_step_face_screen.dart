@@ -5,14 +5,17 @@
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
-import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_step_id_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
 import 'package:resq360/features/widgets/dialogs/step_indicator.dart';
 
 class ProviderStepFaceScreen extends StatefulWidget {
-  const ProviderStepFaceScreen({super.key});
+  const ProviderStepFaceScreen({required this.source, super.key});
+
+  final VerificationSource source;
 
   @override
   State<ProviderStepFaceScreen> createState() => _ProviderStepFaceScreenState();
@@ -22,11 +25,12 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
   File? pickedImage;
 
   Future<void> pickCameraPhoto(BuildContext context) async {
-    pickedImage = await AppFilePicker.pickImage();
-   if (!context.mounted) return;
+    pickedImage = await AppFilePicker.pickImage(source: ImageSource.camera);
+
+    if (!context.mounted) return;
     if (pickedImage != null) {
-      context.read<ProviderAuthBloc>().add(
-        ProviderSubmitKyc(filePath: pickedImage!.path),
+      context.read<KycBloc>().add(
+        SubmitKyc(filePath: pickedImage!.path),
       );
     }
   }
@@ -35,21 +39,25 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<ProviderAuthBloc, ProviderAuthState>(
-      listener: (context, state) async{
-        if (state is ProviderAuthLoadingState) {
+    return BlocListener<KycBloc, KycState>(
+      listener: (context, state) async {
+        if (state is KycFaceLoading) {
           showLoadingDialog(context);
         }
 
-        if (state is ProviderKycSubmissionFailure) {
-          pop(context);
-          if (!context.mounted) return;
-          showSnackBar(context, 'Error', state.error);
+        if (state is KycFailure) {
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+
+          showErrorSnackbar(context, state.error);
         }
 
-        if (state is ProviderKycSubmitted) {
-          pop(context);
-          if (!context.mounted) return;
+        if (state is KycSubmitted) {
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+
           await GeneralDialogs.showCustomBottomSheet(
             context,
             body: StepModal(
@@ -57,10 +65,15 @@ class _ProviderStepFaceScreenState extends State<ProviderStepFaceScreen> {
               description: 'Let’s confirm your identification',
               icon: AppAssets.ASSETS_IMAGES_STEP_1_PNG,
               onContinuePressed: () async {
-                await pop(context);
+                Navigator.pop(context);
 
                 if (context.mounted) {
-                  await pushScreen(context, const ProviderStepIDScreen());
+                  await pushScreen(
+                    context,
+                    ProviderStepIDScreen(
+                      source: widget.source,
+                    ),
+                  );
                 }
               },
             ),

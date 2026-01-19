@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
@@ -29,8 +28,6 @@ class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
     await AuthLocalRepo.instance.saveUserType(selectedType);
 
     if (!mounted) return;
-
-    log('saved the type $selectedType');
 
     dashboardViewModel.userType = selectedType;
 

@@ -66,7 +66,6 @@ Future<int> getUnreadNotificationCount() async {
     log('Unread Count Response: ${res.data}');
 
     if (res.statusCode == 200 && res.data != null) {
-      // Extract count from nested "data" object
       final count = res.data?['data']?['count'];
       return (count is int) ? count : int.tryParse(count.toString()) ?? 0;
     } else if (res.statusCode == 401) {

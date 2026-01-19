@@ -1,11 +1,10 @@
-// Reason: We have several fire-and-forget UI calls (dialogs, snackbars)
-// in BlocListeners that do not need to be awaited.
-// ignore_for_file: unawaited_futures
+import 'dart:async';
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/helpers/location_helper.dart';
+import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
+import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
+import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/core/utils/validators.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/service_bloc/customer_services_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
@@ -52,17 +51,18 @@ class _ProviderBusinessDetailsScreenState
   void initState() {
     super.initState();
 
-    context.read<CustomerServicesBloc>().add(CustomerFetchServices());
+    context.read<ServiceCatalogBloc>().add(const FetchServices());
 
     nameController = TextEditingController();
     addressController = TextEditingController();
     otherController = TextEditingController();
 
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
-    // );
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
+    );
   }
 
+  bool isFetchingAddress = false;
   @override
   void dispose() {
     super.dispose();
@@ -72,17 +72,15 @@ class _ProviderBusinessDetailsScreenState
     otherController.dispose();
   }
 
-  bool isProcessing = false;
   Future<void> _handleSignup(BuildContext context) async {
-    if (isProcessing) return;
-    setState(() => isProcessing = true);
-
     if (!_formKey.currentState!.validate()) {
-      setState(() => isProcessing = false);
       return;
     }
 
     try {
+      setState(() {
+        isFetchingAddress = true;
+      });
       final locationData = await LocationHelper.getCurrentLocation();
 
       if (!context.mounted) return;
@@ -96,20 +94,16 @@ class _ProviderBusinessDetailsScreenState
         latitude: locationData['latitude'] as double,
       );
 
-      final servicesState = context.read<CustomerServicesBloc>().state;
-      if (servicesState is! CustomerServicesLoaded) {
-        showSnackBar(context, 'Error', 'Please wait for services to load');
-        setState(() => isProcessing = false);
+      if (_selectType.value == null) {
+        await showErrorSnackbar(
+          context,
+          'Please select a service category',
+        );
+
         return;
       }
 
       final selectedService = _selectType.value;
-
-      if (selectedService == null) {
-        showSnackBar(context, 'Error', 'Please select a service category');
-        setState(() => isProcessing = false);
-        return;
-      }
 
       context.read<ProviderAuthBloc>().add(
         ProviderSignupWIthEmail(
@@ -119,20 +113,15 @@ class _ProviderBusinessDetailsScreenState
           companyName: nameController.text,
           phoneNumber: widget.phone,
           customServiceName:
-              selectedService.name == 'Other'
+              selectedService?.name == 'Other'
                   ? otherController.text
-                  : selectedService.name,
-          service: selectedService.id,
+                  : selectedService?.name ?? '',
+          service: selectedService?.id ?? 0,
           address: address,
         ),
       );
     } on Exception catch (e, s) {
       log('Signup failed: $e\n$s');
-      if (context.mounted) {
-        showSnackBar(context, 'Error', e.toString());
-      }
-    } finally {
-      if (mounted) setState(() => isProcessing = false);
     }
   }
 
@@ -142,23 +131,33 @@ class _ProviderBusinessDetailsScreenState
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
-        if (!mounted) return;
         if (state is ProviderAuthLoadingState) {
           showLoadingDialog(context);
         }
+
         if (state is ProviderAuthFailureState) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
+          if (context.mounted) {
+            Navigator.pop(context);
           }
-          showSnackBar(context, 'Error', state.error);
+
+          log(state.error);
+          setState(() {
+            isFetchingAddress = false;
+          });
+          await showErrorSnackbar(context, state.error);
         }
 
         if (state is ProviderAuthSignupSuccessState) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
+          if (context.mounted) {
+            Navigator.pop(context);
           }
-          pushScreen(
-            context,
+
+          setState(() {
+            isFetchingAddress = false;
+          });
+
+          await pushAndReplaceScreen(
+            context: context,
             ProviderConfirmEmailScreen(
               email: widget.email,
             ),
@@ -205,17 +204,15 @@ class _ProviderBusinessDetailsScreenState
                           ),
                     ),
                     16.verticalSpace,
-                    BlocBuilder<CustomerServicesBloc, CustomerServicesState>(
+                    BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
                       builder: (context, state) {
-                        if (state is CustomerServicesLoading) {
-                          isProcessing = true;
+                        if (state is ServiceCatalogLoading) {
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         }
 
-                        if (state is CustomerServicesError) {
-                          isProcessing = false;
+                        if (state is ServiceCatalogError) {
                           log('Error loading services: ${state.error}');
                           return Column(
                             children: [
@@ -228,8 +225,8 @@ class _ProviderBusinessDetailsScreenState
                               WideButton(
                                 label: 'retry',
                                 onPressed: () {
-                                  context.read<CustomerServicesBloc>().add(
-                                    CustomerFetchServices(),
+                                  context.read<ServiceCatalogBloc>().add(
+                                    const FetchServices(),
                                   );
                                 },
                               ),
@@ -237,9 +234,7 @@ class _ProviderBusinessDetailsScreenState
                           );
                         }
 
-                        if (state is CustomerServicesLoaded) {
-                          isProcessing = false;
-
+                        if (state is ServicesLoaded) {
                           final categories = state.services;
 
                           return ValueListenableBuilder<Service?>(
@@ -302,8 +297,9 @@ class _ProviderBusinessDetailsScreenState
                 ),
               ),
               WideButton(
-                label: isProcessing ? 'Loading...' : 'Continue',
-                onPressed: isProcessing ? null : () => _handleSignup(context),
+                label: !isFetchingAddress ? 'Continue' : 'Creating',
+                onPressed:
+                    !isFetchingAddress ? () => _handleSignup(context) : null,
               ),
               30.verticalSpace,
               Center(

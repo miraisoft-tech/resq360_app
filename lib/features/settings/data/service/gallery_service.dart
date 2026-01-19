@@ -4,7 +4,7 @@ import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/__services.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-import 'package:resq360/features/provider/authentication/view_models/auth_vm.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/settings/data/models/gallery.model.dart';
 
 final UploadService uploadService = UploadService.instance;

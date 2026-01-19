@@ -1,10 +1,13 @@
+import 'dart:async';
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/general-chat-bloc/chat_bloc.dart';
+import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/confirm_email_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/forgot_password_screen.dart';
+import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
@@ -29,9 +32,23 @@ class _LoginScreenState extends State<LoginScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
 
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
-    // );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await AppTrackingPermissionHandler.requestTrackingPermisssion();
+    });
+
+    unawaited(init());
+  }
+
+  Future<void> init() async {
+    final customerRef = CustomerAuthProvider.instance;
+
+    await customerRef.init();
+
+    if (customerRef.isLocalCredStored) {
+      emailController.text = customerRef.localCred?.userName ?? '';
+
+      setState(() {});
+    }
   }
 
   @override
@@ -49,26 +66,43 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
+
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }
+
           log(state.error);
           await showSnackBar(context, 'Error', state.error);
         }
 
-        if (state is CustomerAuthLoginSuccess) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
+        if (state is CustomerAuthEmailPending) {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
           }
-          context.read<ChatBloc>().add(ConnectChatSocketEvent());
+
+         await pushAndReplaceScreen(
+            context: context,
+            ConfirmEmailScreen(
+              email: emailController.text,
+            ),
+          );
+        }
+
+        if (state is CustomerAuthLoginSuccess) {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+
           await replaceScreen(
             context,
-             const MainLayoutPage(userType: UserType.customer,),
+            const MainLayoutPage(
+              userType: UserType.customer,
+            ),
           );
         }
       },
@@ -121,7 +155,6 @@ class _LoginScreenState extends State<LoginScreen> {
               WideButton(
                 label: 'Log in',
                 onPressed: () async {
-                  log('Login pressed');
                   if (_formKey.currentState!.validate()) {
                     context.read<CustomerAuthBloc>().add(
                       CustomerLoginWithEmail(

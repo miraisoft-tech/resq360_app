@@ -3,8 +3,11 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 
 class ClientServiceCompletedScreen extends StatefulWidget {
-  const ClientServiceCompletedScreen({required this.serviceRequestId, super.key});
-  final String serviceRequestId;
+  const ClientServiceCompletedScreen({
+    required this.serviceRequestId,
+    super.key,
+  });
+  final int serviceRequestId;
   @override
   State<ClientServiceCompletedScreen> createState() =>
       _ClientServiceCompletedScreenState();
@@ -12,7 +15,7 @@ class ClientServiceCompletedScreen extends StatefulWidget {
 
 class _ClientServiceCompletedScreenState
     extends State<ClientServiceCompletedScreen> {
-  double rating = 0;
+  int rating = 0;
   final TextEditingController reviewController = TextEditingController();
 
   @override
@@ -109,7 +112,7 @@ class _ClientServiceCompletedScreenState
             ),
             12.verticalSpace,
             RatingBar.builder(
-              initialRating: rating,
+              initialRating: rating.toDouble(),
               minRating: 1,
               itemSize: 32,
               allowHalfRating: true,
@@ -120,7 +123,7 @@ class _ClientServiceCompletedScreenState
                     color: appColors.primary.shade500,
                   ),
               onRatingUpdate: (val) {
-                setState(() => rating = val);
+                setState(() => rating = val.toInt());
               },
             ),
             32.verticalSpace,
@@ -164,7 +167,7 @@ class _ClientServiceCompletedScreenState
                           ? () async {
                             context.read<ProviderServiceBloc>().add(
                               ProviderCompleteServiceBooking(
-                                serviceRequestId: int.parse(widget.serviceRequestId),
+                                serviceRequestId: widget.serviceRequestId,
                                 ratings: rating,
                                 review: reviewController.text,
                               ),

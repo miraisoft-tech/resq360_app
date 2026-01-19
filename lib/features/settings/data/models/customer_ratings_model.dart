@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 class CustomerRatings {
-
   CustomerRatings({
     this.averageRatings,
     this.totalReviews,
@@ -13,30 +12,32 @@ class CustomerRatings {
 
   factory CustomerRatings.fromJson(Map<String, dynamic> json) =>
       CustomerRatings(
-        averageRatings: json['averageRatings'] as int?,
+        averageRatings: json['averageRating'] as num?,
         totalReviews: json['totalReviews'] as int?,
-        reviews: json['reviews'] == null
-            ? <Review>[]
-            : (json['reviews'] as List)
-                .map((x) => Review.fromJson(x as Map<String, dynamic>))
-                .toList(),
+        reviews:
+            json['reviews'] == null
+                ? <CustomerReview>[]
+                : (json['reviews'] as List)
+                    .map(
+                      (x) => CustomerReview.fromJson(x as Map<String, dynamic>),
+                    )
+                    .toList(),
       );
-  final int? averageRatings;
+  final num? averageRatings;
   final int? totalReviews;
-  final List<Review>? reviews;
+  final List<CustomerReview>? reviews;
 
   String toRawJson() => json.encode(toJson());
 
   Map<String, dynamic> toJson() => {
-        'averageRatings': averageRatings,
-        'totalReviews': totalReviews,
-        'reviews': reviews?.map((x) => x.toJson()).toList() ?? [],
-      };
+    'averageRatings': averageRatings,
+    'totalReviews': totalReviews,
+    'reviews': reviews?.map((x) => x.toJson()).toList() ?? [],
+  };
 }
 
-class Review {
-
-  Review({
+class CustomerReview {
+  CustomerReview({
     this.overallRating,
     this.ratingDate,
     this.feedback,
@@ -45,25 +46,27 @@ class Review {
     this.provider,
   });
 
-  factory Review.fromRawJson(String str) =>
-      Review.fromJson(json.decode(str) as Map<String, dynamic>);
+  factory CustomerReview.fromRawJson(String str) =>
+      CustomerReview.fromJson(json.decode(str) as Map<String, dynamic>);
 
-  factory Review.fromJson(Map<String, dynamic> json) => Review(
-        overallRating: json['overallRating'] as int?,
-        ratingDate: json['ratingDate'] as String?,
-        feedback: json['feedback'] as String?,
-        createdAt: json['createdAt'] as String?,
-        serviceRequest: json['serviceRequest'] == null
+  factory CustomerReview.fromJson(Map<String, dynamic> json) => CustomerReview(
+    overallRating: json['overallRating'] as int?,
+    ratingDate: json['ratingDate'] as String?,
+    feedback: json['feedback'] as String?,
+    createdAt: json['createdAt'] as String?,
+    serviceRequest:
+        json['serviceRequest'] == null
             ? null
             : ServiceRequest.fromJson(
-                json['serviceRequest'] as Map<String, dynamic>,
-              ),
-        provider: json['provider'] == null
+              json['serviceRequest'] as Map<String, dynamic>,
+            ),
+    provider:
+        json['provider'] == null
             ? null
             : Provider.fromJson(
-                json['provider'] as Map<String, dynamic>,
-              ),
-      );
+              json['provider'] as Map<String, dynamic>,
+            ),
+  );
   final int? overallRating;
   final String? ratingDate;
   final String? feedback;
@@ -74,17 +77,16 @@ class Review {
   String toRawJson() => json.encode(toJson());
 
   Map<String, dynamic> toJson() => {
-        'overallRating': overallRating,
-        'ratingDate': ratingDate,
-        'feedback': feedback,
-        'createdAt': createdAt,
-        'serviceRequest': serviceRequest?.toJson(),
-        'provider': provider?.toJson(),
-      };
+    'overallRating': overallRating,
+    'ratingDate': ratingDate,
+    'feedback': feedback,
+    'createdAt': createdAt,
+    'serviceRequest': serviceRequest?.toJson(),
+    'provider': provider?.toJson(),
+  };
 }
 
 class Provider {
-
   Provider({
     this.profileImage,
     this.fullName,
@@ -94,21 +96,21 @@ class Provider {
       Provider.fromJson(json.decode(str) as Map<String, dynamic>);
 
   factory Provider.fromJson(Map<String, dynamic> json) => Provider(
-        profileImage: json['profileImage'] as String?,
-        fullName: json['fullName'] as String?,
-      );
+    profileImage: json['profileImage'] as String?,
+    fullName: json['fullName'] as String?,
+  );
   final String? profileImage;
   final String? fullName;
 
   String toRawJson() => json.encode(toJson());
 
   Map<String, dynamic> toJson() => {
-        'profileImage': profileImage,
-        'fullName': fullName,
-      };
+    'profileImage': profileImage,
+    'fullName': fullName,
+  };
 }
-class ServiceCategory {
 
+class ServiceCategory {
   ServiceCategory({
     this.name,
     this.image,
@@ -128,13 +130,12 @@ class ServiceCategory {
   String toRawJson() => json.encode(toJson());
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'image': image,
-      };
+    'name': name,
+    'image': image,
+  };
 }
 
 class ServiceRequest {
-
   ServiceRequest({
     this.serviceCategory,
   });
@@ -142,19 +143,19 @@ class ServiceRequest {
   factory ServiceRequest.fromRawJson(String str) =>
       ServiceRequest.fromJson(json.decode(str) as Map<String, dynamic>);
 
-  factory ServiceRequest.fromJson(Map<String, dynamic> json) =>
-      ServiceRequest(
-        serviceCategory: json['serviceCategory'] == null
+  factory ServiceRequest.fromJson(Map<String, dynamic> json) => ServiceRequest(
+    serviceCategory:
+        json['serviceCategory'] == null
             ? null
             : ServiceCategory.fromJson(
-                json['serviceCategory'] as Map<String, dynamic>,
-              ),
-      );
+              json['serviceCategory'] as Map<String, dynamic>,
+            ),
+  );
   final ServiceCategory? serviceCategory;
 
   String toRawJson() => json.encode(toJson());
 
   Map<String, dynamic> toJson() => {
-        'serviceCategory': serviceCategory?.toJson(),
-      };
+    'serviceCategory': serviceCategory?.toJson(),
+  };
 }

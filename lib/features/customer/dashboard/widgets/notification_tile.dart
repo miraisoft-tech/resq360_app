@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/notification_bloc/notification_bloc.dart';
@@ -43,9 +42,15 @@ class NotificationTile extends StatelessWidget {
         children: [
           SlidableAction(
             onPressed: (_) async {
-              await _confirmDelete(context, bloc, notification.id);
-              unawaited(showSuccessSnackbar(context, 'Notification deleted'));
+              final response = await _confirmDelete(
+                context,
+                bloc,
+                notification.id,
+              );
 
+              if (response) {
+                unawaited(showSuccessSnackbar(context, 'Notification deleted'));
+              }
             },
             backgroundColor: appColors.error.shade500,
             foregroundColor: Colors.white,
@@ -110,32 +115,37 @@ class NotificationTile extends StatelessWidget {
   }
 }
 
-Future<void> _confirmDelete(
+Future<bool> _confirmDelete(
   BuildContext context,
   NotificationBloc bloc,
   int id,
 ) async {
-  await showDialog<void>(
+  final response = await showDialog<bool>(
     context: context,
     builder:
         (_) => AlertDialog(
+          backgroundColor: Colors.white,
           title: const Text('Delete notification?'),
           content: const Text(
             'This action cannot be undone.',
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 bloc.add(DeleteNotification(id));
-                Navigator.pop(context);
+                Navigator.pop(context, true);
               },
               child: const Text('Delete'),
             ),
           ],
         ),
   );
+
+  return response ?? false;
 }

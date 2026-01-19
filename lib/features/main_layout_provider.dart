@@ -1,12 +1,11 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
+import 'package:resq360/features/chat/screens/chat_list_screen.dart';
 import 'package:resq360/features/customer/bookings/screens/bookings_screen.dart';
-import 'package:resq360/features/customer/chat/screens/chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/dashboard.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/bookings/screens/bookings_screen.dart';
-import 'package:resq360/features/provider/chat/screens/provider_chat_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_dashboard.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
 
@@ -55,7 +54,7 @@ class DashboardViewModel extends ChangeNotifier {
       title: 'Bookings',
     ),
     NavItem(
-      body: const ChatScreen(),
+      body: const ChatListScreen(userType: UserType.customer),
       selectedImgPath: AppAssets.ASSETS_NAVIGATION_CHAT_SELECTED_SVG,
       unselectedImgPath: AppAssets.ASSETS_NAVIGATION_CHAT_UNSELECTED_SVG,
       title: 'Chat',
@@ -82,7 +81,7 @@ class DashboardViewModel extends ChangeNotifier {
       title: 'Bookings',
     ),
     NavItem(
-      body: const ProviderChatScreen(),
+      body: const ChatListScreen(userType: UserType.provider),
       selectedImgPath: AppAssets.ASSETS_NAVIGATION_CHAT_SELECTED_SVG,
       unselectedImgPath: AppAssets.ASSETS_NAVIGATION_CHAT_UNSELECTED_SVG,
       title: 'Chat',

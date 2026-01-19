@@ -76,7 +76,7 @@ class WideButton extends StatelessWidget {
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      textColor ?? colors.primary.shade500,
+                      textColor ?? colors.whiteColor,
                     ),
                   ),
                 )

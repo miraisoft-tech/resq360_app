@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:resq360/core/bloc/bloc/auth_bloc.dart';
-import 'package:resq360/core/bloc/bloc/auth_bloc_registry.dart';
+import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc.dart';
+import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc_registry.dart';
 import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/build_config.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth_remote.repo.dart';
 export 'dart:io';
 export 'package:http_parser/http_parser.dart';
 
@@ -37,43 +37,34 @@ class BaseAPI {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (res, handler) async {
-          final token = await authLocalDataSource.getAccessToken();
-          if (token != null) {
-            res.headers['Authorization'] = 'Bearer $token';
-            log('Using token: $token');
-          } else {
-            log('No token found for ${res.uri}');
+          final token = await AuthLocalRepo.instance.getAccessToken();
+
+          if (BuildConfig.isDev) {
+            log('${res.uri}\nTOKEN: $token\n${res.data ?? 'N/A'}');
           }
 
-          // final token = container.read(authProvider).authInfo?.token;
+          if (customAccessToken != null) {
+            res.headers['Authorization'] = 'Bearer $customAccessToken';
+          }
 
-          // if (BuildConfig.isDev) {
-          //   log('${res.uri}\ntoken $token\n${res.data ?? 'N/A'}');
-          // }
-
-          // if (customAccessToken != null) {
-          //   res.headers['Authorization'] = 'Bearer $customAccessToken';
-          // }
-
-          // if (token != null) {
-          //   res.headers['Authorization'] = 'Bearer $token';
-          //   res.headers['x-epump-sub'] =
-          //       '${container.read(authProvider).authInfo?.code}';
-          // } else {
-          //   res.headers['Username'] = '${container.read(signupProvider).email}';
-          // }
+          if (token != null) {
+            res.headers['Authorization'] = 'Bearer $token';
+          }
 
           return handler.next(res);
         },
         onResponse: (res, handler) async {
           final statusCode = res.statusCode;
           final data = res.data?.toString() ?? '';
+          final authBloc = BlocRegistry.authBloc;
 
-          if (statusCode == 401 ||
-              (statusCode == 200 && data.contains('Unauthorized') || data.contains('DOCTYPE'))) {
-            final authBloc = BlocRegistry.authBloc;
+          if ((statusCode == 200 && data.contains('Unauthorized')) ||
+              data.contains('DOCTYPE')) {
             if (authBloc == null) return handler.next(res);
             authBloc.add(ForceLogoutEvent());
+          } else if (res.statusCode == 401 &&
+              (res.data['message'] ?? '') == 'Unauthorized') {
+            if (authBloc != null) authBloc.add(ForceLogoutEvent());
           }
 
           return handler.next(res);

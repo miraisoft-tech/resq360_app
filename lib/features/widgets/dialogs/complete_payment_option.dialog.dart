@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
-import 'package:resq360/features/customer/chat/data/models/chat/chat_models.dart';
-import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 
 class CompletePaymentDialog extends StatefulWidget {
@@ -27,7 +28,7 @@ class _CompletePaymentDialogState extends State<CompletePaymentDialog> {
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 230.h, bottom: 140.h),
+      padding: EdgeInsets.only(top: 200.h, bottom: 200.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -164,10 +165,10 @@ class ClientPaymentConfirmDialog extends StatefulWidget {
   const ClientPaymentConfirmDialog({
     required this.title,
     required this.amount,
-    required this.invoiceNumber, 
+    required this.invoiceNumber,
     required this.message,
-     required this.chatId,
-     required this.paymentMethod,
+    required this.chatId,
+    required this.paymentMethod,
     super.key,
   });
 
@@ -206,11 +207,11 @@ class _ClientPaymentConfirmDialogState
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 200.h, bottom: 150.h),
+      padding: EdgeInsets.only(top: 220.h, bottom: 160.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
-          margin: pad(horizontal: 20),
+          margin: pad(horizontal: 20, vertical: 100),
           padding: pad(horizontal: 25, vertical: 25),
           decoration: BoxDecoration(
             color: appColors.whiteColor,
@@ -247,15 +248,15 @@ class _ClientPaymentConfirmDialogState
                 weight: FontWeight.w600,
                 color: appColors.black,
               ),
-              4.verticalSpace,
+              10.verticalSpace,
               GenText(
                 'Invoice No: ${widget.invoiceNumber}',
                 size: 13,
                 color: appColors.textColor.shade400,
               ),
-              4.verticalSpace,
+              10.verticalSpace,
               GenText(
-                '₦${widget.amount}',
+                '₦${AppTextUtil.formatAmount(widget.amount.toString())}',
                 size: 22,
                 weight: FontWeight.w700,
                 color: appColors.black,
@@ -281,7 +282,7 @@ class _ClientPaymentConfirmDialogState
                       textColor: appColors.whiteColor,
                       onPressed: () {
                         Navigator.pop(context);
-                          
+
                         context.read<CustomerPaymentBloc>().add(
                           CustomerInitServiceRequestPaymentEvent(
                             chatId: widget.chatId,

@@ -2,7 +2,7 @@ name: resq360
 description: "A new Flutter project."
 publish_to: "none"
 
-version: 1.0.1+4
+version: 1.0.3+6
 
 environment:
   sdk: ^3.7.2
@@ -42,9 +42,14 @@ dependencies:
   image_cropper: ^10.0.0+1
   image_picker: ^1.2.0
   intl: ^0.20.2
+  open_filex: ^4.7.0
+  package_info_plus: ^9.0.0
   path: ^1.9.1
   path_provider: ^2.1.5
+  pdf: ^3.11.3
+  permission_handler: ^12.0.1
   pin_code_text_field: ^1.8.0
+  share_plus: ^12.0.1
   shared_preferences: ^2.5.3
   shimmer: ^3.0.0
   sign_in_with_apple: ^7.0.1
@@ -91,6 +96,7 @@ flutter:
     - assets/images/
     - assets/logo/
     - assets/navigation/
+    - assets/json/states_list.json
 
   fonts:
     - family: "inter"

@@ -72,23 +72,26 @@ class AppLocalPref {
   }
 
   Future<dynamic> getValue({required String key}) async {
-  if (_prefs == null) {
-    await initPref();
+    if (_prefs == null) {
+      await initPref();
+    }
+
+    final value = _prefs?.getString(key) ?? '';
+    log('READ $key== $value');
+
+    if (value.isEmpty) return null;
+
+    try {
+      final decoded = jsonDecode(value);
+      return decoded;
+    } on Exception catch (_) {
+      if (value.startsWith('"') && value.endsWith('"') && value.length > 2) {
+        return value.substring(1, value.length - 1);
+      }
+      return value;
+    }
   }
 
-  final value = _prefs?.getString(key) ?? '';
-  log('READ $key== $value');
-
-  if (value.isEmpty) return null;
-
-  try {
-    return jsonDecode(value);
-  } on Exception catch (_) {
-    return value;
-  }
-}
-
-  
   Future<dynamic> getBoolNotifications({required String key}) async {
     if (_prefs == null) {
       await initPref();

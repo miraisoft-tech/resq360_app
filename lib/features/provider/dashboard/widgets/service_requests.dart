@@ -1,5 +1,7 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
+import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/bookings_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/customer_details_screen.dart';
 
@@ -14,10 +16,12 @@ class _ServiceRequestsState extends State<ServiceRequests> {
   @override
   void initState() {
     super.initState();
-   context.read<ProviderServiceBloc>().add(
-      const ProviderFetchBookings(status: 'pending'),
+
+    context.read<ProviderServiceBloc>().add(
+      ProviderFetchBookings(status: BookingStatus.ongoing.value),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -56,7 +60,9 @@ class _ServiceRequestsState extends State<ServiceRequests> {
                   // ),
                   const Spacer(),
                   GestureDetector(
-                    onTap: ()=> pushScreen(context, const ProviderBookingsScreen()),
+                    onTap:
+                        () =>
+                            pushScreen(context, const ProviderBookingsScreen()),
                     child: GenText(
                       'View All',
                       size: 13,
@@ -70,7 +76,8 @@ class _ServiceRequestsState extends State<ServiceRequests> {
                 (booking) => _RequestTile(
                   name: booking.user?.fullName ?? 'Unknown User',
                   service: booking.serviceCategory?.name ?? 'Unknown Service',
-                  distance: '1.0 km Away',
+                  // distance: '1.0 km Away',
+                  user: booking.user, chatId: booking.chatId,
                 ),
               ),
 
@@ -97,12 +104,16 @@ class _RequestTile extends StatelessWidget {
   const _RequestTile({
     required this.name,
     required this.service,
-    required this.distance,
+    required this.user,
+    required this.chatId,
+    this.distance,
   });
 
   final String name;
   final String service;
-  final String distance;
+  final String? distance;
+  final User? user;
+  final int? chatId;
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +121,9 @@ class _RequestTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        await pushScreen(context, const CustomerDetailsScreen());
+        if (user != null) {
+          await pushScreen(context,  CustomerDetailsScreen(user: user!, chatId: chatId,));
+        }
       },
       child: Container(
         padding: pad(horizontal: 12, vertical: 20),
@@ -121,12 +134,7 @@ class _RequestTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const CircleAvatar(
-              radius: 25,
-              backgroundImage: AssetImage(
-                AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-              ),
-            ),
+             PictureWidget(image: user?.profileImage ?? '',),
             10.horizontalSpace,
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,20 +150,20 @@ class _RequestTile extends StatelessWidget {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                      color: colors.neutral.shade400,
-                    ),
-                    4.horizontalSpace,
-                    GenText(
-                      distance,
-                      size: 12,
-                      weight: FontWeight.w400,
-                      color: colors.neutral.shade400,
-                    ),
-                  ],
-                ),
+                // Row(
+                //   children: [
+                //     AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
+                //       color: colors.neutral.shade400,
+                //     ),
+                //     4.horizontalSpace,
+                //     GenText(
+                //       distance ?? '',
+                //       size: 12,
+                //       weight: FontWeight.w400,
+                //       color: colors.neutral.shade400,
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ],

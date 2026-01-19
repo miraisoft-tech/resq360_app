@@ -1,18 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/models/kyc/identity_response.dart';
+import 'package:resq360/core/models/kyc/kyc_response.model.dart';
+import 'package:resq360/core/models/kyc/user_kyc.model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-final AuthLocalRepo authLocalDataSource = AuthLocalRepo.instance;
 final UploadService uploadService = UploadService.instance;
 
 class AuthRemoteRepo extends BaseAPI {
@@ -23,96 +20,13 @@ class AuthRemoteRepo extends BaseAPI {
   AuthRemoteRepo._internal();
   static final AuthRemoteRepo instance = AuthRemoteRepo._internal();
 
-  // Future<EmptyResponse> googleSignin({required String deviceId}) async {
-  //   try {
-  //     final googleSignIn = GoogleSignIn(scopes: ['email']);
-
-  //     final googleUser = await googleSignIn.signIn();
-
-  //     log(googleUser.toString());
-
-  //     if (googleUser != null) {
-  //       final googleAuth = await googleUser.authentication;
-
-  //       const url = 'Account/Auth/Google';
-
-  //       log('id token ${googleAuth.idToken}');
-
-  //       log('access token ${googleAuth.accessToken}');
-
-  //       final res = await dio(
-  //         customAccessToken: googleAuth.idToken,
-  //       ).post<Map<String, dynamic>>(url);
-
-  //       log(res.statusCode);
-  //       log(res.data);
-
-  //       switch (res.statusCode) {
-  //         case 200:
-  //           return AuthResponse.fromJson(res.data ?? {});
-  //         default:
-  //           return ErrorResponse(
-  //             message:
-  //                 res.data?['message'].toString() ??
-  //                 'An error occured please try again!',
-  //           );
-  //       }
-  //     }
-  //   } on Exception catch (e, s) {
-  //     log(e);
-  //     log(s);
-
-  //     return ErrorResponse(message: '$e $s');
-  //   }
-
-  //   throw Exception('Sign-Up flow failed.');
-  // }
-
-  Future<EmptyResponse> appleSignin({required String deviceId}) async {
-    final credential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-    );
-
-    if (credential.identityToken != null) {
-      const url = 'Account/Auth/Apple';
-
-      final data = {
-        'identityToken': credential.identityToken,
-        'authorizationCode': credential.authorizationCode,
-        if (credential.givenName != null) 'firstName': credential.givenName,
-        if (credential.familyName != null) 'lastName': credential.familyName,
-      };
-
-      final res = await dio().post<Map<String, dynamic>>(url, data: data);
-
-      log(res.statusCode);
-      log(res.data);
-
-      switch (res.statusCode) {
-        case 200:
-          return AuthResponse.fromJson(res.data ?? {});
-        default:
-          return ErrorResponse(
-            message:
-                res.data?['message'].toString() ??
-                'An error occured please try again!',
-          );
-      }
-    }
-
-    throw Exception('Sign-Up flow failed.');
-  }
-
   Future<ApiResult<AuthResponse>> loginWithEmail({
     required String email,
     required String password,
   }) async {
     try {
       const url = '/auth/login';
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
       final data = {
@@ -126,39 +40,15 @@ class AuthRemoteRepo extends BaseAPI {
       log(res.statusCode);
       log(res.data);
 
-      if (res.statusCode == 200 || res.statusCode == 201) {
-        final body = res.data!;
-        final success = body['success'] == true;
-        await authLocalDataSource.storeLocalCredentials(
-          email: email,
-          password: password,
-        );
-
-        if (!success) {
-          return ApiResult(
-            error: body['message']?.toString() ?? 'Login failed',
+      switch (res.statusCode) {
+        case 200:
+        case 201:
+          final authResponse = AuthResponse.fromJson(
+            res.data!,
           );
-        }
-        final token = body['data']?['access_token'];
-        if (token == null) {
-          return ApiResult(error: 'No token returned from server');
-        }
-
-        await authLocalDataSource.storeAccessToken(token.toString());
-
-        final userProfileResult = await getUserProfile();
-
-      if (userProfileResult.error != null) {
-        return ApiResult(
-          error: userProfileResult.error,
-        );
-      }
-
-        final authResponse = AuthResponse.fromJson(res.data!);
-
-        return ApiResult(data: authResponse);
-      } else {
-        return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
+          return ApiResult(data: authResponse);
+        default:
+          return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
       }
     } on DioException catch (e) {
       return handleDioError(e);
@@ -182,11 +72,6 @@ class AuthRemoteRepo extends BaseAPI {
         'password': password,
       };
 
-      await authLocalDataSource.storeLocalCredentials(
-        email: email,
-        password: password,
-      );
-      log('credentials stored locally $email / ****');
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
       log(res.statusCode);
@@ -203,15 +88,6 @@ class AuthRemoteRepo extends BaseAPI {
           );
         }
       }
-
-      final userProfileResult = await getUserProfile();
-
-      if (userProfileResult.error != null) {
-        return ApiResult(
-          error: userProfileResult.error,
-        );
-      }
-
       return ApiResult(
         error:
             res.data?['message']?.toString() ??
@@ -231,7 +107,7 @@ class AuthRemoteRepo extends BaseAPI {
     required String email,
   }) async {
     try {
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
       const url = '/auth/forgot-password';
@@ -261,7 +137,7 @@ class AuthRemoteRepo extends BaseAPI {
     required String token,
   }) async {
     try {
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
       const url = '/auth/forgot-password/verify';
@@ -290,9 +166,9 @@ class AuthRemoteRepo extends BaseAPI {
   }) async {
     try {
       const url = '/auth/reset-password';
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
-      final token = await authLocalDataSource.getForgotPaswwordOtp();
+      final token = await AuthLocalRepo.instance.getForgotPaswwordOtp();
 
       if (token != null) {
         log('Reset Password Token: $token');
@@ -324,9 +200,11 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> verifyEmailAddress({required String emailVerificationToken}) async {
+  Future<bool> verifyEmailAddress({
+    required String emailVerificationToken,
+  }) async {
     try {
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
       final url = '/auth/verify-email/$emailVerificationToken?type=$userType';
@@ -335,21 +213,22 @@ class AuthRemoteRepo extends BaseAPI {
         url,
       );
 
-      final userCred = await authLocalDataSource.getLocalCredentials();
-      if (userCred != null) {
-        await loginWithEmail(
-          email: userCred.userName!,
-          password: userCred.password!,
-        );
-      } else {
-        log('No local credentials found during email verification.');
-      }
+      // final userCred = await AuthLocalRepo.instance.getLocalCredentials();
+      // if (userCred != null) {
+      //   await loginWithEmail(
+      //     email: userCred.userName!,
+      //     password: userCred.password!,
+      //   );
+      // } else {
+      //   log('No local credentials found during email verification.');
+      // }
 
       log(res.statusCode);
       log(res.data);
 
       switch (res.statusCode) {
         case 200:
+        case 201:
           return true;
         default:
           return false;
@@ -365,7 +244,7 @@ class AuthRemoteRepo extends BaseAPI {
   Future<ApiResult<dynamic>> resendVerificationEmail(String email) async {
     try {
       const url = '/auth/resend-verification-otp';
-      final savedUserType = await authLocalDataSource.getUserType();
+      final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
       final res = await dio().post<Map<String, dynamic>>(
         url,
@@ -402,11 +281,6 @@ class AuthRemoteRepo extends BaseAPI {
           );
           log('User profile fetched: ${customerProfileResponse.fullName}');
 
-          await AuthLocalRepo.instance.storeUserDetails(
-            customerProfileResponse: customerProfileResponse,
-            isProvider: false,
-          );
-          await CustomerAuthProvider.instance.init();
           return ApiResult(data: customerProfileResponse);
         } else {
           return ApiResult(
@@ -532,12 +406,12 @@ class AuthRemoteRepo extends BaseAPI {
     required String documentType,
     required String documentUrl,
   }) async {
-    const url = '/kyc/submit/identity';
+    const url = '/kyc/submit/identity-information';
 
     try {
       final data = {
         'documentType': documentType,
-        'documentUrl': documentUrl,
+        'documentImageUrl': documentUrl,
       };
 
       log('Submitting identity with data: $data');

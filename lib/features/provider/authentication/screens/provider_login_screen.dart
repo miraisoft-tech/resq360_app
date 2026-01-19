@@ -1,11 +1,15 @@
+import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_confirm_email_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_forgot_password_screen.dart';
+import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderLoginScreen extends StatefulWidget {
@@ -28,9 +32,23 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
 
-    // WidgetsBinding.instance.addPostFrameCallback(
-    //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
-    // );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await AppTrackingPermissionHandler.requestTrackingPermisssion();
+    });
+
+    unawaited(init());
+  }
+
+  Future<void> init() async {
+    final customerRef = ProviderAuthProvider.instance;
+
+    await customerRef.init();
+
+    if (customerRef.isLocalCredStored) {
+      emailController.text = customerRef.localCred?.userName ?? '';
+
+      setState(() {});
+    }
   }
 
   @override
@@ -49,7 +67,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
       listener: (context, state) async {
         if (!mounted) return;
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {
@@ -57,8 +75,22 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
             Navigator.of(context, rootNavigator: true).pop();
           }
           log(state.error);
-          await showSnackBar(context, 'Error', state.error);
+          await showErrorSnackbar(context, state.error);
         }
+
+         if (state is ProviderAuthEmailPendingState) {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+
+            await pushAndReplaceScreen(
+            context: context,
+            ProviderConfirmEmailScreen(
+              email: emailController.text,
+            ),
+          );
+        }
+
 
         if (state is ProviderAuthLoginSuccessState) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
@@ -136,9 +168,9 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
               Center(
                 child: GestureDetector(
                   onTap: () async {
-                    await pushScreen(
-                      context,
+                    await pushAndReplaceScreen(
                       const ProviderCreateAccountScreen(),
+                      context: context,
                     );
                   },
                   child: RichText(

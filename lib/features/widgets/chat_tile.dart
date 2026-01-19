@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/chat/data/models/chat_model.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
 
 class ChatTile extends StatelessWidget {
   const ChatTile({required this.chat, required this.onTap, super.key});
@@ -11,13 +11,13 @@ class ChatTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: EdgeInsets.only(top: 12.h, bottom: 16.h),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 25,
-              backgroundImage: AssetImage(chat.avatar),
+            PictureWidget(
+              image: chat.imgUrl,
             ),
             10.horizontalSpace,
             Expanded(
@@ -73,7 +73,7 @@ class ChatTile extends StatelessWidget {
                             color: appColors.whiteColor,
                           ),
                         )
-                      else if (!chat.typing)
+                      else if (!chat.typing && chat.message != '')
                         Icon(
                           Icons.check,
                           size: 16,

@@ -1,16 +1,3 @@
-// class WalletTransaction {
-//   const WalletTransaction({
-//     required this.title,
-//     required this.date,
-//     required this.amount,
-//     required this.isCredit,
-//   });
-//   final String title;
-//   final String date;
-//   final int amount;
-//   final bool isCredit;
-// }
-
 import 'dart:convert';
 
 import 'package:intl/intl.dart';
@@ -135,49 +122,49 @@ class WalletTransaction {
 
 class TransactionMetadata {
   TransactionMetadata({
-    required this.walletId,
-    required this.userId,
-    required this.userType,
+    this.walletId,
+    this.userId,
+    this.userType,
   });
 
   factory TransactionMetadata.fromJson(Map<String, dynamic> json) {
     return TransactionMetadata(
-      walletId: json['walletId'] as int,
-      userId: json['userId'] as int,
-      userType: json['userType'] as String,
+      walletId: json['walletId'] as int?,
+      userId: json['userId'] as int?,
+      userType: json['userType'] as String?,
     );
   }
-  final int walletId;
-  final int userId;
-  final String userType;
+  final int? walletId;
+  final int? userId;
+  final String? userType;
 }
 
 class Pagination {
   Pagination({
-    required this.currentPage,
-    required this.totalPages,
-    required this.total,
-    required this.itemsPerPage,
-    required this.hasNextPage,
-    required this.hasPrev,
+    this.currentPage,
+    this.totalPages,
+    this.total,
+    this.itemsPerPage,
+    this.hasNextPage,
+    this.hasPrev,
   });
 
   factory Pagination.fromJson(Map<String, dynamic> json) {
     return Pagination(
-      currentPage: json['currentPage'] as int,
-      totalPages: json['totalPages'] as int,
-      total: json['total'] as int,
-      itemsPerPage: json['itemsPerPage'] as int,
-      hasNextPage: json['hasNextPage'] as bool,
-      hasPrev: json['hasPrev'] as bool,
+      currentPage: json['currentPage'] as int?,
+      totalPages: json['totalPages'] as int?,
+      total: json['total'] as int?,
+      itemsPerPage: json['itemsPerPage'] as int?,
+      hasNextPage: json['hasNextPage'] as bool?,
+      hasPrev: json['hasPrev'] as bool?,
     );
   }
-  final int currentPage;
-  final int totalPages;
-  final int total;
-  final int itemsPerPage;
-  final bool hasNextPage;
-  final bool hasPrev;
+  final int? currentPage;
+  final int? totalPages;
+  final int? total;
+  final int? itemsPerPage;
+  final bool? hasNextPage;
+  final bool? hasPrev;
 }
 
 extension WalletTransactionUI on WalletTransaction {

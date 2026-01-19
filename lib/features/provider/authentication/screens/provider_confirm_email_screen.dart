@@ -1,8 +1,10 @@
+import 'dart:async';
 
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
@@ -25,7 +27,7 @@ class _ProviderConfirmEmailScreenState
     extends State<ProviderConfirmEmailScreen> {
   int endTime =
       DateTime.now()
-          .add(const Duration(seconds: 5 * 60))
+          .add(const Duration(seconds: 1 * 60))
           .millisecondsSinceEpoch;
 
   late TextEditingController _otpController1;
@@ -57,7 +59,7 @@ class _ProviderConfirmEmailScreenState
     controller
       ..endTime =
           DateTime.now()
-              .add(const Duration(seconds: 5 * 60))
+              .add(const Duration(seconds: 1 * 60))
               .millisecondsSinceEpoch
       ..start();
   }
@@ -80,28 +82,28 @@ class _ProviderConfirmEmailScreenState
 
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
-        if (!context.mounted) return;
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
+          if (context.mounted) {
+            Navigator.pop(context);
           }
 
           await showSnackBar(context, 'Error', state.error);
         }
         if (state is ProviderVerificationEmailResentState) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
+          if (context.mounted) {
+            Navigator.pop(context);
           }
+
           await showSuccessSnackbar(context, state.message);
 
           controller
             ..endTime =
                 DateTime.now()
-                    .add(const Duration(seconds: 5 * 60))
+                    .add(const Duration(seconds: 1 * 60))
                     .millisecondsSinceEpoch
             ..start();
 
@@ -109,12 +111,15 @@ class _ProviderConfirmEmailScreenState
         }
 
         if (state is ProviderEmailVerifiedState) {
-          if (!context.mounted) return;
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
+          await pop(context);
+
           log('Email verified, navigating to main layout');
-          await replaceScreen(context, const ProviderVerificationStepsScreen());
+          await pushAndReplaceScreen(
+            context: context,
+            const ProviderVerificationStepsScreen(
+              source: VerificationSource.signup,
+            ),
+          );
         }
       },
       child: AppScaffold(

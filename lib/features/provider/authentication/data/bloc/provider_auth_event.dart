@@ -50,7 +50,7 @@ class ProviderRequestPasswordResetEvent extends ProviderAuthEvent {
   });
 
   final String email;
-  
+
   @override
   List<Object> get props => [email];
 }
@@ -59,9 +59,9 @@ class ProviderValidateResetTokenEvent extends ProviderAuthEvent {
   const ProviderValidateResetTokenEvent({
     required this.token,
   });
-  
+
   final String token;
-  
+
   @override
   List<Object> get props => [token];
 }
@@ -71,7 +71,7 @@ class ProviderSetNewPasswordEvent extends ProviderAuthEvent {
     required this.password,
   });
   final String password;
-  
+
   @override
   List<Object> get props => [password];
 }
@@ -82,7 +82,7 @@ class ProviderVerifyEmailAddressEvent extends ProviderAuthEvent {
   });
 
   final String emailVerificationToken;
-  
+
   @override
   List<Object> get props => [emailVerificationToken];
 }
@@ -91,15 +91,15 @@ class ProviderResendVerificationEmailEvent extends ProviderAuthEvent {
   const ProviderResendVerificationEmailEvent({
     required this.email,
   });
-  
+
   final String email;
-  
+
   @override
   List<Object> get props => [email];
 }
 
-class ProvidergetUserProfile extends ProviderAuthEvent {
-  const ProvidergetUserProfile();
+class ProvidergetProviderProfile extends ProviderAuthEvent {
+  const ProvidergetProviderProfile();
 
   @override
   List<Object> get props => [];
@@ -107,34 +107,42 @@ class ProvidergetUserProfile extends ProviderAuthEvent {
 
 class ProviderLogout extends ProviderAuthEvent {}
 
-class ProviderSubmitKyc extends ProviderAuthEvent {
-  const ProviderSubmitKyc({required this.filePath});
-  final String filePath;
-  @override
-  List<Object> get props => [filePath];
-}
+// class ProviderSubmitKyc extends ProviderAuthEvent {
+//   const ProviderSubmitKyc({required this.filePath});
+//   final String filePath;
+//   @override
+//   List<Object> get props => [filePath];
+// }
 
-class ProviderSubmitIdentity extends ProviderAuthEvent{ 
-  const ProviderSubmitIdentity ({
-    required this.filePath,
-    required this.documentType,
-  });
-  final String filePath;
-  final String documentType;
-}
+// class ProviderSubmitIdentity extends ProviderAuthEvent {
+//   const ProviderSubmitIdentity({
+//     required this.filePath,
+//     required this.documentType,
+//   });
+//   final String filePath;
+//   final String documentType;
+// }
 
-class ProviderSubmitKycAddress extends ProviderAuthEvent {
-  const ProviderSubmitKycAddress({required this.state, required this.city, required this.address});
+// class ProviderSubmitKycAddress extends ProviderAuthEvent {
+//   const ProviderSubmitKycAddress({
+//     required this.state,
+//     required this.city,
+//     required this.address,
+//   });
 
-  final String state;
-  final String city;
-  final String address;
-}
-class ProviderSubmitId extends ProviderAuthEvent {
-  const ProviderSubmitId( {required this.documentType, required this.filePath});
-  final String documentType;
-  final String filePath;
-  @override
-  List<Object> get props => [filePath];
-}
-class ProviderGetProividerKycInfo extends ProviderAuthEvent {}
+//   final String state;
+//   final String city;
+//   final String address;
+// }
+
+// class ProviderSubmitId extends ProviderAuthEvent {
+//   const ProviderSubmitId({required this.documentType, required this.filePath});
+//   final String documentType;
+//   final String filePath;
+//   @override
+//   List<Object> get props => [filePath];
+// }
+
+// class ProviderGetProividerKycInfo extends ProviderAuthEvent {}
+
+class ProviderGetStates extends ProviderAuthEvent {}

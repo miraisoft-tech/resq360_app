@@ -75,7 +75,7 @@ Widget memoryImage({
 
 class CacheNetworkImageWidget extends StatelessWidget {
   const CacheNetworkImageWidget({
-    required this.imgUrl,
+    required this.imageUrl,
     this.fit,
     this.shape = BoxShape.rectangle,
     this.height,
@@ -84,7 +84,7 @@ class CacheNetworkImageWidget extends StatelessWidget {
     this.colorFilter,
     super.key,
   });
-  final String imgUrl;
+  final String imageUrl;
   final BoxFit? fit;
   final BoxShape shape;
   final double? height;
@@ -95,12 +95,12 @@ class CacheNetworkImageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageWidget = Image.network(
-      imgUrl,
+      imageUrl,
       height: both ?? height,
       width: both ?? width,
       fit: fit,
       errorBuilder: (context, error, stackTrace) {
-        log('---Image.network----url: $imgUrl -----error: $error ------');
+        log('---Image.network----url: $imageUrl -----error: $error ------');
         return assetsImage(
           imgUrl: AppAssets.ASSETS_LOGO_LOGO_PNG,
           shape: shape,

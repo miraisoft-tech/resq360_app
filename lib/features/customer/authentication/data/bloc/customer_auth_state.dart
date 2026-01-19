@@ -46,6 +46,8 @@ class CustomerAuthSignupSuccess extends CustomerAuthState {
   List<Object> get props => [userId];
 }
 
+final class CustomerAuthEmailPending extends CustomerAuthState {}
+
 class CustomerAuthLoginSuccess extends CustomerAuthState {
   const CustomerAuthLoginSuccess(this.user);
   final UserModel user;
@@ -82,26 +84,34 @@ class CustomerProfileLoaded extends CustomerAuthState {
  class CustomerForgotPasswordSucess extends CustomerAuthState {}
 
 
-class CustomerKycSubmitted extends CustomerAuthState {
-  const CustomerKycSubmitted(this.kycResponse);
-  final KycResponse kycResponse;
+// class CustomerKycSubmitted extends CustomerAuthState {
+//   const CustomerKycSubmitted(this.kycResponse);
+//   final KycResponse kycResponse;
 
-  @override
-  List<Object> get props => [kycResponse];
-}
+//   @override
+//   List<Object> get props => [kycResponse];
+// }
 
-class CustumerIdentitySubmitted extends CustomerAuthState {
-  const CustumerIdentitySubmitted({required this.data});
+// class CustumerIdentitySubmitted extends CustomerAuthState {
+//   const CustumerIdentitySubmitted({required this.data});
 
-  final IdentityResponse data;
-}
+//   final IdentityResponse data;
+// }
 
-class CustomerKycAddressSubmitted extends CustomerAuthState {}
-class CustomerUserKycInfoLoaded extends CustomerAuthState {
-  const CustomerUserKycInfoLoaded(this.userKycInfo);
-  final UserKycInfo userKycInfo;
+// class CustomerKycAddressSubmitted extends CustomerAuthState {}
+// class CustomerUserKycInfoLoaded extends CustomerAuthState {
+//   const CustomerUserKycInfoLoaded(this.userKycInfo);
+//   final UserKycInfo userKycInfo;
 
-  @override
-  List<Object> get props => [userKycInfo];
+//   @override
+//   List<Object> get props => [userKycInfo];
   
+// }
+
+class CustomerStatesLoadedState extends CustomerAuthState {
+  const CustomerStatesLoadedState(this.states);
+  final List<StateModel> states;
+
+  @override
+  List<Object> get props => [states];
 }

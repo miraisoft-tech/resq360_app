@@ -21,7 +21,10 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     on<UpdateProfileImageEvent>(_onUpdateProfileImage);
     on<UpdateProviderServiceEvent>(_onUpdateProviderService);
     on<UpdateProviderAddressEvent>(_onUpdateProviderAddress);
+    on<UpdateCustomerAddress>(_onUpdateCustomerAddress);
+    on<UpdateProviderAddress>(_onUpdateProviderAddressNew);
     on<UpdateBankAccountEvent>(_onUpdateBankAccount);
+    on<UpdatePasswordEvent>(_onUpdatePassword);
   }
 
   Future<void> _onUpdateUserInfo(
@@ -75,7 +78,13 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
         }
       }
 
-      final provider = await AuthLocalRepo.instance.getProviderCredentials();
+      final allImages = [
+        ...?event.existingImages,
+        ...?uploadedImagesUrls,
+      ];
+
+      final provider =
+          await AuthLocalRepo.instance.getProviderAuthCredentials();
       if (provider == null) {
         log('No user');
         emit(const ProfileUpdateError('No user credentials found'));
@@ -91,7 +100,7 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
         openingHours: event.openingHours,
         closingHours: event.closingHours,
         activityStatus: 'online',
-        images: uploadedImagesUrls,
+        images: allImages.isNotEmpty ? allImages : null,
       );
 
       if (result.error != null) {
@@ -109,7 +118,7 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     UpdateProfileImageEvent event,
     Emitter<ProfileUpdateState> emit,
   ) async {
-    emit(ProfileUpdateLoading());
+    emit(Loading());
     log('loading');
     try {
       log('uploading');
@@ -132,7 +141,7 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
           profileImageUrl: uploaded.url,
         );
       } else {
-        final user = await AuthLocalRepo.instance.getAuthCredentials();
+        final user = await AuthLocalRepo.instance.getCustomerAuthCredentials();
 
         if (user == null) {
           emit(const ProfileUpdateError('No user found'));
@@ -186,6 +195,43 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     }
   }
 
+  Future<void> _onUpdateCustomerAddress(
+    UpdateCustomerAddress event,
+    Emitter<ProfileUpdateState> emit,
+  ) async {
+    emit(ProfileUpdateLoading());
+    final result = await updateUserRepo.updateUserAddress(
+      state: event.state,
+      city: event.city,
+      zipCode: event.zipCode,
+      address: event.address,
+      longitude: event.longitude,
+      latitude: event.latitude,
+    );
+
+    if (result.error != null) {
+      emit(ProfileUpdateError(result.error!));
+    } else {
+      emit(ProfileUpdateSuccess(result.data));
+    }
+  }
+
+  Future<void> _onUpdateProviderAddressNew(
+    UpdateProviderAddress event,
+    Emitter<ProfileUpdateState> emit,
+  ) async {
+    emit(ProfileUpdateLoading());
+    final result = await updateUserRepo.updateProviderAddress(
+      addressData: event.addressData,
+    );
+
+    if (result.error != null) {
+      emit(ProfileUpdateError(result.error!));
+    } else {
+      emit(ProfileUpdateSuccess(result.data));
+    }
+  }
+
   Future<void> _onUpdateBankAccount(
     UpdateBankAccountEvent event,
     Emitter<ProfileUpdateState> emit,
@@ -202,6 +248,23 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
       emit(ProfileUpdateError(result.error!));
     } else {
       emit(ProfileUpdateSuccess(result.data));
+    }
+  }
+
+  Future<void> _onUpdatePassword(
+    UpdatePasswordEvent event,
+    Emitter<ProfileUpdateState> emit,
+  ) async {
+    emit(PasswordUpdateLoading());
+    final result = await updateUserRepo.updatePassword(
+      newPassword: event.newPassword,
+      oldPassword: event.oldPassword,
+    );
+
+    if (result.error != null) {
+      emit(PasswordUpdateError(result.error!));
+    } else {
+      emit(PasswordUpdateSuccess(result.data));
     }
   }
 }

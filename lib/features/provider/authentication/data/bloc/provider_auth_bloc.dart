@@ -1,15 +1,15 @@
-import 'dart:developer';
+import 'dart:convert';
 
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/identity_response.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/kyc_response.model.dart';
-import 'package:resq360/features/customer/authentication/data/models/auth/user_kyc.model.dart';
+import 'package:flutter/services.dart';
+import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
+
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
-import 'package:resq360/features/provider/authentication/data/models/auth_user.model.dart';
+import 'package:resq360/features/provider/authentication/data/models/auth_provider.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-import 'package:resq360/features/provider/authentication/data/service/auth_remote.repo.dart';
+import 'package:resq360/features/provider/authentication/data/models/state_model.dart';
+import 'package:resq360/features/provider/authentication/data/service/provider_auth_remote.repo.dart';
 
 part 'provider_auth_event.dart';
 part 'provider_auth_state.dart';
@@ -25,33 +25,105 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     on<ProviderSetNewPasswordEvent>(_onSetNewPassword);
     on<ProviderVerifyEmailAddressEvent>(_onVerifyEmailAddress);
     on<ProviderResendVerificationEmailEvent>(_onResendVerificationEmail);
-    on<ProvidergetUserProfile>(_onGetUserProfile);
-    on<ProviderSubmitKyc>(_onSubmitKyc);
-    on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
-    on<ProviderSubmitId>(_onSubmitKycId);
-    on<ProviderGetProividerKycInfo>(_onGetProviderKycInfo);
+    on<ProvidergetProviderProfile>(_onGetProviderProfile);
+    // on<ProviderSubmitKyc>(_onSubmitKyc);
+    // on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
+    // on<ProviderSubmitId>(_onSubmitKycId);
+    // on<ProviderGetProividerKycInfo>(_onGetProviderKycInfo);
     on<ProviderLogout>(_onLogout);
+    on<ProviderGetStates>(_getLocalStates);
   }
 
   Future<void> _onLoginWithEmail(
     ProviderLoginWithEmail event,
-    Emitter<ProviderAuthState> emit,
-  ) async {
-    emit(ProviderAuthLoadingState());
+    Emitter<ProviderAuthState> emit, [
+    bool showLoading = true,
+  ]) async {
+    if (showLoading) emit(ProviderAuthLoadingState());
+
     try {
       final result = await providerAuthRemoteRepo.loginWithEmail(
         email: event.email,
         password: event.password,
       );
-      if (result.data != null) {
-        emit(ProviderAuthLoginSuccessState(result.data!.provider));
-      } else {
+
+      if (result.data == null) {
         log('bloc error ${result.error}');
-        emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
+        emit(ProviderAuthFailureState(result.error ?? 'Login failed'));
+        return;
+      }
+
+      final response = result.data;
+      final authData = response?.data;
+
+      if (response == null || authData == null) {
+        emit(ProviderAuthFailureState(result.error ?? 'Login failed'));
+        return;
+      }
+
+      if (authData.isEmailVerified == false) {
+        emit(ProviderAuthEmailPendingState());
+        return;
+      }
+
+      if (authData.accessToken != null && authData.provider != null) {
+        await AuthLocalRepo.instance.storeAccessToken(authData.accessToken!);
+        final ok = await _loadAndSaveProviderProfile(
+          authResponse: result.data!,
+        );
+
+        if (!ok) {
+          emit(const ProviderAuthFailureState('Failed to load profile'));
+          return;
+        }
+
+        await AuthLocalRepo.instance.storeLocalCredentials(
+          email: event.email,
+          password: event.password,
+        );
+
+        emit(ProviderAuthLoginSuccessState(authData.provider!));
+        return;
       }
     } on Exception catch (e) {
       emit(ProviderAuthFailureState(e.toString()));
     }
+  }
+
+  Future<void> _loginWithEmailSilently() async {
+    try {
+      final localCredentials =
+          await AuthLocalRepo.instance.getLocalCredentials();
+
+      final result = await providerAuthRemoteRepo.loginWithEmail(
+        email: localCredentials?.userName ?? '',
+        password: localCredentials?.password ?? '',
+      );
+
+      await _loadAndSaveProviderProfile(
+        authResponse: result.data!,
+      );
+    } on Exception catch (e) {
+      log(e);
+    }
+  }
+
+  Future<bool> _loadAndSaveProviderProfile({
+    required AuthResponse authResponse,
+  }) async {
+    await AuthLocalRepo.instance.storeAccessToken(
+      authResponse.data?.accessToken ?? '',
+    );
+
+    final res = await providerAuthRemoteRepo.getProviderProfile();
+    if (res.data == null) return false;
+
+    await AuthLocalRepo.instance.storeUserDetails(
+      isProvider: true,
+      providerProfileResponse: res.data,
+    );
+
+    return true;
   }
 
   Future<void> _onSignupWithEmail(
@@ -59,6 +131,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
+
     try {
       final result = await providerAuthRemoteRepo.signupWithEmail(
         fullname: event.fullname,
@@ -70,11 +143,25 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         service: event.service,
         address: event.address,
       );
-      if (result.data != null) {
-        emit(ProviderAuthSignupSuccessState(result.data!.provider));
-      } else {
+
+      final response = result.data;
+      if (response == null) {
         emit(ProviderAuthFailureState(result.error ?? 'Signup failed'));
+        return;
       }
+
+      final provider = result.data?.provider;
+      if (provider == null) {
+        emit(const ProviderAuthFailureState('Invalid signup response'));
+        return;
+      }
+
+      emit(ProviderAuthSignupSuccessState(provider));
+      await AuthLocalRepo.instance.storeLocalCredentials(
+        email: event.email,
+        password: event.password,
+      );
+      
     } on Exception catch (e) {
       log('Signup Bloc Error: $e');
       emit(ProviderAuthFailureState(e.toString()));
@@ -164,6 +251,8 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
 
       if (result) {
         emit(ProviderEmailVerifiedState());
+
+        await _loginWithEmailSilently();
       } else {
         emit(
           const ProviderAuthFailureState(
@@ -198,14 +287,18 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<void> _onGetUserProfile(
-    ProvidergetUserProfile event,
+  Future<void> _onGetProviderProfile(
+    ProvidergetProviderProfile event,
     Emitter<ProviderAuthState> emit,
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      final result = await providerAuthRemoteRepo.getUserProfile();
+      final result = await providerAuthRemoteRepo.getProviderProfile();
       if (result.data != null) {
+        await AuthLocalRepo.instance.storeUserDetails(
+          isProvider: true,
+          providerProfileResponse: result.data,
+        );
         emit(ProviderProfileLoadedState(result.data!));
       } else {
         emit(
@@ -221,91 +314,130 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     emit(ProviderAuthInitial());
   }
 
-  Future<void> _onSubmitKyc(
-    ProviderSubmitKyc event,
-    Emitter<ProviderAuthState> emit,
-  ) async {
-    emit(ProviderAuthLoadingState());
-    try {
-      final result = await authRemoteRepo.uploadAndSubmitFaceId(
-        filePath: event.filePath,
-      );
-      if (result.data != null) {
-        emit(ProviderKycSubmitted(result.data!));
-      } else {
-        emit(
-          ProviderKycSubmissionFailure(result.error ?? 'KYC submission failed'),
-        );
-      }
-    } on Exception catch (e) {
-      emit(ProviderKycSubmissionFailure(e.toString()));
-    }
-  }
+  // Future<void> _onSubmitKyc(
+  //   ProviderSubmitKyc event,
+  //   Emitter<ProviderAuthState> emit,
+  // ) async {
+  //   emit(ProviderAuthLoadingState());
+  //   try {
+  //     final result = await providerAuthRemoteRepo.uploadAndSubmitFaceId(
+  //       filePath: event.filePath,
+  //     );
+  //     if (result.data != null) {
+  //       emit(ProviderKycSubmitted(result.data!));
+  //     } else {
+  //       emit(
+  //         ProviderKycSubmissionFailure(result.error ?? 'KYC submission failed'),
+  //       );
+  //     }
+  //   } on Exception catch (e) {
+  //     emit(ProviderKycSubmissionFailure(e.toString()));
+  //   }
+  // }
 
-  Future<void> _onGetProviderKycInfo(
-    ProviderGetProividerKycInfo event,
-    Emitter<ProviderAuthState> emit,
-  ) async {
-    emit(ProviderAuthLoadingState());
-    try {
-      final result = await authRemoteRepo.getUserKycInfo();
-      if (result.data != null) {
-        emit(ProviderKycInfoLoaded(result.data!));
-      } else {
-        emit(
-          ProviderAuthFailureState(result.error ?? 'Failed to load KYC info'),
-        );
-      }
-    } on Exception catch (e) {
-      log('ProviderGetUserKycInfo Bloc Get provider KYC Info Error: $e');
-      emit(ProviderAuthFailureState(e.toString()));
-    }
-  }
+  // Future<void> _onGetProviderKycInfo(
+  //   ProviderGetProividerKycInfo event,
+  //   Emitter<ProviderAuthState> emit,
+  // ) async {
+  //   emit(ProviderAuthLoadingState());
+  //   try {
+  //     final result = await providerAuthRemoteRepo.getUserKycInfo();
+  //     if (result.data != null) {
+  //       emit(ProviderKycInfoLoaded(result.data!));
+  //     } else {
+  //       emit(
+  //         ProviderAuthFailureState(result.error ?? 'Failed to load KYC info'),
+  //       );
+  //     }
+  //   } on Exception catch (e) {
+  //     log('ProviderGetUserKycInfo Bloc Get provider KYC Info Error: $e');
+  //     emit(ProviderAuthFailureState(e.toString()));
+  //   }
+  // }
 
-  Future<void> _onSubmitKycAddress(
-    ProviderSubmitKycAddress event,
-    Emitter<ProviderAuthState> emit,
-  ) async {
-    emit(ProviderAuthLoadingState());
-    try {
-      final result = await authRemoteRepo.submitKycAddress(
-        address: event.address,
-        city: event.city,
-        state: event.state,
-      );
-      if (result) {
-        emit(ProviderKycAddressSubmitted());
-      } else {
-        emit(
-          ProviderKycSubmissionFailure('$result KYC address submission failed'),
-        );
-      }
-    } on Exception catch (e) {
-      emit(ProviderKycSubmissionFailure(e.toString()));
-    }
-  }
+  // Future<void> _onSubmitKycAddress(
+  //   ProviderSubmitKycAddress event,
+  //   Emitter<ProviderAuthState> emit,
+  // ) async {
+  //   emit(ProviderAuthLoadingState());
+  //   try {
+  //     final result = await providerAuthRemoteRepo.submitKycAddress(
+  //       address: event.address,
+  //       city: event.city,
+  //       state: event.state,
+  //     );
+  //     if (result) {
+  //       emit(ProviderKycAddressSubmitted());
+  //     } else {
+  //       emit(
+  //         ProviderKycSubmissionFailure('$result KYC address submission failed'),
+  //       );
+  //     }
+  //   } on Exception catch (e) {
+  //     emit(ProviderKycSubmissionFailure(e.toString()));
+  //   }
+  // }
 
-  Future<void> _onSubmitKycId(
-    ProviderSubmitId event,
+  // Future<void> _onSubmitKycId(
+  //   ProviderSubmitId event,
+  //   Emitter<ProviderAuthState> emit,
+  // ) async {
+  //   emit(ProviderAuthLoadingState());
+  //   try {
+  //     final result = await providerAuthRemoteRepo.uploadAndSubmitIdentity(
+  //       documentType: event.documentType,
+  //       filePath: event.filePath,
+  //     );
+  //     if (result.data != null) {
+  //       emit(ProviderIdentitySubmitted(data: result.data!));
+  //     } else {
+  //       emit(
+  //         ProviderKycSubmissionFailure(
+  //           result.error ?? 'KYC ID submission failed',
+  //         ),
+  //       );
+  //     }
+  //   } on Exception catch (e) {
+  //     emit(ProviderKycSubmissionFailure(e.toString()));
+  //   }
+  // }
+
+  Future<void> _getLocalStates(
+    ProviderGetStates event,
     Emitter<ProviderAuthState> emit,
   ) async {
-    emit(ProviderAuthLoadingState());
+    final tempStatesList = <StateModel>[];
     try {
-      final result = await authRemoteRepo.uploadAndSubmitIdentity(
-        documentType: event.documentType,
-        filePath: event.filePath,
+      final jsonString = await rootBundle.loadString(
+        'assets/json/states_list.json',
       );
-      if (result.data != null) {
-        emit(ProviderIdentitySubmitted(data: result.data!));
-      } else {
-        emit(
-          ProviderKycSubmissionFailure(
-            result.error ?? 'KYC ID submission failed',
-          ),
-        );
+      final json = jsonDecode(jsonString);
+
+      if (json == null || json is! List) {
+        emit(ProviderStatesLoadedState(tempStatesList));
+        return;
       }
+
+      final statesListJson = json;
+      log('states ${statesListJson.length}');
+
+      for (var i = 0; i < statesListJson.length; i++) {
+        final stateJson = statesListJson[i];
+        if (stateJson is String) {
+          tempStatesList.add(StateModel.fromJson(stateJson));
+        }
+      }
+
+      tempStatesList.sort((a, b) {
+        final nameA = a.name ?? '';
+        final nameB = b.name ?? '';
+        return nameA.compareTo(nameB);
+      });
+
+      emit(ProviderStatesLoadedState(tempStatesList));
     } on Exception catch (e) {
-      emit(ProviderKycSubmissionFailure(e.toString()));
+      log('Error loading states: $e');
+      emit(ProviderStatesLoadedState(tempStatesList));
     }
   }
 }

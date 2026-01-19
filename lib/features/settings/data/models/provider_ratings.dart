@@ -16,14 +16,14 @@ class ProviderRatings {
         averageRatings: json['averageRatings'] as int?,
         totalReviews: json['totalReviews'] as int?,
         reviews: json['reviews'] == null
-            ? <Review>[]
+            ? <ProviderReview>[]
             : (json['reviews'] as List)
-                .map((x) => Review.fromJson(x as Map<String, dynamic>))
+                .map((x) => ProviderReview.fromJson(x as Map<String, dynamic>))
                 .toList(),
       );
   final int? averageRatings;
   final int? totalReviews;
-  final List<Review>? reviews;
+  final List<ProviderReview>? reviews;
 
   String toRawJson() => json.encode(toJson());
 
@@ -34,9 +34,9 @@ class ProviderRatings {
       };
 }
 
-class Review {
+class ProviderReview {
 
-  Review({
+  ProviderReview({
     this.overallRating,
     this.ratingDate,
     this.feedback,
@@ -45,10 +45,10 @@ class Review {
     this.user,
   });
 
-  factory Review.fromRawJson(String str) =>
-      Review.fromJson(json.decode(str) as Map<String, dynamic>);
+  factory ProviderReview.fromRawJson(String str) =>
+      ProviderReview.fromJson(json.decode(str) as Map<String, dynamic>);
 
-  factory Review.fromJson(Map<String, dynamic> json) => Review(
+  factory ProviderReview.fromJson(Map<String, dynamic> json) => ProviderReview(
         overallRating: json['overallRating'] as int?,
         ratingDate: json['ratingDate'] as String?,
         feedback: json['feedback'] as String?,

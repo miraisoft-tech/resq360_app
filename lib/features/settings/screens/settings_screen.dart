@@ -1,23 +1,31 @@
 import 'dart:io';
 
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/kyc_enums.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
+import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
+import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
-import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
-import 'package:resq360/features/settings/screens/manage_cards_screen.dart';
 import 'package:resq360/features/settings/screens/notification_settings_screen.dart';
 import 'package:resq360/features/settings/screens/ratings_screen.dart';
-import 'package:resq360/features/settings/screens/refer_screen.dart';
 import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
+import 'package:resq360/features/settings/widgets/pick_image.modal.dart';
+import 'package:resq360/features/settings/widgets/profile_section_header.dart';
+import 'package:resq360/keys.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -31,30 +39,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _refreshProfile() async {
     if (dashboardViewModel.userType == UserType.provider) {
-      context.read<ProviderAuthBloc>().add(const ProvidergetUserProfile());
+      context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
     } else {
       context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
     }
   }
 
   Future<void> _pickProfileImage(BuildContext context) async {
-    final image = await AppFilePicker.pickImage();
+    await GeneralDialogs.showCustomBottomSheet(
+      context,
+      body: CameraModal(
+        onTapGallery: () async {
+          Navigator.pop(context);
+          await _processPickedImage(context, ImageSource.gallery);
+        },
+        onTapCamera: () async {
+          Navigator.pop(context);
+          await _processPickedImage(context, ImageSource.camera);
+        },
+      ),
+    );
+  }
+
+  Future<void> _processPickedImage(
+    BuildContext context,
+    ImageSource source,
+  ) async {
+    final image = await AppFilePicker.pickImage(source: source);
     if (image == null) return;
 
     pickedImage = image;
 
-    if (dashboardViewModel.userType == UserType.provider) {
-      context.read<ProfileUpdateBloc>().add(
-        UpdateProfileImageEvent(
-          filePath: image.path,
-        ),
-      );
-    } else {
-      context.read<ProfileUpdateBloc>().add(
-        UpdateProfileImageEvent(
-          filePath: image.path,
-        ),
-      );
+    if (!context.mounted) return;
+
+    context.read<ProfileUpdateBloc>().add(
+      UpdateProfileImageEvent(filePath: image.path),
+    );
+  }
+
+  Future<String?> getEmail() async {
+    var email = '';
+    final cred = await AuthLocalRepo.instance.getLocalCredentials();
+    if (cred != null) {
+      email = cred.userName ?? '';
+    }
+    return email;
+  }
+
+  Future<String> getAppVersion() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final version = packageInfo.version;
+
+      return '$version(${packageInfo.buildNumber})';
+    } on Exception catch (e) {
+      log(e);
+      return '';
     }
   }
 
@@ -64,7 +104,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (dashboardViewModel.userType == UserType.provider) {
-        context.read<ProviderAuthBloc>().add(const ProvidergetUserProfile());
+        context.read<ProviderAuthBloc>().add(
+          const ProvidergetProviderProfile(),
+        );
       } else {
         context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
       }
@@ -93,23 +135,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
       SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
-        title: 'Manage Cards',
-        onTap: () async {
-          await pushScreen(context, const ManageCardsScreen());
-        },
-      ),
-      SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
-        title: 'Refer and Earn',
+        title: 'KYC',
         onTap: () async {
-          await pushScreen(context, const ReferScreen());
+          final userInfo =
+              await AuthLocalRepo.instance.getCustomerAuthCredentials();
+          if (userInfo?.kycStatus == KycEnums.approved.name) {
+            await showSuccessSnackbar(context, 'Your KYC is already approved');
+          } else {
+            await pushScreen(
+              context,
+              const VerificationStepsScreen(
+                source: VerificationSource.settings,
+              ),
+            );
+          }
         },
       ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
+      //   title: 'Manage Cards',
+      //   onTap: () async {
+      //     await pushScreen(context, const ManageCardsScreen());
+      //   },
+      // ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
+      //   title: 'Refer and Earn',
+      //   onTap: () async {
+      //     await pushScreen(context, const ReferScreen());
+      //   },
+      // ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PRIVACY_POLICY_SVG.svg,
         title: 'Terms of Use Policy',
-        onTap: () {},
+        onTap: () async {
+          await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
+        },
       ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
@@ -122,7 +184,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
         onTap: () async {
-          await pushScreen(context, const ContactAdminScreen());
+          await pushScreen(
+            context,
+            const ContactAdminScreen(
+              issueType: AdminIssueType.complaint,
+            ),
+          );
         },
       ),
     ];
@@ -143,37 +210,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
       SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
-        title: 'Manage Cards',
-        onTap: () async {
-          await pushScreen(context, const ManageCardsScreen());
-        },
-      ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
-        title: 'Add Bank Details',
-        onTap: () async {
-          await pushScreen(context, const AddBankDetailsScreen());
-        },
-      ),
-      SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
-        title: 'Refer and Earn',
+        title: 'KYC',
         onTap: () async {
-          await pushScreen(context, const ReferScreen());
+          final userInfo =
+              await AuthLocalRepo.instance.getProviderAuthCredentials();
+          if (userInfo?.kycStatus == KycEnums.approved.name) {
+            await showSuccessSnackbar(context, 'Your KYC is already approved');
+          } else {
+            await pushScreen(
+              context,
+              const ProviderVerificationStepsScreen(
+                source: VerificationSource.settings,
+              ),
+            );
+          }
         },
       ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_CARDS_SVG.svg,
+      //   title: 'Manage Cards',
+      //   onTap: () async {
+      //     await pushScreen(context, const ManageCardsScreen());
+      //   },
+      // ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
+      //   title: 'Add Bank Details',
+      //   onTap: () async {
+      //     await pushScreen(context, const AddBankDetailsScreen());
+      //   },
+      // ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
+      //   title: 'Refer and Earn',
+      //   onTap: () async {
+      //     await pushScreen(context, const ReferScreen());
+      //   },
+      // ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_NOTIFICATIONS_SVG.svg,
         title: 'Notification Settings',
         onTap: () async {
-          await pushScreen(context, const NotificationSettingsScreen());
+          await pushScreen(
+            context,
+            NotificationSettingsScreen(isProvider: isProvider),
+          );
         },
       ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PRIVACY_POLICY_SVG.svg,
         title: 'Terms of Use Policy',
-        onTap: () {},
+        onTap: () async {
+          await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
+        },
       ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
@@ -186,7 +276,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
         onTap: () async {
-          await pushScreen(context, const ContactAdminScreen());
+          final email = await getEmail();
+          if (email != null) {
+            await pushScreen(
+              context,
+              const ContactAdminScreen(
+                issueType: AdminIssueType.complaint,
+              ),
+            );
+          }
         },
       ),
     ];
@@ -207,6 +305,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         foregroundColor: appColors.black,
       ),
       body: RefreshIndicator(
+        color: appColors.primary,
         onRefresh: _refreshProfile,
         child: ListView(
           padding: EdgeInsets.only(
@@ -218,21 +317,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             10.verticalSpace,
             BlocListener<ProfileUpdateBloc, ProfileUpdateState>(
               listener: (context, state) async {
-
-                if (state is ProfileUpdateLoading) {
-                  await showLoadingDialog(context);
+                if (state is Loading) {
+                  showLoadingDialog(context);
                 }
                 if (state is ProfileUpdateSuccess) {
                   Navigator.pop(context);
                   await _refreshProfile();
                 }
 
-                 if (state is ProfileUpdateError) {
+                if (state is ProfileUpdateError) {
                   Navigator.pop(context);
                   await showErrorSnackbar(context, state.message);
                 }
               },
-              child: _ProfileSection(
+              child: ProfileSection(
                 isProvider: isProvider,
                 refreshProfile: _refreshProfile,
                 onPickImage: () => _pickProfileImage(context),
@@ -242,7 +340,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (isProvider)
               BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
                 builder: (context, state) {
-                  if (state is ProviderProfileLoadedState) {}
                   if (state is ProviderProfileLoadedState) {
                     final status = state.user.activityStatus ?? 'UNKNOWN';
 
@@ -255,7 +352,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               Navigator.pop(context);
                               await pushScreen(
                                 context,
-                                const ContactAdminScreen(),
+                                const ContactAdminScreen(
+                                  issueType: AdminIssueType.complaint,
+                                ),
                               );
                             },
                           ),
@@ -383,141 +482,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
+            20.verticalSpace,
+            Padding(
+              padding: pad(vertical: 20),
+              child: FutureBuilder<String>(
+                future: getAppVersion(),
+                builder: (_, snapshot) {
+                  return GenText(
+                    'v${snapshot.data == null ? '' : snapshot.data!}',
+                    weight: FontWeight.w500,
+                    color: Colors.black,
+                    textAlign: TextAlign.center,
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ProfileSection extends StatelessWidget {
-  const _ProfileSection({
-    required this.isProvider,
-    required this.refreshProfile,
-    required this.onPickImage,
-  });
-
-  final bool isProvider;
-  final void Function()? refreshProfile;
-  final void Function() onPickImage;
-
-  @override
-  Widget build(BuildContext context) {
-    if (isProvider) {
-      return BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
-        builder: (context, state) {
-          if (state is ProviderProfileLoadedState) {
-            final fullName = state.user.fullName?.trim();
-            final name =
-                (fullName != null && fullName.isNotEmpty)
-                    ? fullName
-                    : 'Provider User';
-
-            return ProfileView(
-              name: name,
-              imageUrl: state.user.profileImage,
-              onPickImage: onPickImage,
-            );
-          }
-
-          if (state is ProviderAuthLoadingState) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return const SizedBox.shrink();
-        },
-      );
-    }
-
-    return BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
-      builder: (context, state) {
-        if (state is CustomerProfileLoaded) {
-          final fullName = state.user.fullName?.trim();
-          final name =
-              (fullName != null && fullName.isNotEmpty)
-                  ? fullName
-                  : 'Customer User';
-
-          return ProfileView(
-            name: name,
-            imageUrl: state.user.profileImage,
-            onPickImage: onPickImage,
-          );
-        }
-
-        if (state is CustomerAuthLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (state is CustomerAuthFailure) {
-          return ErrorMessageAndButton(
-            error: state.error,
-            onPressed: refreshProfile,
-          );
-        }
-
-        return const SizedBox.shrink();
-      },
-    );
-  }
-}
-
-class ProfileView extends StatelessWidget {
-  const ProfileView({
-    required this.name,
-    required this.imageUrl,
-    required this.onPickImage,
-    super.key,
-  });
-
-  final String name;
-  final String? imageUrl;
-  final VoidCallback onPickImage;
-
-  @override
-  Widget build(BuildContext context) {
-    final appColors = context.appColors;
-
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            CircleAvatar(
-              radius: 45.r,
-              backgroundImage: NetworkImage(
-                imageUrl ?? 'https://randomuser.me/api/portraits/men/30.jpg',
-              ),
-            ),
-            Positioned(
-              bottom: 2,
-              right: 2,
-              child: GestureDetector(
-                onTap: onPickImage,
-                child: Container(
-                  padding: pad(vertical: 4, horizontal: 4),
-                  decoration: BoxDecoration(
-                    color: appColors.primary.shade500,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: appColors.whiteColor,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        15.verticalSpace,
-        UrbText(
-          name,
-          size: 16,
-          weight: FontWeight.w700,
-          color: appColors.black,
-        ),
-      ],
     );
   }
 }

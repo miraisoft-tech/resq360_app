@@ -9,14 +9,15 @@ part 'customer_payment_state.dart';
 class CustomerPaymentBloc
     extends Bloc<CustomerPaymentEvent, CustomerPaymentState> {
   CustomerPaymentBloc({PaymentRepo? repo})
-    : _repo = repo ?? PaymentRepo(),
-      super(CustomerPaymentInitialState()) {
+      : _repo = repo ?? PaymentRepo(),
+        super(CustomerPaymentInitialState()) {
     on<CustomerInitWalletFundingEvent>(_initWalletFunding);
     on<CustomerVerifyWalletFundingEvent>(_verifyWalletFunding);
     on<CustomerInitServicePaymentEvent>(_initServicePayment);
     on<CustomerInitServiceRequestPaymentEvent>(_initServiceRequestPayment);
-
-    on<CustomerVerifyServicePaymentEvent>(_verifyServicePayment);
+    on<CustomerVerifyServiceRequestPaymentEvent>(_verifyServiceRequestPayment);
+    on<CustomerInitAdvertisementPaymentEvent>(_initAdvertisementPayment);
+    on<CustomerVerifyAdvertisementPaymentEvent>(_verifyAdvertisementPayment);
   }
 
   final PaymentRepo _repo;
@@ -99,32 +100,124 @@ class CustomerPaymentBloc
       paymentMethod: event.paymentMethod,
     );
 
-    if (result.data != null) {
-      emit(ServicePaymentInitiatedState(result.data!));
-    } else {
+    if (result.error != null) {
       log(result.error);
+      emit(ServicePaymentFailureState(result.error!));
+      return;
+    }
+
+    if (result.data != null) {
+      if (result.data?.paymentResponse == null) {
+        emit(ServiceRequestPaymentCompletedState(
+          message: result.data?.message ?? 'Payment successful',
+        ));
+        return;
+      }
+      if (result.data!.paymentResponse != null) {
+        emit(ServiceRequestPaymentInitiatedState(
+          result.data!.paymentResponse!,
+        ));
+      }
+    }
+  }
+
+  // Future<void> _verifyServicePayment(
+  //   CustomerVerifyServicePaymentEvent event,
+  //   Emitter<CustomerPaymentState> emit,
+  // ) async {
+  //   emit(ServicePaymentLoadingState());
+
+  //   final result = await _repo.verifyPayment(event.reference);
+
+  //   if (result.isSuccess && result.data != null) {
+  //     emit(ServicePaymentVerifiedState(result.data!));
+  //   } else {
+  //     emit(
+  //       ServicePaymentFailureState(
+  //         result.error ?? 'Service payment verification failed',
+  //       ),
+  //     );
+  //   }
+  // }
+
+  Future<void> _verifyServiceRequestPayment(
+    CustomerVerifyServiceRequestPaymentEvent event,
+    Emitter<CustomerPaymentState> emit,
+  ) async {
+    emit(ServiceRequestPaymentVerifying());
+
+    try {
+      final result = await _repo.verifyPayment(event.reference);
+
+      if (result.isSuccess && result.data != null) {
+        if (result.data!.gatewayResponse == 'Successful' ||
+            result.data!.status == 'success') {
+          emit(const ServiceRequestPaymentCompletedState(
+            message: 'Payment verified successfully',
+          ));
+        } else {
+          emit(
+            ServicePaymentFailureState(
+              'Payment was not successful: ${result.data!.gatewayResponse}',
+            ),
+          );
+        }
+      } else {
+        emit(
+          ServicePaymentFailureState(
+            result.error ?? 'Payment verification failed',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      log('Payment verification error: $e');
       emit(
-        const ServicePaymentFailureState(
-           'Service payment initiation failed',
+        ServicePaymentFailureState(
+          'Payment verification failed: $e',
         ),
       );
     }
   }
 
-  Future<void> _verifyServicePayment(
-    CustomerVerifyServicePaymentEvent event,
+  Future<void> _initAdvertisementPayment(
+    CustomerInitAdvertisementPaymentEvent event,
     Emitter<CustomerPaymentState> emit,
   ) async {
-    emit(ServicePaymentLoadingState());
+    emit(AdvertisementPaymentLoadingState());
+
+    final result = await _repo.initiatePayment(
+      amount: event.amount,
+      email: event.email,
+      currency: event.currency,
+      callbackUrl: event.callbackUrl,
+    );
+
+    if (result.data != null) {
+      emit(AdvertisementPaymentInitiatedState(result.data!));
+    } else {
+      log(result.error);
+      emit(
+        AdvertisementPaymentFailureState(
+          result.error ?? 'Advertisement payment initiation failed',
+        ),
+      );
+    }
+  }
+
+  Future<void> _verifyAdvertisementPayment(
+    CustomerVerifyAdvertisementPaymentEvent event,
+    Emitter<CustomerPaymentState> emit,
+  ) async {
+    emit(AdvertisementPaymentLoadingState());
 
     final result = await _repo.verifyPayment(event.reference);
 
     if (result.isSuccess && result.data != null) {
-      emit(ServicePaymentVerifiedState(result.data!));
+      emit(AdvertisementPaymentVerifiedState(result.data!));
     } else {
       emit(
-        ServicePaymentFailureState(
-          result.error ?? 'Service payment verification failed',
+        AdvertisementPaymentFailureState(
+          result.error ?? 'Advertisement payment verification failed',
         ),
       );
     }

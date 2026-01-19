@@ -2,21 +2,23 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
 
   Future<void> _handleLogout(BuildContext context) async {
-    unawaited(showLoadingDialog(context));
+    showLoadingDialog(context);
 
     try {
+      await ChatSocketService.instance.dispose();
+
       await AuthLocalRepo.instance.clearAuthCredentials();
       await AuthLocalRepo.instance.clearAccessToken();
-      await AuthLocalRepo.instance.clearLocalCred();
       await AuthLocalRepo.instance.clearUserType();
 
-      log('🧹 Cleared all local auth data successfully');
+      log('Cleared all local auth data successfully');
 
       if (Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -26,7 +28,6 @@ class LogoutDialog extends StatelessWidget {
         await replaceScreen(context, const SelectAccountTypeScreen());
       }
     } on Exception catch (e) {
-
       if (Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
       }

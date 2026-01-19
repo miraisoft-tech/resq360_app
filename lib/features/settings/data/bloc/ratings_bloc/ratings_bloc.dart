@@ -7,12 +7,12 @@ import 'package:resq360/features/settings/data/service/ratings_service.dart';
 part 'ratings_event.dart';
 part 'ratings_state.dart';
 
-
 class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
   RatingsBloc(this._repo) : super(RatingsInitial()) {
     on<FetchCustomerRatings>(_onFetchCustomerRatings);
     on<FetchProviderRatings>(_onFetchProviderRatings);
     on<FetchProviderRatingsById>(_onFetchProviderRatingsById);
+    on<FetchCustomerRatingsById>(_onFetchCustomerRatingsById);
     on<RateProviderEvent>(_onRateProvider);
   }
 
@@ -25,9 +25,9 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     emit(RatingsLoading());
 
     final result = await _repo.customerGetRatings();
-      final ratings = result.data;
+    final ratings = result.data;
 
-    if (ratings!= null) {
+    if (ratings != null) {
       emit(CustomerRatingsLoaded(ratings));
     } else {
       emit(RatingsError(result.error ?? 'Failed to load customer ratings'));
@@ -43,23 +43,40 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     final result = await _repo.providerGetRatings();
     final ratings = result.data;
 
-    if (ratings!= null) {
+    if (ratings != null) {
       emit(ProviderRatingsLoaded(ratings));
     } else {
       emit(RatingsError(result.error ?? 'Failed to load provider ratings'));
     }
   }
 
-    Future<void> _onFetchProviderRatingsById(
+  Future<void> _onFetchProviderRatingsById(
     FetchProviderRatingsById event,
     Emitter<RatingsState> emit,
   ) async {
     emit(RatingsLoading());
 
-    final result = await _repo.providerGetRatingsById(providerId: event.providerId);
+    final result = await _repo.providerGetRatingsById(
+      providerId: event.providerId,
+    );
     final ratings = result.data;
     if (ratings != null) {
       emit(ProviderRatingsLoaded(ratings));
+    } else {
+      emit(RatingsError(result.error ?? 'Failed to load provider ratings'));
+    }
+  }
+
+  Future<void> _onFetchCustomerRatingsById(
+    FetchCustomerRatingsById event,
+    Emitter<RatingsState> emit,
+  ) async {
+    emit(RatingsLoading());
+
+    final result = await _repo.customerGetRatingsById(userId: event.userId);
+    final ratings = result.data;
+    if (ratings != null) {
+      emit(CustomerRatingsLoaded(ratings));
     } else {
       emit(RatingsError(result.error ?? 'Failed to load provider ratings'));
     }

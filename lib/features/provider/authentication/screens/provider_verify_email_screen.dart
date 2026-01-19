@@ -1,4 +1,3 @@
-
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
@@ -24,7 +23,7 @@ class ProviderVerifyEmailScreen extends StatefulWidget {
 class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
   int endTime =
       DateTime.now()
-          .add(const Duration(seconds: 5 * 60))
+          .add(const Duration(seconds: 1 * 60))
           .millisecondsSinceEpoch;
 
   late TextEditingController _tokenController;
@@ -77,7 +76,7 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
           }
         }
         if (state is ProviderAuthLoadingState) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is ProviderAuthFailureState) {
@@ -98,7 +97,7 @@ class _ProviderVerifyEmailScreenState extends State<ProviderVerifyEmailScreen> {
             controller
               ..endTime =
                   DateTime.now()
-                      .add(const Duration(seconds: 5 * 60))
+                      .add(const Duration(seconds: 1 * 60))
                       .millisecondsSinceEpoch
               ..start();
           });

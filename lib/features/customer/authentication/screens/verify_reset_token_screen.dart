@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
@@ -45,7 +44,7 @@ class _VerifyResetTokenScreenState extends State<VerifyResetTokenScreen> {
   }
 
   Future<void> onResend() async {
-     if (_tokenController.text.isNotEmpty) {
+    if (_tokenController.text.isNotEmpty) {
       _tokenController.clear();
     }
     context.read<CustomerAuthBloc>().add(
@@ -79,7 +78,7 @@ class _VerifyResetTokenScreenState extends State<VerifyResetTokenScreen> {
           }
         }
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
           return;
         }
 
@@ -95,7 +94,7 @@ class _VerifyResetTokenScreenState extends State<VerifyResetTokenScreen> {
           controller
             ..endTime =
                 DateTime.now()
-                    .add(const Duration(seconds: 5 * 60))
+                    .add(const Duration(seconds: 1 * 60))
                     .millisecondsSinceEpoch
             ..start();
 

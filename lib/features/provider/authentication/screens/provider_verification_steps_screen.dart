@@ -1,8 +1,11 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_step_face_screen.dart';
 
 class ProviderVerificationStepsScreen extends StatefulWidget {
-  const ProviderVerificationStepsScreen({super.key});
+  const ProviderVerificationStepsScreen({required this.source, super.key});
+
+  final VerificationSource source;
 
   @override
   State<ProviderVerificationStepsScreen> createState() =>
@@ -68,7 +71,12 @@ class _ProviderVerificationStepsScreenState
                 onPressed: () async {
                   log('Proceed verification steps');
 
-                  await pushScreen(context, const ProviderStepFaceScreen());
+                  await pushScreen(
+                    context,
+                    ProviderStepFaceScreen(
+                      source: widget.source,
+                    ),
+                  );
                 },
               ),
               20.verticalSpace,

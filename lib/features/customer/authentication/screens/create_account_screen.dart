@@ -1,9 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/confirm_email_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
+import 'package:resq360/keys.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -27,10 +30,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     nameController = TextEditingController();
     emailController = TextEditingController();
     passwordController = TextEditingController();
-
-    //  .instance.addPostFrameCallback(
-    //   (_) => AppTrackingPermissionHandler.requestTrackingPermisssion(),
-    // );
   }
 
   @override
@@ -48,25 +47,21 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
-          if (Navigator.canPop(context)) {
-            await pop(context);
-          }
+          Navigator.pop(context);
 
           log(state.error);
           await showSnackBar(context, 'Error', state.error);
         }
 
         if (state is CustomerAuthAuthenticated && context.mounted) {
-          if (Navigator.canPop(context)) {
-            await pop(context);
-          }
+          Navigator.pop(context);
 
-          await pushScreen(
-            context,
+          await pushAndReplaceScreen(
+            context: context,
             ConfirmEmailScreen(
               email: emailController.text,
             ),
@@ -147,6 +142,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                   ),
                                   TextSpan(
                                     text: 'Terms and Conditions',
+                                    recognizer:
+                                        TapGestureRecognizer()
+                                          ..onTap = () async {
+                                            await AppGenUtil.launchUrlText(
+                                              AppKeys.termsAndConditionsUrl,
+                                            );
+                                          },
                                     style: TextStyle(
                                       fontFamily: 'inter',
                                       fontSize: 12.sp,
@@ -180,35 +182,35 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 }
                                 : null,
                       ),
-                      30.verticalSpace,
-                      Row(
-                        children: [
-                          const Expanded(child: Divider()),
-                          Padding(
-                            padding: pad(horizontal: 8),
-                            child: GenText(
-                              'or sign up with',
-                              color: colors.textColor.shade500,
-                            ),
-                          ),
-                          const Expanded(child: Divider()),
-                        ],
-                      ),
-                      20.verticalSpace,
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _SocialButton(
-                            icon: AppAssets.ASSETS_IMAGES_GOOGLE_PNG,
-                            onTap: () {},
-                          ),
-                          40.horizontalSpace,
-                          _SocialButton(
-                            icon: AppAssets.ASSETS_IMAGES_APPLE_PNG,
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
+
+                      // Row(
+                      //   children: [
+                      //     const Expanded(child: Divider()),
+                      //     Padding(
+                      //       padding: pad(horizontal: 8),
+                      //       child: GenText(
+                      //         'or sign up with',
+                      //         color: colors.textColor.shade500,
+                      //       ),
+                      //     ),
+                      //     const Expanded(child: Divider()),
+                      //   ],
+                      // ),
+                      // 20.verticalSpace,
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [
+                      //     SocialButton(
+                      //       icon: AppAssets.ASSETS_IMAGES_GOOGLE_PNG,
+                      //       onTap: () {},
+                      //     ),
+                      //     40.horizontalSpace,
+                      //     SocialButton(
+                      //       icon: AppAssets.ASSETS_IMAGES_APPLE_PNG,
+                      //       onTap: () {},
+                      //     ),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),
@@ -251,22 +253,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SocialButton extends StatelessWidget {
-  const _SocialButton({
-    required this.icon,
-    required this.onTap,
-  });
-  final String icon;
-  final void Function() onTap;
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: icon.imageAsset(height: 40, width: 40),
     );
   }
 }

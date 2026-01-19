@@ -13,17 +13,15 @@ class RecommendedCard extends StatelessWidget {
     final description = advertisement.description ?? '';
     final image = advertisement.imageUrl;
     final serviceType = advertisement.serviceType ?? '';
-    final isSponsored = advertisement.adType?.toLowerCase() == 'sponsored';
 
-   
-    const rating = 4.8;
-    const reviewCount = 127;
-    const distance = '1.2km';
+    final rating = advertisement.provider?.averageRating ?? 0;
+    final reviewCount = advertisement.provider?.totalReviews ?? 0;
 
     return Column(
       children: [
         Container(
-          padding: pad(horizontal: 14, vertical: 14),
+          padding: pad(horizontal: 5, vertical: 14),
+          margin: EdgeInsets.only(right: 12.w),
           decoration: BoxDecoration(
             border: Border.all(color: colors.lightGreyColor2),
             borderRadius: BorderRadius.circular(12),
@@ -32,28 +30,27 @@ class RecommendedCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               CircleAvatar(
-                radius: 25,
-                backgroundImage:  image != null 
-                  ? NetworkImage(image) 
-                  : const AssetImage(AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG) 
-                      as ImageProvider,
+              PictureWidget(
+                image: image,
               ),
-              12.horizontalSpace,
+              5.horizontalSpace,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        UrbText(
-                          title,
-                          height: 24.5,
-                          weight: FontWeight.w500,
-                          color: colors.black,
+                        Expanded(
+                          child: UrbText(
+                            title,
+                            height: 24.5,
+                            weight: FontWeight.w500,
+                            color: colors.black,
+                            maxLines: 1,
+                          ),
                         ),
-                        const Spacer(),
-                        if (isSponsored)
+                        20.horizontalSpace,
+
                         Container(
                           padding: pad(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
@@ -69,7 +66,7 @@ class RecommendedCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  
+
                     if (serviceType.isNotEmpty)
                       GenText(
                         serviceType,
@@ -79,7 +76,7 @@ class RecommendedCard extends StatelessWidget {
                         color: colors.textColor.shade500,
                       ),
                     4.verticalSpace,
-                     
+
                     Row(
                       children: [
                         const Icon(Icons.star, size: 16, color: Colors.orange),
@@ -91,20 +88,20 @@ class RecommendedCard extends StatelessWidget {
                           size: 12,
                           color: colors.neutral.shade300,
                         ),
-                        10.horizontalSpace,
-                        AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                          color: colors.neutral.shade300,
-                        ),
-                        2.horizontalSpace,
-                        GenText(
-                          distance,
-                          size: 12,
-                          color: colors.neutral.shade300,
-                        ),
+                        // 10.horizontalSpace,
+                        // AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
+                        //   color: colors.neutral.shade300,
+                        // ),
+                        // 2.horizontalSpace,
+                        // GenText(
+                        //   distance,
+                        //   size: 12,
+                        //   color: colors.neutral.shade300,
+                        // ),
                       ],
                     ),
                     8.verticalSpace,
-                     if (description.isNotEmpty)
+                    if (description.isNotEmpty)
                       GenText(
                         description,
                         size: 12,
@@ -113,7 +110,7 @@ class RecommendedCard extends StatelessWidget {
                         maxLines: 3,
                       ),
                     20.verticalSpace,
-                     if (advertisement.budget != null)
+                    if (advertisement.budget != null)
                       Container(
                         padding: pad(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
@@ -121,7 +118,7 @@ class RecommendedCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(33.r),
                         ),
                         child: GenText(
-                          '\$${advertisement.budget}',
+                          '-${advertisement.budget}% Today',
                           size: 13,
                           weight: FontWeight.w600,
                           color: colors.whiteColor,
@@ -133,8 +130,6 @@ class RecommendedCard extends StatelessWidget {
             ],
           ),
         ),
-        10.verticalSpace,
-        const SmallDotIndicator(total: 3, currentIndex: 0),
       ],
     );
   }

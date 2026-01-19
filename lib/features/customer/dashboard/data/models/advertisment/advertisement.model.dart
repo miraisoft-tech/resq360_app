@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+
 class Advertisement {
 
     Advertisement({
@@ -28,25 +30,25 @@ class Advertisement {
     factory Advertisement.fromRawJson(String str) => Advertisement.fromJson(json.decode(str) as Map<String, dynamic>);
 
     factory Advertisement.fromJson(Map<String, dynamic> json) => Advertisement(
-        id: json['id'] as int,
-        title: json['title'] as String,
-        description: json['description']as String,
-        imageUrl: json['imageUrl']as String,
-        targetUrl: json['targetUrl']as String,
-        serviceType: json['serviceType']as String,
-        adType: json['adType']as String,
-        status: json['status']as String,
+        id: json['id'] as int?,
+        title: json['title'] as String?,
+        description: json['description']as String?,
+        imageUrl: json['imageUrl']as String?,
+        targetUrl: json['targetUrl']as String?,
+        serviceType: json['serviceType']as String?,
+        adType: json['adType']as String?,
+        status: json['status']as String?,
         startDate: json['startDate'] == null ? null : DateTime.parse(json['startDate']as String),
         endDate: json['endDate'] == null ? null : DateTime.parse(json['endDate']as String),
-        budget: json['budget'] as int,
-        clickCount: json['clickCount'] as int,
-        impressionCount: json['impressionCount']as int,
-        isActive: json['isActive'] as bool,
-        providerId: json['providerId']as int,
-        adminId: json['adminId']as int,
+        budget: json['budget'] as int?,
+        clickCount: json['clickCount'] as int?,
+        impressionCount: json['impressionCount']as int?,
+        isActive: json['isActive'] as bool?,
+        providerId: json['providerId']as int?,
+        adminId: json['adminId']as int?,
         createdAt: json['createdAt'] == null ? null : DateTime.parse(json['createdAt']as String),
         updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt']as String),
-        provider: json['provider'] == null ? null : Admin.fromJson(json['provider']as Map<String, dynamic>),
+        provider: json['provider'] == null ? null : ProviderModel.fromJson(json['provider']as Map<String, dynamic>),
         admin: json['admin'] == null ? null : Admin.fromJson(json['admin'] as Map<String, dynamic>),
     );
     final int? id;
@@ -67,7 +69,7 @@ class Advertisement {
     final int? adminId;
     final DateTime? createdAt;
     final DateTime? updatedAt;
-    final Admin? provider;
+    final ProviderModel? provider;
     final Admin? admin;
 
     String toRawJson() => json.encode(toJson());

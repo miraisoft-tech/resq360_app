@@ -49,9 +49,12 @@ class AuthLocalRepo {
     CustomerUserModel? customerProfileResponse,
   }) async {
     try {
-      final key = isProvider ? DBKeys.providerAuthData : DBKeys.authData;
+      final key =
+          isProvider ? DBKeys.providerAuthData : DBKeys.customerAuthData;
       final value =
-          isProvider ? providerProfileResponse?.toJson() : customerProfileResponse?.toJson();
+          isProvider
+              ? providerProfileResponse?.toJson()
+              : customerProfileResponse?.toJson();
       return await pref.saveMap(
         key: key,
         value: value!,
@@ -62,10 +65,11 @@ class AuthLocalRepo {
     }
   }
 
-  Future<CustomerUserModel?> getAuthCredentials() async {
+  Future<CustomerUserModel?> getCustomerAuthCredentials() async {
     try {
       final result =
-          await pref.getValue(key: DBKeys.authData) as Map<String, dynamic>?;
+          await pref.getValue(key: DBKeys.customerAuthData)
+              as Map<String, dynamic>?;
       if (result == null) return null;
       return CustomerUserModel.fromJson(result);
     } on Exception catch (e) {
@@ -74,20 +78,39 @@ class AuthLocalRepo {
     }
   }
 
-  Future<ProviderModel?> getProviderCredentials() async {
+  Future<ProviderModel?> getProviderAuthCredentials() async {
     try {
-      final raw = await pref.getValue(key: DBKeys.providerAuthData);
-      if (raw is! Map<String, dynamic>) return null;
-      return ProviderModel.fromJson(raw);
+      final result =
+          await pref.getValue(key: DBKeys.providerAuthData)
+              as Map<String, dynamic>?;
+      if (result == null) return null;
+      return ProviderModel.fromJson(result);
     } on Exception catch (e) {
-      log('getProviderCredentials error: $e');
+      log('getAuthCredentials error: $e');
+      return null;
+    }
+  }
+
+  ////====PHONE NUMBER====////
+
+  Future<String?> getUserPhoneNumber({required bool isProvider}) async {
+    try {
+      if (isProvider) {
+        final provider = await getProviderAuthCredentials();
+        return provider?.phoneNumber;
+      } else {
+        final customer = await getCustomerAuthCredentials();
+        return customer?.phoneNumber;
+      }
+    } on Exception catch (e) {
+      log('getUserPhoneNumber error: $e');
       return null;
     }
   }
 
   Future<bool> clearAuthCredentials() async {
     try {
-      await pref.deleteKey(key: DBKeys.authData);
+      await pref.deleteKey(key: DBKeys.customerAuthData);
       await pref.deleteKey(key: DBKeys.providerAuthData);
       return true;
     } on Exception catch (e) {

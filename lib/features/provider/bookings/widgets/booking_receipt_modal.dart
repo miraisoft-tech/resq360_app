@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 
 class BookingReceiptModal extends StatelessWidget {
   const BookingReceiptModal({
@@ -6,6 +7,7 @@ class BookingReceiptModal extends StatelessWidget {
     required this.provider,
     required this.status,
     required this.invoice,
+    required this.amount,
     required this.dateTime,
     required this.method,
     required this.onDownload,
@@ -15,10 +17,11 @@ class BookingReceiptModal extends StatelessWidget {
   final String service;
   final String provider;
   final String status;
+  final String amount;
   final String invoice;
   final String dateTime;
   final String method;
-  final VoidCallback onDownload;
+  final VoidCallback? onDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +73,7 @@ class BookingReceiptModal extends StatelessWidget {
           ),
           30.verticalSpace,
           UrbText(
-            '₦15,000.00',
+           'NGN ${AppTextUtil.formatAmount(amount)}',
             size: 18,
             height: 28.5,
             weight: FontWeight.w700,

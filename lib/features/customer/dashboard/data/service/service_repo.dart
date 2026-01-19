@@ -147,6 +147,33 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
+    Future<ApiResult<ServiceProvider>> fetchProviderByid({
+    required int providerId,
+  }) async {
+   
+    final url = '/user/provider/$providerId';
+    try {
+    
+      final response = await dio().get<Map<String, dynamic>>(
+        url,
+      );
+      log('GET $url => ${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final json = response.data!;
+        final providers = ServiceProvider.fromJson(json['data'] as Map<String, dynamic>);
+        return ApiResult(data: providers);
+      } else {
+        log('Failed to fetch provider: ${response.data}');
+        return ApiResult(error: 'Failed to fetch provider');
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
   Future<ApiResult<Map<String, dynamic>>> updateServiceInfo({
     required int serviceCategoryId,
     required String name,
@@ -212,7 +239,7 @@ class ServiceRepo extends BaseAPI {
     };
 
     if (status != null) {
-      queryParams['status'] = status;
+      queryParams['booking_status'] = status;
     }
 
     const url = '/services/bookings';
@@ -268,7 +295,10 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<String>> cancelServiceBooking({ required int serviceRequestId, required String cancellationReason}) async {
+  Future<ApiResult<String>> cancelServiceBooking({
+    required int serviceRequestId,
+    required String cancellationReason,
+  }) async {
     final url = '/services/bookings/$serviceRequestId/cancel';
 
     final body = {'cancellationReason': cancellationReason};
@@ -276,11 +306,10 @@ class ServiceRepo extends BaseAPI {
       final res = await dio().post<Map<String, dynamic>>(url, data: body);
       log('POST $url => ${res.statusCode}');
       log('POST $url => ${res.data}');
-      
-      
+
       if (res.statusCode == 200) {
         final data = res.data!['message'] as String;
-        return ApiResult(data: data );
+        return ApiResult(data: data);
       } else {
         return ApiResult(
           error:
@@ -297,15 +326,15 @@ class ServiceRepo extends BaseAPI {
 
   Future<ApiResult<void>> completeServiceBooking(
     int serviceRequestId, {
-    required double ratings,
+    required int ratings,
     required String review,
   }) async {
     final url = '/services/bookings/$serviceRequestId/complete';
     try {
-      final formData = FormData.fromMap({
+      final formData = {
         'ratings': ratings,
         'review': review,
-      });
+      };
       final res = await dio().post<Map<String, dynamic>>(url, data: formData);
       log('POST $url => ${res.statusCode}');
 

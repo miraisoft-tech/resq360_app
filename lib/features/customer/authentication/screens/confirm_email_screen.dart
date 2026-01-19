@@ -1,8 +1,8 @@
-
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
@@ -20,7 +20,7 @@ class ConfirmEmailScreen extends StatefulWidget {
 class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
   int endTime =
       DateTime.now()
-          .add(const Duration(seconds: 5 * 60))
+          .add(const Duration(seconds: 1 * 60))
           .millisecondsSinceEpoch;
 
   late TextEditingController _otpController1;
@@ -51,7 +51,7 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
     controller
       ..endTime =
           DateTime.now()
-              .add(const Duration(seconds: 5 * 60))
+              .add(const Duration(seconds: 1 * 60))
               .millisecondsSinceEpoch
       ..start();
   }
@@ -63,7 +63,9 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
     }
 
     context.read<CustomerAuthBloc>().add(
-      CustomerVerifyEmailAddressEvent(emailVerificationToken: _otpController1.text),
+      CustomerVerifyEmailAddressEvent(
+        emailVerificationToken: _otpController1.text,
+      ),
     );
     log('pushing to verification steps');
   }
@@ -74,27 +76,29 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-        if (!mounted) return;
         if (state is CustomerAuthLoading) {
-          await showLoadingDialog(context);
+          showLoadingDialog(context);
         }
 
         if (state is CustomerAuthFailure) {
           log(state.error);
-          Navigator.of(context).pop();
+            if (context.mounted) {
+            Navigator.pop(context);
+          }
+
           await showErrorSnackbar(context, state.error);
         }
 
         if (state is CustomerVerificationEmailResentState) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
+          if (context.mounted) {
+            Navigator.pop(context);
           }
           await showSuccessSnackbar(context, state.message);
 
           controller
             ..endTime =
                 DateTime.now()
-                    .add(const Duration(seconds: 5 * 60))
+                    .add(const Duration(seconds: 1 * 60))
                     .millisecondsSinceEpoch
             ..start();
 
@@ -105,7 +109,12 @@ class _ConfirmEmailScreenState extends State<ConfirmEmailScreen> {
           log('Email verified');
 
           await pop(context);
-          await replaceScreen(context, const VerificationStepsScreen());
+          await pushAndReplaceScreen(
+            context: context,
+           const VerificationStepsScreen(
+              source: VerificationSource.signup,
+            ),
+          );
         }
       },
       child: AppScaffold(

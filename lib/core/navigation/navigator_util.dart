@@ -20,7 +20,6 @@ Future<dynamic> pushScreen(
 Future<dynamic> replaceScreen(
   BuildContext context,
   Widget widget, {
-
   bool removeSession = false,
 }) async {
   return Navigator.pushAndRemoveUntil<dynamic>(
@@ -28,6 +27,7 @@ Future<dynamic> replaceScreen(
     MaterialPageRoute<dynamic>(
       builder: (BuildContext context) => widget,
     ),
+
     (Route<dynamic> route) => false,
   );
 }

@@ -9,7 +9,8 @@ import 'package:resq360/core/services/notification_service.dart';
 part 'notification_event.dart';
 part 'notification_state.dart';
 
-final NotificationRepo _notificationRepo = NotificationRepo(); 
+final NotificationRepo _notificationRepo = NotificationRepo();
+
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   NotificationBloc() : super(NotificationInitial()) {
     on<FetchRecentNotifications>(_onFetchRecentNotifications);
@@ -23,44 +24,41 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     on<FetchNotificationStatuses>(_onFetchStatuses);
   }
 
-Future<void> _onFetchRecentNotifications(
-  FetchRecentNotifications event,
-  Emitter<NotificationState> emit,
-) async {
-  final current = state;
+  Future<void> _onFetchRecentNotifications(
+    FetchRecentNotifications event,
+    Emitter<NotificationState> emit,
+  ) async {
+    final current = state;
 
-  try {
-    final res =
-        await _notificationRepo.getRecentNotificationActivities(
-      offset: event.offset,
-      limit: event.limit,
-    );
-
-    final fetched = res.notifications;
-
-    if (current is NotificationLoaded && event.loadMore) {
-      emit(
-        current.copyWith(
-          notifications: [
-            ...current.notifications,
-            ...fetched,
-          ],
-        ),
+    try {
+      final res = await _notificationRepo.getRecentNotificationActivities(
+        offset: event.offset,
+        limit: event.limit,
       );
-    } else {
-      emit(
-        NotificationLoaded(
-          notifications: fetched,
-          pagination: res.pagination,
-        ),
-      );
+
+      final fetched = res.notifications;
+
+      if (current is NotificationLoaded && event.loadMore) {
+        emit(
+          current.copyWith(
+            notifications: [
+              ...current.notifications,
+              ...fetched,
+            ],
+          ),
+        );
+      } else {
+        emit(
+          NotificationLoaded(
+            notifications: fetched,
+            pagination: res.pagination,
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(NotificationError(e.toString()));
     }
-  } on  Exception catch (e) {
-    emit(NotificationError(e.toString()));
   }
-}
-
-
 
   Future<void> _onFetchUnreadCount(
     FetchUnreadCount event,
@@ -95,7 +93,9 @@ Future<void> _onFetchRecentNotifications(
     try {
       final result = await _notificationRepo.markAllNotificationsAsRead();
       if (result.data != null) {
-        // emit(const NotificationActionSuccess('All notifications marked as read'));
+        emit(
+          const NotificationActionSuccess('All notifications marked as read'),
+        );
       } else {
         emit(NotificationError(result.error ?? 'Unknown error'));
       }
@@ -104,68 +104,61 @@ Future<void> _onFetchRecentNotifications(
     }
   }
 
- Future<void> _onArchiveNotification(
-  ArchiveNotification event,
-  Emitter<NotificationState> emit,
-) async {
-  final current = state;
-  if (current is! NotificationLoaded) return;
+  Future<void> _onArchiveNotification(
+    ArchiveNotification event,
+    Emitter<NotificationState> emit,
+  ) async {
+    final current = state;
+    if (current is! NotificationLoaded) return;
 
-  final previousList = current.notifications;
+    final previousList = current.notifications;
 
-  emit(
-    current.copyWith(
-      notifications:
-          previousList.where((n) => n.id != event.id).toList(),
-    ),
-  );
+    emit(
+      current.copyWith(
+        notifications: previousList.where((n) => n.id != event.id).toList(),
+      ),
+    );
 
-  try {
-    final result =
-        await _notificationRepo.archiveNotification(event.id);
+    try {
+      final result = await _notificationRepo.archiveNotification(event.id);
 
-    if (result.data == null) {
-      throw Exception(result.error ?? 'Archive failed');
+      if (result.data == null) {
+        throw Exception(result.error ?? 'Archive failed');
+      }
+
+      emit(const NotificationActionSuccess('Notification archived'));
+    } on Exception catch (e) {
+      emit(current.copyWith(notifications: previousList));
+      emit(NotificationError(e.toString()));
     }
-
-    // emit(const NotificationActionSuccess('Notification archived'));
-  } on Exception catch (e) {
-    emit(current.copyWith(notifications: previousList));
-    emit(NotificationError(e.toString()));
   }
-}
 
+  Future<void> _onDeleteNotification(
+    DeleteNotification event,
+    Emitter<NotificationState> emit,
+  ) async {
+    final current = state;
+    if (current is! NotificationLoaded) return;
 
-Future<void> _onDeleteNotification(
-  DeleteNotification event,
-  Emitter<NotificationState> emit,
-) async {
-  final current = state;
-  if (current is! NotificationLoaded) return;
+    final previousList = current.notifications;
+    final newList = previousList.where((n) => n.id != event.id).toList();
 
-  final previousList = current.notifications;
-  
-  emit(
-    current.copyWith(
-      notifications:
-          previousList.where((n) => n.id != event.id).toList(),
-    ),
-  );
+    try {
+      final success = await _notificationRepo.deleteNotification(event.id);
 
-  try {
-    final success =
-        await _notificationRepo.deleteNotification(event.id);
+      if (!success) {
+        throw Exception('Delete failed');
+      }
 
-    if (!success) {
-      throw Exception('Delete failed');
+      emit(
+        current.copyWith(
+          notifications: newList,
+        ),
+      );
+    } on Exception catch (e) {
+      emit(NotificationError(e.toString()));
     }
-    
-  } on Exception catch (e) {
-    emit(current.copyWith(notifications: previousList));
-    emit(NotificationError(e.toString()));
   }
-}
-
 
   Future<void> _onFetchCategories(
     FetchNotificationCategories event,
