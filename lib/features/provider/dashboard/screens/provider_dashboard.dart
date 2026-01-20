@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
@@ -198,7 +199,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   16.horizontalSpace,
                   ProviderStatsCard(
                     title: 'Revenue',
-                    value: revenue,
+                    value: '₦${AppTextUtil.formatAmount(revenue)}',
                     icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
                   ),
                 ],

@@ -10,7 +10,7 @@ class AccountStatusDialog extends StatelessWidget {
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 165.h, bottom: 165.h),
+      padding: EdgeInsets.only(top: 125.h, bottom: 125.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -44,6 +44,12 @@ class AccountStatusDialog extends StatelessWidget {
                 title: 'ACTIVE',
                 subTitle: 'Your account is active. Clients can reach you.',
                 color: appColors.success.shade700,
+              ),
+              20.verticalSpace,
+              StatusItemWidget(
+                title: 'OFFLINE',
+                subTitle: 'Your account is offline. Clients cannot reach you.',
+                color: appColors.error.shade700,
               ),
               20.verticalSpace,
               StatusItemWidget(

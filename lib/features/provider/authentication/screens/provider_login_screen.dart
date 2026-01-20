@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/biometric_auth_service.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
@@ -25,6 +26,9 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
+  bool _canUseBiometrics = false;
+  bool _hasStoredCredentials = false;
+
   @override
   void initState() {
     super.initState();
@@ -40,14 +44,57 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
   }
 
   Future<void> init() async {
-    final customerRef = ProviderAuthProvider.instance;
+    final providerRef = ProviderAuthProvider.instance;
 
-    await customerRef.init();
+    await providerRef.init();
 
-    if (customerRef.isLocalCredStored) {
-      emailController.text = customerRef.localCred?.userName ?? '';
+    if (providerRef.isLocalCredStored) {
+      emailController.text = providerRef.localCred?.userName ?? '';
+      _hasStoredCredentials = true;
 
       setState(() {});
+    }
+
+    await _checkBiometricAvailability();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    final providerRef = ProviderAuthProvider.instance;
+    final biometricService = BiometricAuthService.instance;
+
+    final isAvailable = await biometricService.isBiometricAvailable();
+    final hasBiometricsEnabled = providerRef.useBiometics;
+
+    setState(() {
+      _canUseBiometrics =
+          isAvailable && hasBiometricsEnabled && _hasStoredCredentials;
+    });
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    final providerRef = ProviderAuthProvider.instance;
+    final biometricService = BiometricAuthService.instance;
+
+    final authenticated = await biometricService.authenticate(
+      reason: 'Authenticate to login to your account',
+    );
+
+    if (authenticated && providerRef.localCred != null) {
+      emailController.text = providerRef.localCred!.userName ?? '';
+      passwordController.text = providerRef.localCred!.password ?? '';
+
+      setState(() {});
+
+      if (_formKey.currentState?.validate() ?? false) {
+        if (mounted) {
+          context.read<ProviderAuthBloc>().add(
+            ProviderLoginWithEmail(
+              email: emailController.text.trim(),
+              password: passwordController.text.trim(),
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -78,19 +125,18 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
           await showErrorSnackbar(context, state.error);
         }
 
-         if (state is ProviderAuthEmailPendingState) {
+        if (state is ProviderAuthEmailPendingState) {
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
           }
 
-            await pushAndReplaceScreen(
+          await pushAndReplaceScreen(
             context: context,
             ProviderConfirmEmailScreen(
               email: emailController.text,
             ),
           );
         }
-
 
         if (state is ProviderAuthLoginSuccessState) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
@@ -164,6 +210,29 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                   }
                 },
               ),
+              if (_canUseBiometrics) ...[
+                16.verticalSpace,
+                GestureDetector(
+                  onTap: _authenticateWithBiometrics,
+                  child: Center(
+                    child: Container(
+                      padding: pad(
+                        vertical: 14,
+                        horizontal: 20,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: colors.primary.shade500),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Icon(
+                        Icons.fingerprint,
+                        color: colors.primary.shade500,
+                        size: 24.sp,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               25.verticalSpace,
               Center(
                 child: GestureDetector(
