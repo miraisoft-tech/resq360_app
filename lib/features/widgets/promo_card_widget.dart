@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
@@ -13,18 +15,40 @@ class PromoCardWidget extends StatefulWidget {
 }
 
 class _PromoCardWidgetState extends State<PromoCardWidget> {
+  late Timer _timer;
   late PageController _pageController;
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-
     _pageController = PageController();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) async {
+      if (!mounted) return;
+      final adsLength =
+          (context.read<CustomerAdvertisementBloc>().state
+                  as CustomerAdvertisementFetched)
+              .adminAds
+              .length;
+      if (_currentPage < adsLength - 1) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+
+     await _pageController.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+     });
   }
 
   @override
   void dispose() {
+    _timer.cancel();
     _pageController.dispose();
     super.dispose();
   }

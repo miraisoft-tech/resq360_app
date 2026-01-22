@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-import 'package:resq360/core/utils/build_config.dart';
 
 class AppTextUtil {
   AppTextUtil._();
@@ -24,24 +23,20 @@ class AppTextUtil {
     return DateFormat('d MMMM, yyyy').format(date);
   }
 
-  static String formatAmount(String amountString) {
-    if (amountString == '') return '0.00';
-
-    final amount = amountString.replaceAll(',', '');
-    try {
-      final f = NumberFormat('###,###,###,###.00', 'en_US');
-      if (f.format(double.tryParse(amount)) == '.00') {
-        return '0.00';
-      }
-      if (f.format(double.parse(amount)).startsWith('.')) {
-        return '0${f.format(double.parse(amount))}';
-      }
-      return f.format(double.parse(amount));
-    } on Exception catch (e) {
-      log(e);
-
+  static String formatAmount(String? amountString) {
+    if (amountString == null || amountString.trim().isEmpty) {
       return '0.00';
     }
+
+    final cleanedAmount = amountString.replaceAll(',', '');
+
+    final parsed = double.tryParse(cleanedAmount);
+    if (parsed == null) {
+      return '0.00';
+    }
+
+    final f = NumberFormat('#,##0.00', 'en_US');
+    return f.format(parsed);
   }
 
   static String formatDateToString(String date, [String? format]) {

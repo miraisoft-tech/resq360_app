@@ -3,6 +3,7 @@ import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:resq360/features/provider/dashboard/widgets/provider_stats_card.
 import 'package:resq360/features/provider/dashboard/widgets/provider_todo.dart';
 import 'package:resq360/features/provider/dashboard/widgets/service_requests.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
+import 'package:resq360/features/widgets/promo_card_widget.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -40,6 +42,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         ProviderFetchBookings(
           status: BookingStatus.ongoing.value,
         ),
+      );
+      context.read<CustomerAdvertisementBloc>().add(
+        CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
       );
     });
   }
@@ -98,13 +103,11 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               final provider = asyncSnapshot.data!;
               final fullName = provider.fullName?.trim();
               final address = provider.address?.city ?? 'N/A';
-              final balance = provider.wallet?.balance.toString();
               final description = provider.description;
               final profileImage = provider.profileImage ?? '';
 
-              if (balance != null) {
-                revenue = balance;
-              }
+              final balance = provider.wallet?.balance ?? 0;
+              revenue = balance.toString();
               final kyc = provider.kycStatus;
               if (kyc == 'APPROVED') {
                 isAproved = true;
@@ -148,6 +151,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               ProviderFetchBookings(
                 status: BookingStatus.ongoing.value,
               ),
+            );
+            context.read<CustomerAdvertisementBloc>().add(
+              CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
             );
           },
 
@@ -223,6 +229,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 30.verticalSpace,
               ],
 
+               const PromoCardWidget(),
+               
+              30.verticalSpace,
               BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
                 builder: (context, state) {
                   if (state is ProviderServicesLoading) {
@@ -247,6 +256,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                   return const SizedBox.shrink();
                 },
               ),
+
               30.verticalSpace,
               BlocBuilder<
                 CustomerAdvertisementBloc,
