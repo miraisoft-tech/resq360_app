@@ -26,10 +26,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     on<ProviderVerifyEmailAddressEvent>(_onVerifyEmailAddress);
     on<ProviderResendVerificationEmailEvent>(_onResendVerificationEmail);
     on<ProvidergetProviderProfile>(_onGetProviderProfile);
-    // on<ProviderSubmitKyc>(_onSubmitKyc);
-    // on<ProviderSubmitKycAddress>(_onSubmitKycAddress);
-    // on<ProviderSubmitId>(_onSubmitKycId);
-    // on<ProviderGetProividerKycInfo>(_onGetProviderKycInfo);
+     on<ProviderDeleteAccount>(_onDeleteAccount);
     on<ProviderLogout>(_onLogout);
     on<ProviderGetStates>(_getLocalStates);
   }
@@ -314,93 +311,30 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     emit(ProviderAuthInitial());
   }
 
-  // Future<void> _onSubmitKyc(
-  //   ProviderSubmitKyc event,
-  //   Emitter<ProviderAuthState> emit,
-  // ) async {
-  //   emit(ProviderAuthLoadingState());
-  //   try {
-  //     final result = await providerAuthRemoteRepo.uploadAndSubmitFaceId(
-  //       filePath: event.filePath,
-  //     );
-  //     if (result.data != null) {
-  //       emit(ProviderKycSubmitted(result.data!));
-  //     } else {
-  //       emit(
-  //         ProviderKycSubmissionFailure(result.error ?? 'KYC submission failed'),
-  //       );
-  //     }
-  //   } on Exception catch (e) {
-  //     emit(ProviderKycSubmissionFailure(e.toString()));
-  //   }
-  // }
-
-  // Future<void> _onGetProviderKycInfo(
-  //   ProviderGetProividerKycInfo event,
-  //   Emitter<ProviderAuthState> emit,
-  // ) async {
-  //   emit(ProviderAuthLoadingState());
-  //   try {
-  //     final result = await providerAuthRemoteRepo.getUserKycInfo();
-  //     if (result.data != null) {
-  //       emit(ProviderKycInfoLoaded(result.data!));
-  //     } else {
-  //       emit(
-  //         ProviderAuthFailureState(result.error ?? 'Failed to load KYC info'),
-  //       );
-  //     }
-  //   } on Exception catch (e) {
-  //     log('ProviderGetUserKycInfo Bloc Get provider KYC Info Error: $e');
-  //     emit(ProviderAuthFailureState(e.toString()));
-  //   }
-  // }
-
-  // Future<void> _onSubmitKycAddress(
-  //   ProviderSubmitKycAddress event,
-  //   Emitter<ProviderAuthState> emit,
-  // ) async {
-  //   emit(ProviderAuthLoadingState());
-  //   try {
-  //     final result = await providerAuthRemoteRepo.submitKycAddress(
-  //       address: event.address,
-  //       city: event.city,
-  //       state: event.state,
-  //     );
-  //     if (result) {
-  //       emit(ProviderKycAddressSubmitted());
-  //     } else {
-  //       emit(
-  //         ProviderKycSubmissionFailure('$result KYC address submission failed'),
-  //       );
-  //     }
-  //   } on Exception catch (e) {
-  //     emit(ProviderKycSubmissionFailure(e.toString()));
-  //   }
-  // }
-
-  // Future<void> _onSubmitKycId(
-  //   ProviderSubmitId event,
-  //   Emitter<ProviderAuthState> emit,
-  // ) async {
-  //   emit(ProviderAuthLoadingState());
-  //   try {
-  //     final result = await providerAuthRemoteRepo.uploadAndSubmitIdentity(
-  //       documentType: event.documentType,
-  //       filePath: event.filePath,
-  //     );
-  //     if (result.data != null) {
-  //       emit(ProviderIdentitySubmitted(data: result.data!));
-  //     } else {
-  //       emit(
-  //         ProviderKycSubmissionFailure(
-  //           result.error ?? 'KYC ID submission failed',
-  //         ),
-  //       );
-  //     }
-  //   } on Exception catch (e) {
-  //     emit(ProviderKycSubmissionFailure(e.toString()));
-  //   }
-  // }
+  Future<void> _onDeleteAccount(
+  ProviderDeleteAccount event,
+  Emitter<ProviderAuthState> emit,
+) async {
+  emit(ProviderAuthLoadingState());
+  
+  try {
+    final result = await providerAuthRemoteRepo.deleteAccount();
+    
+    if (result.data != null) {
+      final message = result.data?['message'] ?? 'Account deleted successfully';
+      emit(ProviderAccountDeletedState(message.toString()));
+    } else {
+      emit(
+        ProviderAccountDeletionFailedState(
+          result.error ?? 'Failed to delete account',
+        ),
+      );
+    }
+  } on Exception catch (e) {
+    log('Delete Account Error: $e');
+    emit(ProviderAccountDeletionFailedState(e.toString()));
+  }
+}
 
   Future<void> _getLocalStates(
     ProviderGetStates event,

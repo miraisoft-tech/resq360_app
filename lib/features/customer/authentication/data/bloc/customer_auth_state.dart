@@ -82,6 +82,15 @@ class CustomerProfileLoaded extends CustomerAuthState {
 }
 
  class CustomerForgotPasswordSucess extends CustomerAuthState {}
+class CustomerAccountDeletedState extends CustomerAuthState {
+  const CustomerAccountDeletedState(this.message);
+  final String message;
+}
+
+class CustomerAccountDeletionFailedState extends CustomerAuthState {
+  const CustomerAccountDeletionFailedState(this.error);
+  final String error;
+}
 
 
 // class CustomerKycSubmitted extends CustomerAuthState {

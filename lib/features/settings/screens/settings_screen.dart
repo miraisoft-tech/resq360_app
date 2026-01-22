@@ -22,6 +22,7 @@ import 'package:resq360/features/settings/screens/notification_settings_screen.d
 import 'package:resq360/features/settings/screens/ratings_screen.dart';
 import 'package:resq360/features/settings/screens/update_service_screen.dart';
 import 'package:resq360/features/settings/widgets/account_status_dialog.dart';
+import 'package:resq360/features/settings/widgets/delete_account_dialog.dart';
 import 'package:resq360/features/settings/widgets/logout.dialog.dart';
 import 'package:resq360/features/settings/widgets/pick_image.modal.dart';
 import 'package:resq360/features/settings/widgets/profile_section_header.dart';
@@ -325,7 +326,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Navigator.pop(context);
                   await _refreshProfile();
                 }
-              if (state is ProviderAcivitityChanged) {
+                if (state is ProviderAcivitityChanged) {
                   await _refreshProfile();
                 }
                 if (state is ProfileUpdateError) {
@@ -380,9 +381,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
 
                               4.horizontalSpace,
-                          AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
-                            color: appColors.success.shade700,
-                          ),
+                              AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
+                                  .svgColor(
+                                    color: appColors.success.shade700,
+                                  ),
                             ],
                           ),
                         ),
@@ -497,6 +499,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   10.horizontalSpace,
                   GenText(
                     'Log out',
+                    color: appColors.error.shade500,
+                    size: 15,
+                    weight: FontWeight.w600,
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.chevron_right,
+                    color: appColors.textColor.shade200,
+                  ),
+                ],
+              ),
+            ),
+            30.verticalSpace,
+            GestureDetector(
+              onTap: () async {
+                await GeneralDialogs.showCustomDialog<void>(
+                  context,
+                  body: const DeleteAccountDialog(),
+                );
+              },
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.delete_forever_outlined,
+                    color: appColors.error.shade500,
+                  ),
+                  10.horizontalSpace,
+                  GenText(
+                    'Delete Account',
                     color: appColors.error.shade500,
                     size: 15,
                     weight: FontWeight.w600,

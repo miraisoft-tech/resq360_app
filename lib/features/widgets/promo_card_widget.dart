@@ -39,7 +39,7 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
 
      await _pageController.animateToPage(
         _currentPage,
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
     });
@@ -60,7 +60,7 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
     return BlocBuilder<CustomerAdvertisementBloc, CustomerAdvertisementState>(
       builder: (context, state) {
         if (state is CustomerAdvertisementLoading) {
-          return const CircularProgressIndicator();
+          return const Center(child: CircularProgressIndicator());
         }
         if (state is CustomerAdvertisementFetched) {
           final ads = state.adminAds;

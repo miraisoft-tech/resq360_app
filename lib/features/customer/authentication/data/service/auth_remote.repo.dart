@@ -523,4 +523,40 @@ class AuthRemoteRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+  Future<ApiResult<dynamic>> deleteAccount() async {
+  try {
+    const url = '/user/account';
+    
+
+    final res = await dio().delete<Map<String, dynamic>>(
+      url,
+    );
+
+    log(res.statusCode);
+    log(res.data);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final success = res.data!['success'] == true;
+      
+      if (success) {
+        return ApiResult(data: res.data);
+      } else {
+        return ApiResult(
+          error: res.data!['message']?.toString() ?? 'Account deletion failed',
+        );
+      }
+    }
+    
+    return ApiResult(
+      error: res.data?['message']?.toString() ?? 
+             'An error occurred, please try again!',
+    );
+  } on DioException catch (e) {
+    return handleDioError(e);
+  } on Exception catch (e, s) {
+    log(e);
+    log(s);
+    return ApiResult(error: '$e $s');
+  }
+}
 }

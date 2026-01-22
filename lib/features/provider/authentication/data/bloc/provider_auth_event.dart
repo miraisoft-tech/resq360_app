@@ -107,6 +107,10 @@ class ProvidergetProviderProfile extends ProviderAuthEvent {
 
 class ProviderLogout extends ProviderAuthEvent {}
 
+class ProviderDeleteAccount extends ProviderAuthEvent {
+  const ProviderDeleteAccount();
+}
+
 // class ProviderSubmitKyc extends ProviderAuthEvent {
 //   const ProviderSubmitKyc({required this.filePath});
 //   final String filePath;

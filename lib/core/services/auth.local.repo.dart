@@ -181,6 +181,17 @@ class AuthLocalRepo {
     }
   }
 
+  Future<bool> clearLocalCredentials() async {
+    try {
+      await pref.deleteKey(key: DBKeys.emailKey);
+      await pref.deleteKey(key: DBKeys.passwordKey);
+      return true;
+    } on Exception catch (e) {
+      log(e.toString());
+      return false;
+    }
+  }
+
   ////////////OTP///////////
   Future<bool> storeForgotPasswordOtp({
     required String otp,
