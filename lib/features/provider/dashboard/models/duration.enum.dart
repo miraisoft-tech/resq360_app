@@ -1,15 +1,14 @@
-/// Duration options for promoting a service.
+
 enum PromotionDuration {
-  oneWeek(7, '1 Week'),
-  twoWeeks(14, '2 Weeks'),
-  oneMonth(30, '1 Month'),
-  threeMonths(90, '3 Months');
+  oneWeek(1, '1 Week'),
+  twoWeeks(2, '2 Weeks'),
+  oneMonth(4, '1 Month'),
+  threeMonths(12, '3 Months');
 
   const PromotionDuration(this.value, this.label);
 
   final int value;
   final String label;
 
-  /// Returns duration in milliseconds for animation purposes
-  int get milliseconds => 300;
+  int get milliseconds => Duration(days: value * 7).inMilliseconds;
 }

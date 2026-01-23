@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/provider/dashboard/models/duration.enum.dart';
@@ -153,7 +154,7 @@ class _PromoteServiceReviewScreenState
                             builder: (context, state) {
                               if (state is AdvertisementPriceFetched) {
                                 return GenText(
-                                  state.price.toString(),
+                                 '₦ ${ AppTextUtil.formatAmount(state.price.toString())}',
                                   height: 24.5,
                                   weight: FontWeight.w500,
                                   color: appColors.black,
@@ -186,9 +187,12 @@ class _PromoteServiceReviewScreenState
                             builder: (context, state) {
                               if (state is AdvertisementPriceFetched) {
                                 final price = state.price ?? 0;
+                                // final duration = widget.duration.value;
                                 final total = price * widget.duration.value;
+                                final formattedTotal = AppTextUtil.formatAmount(total.toString());
+                                // print('price: $price, total: $total, formattedtotal: $formattedTotal, duration ${widget.duration.value}'  );
                                 return GenText(
-                                  total.toString(),
+                                '₦ $formattedTotal',
                                   height: 24.5,
                                   weight: FontWeight.w500,
                                   color: appColors.black,

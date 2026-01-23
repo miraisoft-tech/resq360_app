@@ -118,9 +118,10 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
 
               if (url.toString().contains(
                 'https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
-              )) {
+              )) {_finish();} 
+              else if (url.toString().contains('https://www.searchhounds.com/favicon.svg')) {
                 _finish();
-              }
+              }            
             },
 
             onLoadStop: (_, _) async {

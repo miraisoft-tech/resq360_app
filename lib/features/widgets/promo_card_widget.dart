@@ -24,26 +24,26 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
     super.initState();
     _pageController = PageController();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) async {
-      if (!mounted) return;
-      final adsLength =
-          (context.read<CustomerAdvertisementBloc>().state
-                  as CustomerAdvertisementFetched)
-              .adminAds
-              .length;
-      if (_currentPage < adsLength - 1) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
-      }
+      _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) async {
+        if (!mounted) return;
+        final adsState = context.read<CustomerAdvertisementBloc>().state;
 
-     await _pageController.animateToPage(
-        _currentPage,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
+        if (adsState is! CustomerAdvertisementFetched) return;
+
+        final adsLength = adsState.adminAds.length;
+        if (_currentPage < adsLength - 1) {
+          _currentPage++;
+        } else {
+          _currentPage = 0;
+        }
+
+        await _pageController.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      });
     });
-     });
   }
 
   @override
