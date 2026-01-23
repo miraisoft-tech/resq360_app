@@ -37,7 +37,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _initializeProvider();
+      await AuthLocalRepo.instance.getProviderAuthCredentials();
       context.read<CustomerAdvertisementBloc>().add(
         CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
       );
@@ -49,17 +49,17 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     });
   }
 
-  Future<void> _initializeProvider() async {
-    final provider = await AuthLocalRepo.instance.getProviderAuthCredentials();
-    if (provider?.id != null) {
-      setState(() {
-        providerId = provider!.id;
-      });
-      context.read<CustomerAdvertisementBloc>().add(
-        FetchProviderActiveAdvertisements(providerId: provider!.id!),
-      );
-    }
-  }
+  // Future<void> _initializeProvider() async {
+  //   final provider = await AuthLocalRepo.instance.getProviderAuthCredentials();
+  //   if (provider?.id != null) {
+  //     setState(() {
+  //       providerId = provider!.id;
+  //     });
+  //     context.read<CustomerAdvertisementBloc>().add(
+  //       FetchProviderActiveAdvertisements(providerId: provider!.id!),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -147,6 +147,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         ),
         body: RefreshIndicator(
           onRefresh: () async {
+            await AuthLocalRepo.instance.getProviderAuthCredentials();
             context.read<ProviderServiceBloc>().add(
               ProviderFetchBookings(
                 status: BookingStatus.ongoing.value,
@@ -229,8 +230,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 30.verticalSpace,
               ],
 
-               const PromoCardWidget(),
-               
+              const PromoCardWidget(),
+
               30.verticalSpace,
               BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
                 builder: (context, state) {
