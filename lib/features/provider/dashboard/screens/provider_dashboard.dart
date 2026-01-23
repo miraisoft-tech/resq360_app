@@ -38,13 +38,13 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _initializeProvider();
+      context.read<CustomerAdvertisementBloc>().add(
+        CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
+      );
       context.read<ProviderServiceBloc>().add(
         ProviderFetchBookings(
           status: BookingStatus.ongoing.value,
         ),
-      );
-      context.read<CustomerAdvertisementBloc>().add(
-        CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
       );
     });
   }
