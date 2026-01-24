@@ -105,24 +105,6 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-  Future<bool> _loadAndSaveProviderProfile({
-    required AuthResponse authResponse,
-  }) async {
-    await AuthLocalRepo.instance.storeAccessToken(
-      authResponse.data?.accessToken ?? '',
-    );
-
-    final res = await providerAuthRemoteRepo.getProviderProfile();
-    if (res.data == null) return false;
-
-    await AuthLocalRepo.instance.storeUserDetails(
-      isProvider: true,
-      providerProfileResponse: res.data,
-    );
-
-    return true;
-  }
-
   Future<void> _onSignupWithEmail(
     ProviderSignupWIthEmail event,
     Emitter<ProviderAuthState> emit,
@@ -290,6 +272,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ) async {
     emit(ProviderAuthLoadingState());
     try {
+      log( 'Fetching provider profile...');
       final result = await providerAuthRemoteRepo.getProviderProfile();
       if (result.data != null) {
         await AuthLocalRepo.instance.storeUserDetails(
@@ -374,4 +357,23 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
       emit(ProviderStatesLoadedState(tempStatesList));
     }
   }
+
+    Future<bool> _loadAndSaveProviderProfile({
+    required AuthResponse authResponse,
+  }) async {
+    await AuthLocalRepo.instance.storeAccessToken(
+      authResponse.data?.accessToken ?? '',
+    );
+
+    final res = await providerAuthRemoteRepo.getProviderProfile();
+    if (res.data == null) return false;
+
+    await AuthLocalRepo.instance.storeUserDetails(
+      isProvider: true,
+      providerProfileResponse: res.data,
+    );
+
+    return true;
+  }
+
 }

@@ -63,7 +63,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
     final biometricService = BiometricAuthService.instance;
 
     final isAvailable = await biometricService.isBiometricAvailable();
-    final hasBiometricsEnabled = providerRef.useBiometics;
+    final hasBiometricsEnabled = providerRef.useBiometrics;
 
     setState(() {
       _canUseBiometrics =

@@ -181,6 +181,17 @@ class AuthLocalRepo {
     }
   }
 
+  Future<int?> getProviderId() async {
+  final provider = await getProviderAuthCredentials();
+  return provider?.id;
+}
+
+Future<int?> getCustomerId() async {
+  final customer = await getCustomerAuthCredentials();
+  return customer?.id;
+}
+
+
   Future<bool> clearLocalCredentials() async {
     try {
       await pref.deleteKey(key: DBKeys.emailKey);

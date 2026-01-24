@@ -248,6 +248,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     CustomergetUserProfile event,
     Emitter<CustomerAuthState> emit,
   ) async {
+    log('Fetching customer profile...');
     emit(CustomerAuthLoading());
     try {
       final result = await authRemoteRepo.getUserProfile();

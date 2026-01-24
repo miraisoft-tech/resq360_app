@@ -8,6 +8,7 @@ import 'package:resq360/features/customer/authentication/data/bloc/customer_auth
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart'
     as customer;
 import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 
 class AddressScreen extends StatefulWidget {
@@ -159,7 +160,7 @@ class _AddressScreenState extends State<AddressScreen> {
       return;
     }
 
-    if (_userType == 'user') {
+    if (_userType == UserType.provider.value) {
       context.read<ProfileUpdateBloc>().add(
         UpdateCustomerAddress(
           state: _stateController.text,
@@ -170,7 +171,7 @@ class _AddressScreenState extends State<AddressScreen> {
           latitude: _latitude!,
         ),
       );
-    } else if (_userType == UserType.provider.name) {
+    } else if (_userType == UserType.provider.value) {
       final addressData = {
         'location': {
           'state': _stateController.text,
@@ -207,6 +208,11 @@ class _AddressScreenState extends State<AddressScreen> {
           if (_userType == 'user') {
             context.read<CustomerAuthBloc>().add(
               const CustomergetUserProfile(),
+            );
+          }
+            if (_userType == 'provider') {
+            context.read<ProviderAuthBloc>().add(
+              const ProvidergetProviderProfile(),
             );
           }
           if (mounted) {

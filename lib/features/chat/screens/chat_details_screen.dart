@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
@@ -15,11 +16,9 @@ import 'package:resq360/features/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/chat/widgets/chat_location_bubble.dart';
 import 'package:resq360/features/chat/widgets/multi_image_chat_bubble.dart';
 import 'package:resq360/features/chat/widgets/provider_chat_invoice_card_widget.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
@@ -36,23 +35,40 @@ class ChatDetailScreen extends StatelessWidget {
   final int chatId;
   final UserType userType;
 
-  int? get _currentUserId =>
-      userType == UserType.customer
-          ? CustomerAuthProvider.instance.authInfo?.id
-          : ProviderAuthProvider.instance.authInfo?.id;
+Future<int?> _loadCurrentUserId() async {
+  if (userType == UserType.customer) {
+    return AuthLocalRepo.instance.getCustomerId();
+  } else {
+    return AuthLocalRepo.instance.getProviderId();
+  }
+}
 
   @override
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create:
-          (_) => ChatDetailBloc(
+    return FutureBuilder<int?>(
+      future: _loadCurrentUserId(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final userId = snapshot.data!;
+
+        return BlocProvider(
+          create: (_) => ChatDetailBloc(
             chatId: chatId,
-            currentUserId: _currentUserId,
+            currentUserId: userId,
           )..add(OpenChatDetail(chatId)),
-      child: _ChatDetailView(
-        chatId: chatId,
-        userType: userType,
-      ),
+          child: _ChatDetailView(
+            chatId: chatId,
+            userType: userType,
+            currentUserId: userId, 
+          ),
+        );
+      },
     );
   }
 }
@@ -61,10 +77,12 @@ class _ChatDetailView extends StatefulWidget {
   const _ChatDetailView({
     required this.chatId,
     required this.userType,
+     required this.currentUserId,
   });
 
   final int chatId;
   final UserType userType;
+  final int currentUserId;
 
   @override
   State<_ChatDetailView> createState() => _ChatDetailViewState();
@@ -76,12 +94,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   bool get isCustomer => widget.userType == UserType.customer;
   bool get isProvider => widget.userType == UserType.provider;
 
-  int? get _currentUserId =>
-      isCustomer
-          ? CustomerAuthProvider.instance.authInfo?.id
-          : ProviderAuthProvider.instance.authInfo?.id;
-
+  
   String get _senderType => isCustomer ? 'USER' : 'PROVIDER';
+  int get _currentUserId => widget.currentUserId;
 
   // Scroll tracking state (from trip_chat pattern)
   int _previousMessageCount = 0;
@@ -152,14 +167,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       }
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      if (isCustomer) {
-        await CustomerAuthProvider.instance.init();
-      } else {
-        await ProviderAuthProvider.instance.init();
-      }
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   if (!mounted) return;
+    //   if (isCustomer) {
+    //     await CustomerAuthProvider.instance.init();
+    //   } else {
+    //     await ProviderAuthProvider.instance.init();
+    //   }
+    // });
   }
 
   @override
@@ -253,7 +268,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                               context.read<ChatDetailBloc>().state;
 
                           if (text.trim().isNotEmpty &&
-                              userId != null &&
                               currentState is ChatDetailReady) {
                             context.read<ChatDetailBloc>().add(
                               SendTextMessage(text, userId, _senderType),
@@ -649,10 +663,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     if (files == null || files.isEmpty || !context.mounted) return;
 
     final userId = _currentUserId;
-    if (userId == null) {
-      await showErrorSnackbar(context, 'User not authenticated');
-      return;
-    }
 
     // final caption = await _showCaptionDialog(context);
 
@@ -678,10 +688,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     if (locationData == null || !context.mounted) return;
 
     final userId = _currentUserId;
-    if (userId == null) {
-      await showErrorSnackbar(context, 'User not authenticated');
-      return;
-    }
 
     context.read<ChatDetailBloc>().add(
       SendLocationMessage(
@@ -700,10 +706,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     if (file == null || !context.mounted) return;
 
     final userId = _currentUserId;
-    if (userId == null) {
-      await showErrorSnackbar(context, 'User not authenticated');
-      return;
-    }
 
     context.read<ChatDetailBloc>().add(
       SendDocumentMessage(

@@ -2,20 +2,26 @@ import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/__services.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/upload_service.dart';
-import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 import 'package:resq360/features/settings/data/models/gallery.model.dart';
 
 final UploadService uploadService = UploadService.instance;
-final ProviderModel? auth = ProviderAuthProvider.instance.authInfo;
-final int? providerId = auth?.id;
+
 
 class GalleryRepo extends BaseAPI {
+   Future<int?> _providerId() async {
+    return AuthLocalRepo.instance.getProviderId();
+  }
   Future<ApiResult<List<Gallery>>> fetchAllGalleryItemsForAprovider(
   ) async {
     try {
-      final url = '/gallery/provider/$providerId';
+            final pid = await _providerId();
+      if (pid == null) {
+        return ApiResult(error: 'Provider ID not found');
+      }
+
+      final url = '/gallery/provider/$pid';
       final res = await dio().get<Map<String, dynamic>>(
         url,
       );
@@ -174,7 +180,12 @@ class GalleryRepo extends BaseAPI {
     String? displayOrder,
   }) async {
     try {
-      final url = '/gallery/$galleryitemID/provider/$providerId';
+         final pid = await _providerId();
+      if (pid == null) {
+        return ApiResult(error: 'Provider ID not found');
+      }
+
+      final url = '/gallery/$galleryitemID/provider/$pid';
       final data = {
         'caption': caption,
         'displayOrder': displayOrder,
@@ -207,7 +218,12 @@ class GalleryRepo extends BaseAPI {
     String? galleryitemID,
   }) async {
     try {
-      final url = '/gallery/$galleryitemID/provider/$providerId';
+         final pid = await _providerId();
+      if (pid == null) {
+        return ApiResult(error: 'Provider ID not found');
+      }
+
+      final url = '/gallery/$galleryitemID/provider/$pid';
 
       final res = await dio().delete<Map<String, dynamic>>(
         url,
@@ -235,7 +251,12 @@ class GalleryRepo extends BaseAPI {
     String? galleryitemID,
   }) async {
     try {
-      final url = '/gallery/$galleryitemID/provider/$providerId';
+         final pid = await _providerId();
+      if (pid == null) {
+        return ApiResult(error: 'Provider ID not found');
+      }
+
+      final url = '/gallery/$galleryitemID/provider/$pid';
 
       final res = await dio().get<Map<String, dynamic>>(
         url,

@@ -40,10 +40,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      context.read<ProviderAuthBloc>().add(
-        const ProvidergetProviderProfile(),
-      );
-
+ 
       context.read<CustomerAdvertisementBloc>().add(
         CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
       );
