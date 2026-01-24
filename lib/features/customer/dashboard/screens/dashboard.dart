@@ -9,13 +9,13 @@ import 'package:resq360/features/customer/dashboard/screens/advertisement_screen
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/wallet_screen.dart';
 import 'package:resq360/features/customer/dashboard/widgets/advertisment_carousel.dart';
-import 'package:resq360/features/customer/dashboard/widgets/header_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
+import 'package:resq360/features/widgets/header_widget.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
 
 class HomeScreen extends StatefulWidget {

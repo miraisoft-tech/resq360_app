@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
+import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/core/utils/validators.dart';
@@ -178,14 +179,15 @@ class _ProviderBusinessDetailsScreenState
                       label: 'Business Name',
                       hintText: 'Enter Your Business Name',
                       controller: nameController,
-                      keyboardType: TextInputType.name,
+                      keyboardType: TextInputType.text,
                       onChanged: (a) {
                         setState(() {});
                       },
                       validator:
-                          (value) => Validators.validateNotEmpty(
+                          (value) => AppGenUtil.isValidName(
                             value,
                             'business name',
+                            5,
                           ),
                     ),
                     16.verticalSpace,
@@ -193,14 +195,15 @@ class _ProviderBusinessDetailsScreenState
                       label: 'Business Address',
                       hintText: 'Enter Your Business Address',
                       controller: addressController,
-                      keyboardType: TextInputType.name,
+                      keyboardType: TextInputType.text,
                       onChanged: (a) {
                         setState(() {});
                       },
                       validator:
-                          (value) => Validators.validateNotEmpty(
+                          (value) => AppGenUtil.isValidName(
                             value,
                             'business address',
+                            5,
                           ),
                     ),
                     16.verticalSpace,

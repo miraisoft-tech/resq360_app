@@ -81,7 +81,12 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
             hour: dateTime.hour,
             minute: dateTime.minute,
           );
-          startTimeController.text = startTime!.format(context);
+
+          final hour12 =
+              startTime!.hourOfPeriod == 0 ? 12 : startTime!.hourOfPeriod;
+          final period = startTime!.period == DayPeriod.am ? 'AM' : 'PM';
+          startTimeController.text =
+              '${hour12.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')} $period';
         } on Exception catch (e) {
           log(e.toString());
         }
@@ -94,7 +99,12 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
             hour: dateTime.hour,
             minute: dateTime.minute,
           );
-          endTimeController.text = endTime!.format(context);
+
+          final hour12 =
+              endTime!.hourOfPeriod == 0 ? 12 : endTime!.hourOfPeriod;
+          final period = endTime!.period == DayPeriod.am ? 'AM' : 'PM';
+          endTimeController.text =
+              '${hour12.toString().padLeft(2, '0')}:${endTime!.minute.toString().padLeft(2, '0')} $period';
         } on Exception catch (e) {
           log(e.toString());
         }
@@ -161,15 +171,12 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
       listener: (context, state) async {
         if (state is ProfileUpdateLoading) {
           showLoadingDialog(context);
-        } 
-      
+        }
 
         if (state is ProfileUpdateSuccess) {
-            
-            await showSuccessSnackbar(
-              context,
-              'Service updated successfully',
-          
+          await showSuccessSnackbar(
+            context,
+            'Service updated successfully',
           );
 
           context.read<ProviderAuthBloc>().add(
@@ -586,7 +593,14 @@ class WorkingHoursSection extends StatelessWidget {
   Future<void> _selectTime(BuildContext context, bool isStart) async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime:
+          isStart
+              ? (startTimeController.text.isNotEmpty
+                  ? _parseTimeOfDay(startTimeController.text) ?? TimeOfDay.now()
+                  : TimeOfDay.now())
+              : (endTimeController.text.isNotEmpty
+                  ? _parseTimeOfDay(endTimeController.text) ?? TimeOfDay.now()
+                  : TimeOfDay.now()),
       builder:
           (context, child) => Theme(
             data: Theme.of(context).copyWith(
@@ -599,13 +613,56 @@ class WorkingHoursSection extends StatelessWidget {
     );
 
     if (picked != null) {
+      // Format with AM/PM using 12-hour format
+      final hour12 = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
+      final period = picked.period == DayPeriod.am ? 'AM' : 'PM';
+      final formattedTime =
+          '${hour12.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')} $period';
+
       if (isStart) {
-        startTimeController.text = picked.format(context);
-        onTimeSelected(picked, TimeOfDay.now());
+        startTimeController.text = formattedTime;
+        // Preserve existing end time, or use a default if not set
+        final currentEndTime =
+            _parseTimeOfDay(endTimeController.text) ??
+            const TimeOfDay(hour: 17, minute: 0);
+        onTimeSelected(picked, currentEndTime);
       } else {
-        endTimeController.text = picked.format(context);
-        onTimeSelected(TimeOfDay.now(), picked);
+        endTimeController.text = formattedTime;
+        // Preserve existing start time, or use a default if not set
+        final currentStartTime =
+            _parseTimeOfDay(startTimeController.text) ??
+            const TimeOfDay(hour: 9, minute: 0);
+        onTimeSelected(currentStartTime, picked);
       }
+    }
+  }
+
+  TimeOfDay? _parseTimeOfDay(String timeString) {
+    if (timeString.isEmpty) return null;
+    try {
+      // Parse format like "09:00 AM" or "05:30 PM"
+      final parts = timeString.split(' ');
+      if (parts.length != 2) return null;
+
+      final timeParts = parts[0].split(':');
+      if (timeParts.length != 2) return null;
+
+      var hour = int.parse(timeParts[0]);
+      final minute = int.parse(timeParts[1]);
+      final period = parts[1].toUpperCase();
+
+      // Convert 12-hour to 24-hour format
+      if (period == 'PM' && hour != 12) {
+        hour += 12;
+      } else if (period == 'AM' && hour == 12) {
+        hour = 0;
+      }
+
+      return TimeOfDay(hour: hour, minute: minute);
+    } on Exception catch (e) {
+      log(e);
+
+      return null;
     }
   }
 }

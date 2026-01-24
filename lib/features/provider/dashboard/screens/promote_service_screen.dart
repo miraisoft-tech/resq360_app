@@ -60,58 +60,64 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
       body: SafeArea(
         child: Padding(
           padding: pad(horizontal: 16, vertical: 10),
-          child: Col(
+          child: Column(
             children: [
-              GenText(
-                'Promotion Details',
-                size: 16,
-                height: 24.5,
-                weight: FontWeight.w700,
-                color: appColors.textColor.shade800,
-              ),
-              20.verticalSpace,
-              KFormField(
-                label: 'Promotion Description',
-                hintText: 'Get 30% off every towing service today.',
-                controller: promoController,
-                keyboardType: TextInputType.text,
-                maxLines: 10,
-                minLines: 8,
-                onChanged: (a) {
-                  setState(() {});
-                },
-              ),
-              16.verticalSpace,
-              KFormField(
-                label: 'Discount Rate',
-                hintText: 'Enter a Discount Rate',
-                controller: discountController,
-                keyboardType: TextInputType.text,
-                onChanged: (a) {
-                  setState(() {});
-                },
-              ),
-              16.verticalSpace,
-              ValueListenableBuilder<PromotionDuration?>(
-                valueListenable: _selectDuration,
-                builder: (context, value, child) {
-                  return ObjectKDropDown<PromotionDuration>(
-                    label: 'Promotion Duration',
-                    hintText: 'Select the Promotion Duration',
-                    showPrefix: false,
+              Expanded(
+                child: ListView(
+                  children: [
+                    GenText(
+                      'Promotion Details',
+                      size: 16,
+                      height: 24.5,
+                      weight: FontWeight.w700,
+                      color: appColors.textColor.shade800,
+                    ),
+                    20.verticalSpace,
+                    KFormField(
+                      label: 'Promotion Description',
+                      hintText: 'Get 30% off every towing service today.',
+                      controller: promoController,
+                      keyboardType: TextInputType.text,
+                      maxLines: 10,
+                      minLines: 8,
+                      onChanged: (a) {
+                        setState(() {});
+                      },
+                    ),
+                    16.verticalSpace,
+                    KFormField(
+                      label: 'Discount Rate',
+                      hintText: 'Enter a Discount Rate',
+                      controller: discountController,
+                      keyboardType: TextInputType.text,
+                      onChanged: (a) {
+                        setState(() {});
+                      },
+                    ),
+                    16.verticalSpace,
+                    ValueListenableBuilder<PromotionDuration?>(
+                      valueListenable: _selectDuration,
+                      builder: (context, value, child) {
+                        return ObjectKDropDown<PromotionDuration>(
+                          label: 'Promotion Duration',
+                          hintText: 'Select the Promotion Duration',
+                          showPrefix: false,
 
-                    displayStringForOption: (PromotionDuration d) => d.label,
+                          displayStringForOption:
+                              (PromotionDuration d) => d.label,
 
-                    value: value,
-                    dropdownItems: categoryDurations,
+                          value: value,
+                          dropdownItems: categoryDurations,
 
-                    onChanged: (selected) {
-                      _selectDuration.value = selected;
-                    },
-                  );
-                },
+                          onChanged: (selected) {
+                            _selectDuration.value = selected;
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const Spacer(),
               Row(
                 children: [
                   Expanded(

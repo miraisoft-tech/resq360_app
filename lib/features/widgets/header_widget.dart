@@ -41,12 +41,13 @@ class HeaderWidget extends StatelessWidget {
             ),
             GestureDetector(
               onTap: onTapAddress,
+              behavior: HitTestBehavior.translucent,
               child: Row(
                 children: [
                   AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
                   4.horizontalSpace,
                   SizedBox(
-                    width: address.length > 10 ? 140.w : 30.w,
+                    width: address.length > 10 ? 120.w : 65.w,
                     child: GenText(
                       address,
                       height: 24,

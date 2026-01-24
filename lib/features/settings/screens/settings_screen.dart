@@ -16,6 +16,7 @@ import 'package:resq360/features/provider/authentication/screens/provider_verifi
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
+import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 import 'package:resq360/features/settings/screens/notification_settings_screen.dart';
@@ -236,13 +237,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       //     await pushScreen(context, const ManageCardsScreen());
       //   },
       // ),
-      // SettingsItem(
-      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
-      //   title: 'Add Bank Details',
-      //   onTap: () async {
-      //     await pushScreen(context, const AddBankDetailsScreen());
-      //   },
-      // ),
+      SettingsItem(
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
+        title: 'Add Bank Details',
+        onTap: () async {
+          await pushScreen(context, const AddBankDetailsScreen());
+        },
+      ),
       // SettingsItem(
       //   icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
       //   title: 'Refer and Earn',

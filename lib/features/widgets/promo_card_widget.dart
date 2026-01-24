@@ -55,8 +55,6 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-
     return BlocBuilder<CustomerAdvertisementBloc, CustomerAdvertisementState>(
       builder: (context, state) {
         if (state is CustomerAdvertisementLoading) {
@@ -87,17 +85,13 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
                       onTap: () async {
                         await AppGenUtil.launchUrlText(ad.targetUrl ?? '');
                       },
-                      child: Container(
-                        margin: pad(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: colors.primary.shade500,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
                         child: CacheNetworkImageWidget(
                           imageUrl: ad.imageUrl ?? '',
                           height: 180,
                           width: 120,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                         ),
                         // Row(
                         //     children: [
