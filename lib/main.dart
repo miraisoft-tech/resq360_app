@@ -116,6 +116,9 @@ Future<void> main() async {
            BlocProvider(
             create: (_) => KycBloc(),
           ),
+           BlocProvider(
+            create: (_) => BankBloc(),
+          ),
         ],
         child: const MyApp(),
       ),

@@ -17,7 +17,7 @@ class BankAddAccount extends BankEvent {
     required this.currency,
     this.routingNumber,
     this.swiftCode,
-    this.isDefault = false,
+    this.isDefault = true,
   });
   final String accountName;
   final String accountNumber;
@@ -41,11 +41,24 @@ class BankAddAccount extends BankEvent {
       ];
 }
 
+class BankUpdateAccount extends BankEvent {
+
+  const BankUpdateAccount({
+    required this.id,
+    this.accountName,
+    this.accountNumber,
+  });
+  final int id;
+  final String? accountName;
+  final String? accountNumber;
+}
+
+
 class BankFetchAccounts extends BankEvent {}
 
 class BankSetDefaultAccount extends BankEvent {
   const BankSetDefaultAccount({required this.bankAccountId});
-  final String bankAccountId;
+  final int bankAccountId;
 
   @override
   List<Object> get props => [bankAccountId];
@@ -69,8 +82,10 @@ class UpdateBankAccount extends BankEvent {
 
 class DeleteBankAccount extends BankEvent {
   const DeleteBankAccount({required this.bankAccountId});
-  final String bankAccountId;
+  final int bankAccountId;
 
   @override
   List<Object> get props => [bankAccountId];
 }
+
+class GetBanks extends BankEvent{}

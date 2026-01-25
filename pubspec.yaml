@@ -98,6 +98,7 @@ flutter:
     - assets/logo/
     - assets/navigation/
     - assets/json/states_list.json
+    - assets/json/banks_list.json
 
   fonts:
     - family: "inter"
