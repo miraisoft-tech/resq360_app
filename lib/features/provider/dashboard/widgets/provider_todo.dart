@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-
+import 'package:resq360/features/settings/screens/settings_screen.dart';
+import 'package:resq360/features/settings/screens/update_service_screen.dart';
 class ToDoSection extends StatelessWidget {
   const ToDoSection({required this.provider, super.key});
 
@@ -29,12 +30,19 @@ class ToDoSection extends StatelessWidget {
           weight: FontWeight.w400,
           color: colors.black,
         ),
-        GenText(
-          'Update Service Info',
-          height: 24.5,
-          weight: FontWeight.w400,
-          color: colors.primary.shade600,
+
+        GestureDetector(
+          onTap: () async {
+            await pushScreen(context, const UpdateServiceScreen());
+          },
+          child: GenText(
+            'Update Service Info',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.primary.shade600,
+          ),
         ),
+
         10.verticalSpace,
       ]);
     }
@@ -47,14 +55,21 @@ class ToDoSection extends StatelessWidget {
           weight: FontWeight.w400,
           color: colors.black,
         ),
-        GenText(
-          'Upload Photo',
-          height: 24.5,
-          weight: FontWeight.w400,
-          color: colors.primary.shade600,
+
+        GestureDetector(
+          onTap: () async {
+            await pushScreen(context, const SettingsScreen());
+          },
+          child: GenText(
+            'Upload Photo',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.primary.shade600,
+          ),
         ),
       ]);
     }
+
     if (todoItems.isEmpty) return const SizedBox.shrink();
 
     return Col(
