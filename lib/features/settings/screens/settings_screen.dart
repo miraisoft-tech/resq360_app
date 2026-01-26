@@ -351,67 +351,78 @@ class _SettingsScreenState extends State<SettingsScreen> {
             10.verticalSpace,
             if (isProvider)
               BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
-                builder: (context, state) {
-                  if (state is ProviderProfileLoadedState) {
-                    final status = state.user.activityStatus ?? 'UNKNOWN';
+                builder: (context, authState) {
+                  if (authState is ProviderProfileLoadedState) {
+                    final status = authState.user.activityStatus ?? 'UNKNOWN';
                     final isOnline = status.toLowerCase() == 'online';
 
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            await GeneralDialogs.showCustomDialog<void>(
-                              context,
-                              body: AccountStatusDialog(
-                                onTap: () async {
-                                  Navigator.pop(context);
-                                  await pushScreen(
-                                    context,
-                                    const ContactAdminScreen(
-                                      issueType: AdminIssueType.complaint,
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              GenText(
-                                'Account Status: ${isOnline ? 'Online' : 'Offline'}',
-                                height: 24.5,
-                                color:
-                                    isOnline
-                                        ? appColors.success.shade700
-                                        : appColors.error.shade500,
-                                weight: FontWeight.w500,
-                              ),
+                    return BlocBuilder<ProfileUpdateBloc, ProfileUpdateState>(
+                      builder: (context, updateState) {
+                        final isLoading = updateState is ProfileUpdateLoading;
 
-                              4.horizontalSpace,
-                              AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
-                                  .svgColor(
-                                    color: appColors.success.shade700,
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                await GeneralDialogs.showCustomDialog<void>(
+                                  context,
+                                  body: AccountStatusDialog(
+                                    onTap: () async {
+                                      Navigator.pop(context);
+                                      await pushScreen(
+                                        context,
+                                        const ContactAdminScreen(
+                                          issueType: AdminIssueType.complaint,
+                                        ),
+                                      );
+                                    },
                                   ),
-                            ],
-                          ),
-                        ),
+                                );
+                              },
+                              child: Row(
+                                children: [
+                                  GenText(
+                                    'Account Status: ${isOnline ? 'Online' : 'Offline'}',
+                                    height: 24.5,
+                                    color:
+                                        isOnline
+                                            ? appColors.success.shade700
+                                            : appColors.error.shade500,
+                                    weight: FontWeight.w500,
+                                  ),
+                                  4.horizontalSpace,
+                                  AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
+                                      .svgColor(
+                                        color: appColors.success.shade700,
+                                      ),
+                                ],
+                              ),
+                            ),
 
-                        12.horizontalSpace,
+                            12.horizontalSpace,
 
-                        CustomSwitchWidget(
-                          value: isOnline,
-                          activeThumbColor: appColors.success.shade700,
-                          disabledThumbColor: appColors.textColor.shade200,
-                          onChanged: ({required value}) {
-                            final newStatus = value ? 'online' : 'offline';
+                            CustomSwitchWidget(
+                              value: isOnline,
+                              activeThumbColor:
+                                  isLoading
+                                      ? appColors.textColor.shade100
+                                      : appColors.success.shade700,
+                              disabledThumbColor:
+                                  isLoading
+                                      ? appColors.textColor.shade100
+                                      : appColors.textColor.shade200,
+                              onChanged: ({required value}) {
+                                final newStatus = value ? 'online' : 'offline';
 
-                            context.read<ProfileUpdateBloc>().add(
-                              UpdateActivityStatusEvent(newStatus),
-                            );
-                          },
-                        ),
-                      ],
+                                context.read<ProfileUpdateBloc>().add(
+                                  UpdateActivityStatusEvent(newStatus),
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
                     );
                   }
 
