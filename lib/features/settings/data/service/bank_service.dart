@@ -19,7 +19,7 @@ class BankRepo extends BaseAPI {
     required String currency, 
     bool isDefault = false,
   }) async {
-    const url = '/bank-accounts';
+    const url = '/bank-account';
     try {
       final res = await dio().post<Map<String, dynamic>>(url, data: {
         'accountName': accountName,
@@ -41,7 +41,7 @@ class BankRepo extends BaseAPI {
     }
   }
   Future<List<BankDetails>> fetchBankAccounts() async {
-    const url = '/bank-accounts';
+    const url = '/bank-account';
 
     try {
       final response = await dio().get<Map<String, dynamic>>(url);
@@ -82,8 +82,8 @@ class BankRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<String>> setDefaultBankAccount(String bankAccountId) async {
-    const url = '/bank-accounts/default';
+  Future<ApiResult<String>> setDefaultBankAccount(int bankAccountId) async {
+    const url = '/bank-account/default';
     final data = {
       'bankAccountId': bankAccountId,
     };
@@ -107,30 +107,22 @@ class BankRepo extends BaseAPI {
   }
 
 Future<ApiResult<String>> updateBankAccount({
-    required String bankAccountId,
+    required int bankAccountId,
     String? accountName,
     String? accountNumber,
     String? bankName,
     String? bankCode,
-    String? currency,
-    String? routingNumber,
-    String? swiftCode,
-    bool? isDefault,
   }) async {
-    final url = '/bank-accounts/$bankAccountId';
+    final url = '/bank-account/$bankAccountId';
     final data = <String, dynamic>{};
 
     if (accountName != null) data['accountName'] = accountName;
     if (accountNumber != null) data['accountNumber'] = accountNumber;
     if (bankName != null) data['bankName'] = bankName;
     if (bankCode != null) data['bankCode'] = bankCode;
-    if (currency != null) data['currency'] = currency;
-    if (routingNumber != null) data['routingNumber'] = routingNumber;
-    if (swiftCode != null) data['swiftCode'] = swiftCode;
-    if (isDefault != null) data['isDefault'] = isDefault;
 
     try {
-      final response = await dio().put<Map<String, dynamic>>(url, data: data);
+      final response = await dio().patch<Map<String, dynamic>>(url, data: data);
 
     if (response.statusCode == 200) {
         final data = response.data!['message'];
@@ -147,8 +139,8 @@ Future<ApiResult<String>> updateBankAccount({
       throw Exception('Error updating bank account: $e');
     }
   }
-  Future<ApiResult<String>> deleteBankAccount(String accountNumber) async {
-    final url = '/bank-accounts/$accountNumber';
+  Future<ApiResult<String>> deleteBankAccount(int bankAccountId) async {
+    final url = '/bank-account/$bankAccountId';
 
     try {
       final response = await dio().delete<Map<String, dynamic>>(url);

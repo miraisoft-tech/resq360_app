@@ -29,7 +29,7 @@ class ProviderHomeScreen extends StatefulWidget {
 }
 
 String revenue = '-';
-bool isAproved = false;
+bool isApproved = false;
 bool profileNotDone = false;
 ProviderModel? providerData;
 
@@ -96,6 +96,18 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       builder: (context, v) {
                         final user =
                             v is ProviderProfileLoadedState ? v.user : null;
+                        providerData = user;
+                        isApproved = providerData?.isApproved ?? false;
+                        // final profileNotDone =
+                        //     !(providerData?.isEmailVerified == true &&
+                        //         providerData?.isApproved == true &&
+                        //         providerData?.isKYCVerified == true &&
+                        //         (providerData?.providerServices?.isNotEmpty ??
+                        //             false) &&
+                        //         providerData?.address != null &&
+                        //         (providerData?.openingHours != null &&
+                        //             providerData?.closingHours != null));
+
                         return HeaderWidget(
                           name: user?.fullName?.capitalize ?? 'N/A',
                           address: user?.address?.address ?? 'N/A',
@@ -198,15 +210,15 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         ],
                       ),
                       20.verticalSpace,
-                      if (!isAproved) ...[
-                        if (providerData != null)
+                      // if (!isApproved) ...[
+                        // if (providerData != null)
                           ProviderAccountProgress(
                             provider: providerData!,
                           ),
-                      ],
+                      // ],
 
-                      if (profileNotDone) ...[
-                        if (providerData != null)
+                      // if (profileNotDone) ...[
+                        // if (providerData != null)
                           GestureDetector(
                             onTap:
                                 () =>
@@ -215,7 +227,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               provider: providerData!,
                             ),
                           ),
-                      ],
+                      // ],
                       30.verticalSpace,
                       const PromoCardWidget(),
                       30.verticalSpace,

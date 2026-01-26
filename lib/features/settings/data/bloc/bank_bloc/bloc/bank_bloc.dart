@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
+import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
+import 'package:resq360/features/settings/data/models/banks_model.dart';
 import 'package:resq360/features/settings/data/service/bank_service.dart';
 
 part 'bank_event.dart';
@@ -10,13 +14,14 @@ final BankRepo bankRepo = BankRepo.instance;
 
 class BankBloc extends Bloc<BankEvent, BankState> {
   BankBloc() : super(BankInitial()) {
-on<BankAddAccount>(_onAddBankAccount);
-on<BankFetchAccounts>(_onFetchBankAccounts);
-on<BankSetDefaultAccount>(_onSetDefaultBankAccount);
-on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
+    on<BankAddAccount>(_onAddBankAccount);
+    on<BankFetchAccounts>(_onFetchBankAccounts);
+    on<BankSetDefaultAccount>(_onSetDefaultBankAccount);
+    on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
+    on<GetBanks>(_getLocalBanks);
+    on<DeleteBankAccount>(_onDeleteBankAccount);
+    on<BankUpdateAccount>(_onUpdateBankAccount);
   }
-}
-
 
   Future<void> _onAddBankAccount(
     BankAddAccount event,
@@ -24,14 +29,20 @@ on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
   ) async {
     emit(BankLoading());
     try {
-      final result = await bankRepo.addBankAccount(accountName: event.accountName, accountNumber: event.accountNumber, bankName: event.bankName, bankCode: event.bankCode, currency: event.currency);
+      final result = await bankRepo.addBankAccount(
+        accountName: event.accountName,
+        accountNumber: event.accountNumber,
+        bankName: event.bankName,
+        bankCode: event.bankCode,
+        currency: event.currency,
+      );
       if (result.isSuccess) {
         emit(BankAccountAdded());
       } else {
         emit(BankFailure(error: result.error!));
       }
     } on Exception catch (e) {
-        log('Error adding bank account: $e');
+      log('Error adding bank account: $e');
       emit(BankFailure(error: '$e'));
     }
   }
@@ -49,9 +60,9 @@ on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
         emit(const BankAccountsFetched(bankAcounts: []));
       }
     } on Exception catch (e) {
-        log('Error fetching bank account: $e');
+      log('Error fetching bank account: $e');
 
-      emit( BankFailure(error: '$e'));
+      emit(BankFailure(error: '$e'));
     }
   }
 
@@ -68,12 +79,36 @@ on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
         emit(BankFailure(error: result.error!));
       }
     } on Exception catch (e) {
-        log('Error setting default account: $e');
+      log('Error setting default account: $e');
 
       emit(const BankFailure(error: ''));
     }
   }
-  
+
+  Future<void> _onUpdateBankAccount(
+    BankUpdateAccount event,
+    Emitter<BankState> emit,
+  ) async {
+    emit(BankLoading());
+
+    try {
+      final result = await bankRepo.updateBankAccount(
+        bankAccountId: event.id,
+        accountName: event.accountName,
+        accountNumber: event.accountNumber,
+      );
+
+      if (result.isSuccess) {
+        emit(BankAccountUpdated());
+        add(BankFetchAccounts());
+      } else {
+        emit(BankFailure(error: result.error!));
+      }
+    } on Exception catch (e) {
+      emit(BankFailure(error: e.toString()));
+    }
+  }
+
   Future<void> _onVerifyAndRegisterBankAccount(
     BankVerifyAndRegisterAccount event,
     Emitter<BankState> emit,
@@ -88,8 +123,66 @@ on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
       //   emit(BankFailure());
       // }
     } on Exception catch (e) {
-        log('Error verifying bank account: $e');
+      log('Error verifying bank account: $e');
       emit(const BankFailure(error: ''));
     }
   }
-    
+
+  Future<void> _onDeleteBankAccount(
+    DeleteBankAccount event,
+    Emitter<BankState> emit,
+  ) async {
+    emit(BankLoading());
+    try {
+      final result = await bankRepo.deleteBankAccount(event.bankAccountId);
+
+      if (result.isSuccess) {
+        emit(BankAccountDeleted());
+        add(BankFetchAccounts());
+      } else {
+        emit(BankFailure(error: result.error!));
+      }
+    } on Exception catch (e) {
+      emit(BankFailure(error: e.toString()));
+    }
+  }
+
+  Future<void> _getLocalBanks(
+    GetBanks event,
+    Emitter<BankState> emit,
+  ) async {
+    final tempBankList = <BankModel>[];
+    emit(LocalBanksLoading());
+    try {
+      final jsonString = await rootBundle.loadString(
+        'assets/json/banks_list.json',
+      );
+      final json = jsonDecode(jsonString);
+
+      if (json == null || json is! List) {
+        emit(LocalBanksFetched(tempBankList));
+        return;
+      }
+
+      final banksListJson = json;
+      log('banks ${banksListJson.length}');
+
+      for (final item in banksListJson) {
+        if (item is Map<String, dynamic>) {
+          tempBankList.add(BankModel.fromJson(item));
+        }
+      }
+
+      tempBankList.sort((a, b) {
+        final nameA = a.name ?? '';
+        final nameB = b.name ?? '';
+        return nameA.compareTo(nameB);
+      });
+
+      emit(LocalBanksFetched(tempBankList));
+    } on Exception catch (e) {
+      log('Error loading states: $e');
+      emit(LocalBanksFetched(tempBankList));
+    }
+  }
+}

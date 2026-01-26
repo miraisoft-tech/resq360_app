@@ -235,6 +235,7 @@ class ObjectKDropDown<T> extends StatefulWidget {
     this.hintUrl,
     this.dropdownKey,
     this.showPrefix = true,
+    this.maxHeight = 300,
     super.key,
   });
 
@@ -252,6 +253,7 @@ class ObjectKDropDown<T> extends StatefulWidget {
   final Key? dropdownKey;
   final bool showPrefix;
   final String Function(T) displayStringForOption;
+  final double? maxHeight;
 
   @override
   State<ObjectKDropDown<T>> createState() => _ObjectKDropDownState<T>();
@@ -422,6 +424,7 @@ class _ObjectKDropDownState<T> extends State<ObjectKDropDown<T>> {
                   ),
             ),
             dropdownStyleData: DropdownStyleData(
+              maxHeight: widget.maxHeight,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15.r),
                 color: Colors.white,
