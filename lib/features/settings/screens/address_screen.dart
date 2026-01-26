@@ -9,6 +9,7 @@ import 'package:resq360/features/customer/authentication/data/models/auth/custom
     as customer;
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 
 class AddressScreen extends StatefulWidget {
@@ -38,6 +39,16 @@ class _AddressScreenState extends State<AddressScreen> {
     });
   }
 
+  customer.Location convertProviderAddressToLocation(Address a) {
+    return customer.Location(
+      city: a.city,
+      state: a.state,
+      latitude: a.latitude,
+      longitude: a.longitude,
+      address: a.address,
+    );
+  }
+
   Future<void> _initializeUserData() async {
     final userType = await AuthLocalRepo.instance.getUserType();
     if (mounted) {
@@ -46,12 +57,22 @@ class _AddressScreenState extends State<AddressScreen> {
       });
     }
 
-    if (userType == 'user') {
+    if (userType == UserType.customer.value) {
       final state = context.read<CustomerAuthBloc>().state;
       if (state is CustomerProfileLoaded) {
         setState(() {
           _savedLocations = state.user.location ?? [];
         });
+      }
+    } else if (userType == UserType.provider.value) {
+      final state = context.read<ProviderAuthBloc>().state;
+      if (state is ProviderProfileLoadedState) {
+        final addr = state.user.address;
+        if (addr != null) {
+          _savedLocations = [
+            convertProviderAddressToLocation(addr),
+          ];
+        }
       }
     }
   }
@@ -160,7 +181,7 @@ class _AddressScreenState extends State<AddressScreen> {
       return;
     }
 
-    if (_userType == UserType.provider.value) {
+    if (_userType == UserType.customer.value) {
       context.read<ProfileUpdateBloc>().add(
         UpdateCustomerAddress(
           state: _stateController.text,
@@ -210,7 +231,7 @@ class _AddressScreenState extends State<AddressScreen> {
               const CustomergetUserProfile(),
             );
           }
-            if (_userType == 'provider') {
+          if (_userType == 'provider') {
             context.read<ProviderAuthBloc>().add(
               const ProvidergetProviderProfile(),
             );

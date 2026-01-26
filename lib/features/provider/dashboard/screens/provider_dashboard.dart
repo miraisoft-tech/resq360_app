@@ -38,9 +38,11 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
- 
+         context.read<ProviderAuthBloc>().add(
+      const ProvidergetProviderProfile(),
+    );
+
       context.read<CustomerAdvertisementBloc>().add(
         CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
       );
@@ -202,32 +204,73 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           ),
 
                           16.horizontalSpace,
-                          ProviderStatsCard(
-                            title: 'Revenue',
-                            value: '₦${AppTextUtil.formatAmount(revenue)}',
-                            icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
+                          BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+                            builder: (context, state) {
+                              final revenue =
+                                  state is ProviderProfileLoadedState
+                                      ? state.user.wallet?.availableBalance
+                                              ?.toString() ??
+                                          '-'
+                                      : '-';
+                              return ProviderStatsCard(
+                                title: 'Revenue',
+                                value: '₦${AppTextUtil.formatAmount(revenue)}',
+                                icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
+                              );
+                            },
                           ),
                         ],
                       ),
                       20.verticalSpace,
-                      // if (!isApproved) ...[
-                        // if (providerData != null)
-                          ProviderAccountProgress(
-                            provider: providerData!,
-                          ),
-                      // ],
+                      BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+                        builder: (context, authState) {
+                          if (authState is ProviderProfileLoadedState) {
+                            final provider = authState.user;
 
-                      // if (profileNotDone) ...[
-                        // if (providerData != null)
-                          GestureDetector(
-                            onTap:
-                                () =>
-                                    pushScreen(context, const SettingsScreen()),
-                            child: ToDoSection(
-                              provider: providerData!,
-                            ),
-                          ),
-                      // ],
+                            final progress = calculateProviderProgress(provider,);
+                            final isProfileComplete = progress >= 1.0;
+
+                            final descriptionMissing =
+                                provider.description == null ||
+                                provider.description!.trim().isEmpty;
+
+                            final servicesMissing =
+                                provider.providerServices == null ||
+                                provider.providerServices!.isEmpty;
+
+                            final profileImageMissing =
+                                provider.profileImage == null ||
+                                provider.profileImage!.trim().isEmpty;
+
+                            final profileNotDone =
+                                descriptionMissing ||
+                                servicesMissing ||
+                                profileImageMissing;
+
+                            return Column(
+                              children: [
+                                if (!isProfileComplete) ...[
+                                  ProviderAccountProgress(provider: provider),
+                                  20.verticalSpace,
+                                ],
+
+                                if (profileNotDone) ...[
+                                  GestureDetector(
+                                    onTap:
+                                        () => pushScreen(
+                                          context,
+                                          const SettingsScreen(),
+                                        ),
+                                    child: ToDoSection(provider: provider),
+                                  ),
+                                  30.verticalSpace,
+                                ],
+                              ],
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
                       30.verticalSpace,
                       const PromoCardWidget(),
                       30.verticalSpace,

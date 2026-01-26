@@ -46,8 +46,7 @@ double calculateProviderProgress(ProviderModel provider) {
 
   if (provider.isEmailVerified) completed++;
   if (provider.isApproved) completed++;
-  if (provider.isKYCVerified) completed++;
-  if (provider.providerServices!.isNotEmpty) completed++;
+  if (provider.providerServices?.isNotEmpty ?? false) completed++;
   if (provider.address != null) completed++;
   if (provider.openingHours != null && provider.closingHours != null) completed++;
 

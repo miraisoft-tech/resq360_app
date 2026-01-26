@@ -56,20 +56,27 @@ Future<void> _goToNext() async {
         ? UserType.provider
         : UserType.customer;
 
-    if (userType == UserType.provider) {
-      context.read<ProviderAuthBloc>()
-        .add(const ProvidergetProviderProfile());
-    } else {
-      context.read<CustomerAuthBloc>()
-        .add(const CustomergetUserProfile());
-    }
-
     dashboardViewModel.userType = userType;
+
 
     await replaceScreen(
       context,
       MainLayoutPage(userType: userType),
     );
+
+    if (!mounted) return;
+    
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
+      
+      if (userType == UserType.provider) {
+        context.read<ProviderAuthBloc>()
+          .add(const ProvidergetProviderProfile());
+      } else {
+        context.read<CustomerAuthBloc>()
+          .add(const CustomergetUserProfile());
+      }
+    });
 
   } on Exception catch (e, s) {
     log('Splash Error: $e\n$s');
