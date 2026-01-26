@@ -323,15 +323,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (state is Loading) {
                   showLoadingDialog(context);
                 }
+
                 if (state is ProfileUpdateSuccess) {
-                  Navigator.pop(context);
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
                   await _refreshProfile();
                 }
+
                 if (state is ProviderAcivitityChanged) {
                   await _refreshProfile();
                 }
+
                 if (state is ProfileUpdateError) {
-                  Navigator.pop(context);
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
                   await showErrorSnackbar(context, state.message);
                 }
               },
