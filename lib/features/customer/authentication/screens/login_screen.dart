@@ -113,10 +113,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
-
-        if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
-        }
+      //  if (state is CustomerAuthLoading) {
+      //     showLoadingDialog(context);
+      //   }
 
         if (state is CustomerAuthFailure) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
@@ -199,17 +198,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               24.verticalSpace,
-              WideButton(
-                label: 'Log in',
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    context.read<CustomerAuthBloc>().add(
-                      CustomerLoginWithEmail(
-                        email: emailController.text,
-                        password: passwordController.text,
-                      ),
-                    );
-                  }
+              BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
+                builder: (context, state) {
+                  return WideButton(
+                    label: 'Log in',
+                    loading: state is CustomerAuthLoading,
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        context.read<CustomerAuthBloc>().add(
+                          CustomerLoginWithEmail(
+                            email: emailController.text,
+                            password: passwordController.text,
+                          ),
+                        );
+                      }
+                    },
+                  );
                 },
               ),
               if (_canUseBiometrics) ...[

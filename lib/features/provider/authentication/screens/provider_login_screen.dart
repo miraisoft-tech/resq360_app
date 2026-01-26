@@ -113,9 +113,9 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
-        if (state is ProviderAuthLoadingState) {
-          showLoadingDialog(context);
-        }
+        // if (state is ProviderAuthLoadingState) {
+        //   showLoadingDialog(context);
+        // }
 
         if (state is ProviderAuthFailureState) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
@@ -197,17 +197,22 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                 ),
               ),
               24.verticalSpace,
-              WideButton(
-                label: 'Log in',
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    context.read<ProviderAuthBloc>().add(
-                      ProviderLoginWithEmail(
-                        email: emailController.text.trim(),
-                        password: passwordController.text.trim(),
-                      ),
-                    );
-                  }
+              BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+                builder: (context, state) {
+                  return WideButton(
+                    label: 'Log in',
+                    loading: state is ProviderAuthLoadingState,
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        context.read<ProviderAuthBloc>().add(
+                          ProviderLoginWithEmail(
+                            email: emailController.text.trim(),
+                            password: passwordController.text.trim(),
+                          ),
+                        );
+                      }
+                    },
+                  );
                 },
               ),
               if (_canUseBiometrics) ...[

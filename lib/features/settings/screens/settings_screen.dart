@@ -16,6 +16,7 @@ import 'package:resq360/features/provider/authentication/screens/provider_verifi
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
+import 'package:resq360/features/settings/screens/account_and_security_screen.dart';
 import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
@@ -176,13 +177,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
         },
       ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
-        title: 'Change Password',
-        onTap: () async {
-          await pushScreen(context, const ChangePasswordScreen());
-        },
-      ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
+      //   title: 'Change Password',
+      //   onTap: () async {
+      //     await pushScreen(context, const ChangePasswordScreen());
+      //   },
+      // ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
@@ -268,13 +269,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
         },
       ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
-        title: 'Change Password',
-        onTap: () async {
-          await pushScreen(context, const ChangePasswordScreen());
-        },
-      ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
+      //   title: 'Change Password',
+      //   onTap: () async {
+      //     await pushScreen(context, const ChangePasswordScreen());
+      //   },
+      // ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
@@ -501,7 +502,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
-            30.verticalSpace,
+            20.verticalSpace,
+            GestureDetector(
+              onTap: () async {
+                await pushScreen(
+                  context,
+                  AccountAndSecurityScreen(isProvider: isProvider),
+                );
+              },
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.security,
+                    color: appColors.textColor.shade200,
+                  ),
+                  10.horizontalSpace,
+                  GenText(
+                    'Account & Security',
+                    color: appColors.black,
+                    weight: FontWeight.w500,
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.chevron_right,
+                    color: appColors.textColor.shade200,
+                  ),
+                ],
+              ),
+            ),
+            20.verticalSpace,
+                        Divider(
+              height: 5,
+              color: appColors.textColor.shade100,
+            ),
+            20.verticalSpace,
             GestureDetector(
               onTap: () async {
                 await GeneralDialogs.showCustomDialog<void>(
@@ -530,34 +564,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             ),
-            30.verticalSpace,
-            GestureDetector(
-              onTap: () async {
-                await GeneralDialogs.showCustomDialog<void>(
-                  context,
-                  body: const DeleteAccountDialog(),
-                );
-              },
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.delete_forever_outlined,
-                    color: appColors.error.shade500,
-                  ),
-                  10.horizontalSpace,
-                  GenText(
-                    'Delete Account',
-                    color: appColors.error.shade500,
-                    size: 15,
-                    weight: FontWeight.w600,
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.chevron_right,
-                    color: appColors.textColor.shade200,
-                  ),
-                ],
-              ),
+            // 30.verticalSpace,
+            // GestureDetector(
+            //   onTap: () async {
+            //     await GeneralDialogs.showCustomDialog<void>(
+            //       context,
+            //       body: const DeleteAccountDialog(),
+            //     );
+            //   },
+            //   child: Row(
+            //     children: [
+            //       Icon(
+            //         Icons.delete_forever_outlined,
+            //         color: appColors.error.shade500,
+            //       ),
+            //       10.horizontalSpace,
+            //       GenText(
+            //         'Delete Account',
+            //         color: appColors.error.shade500,
+            //         size: 15,
+            //         weight: FontWeight.w600,
+            //       ),
+            //       const Spacer(),
+            //       Icon(
+            //         Icons.chevron_right,
+            //         color: appColors.textColor.shade200,
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            20.verticalSpace,
+                        Divider(
+              height: 5,
+              color: appColors.textColor.shade100,
             ),
             20.verticalSpace,
             Padding(
