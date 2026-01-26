@@ -31,6 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+       context.read<CustomerAuthBloc>().add(
+                    const CustomergetUserProfile(),
+                  );
+
       context.read<ServiceCatalogBloc>().add(const FetchServices());
 
       context.read<CustomerAdvertisementBloc>().add(
