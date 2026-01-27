@@ -22,11 +22,11 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
   List<BankDetails> existingAccounts = [];
 
   String? _getBankCodeFromList(List<BankModel> banks, String? selected) {
-    final bank = banks.firstWhere(
-      (e) => e.name == selected,
-      orElse: BankModel.new,
-    );
-    return bank.code?.toString();
+    try {
+      return banks.firstWhere((e) => e.name == selected).code;
+    } on Exception catch (_) {
+      return null;
+    }
   }
 
   bool _isFormValid() {
@@ -97,7 +97,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
             await showSuccessSnackbar(context, 'Default bank account updated');
           }
           if (state is BankAccountDeleted) {
-              context.read<BankBloc>().add(BankFetchAccounts());
+            context.read<BankBloc>().add(BankFetchAccounts());
             await showSuccessSnackbar(context, 'Bank account deleted');
           }
 
@@ -109,7 +109,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
           }
 
           if (state is BankFailure) {
-              context.read<BankBloc>().add(BankFetchAccounts());
+            context.read<BankBloc>().add(BankFetchAccounts());
             await showErrorSnackbar(
               context,
               state.error.isNotEmpty ? state.error : 'An error occurred',
@@ -205,19 +205,14 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                       ValueListenableBuilder<String?>(
                         valueListenable: _selectBank,
                         builder: (context, value, _) {
-                          return ObjectKDropDown(
+                          return KSearchDropDown(
                             label: 'Bank Name',
                             hintText: 'Select Bank',
-                            maxHeight: 600,
                             value: _selectBank.value,
-                            dropdownItems:
-                                bankList.map((b) => b.name ?? '').toList(),
-                            onChanged: (val) {
-                              _selectBank.value = val;
+                            items: bankList.map((b) => b.name ?? '').toList(),
+                            onChanged: (value) {
                               setState(() {});
-                            },
-                            displayStringForOption: (String? name) {
-                              return name ?? '';
+                            return _selectBank.value = value;
                             },
                           );
                         },
@@ -275,27 +270,35 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                 BlocBuilder<BankBloc, BankState>(
                   builder: (context, state) {
                     final isLoading = state is BankLoading;
-                    var bankModels = <BankModel>[];
-                    if (state is LocalBanksFetched) {
-                      bankModels = state.banks;
-                    }
+                    // var bankModels = <BankModel>[];
+                    // if (state is LocalBanksFetched) {
+                    //   bankModels = state.banks;
+                    // }
                     return WideButton(
                       label: 'Add Bank Details',
                       loading: isLoading,
                       onPressed:
                           _isFormValid() && !isLoading
-                              ? () {
+                              ? () async {
                                 final bankCode = _getBankCodeFromList(
-                                  bankModels,
+                                  bankList,
                                   _selectBank.value,
                                 );
+
+                                if (bankCode == null) {
+                                  await showErrorSnackbar(
+                                    context,
+                                    'Bank code not found. Please reselect the bank.',
+                                  );
+                                  return;
+                                }
                                 bloc.add(
                                   BankAddAccount(
                                     accountName: nameController.text.trim(),
                                     accountNumber:
                                         accountNumberController.text.trim(),
                                     bankName: _selectBank.value!,
-                                    bankCode: bankCode ?? '',
+                                    bankCode: bankCode,
                                     currency: 'NGN',
                                   ),
                                 );

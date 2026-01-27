@@ -169,10 +169,6 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
 
     return BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
       listener: (context, state) async {
-        if (state is ProfileUpdateLoading) {
-          showLoadingDialog(context);
-        }
-
         if (state is ProfileUpdateSuccess) {
           await showSuccessSnackbar(
             context,
@@ -499,9 +495,14 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
           color: appColors.textColor.shade300,
         ),
         40.verticalSpace,
-        WideButton(
-          label: 'Update Service',
-          onPressed: widget.onSubmit,
+        BlocBuilder<ProfileUpdateBloc, ProfileUpdateState>(
+          builder: (context, state) {
+            return WideButton(
+              label: 'Update Service',
+              loading: state is ProfileUpdateLoading,
+              onPressed: widget.onSubmit,
+            );
+          },
         ),
       ],
     );
@@ -582,9 +583,14 @@ class WorkingHoursSection extends StatelessWidget {
           ],
         ),
         40.verticalSpace,
-        WideButton(
-          label: 'Update Service',
-          onPressed: onSubmit,
+        BlocBuilder<ProfileUpdateBloc, ProfileUpdateState>(
+          builder: (context, state) {
+            return WideButton(
+              label: 'Update Service',
+              loading: state is ProfileUpdateLoading,
+              onPressed: onSubmit,
+            );
+          },
         ),
       ],
     );

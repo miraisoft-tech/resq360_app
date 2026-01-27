@@ -163,9 +163,7 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     Emitter<ProfileUpdateState> emit,
   ) async {
     emit(Loading());
-    log('loading');
     try {
-      log('uploading');
       final uploadResult = await uploadService.uploadSingle(
         filePath: event.filePath,
       );
