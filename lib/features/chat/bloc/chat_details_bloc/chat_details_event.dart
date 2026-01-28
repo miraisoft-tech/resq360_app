@@ -100,3 +100,47 @@ class _IncomingMessage extends ChatDetailEvent {
   const _IncomingMessage(this.message);
   final MessageResponse message;
 }
+
+
+
+/// Event to report a chat with a specific reason
+final class ReportChat extends ChatDetailEvent {
+  const ReportChat({
+    required this.chatId,
+    required this.reason,
+  });
+
+  final int chatId;
+  final String reason;
+
+  @override
+  List<Object?> get props => [chatId, reason];
+}
+final class BlockUser extends ChatDetailEvent {
+  const BlockUser({
+    required this.userId,
+    required this.userType,
+    required this.chatId,
+  });
+
+  final int userId;
+  final String userType; // 'PROVIDER' or 'USER'
+  final int chatId;
+
+  @override
+  List<Object?> get props => [userId, userType, chatId];
+}
+
+/// Event to unblock a user
+final class UnblockUser extends ChatDetailEvent {
+  const UnblockUser({
+    required this.userId,
+    required this.userType,
+  });
+
+  final int userId;
+  final String userType;
+
+  @override
+  List<Object?> get props => [userId, userType];
+}

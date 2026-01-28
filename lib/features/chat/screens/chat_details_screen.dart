@@ -6,6 +6,7 @@ import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
+import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/generate_invoice.dialog.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
@@ -16,6 +17,7 @@ import 'package:resq360/features/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/chat/widgets/chat_location_bubble.dart';
 import 'package:resq360/features/chat/widgets/multi_image_chat_bubble.dart';
 import 'package:resq360/features/chat/widgets/provider_chat_invoice_card_widget.dart';
+import 'package:resq360/features/chat/widgets/report_chat_dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
@@ -35,13 +37,13 @@ class ChatDetailScreen extends StatelessWidget {
   final int chatId;
   final UserType userType;
 
-Future<int?> _loadCurrentUserId() async {
-  if (userType == UserType.customer) {
-    return AuthLocalRepo.instance.getCustomerId();
-  } else {
-    return AuthLocalRepo.instance.getProviderId();
+  Future<int?> _loadCurrentUserId() async {
+    if (userType == UserType.customer) {
+      return AuthLocalRepo.instance.getCustomerId();
+    } else {
+      return AuthLocalRepo.instance.getProviderId();
+    }
   }
-}
 
   @override
   @override
@@ -58,14 +60,15 @@ Future<int?> _loadCurrentUserId() async {
         final userId = snapshot.data!;
 
         return BlocProvider(
-          create: (_) => ChatDetailBloc(
-            chatId: chatId,
-            currentUserId: userId,
-          )..add(OpenChatDetail(chatId)),
+          create:
+              (_) => ChatDetailBloc(
+                chatId: chatId,
+                currentUserId: userId,
+              )..add(OpenChatDetail(chatId)),
           child: _ChatDetailView(
             chatId: chatId,
             userType: userType,
-            currentUserId: userId, 
+            currentUserId: userId,
           ),
         );
       },
@@ -77,7 +80,7 @@ class _ChatDetailView extends StatefulWidget {
   const _ChatDetailView({
     required this.chatId,
     required this.userType,
-     required this.currentUserId,
+    required this.currentUserId,
   });
 
   final int chatId;
@@ -94,7 +97,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   bool get isCustomer => widget.userType == UserType.customer;
   bool get isProvider => widget.userType == UserType.provider;
 
-  
   String get _senderType => isCustomer ? 'USER' : 'PROVIDER';
   int get _currentUserId => widget.currentUserId;
 
@@ -189,7 +191,18 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
     Widget buildChatConsumer() {
       return BlocConsumer<ChatDetailBloc, ChatDetailState>(
-        listener: _onChatStateChanged,
+        listener: (context, state) async {
+          _onChatStateChanged(context, state);
+          if (state is ChatDetailReportSuccess) {
+            context.read<ChatListBloc>().add(LoadChatList());
+            Navigator.pop(context, true);
+          }
+
+          // Handle action failures
+          if (state is ChatDetailActionFailure) {
+            await showErrorSnackbar(context, state.error);
+          }
+        },
         builder: (context, state) {
           var title = '';
           var isActive = false;
@@ -358,6 +371,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     return const SizedBox.shrink();
   }
 
+  // Updated _buildAppBar method for ChatDetailScreen
   PreferredSizeWidget _buildAppBar(
     String title,
     bool isActive,
@@ -406,20 +420,47 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
       actions: [
         if (status == 'COMPLETED')
-          Row(
-            children: [
-              SizedBox(
-                width: 35.w,
-                child: IconButton(
-                  onPressed: () async {
-                    await DialerUtil.open(phoneNumber);
-                  },
-                  icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
-                ),
-              ),
-              10.horizontalSpace,
-            ],
+          SizedBox(
+            width: 35.w,
+            child: IconButton(
+              onPressed: () async {
+                await DialerUtil.open(phoneNumber);
+              },
+              icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
+            ),
           ),
+        PopupMenuButton<String>(
+          icon: Icon(
+            Icons.more_vert,
+            color: appColors.neutral.shade700,
+          ),
+          color: appColors.whiteColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          onSelected: (value) => _handleMenuAction(value, title),
+          itemBuilder:
+              (context) => [
+                PopupMenuItem<String>(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.report_outlined,
+                        color: appColors.error.shade600,
+                        size: 20.sp,
+                      ),
+                      12.horizontalSpace,
+                      GenText(
+                        'Report Chat',
+                        color: appColors.neutral.shade900,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+        ),
+        10.horizontalSpace,
       ],
     );
   }
@@ -776,6 +817,40 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleMenuAction(String action, String title) async {
+    final currentState = context.read<ChatDetailBloc>().state;
+    if (currentState is! ChatDetailReady) return;
+
+    final chat = currentState.chat;
+
+    // Determine the other user's ID and name
+    final otherUserId = isCustomer ? chat.provider?.id : chat.user?.id;
+
+    if (otherUserId == null) return;
+
+    switch (action) {
+      case 'report':
+        await _showReportDialog(chat.id!, title);
+    }
+  }
+
+  Future<void> _showReportDialog(int chatId, String title) async {
+    final reported = await GeneralDialogs.showCustomDialog<bool>(
+      context,
+      body: BlocProvider.value(
+        value: context.read<ChatDetailBloc>(),
+        child: ReportChatDialog(
+          chatId: chatId,
+          chatTitle: title,
+        ),
+      ),
+    );
+
+    if (reported ?? false) {
+      await showSuccessSnackbar(context, 'Chat reported successfully');
+    }
   }
 }
 

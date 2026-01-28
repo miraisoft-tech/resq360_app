@@ -73,3 +73,20 @@ class ChatDetailFailure extends ChatDetailState {
   @override
   List<Object?> get props => [error];
 }
+
+
+/// State emitted when report is successful
+final class ChatDetailReportSuccess extends ChatDetailState {
+  const ChatDetailReportSuccess();
+}
+
+final class ChatDetailActionFailure extends ChatDetailState {
+  const ChatDetailActionFailure({required this.error});
+
+  final String error;
+
+  @override
+  List<Object?> get props => [
+    error,
+  ];
+}
