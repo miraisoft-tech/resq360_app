@@ -1,9 +1,12 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
+import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/features/provider/dashboard/widgets/no_bank_account_dialog.dart';
 
 class ProviderWithdrawScreen extends StatefulWidget {
-  const ProviderWithdrawScreen({super.key});
-
+  const ProviderWithdrawScreen({required this.balance, super.key});
+  final String balance;
   @override
   State<ProviderWithdrawScreen> createState() => _ProviderWithdrawScreenState();
 }
@@ -13,14 +16,6 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
   late TextEditingController amountController;
   late TextEditingController accountNumberController;
 
-  final ValueNotifier<String?> _selectBank = ValueNotifier(null);
-  final List<String> banks = [
-    'GTB',
-    'Access Bank',
-    'Zenith Bank',
-    'First Bank',
-    'UBA',
-  ];
 
   final List<String> values = [
     '₦ 5,000',
@@ -70,137 +65,194 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
         ),
         actions: const [SizedBox(width: 40)],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: pad(horizontal: 16, vertical: 10),
-          child: Col(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: pad(horizontal: 10, vertical: 12),
-                color: AppColors.grey,
-                child: Col(
+      body: BlocListener<WalletTransactionsBloc, WalletTransactionsState>(
+        listener: (context, state) async {
+          if (state is WithdrawalSuccess) {
+            context.read<WalletBloc>().add(FetchWalletInfo());
+            context.read<WalletTransactionsBloc>().add(
+              FetchWalletTransactions(),
+            );
+            Navigator.pop(context);
+            await GeneralDialogs.showCustomDialog<void>(
+              context,
+              body: const WithdrawalCompletedModal(),
+            );
+          }
+
+          if (state is WithdrawalFailure) {
+            final error = state.error.toLowerCase();
+
+            if (error.contains('add a verified bank account first')) {
+              await GeneralDialogs.showCustomDialog<void>(
+                context,
+                body: const NoBankAccountDialog(),
+              );
+            } else {
+              await showErrorSnackbar(context, state.error);
+            }
+          }
+        },
+        child: SafeArea(
+          child: Padding(
+            padding: pad(horizontal: 16, vertical: 10),
+            child: Col(
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: pad(horizontal: 10, vertical: 12),
+                  color: AppColors.grey,
+                  child: Col(
+                    children: [
+                      GenText(
+                        'Available Balance',
+                        size: 12,
+                        height: 16.5,
+                        weight: FontWeight.w400,
+                        color: appColors.neutral.shade400,
+                      ),
+                      5.verticalSpace,
+                      UrbText(
+                        '₦ ${widget.balance}',
+                        size: 18,
+                        height: 24.5,
+                        weight: FontWeight.w700,
+                        color: appColors.textColor.shade800,
+                      ),
+                    ],
+                  ),
+                ),
+                20.verticalSpace,
+                KFormField(
+                  label: 'Enter Amount',
+                  hintText: '₦ 0.00',
+                  controller: amountController,
+                  keyboardType: TextInputType.number,
+                  onChanged: (a) {
+                    setState(() {});
+                  },
+                ),
+                16.verticalSpace,
+                Wrap(
+                  spacing: 10.w,
                   children: [
-                    GenText(
-                      'Available Balance',
-                      size: 12,
-                      height: 16.5,
-                      weight: FontWeight.w400,
-                      color: appColors.neutral.shade400,
-                    ),
-                    5.verticalSpace,
-                    UrbText(
-                      '₦48,000',
-                      size: 18,
-                      height: 24.5,
-                      weight: FontWeight.w700,
-                      color: appColors.textColor.shade800,
+                    ...values.map(
+                      (value) {
+                        return GestureDetector(
+                          onTap: () => amountController.text = value,
+                          child: Container(
+                            padding: pad(horizontal: 8, vertical: 5),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color:
+                                    amountController.text == value
+                                        ? appColors.primary.shade300
+                                        : appColors.neutral.shade200,
+                              ),
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+
+                            child: GenText(
+                              value,
+                              size: 12,
+                              height: 14.5,
+                              weight: FontWeight.w400,
+                              color: appColors.textColor.shade800,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
-              ),
-              20.verticalSpace,
-              KFormField(
-                label: 'Enter Amount',
-                hintText: '₦ 0.00',
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                onChanged: (a) {
-                  setState(() {});
-                },
-              ),
-              16.verticalSpace,
-              Wrap(
-                spacing: 10.w,
-                children: [
-                  ...values.map(
-                    (value) {
-                      return GestureDetector(
-                        onTap: () => amountController.text = value,
-                        child: Container(
-                          padding: pad(horizontal: 8, vertical: 5),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color:
-                                  amountController.text == value
-                                      ? appColors.primary.shade300
-                                      : appColors.neutral.shade200,
-                            ),
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-
-                          child: GenText(
-                            value,
-                            size: 12,
-                            height: 14.5,
-                            weight: FontWeight.w400,
-                            color: appColors.textColor.shade800,
-                          ),
-                        ),
-                      );
-                    },
+                16.verticalSpace,
+                // KFormField(
+                //   label: 'Account Number',
+                //   hintText: 'Enter Account Number',
+                //   controller: accountNumberController,
+                //   keyboardType: TextInputType.number,
+                //   onChanged: (a) {
+                //     setState(() {});
+                //   },
+                // ),
+                // 16.verticalSpace,
+                // ValueListenableBuilder<String?>(
+                //   valueListenable: _selectBank,
+                //   builder: (
+                //     BuildContext context,
+                //     String? value,
+                //     Widget? child,
+                //   ) {
+                //     return ObjectKDropDown(
+                //       label: 'Bank Name',
+                //       hintText: 'Select Bank ',
+                //       displayStringForOption: (String? id) => id ?? '',
+                //       showPrefix: false,
+                //       value: value,
+                //       dropdownItems: banks,
+                //       onChanged: (value) {
+                //         setState(() {
+                //           _selectBank.value = value;
+                //         });
+                //       },
+                //     );
+                //   },
+                // ),
+                20.verticalSpace,
+                Container(
+                  padding: pad(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: appColors.error.shade50,
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
-                ],
-              ),
-              16.verticalSpace,
-              KFormField(
-                label: 'Account Number',
-                hintText: 'Enter Account Number',
-                controller: accountNumberController,
-                keyboardType: TextInputType.number,
-                onChanged: (a) {
-                  setState(() {});
-                },
-              ),
-              16.verticalSpace,
-              ValueListenableBuilder<String?>(
-                valueListenable: _selectBank,
-                builder: (
-                  BuildContext context,
-                  String? value,
-                  Widget? child,
-                ) {
-                  return ObjectKDropDown(
-                    label: 'Bank Name',
-                    hintText: 'Select Bank ',
-                    displayStringForOption: (String? id) => id ?? '',
-                    showPrefix: false,
-                    value: value,
-                    dropdownItems: banks,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectBank.value = value;
-                      });
-                    },
-                  );
-                },
-              ),
-              20.verticalSpace,
-              Container(
-                padding: pad(horizontal: 20, vertical: 12),
-                decoration: BoxDecoration(
-                  color: appColors.error.shade50,
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
 
-                child: GenText(
-                  '''Your withdrawal request will be processed within 1-3 business days. You'll receive a notification once the funds are transferred.''',
-                  height: 16.5,
-                  weight: FontWeight.w400,
-                  color: appColors.black,
+                  child: GenText(
+                    '''Your withdrawal request will be processed within 1-3 business days. You'll receive a notification once the funds are transferred.''',
+                    height: 16.5,
+                    weight: FontWeight.w400,
+                    color: appColors.black,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              WideButton(
-                label: 'Withdraw',
-                onPressed: () async {
-                  await GeneralDialogs.showCustomDialog<void>(
-                    context,
-                    body: const WithdrawalCompletedModal(),
-                  );
-                },
-              ),
-            ],
+                const Spacer(),
+                BlocBuilder<WalletTransactionsBloc, WalletTransactionsState>(
+                  builder: (context, state) {
+                    return WideButton(
+                      label: 'Withdraw',
+                      loading: state is WithdrawalProcessing,
+                      onPressed: () async {
+                        final amount = int.tryParse(
+                          amountController.text.replaceAll(
+                            RegExp('[^0-9]'),
+                            '',
+                          ),
+                        );
+                        final parsedBalance = double.parse(widget.balance);
+                        if (parsedBalance.toInt() < (amount ?? 0)) {
+                          await showErrorSnackbar(
+                            context,
+                            'Insufficient balance',
+                          );
+                          return;
+                        }
+                        if (amount == null || amount <= 0) {
+                          await showErrorSnackbar(
+                            context,
+                            'Enter a valid amount',
+                          );
+                          return;
+                        }
+
+                        context.read<WalletTransactionsBloc>().add(
+                          RequestWithdrawal(
+                            amount: amount,
+                            reason: 'Provider withdrawal',
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

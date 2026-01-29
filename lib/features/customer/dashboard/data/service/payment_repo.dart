@@ -153,4 +153,33 @@ Future<ApiResult<ServicePaymentResponse>> initiatePaymentForAServiceRequest({
       return ApiResult(error: e.toString());
     }
   }
+
+Future<ApiResult<String>> requestPayout({
+  required int amount,
+  required String reason,
+}) async {
+  const url = '/payouts/request';
+
+  try {
+    final response = await dio().post<Map<String, dynamic>>(
+      url,
+      data: {
+        'amount': amount,
+        'requestReason': reason,
+      },
+    );
+
+    if ((response.statusCode == 201 || response.statusCode == 200) &&
+        response.data != null) {
+      final message = response.data!['message'];
+      return ApiResult(data: message.toString());
+    } else {
+      return ApiResult(error: response.data?['message'].toString());
+    }
+  } on Exception catch (e) {
+    return ApiResult(error: e.toString());
+  }
+}
+
+
 }

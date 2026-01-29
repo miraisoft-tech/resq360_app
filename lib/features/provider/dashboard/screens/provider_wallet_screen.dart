@@ -175,7 +175,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                         onWithdraw: () async {
                           await pushScreen(
                             context,
-                            const ProviderWithdrawScreen(),
+                            ProviderWithdrawScreen(balance: balance.toString(),),
                           );
                         },
                       );

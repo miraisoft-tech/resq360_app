@@ -3,19 +3,22 @@ import 'package:resq360/__lib.dart';
 
 import 'package:resq360/core/services/wallet.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
+import 'package:resq360/features/customer/dashboard/data/service/payment_repo.dart';
 
 part 'wallet_transaction_event.dart';
 part 'wallet_transaction_state.dart';
 
 
 final WalletRepo walletRepo = WalletRepo.instance;
-
+final PaymentRepo paymentRepo = PaymentRepo();
 class WalletTransactionsBloc
     extends Bloc<WalletTransactionsEvent, WalletTransactionsState> {
   WalletTransactionsBloc() : super(WalletTransactionsInitial()) {
     on<FetchWalletTransactions>(_onFetchWalletTransactions);
     on<RefreshWalletTransactions>(_onRefreshWalletTransactions);
     on<LoadMoreWalletTransactions>(_onLoadMoreWalletTransactions);
+    on<RequestWithdrawal>(_onRequestWithdrawal);
+
   }
 
   int _currentPage = 1;
@@ -85,4 +88,24 @@ class WalletTransactionsBloc
       );
     }
   }
+
+  Future<void> _onRequestWithdrawal(
+  RequestWithdrawal event,
+  Emitter<WalletTransactionsState> emit,
+) async {
+  emit(WithdrawalProcessing());
+
+  final result = await paymentRepo.requestPayout(
+    amount: event.amount,
+    reason: event.reason,
+  );
+
+  if (result.isSuccess) {
+    emit(WithdrawalSuccess(result.data ?? 'Withdrawal submitted'));
+    add(FetchWalletTransactions());
+  } else {
+    emit(WithdrawalFailure(result.error ?? 'Withdrawal failed'));
+  }
+}
+
 }
