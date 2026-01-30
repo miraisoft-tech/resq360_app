@@ -1,8 +1,8 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
+import 'package:resq360/features/provider/dashboard/widgets/saved_bank_accounts_section.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
 import 'package:resq360/features/settings/data/models/banks_model.dart';
-import 'package:resq360/features/settings/widgets/bank_account_tile.dart';
 
 class AddBankDetailsScreen extends StatefulWidget {
   const AddBankDetailsScreen({super.key});
@@ -54,7 +54,6 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final bloc = context.read<BankBloc>();
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
@@ -93,11 +92,9 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
           }
 
           if (state is CustomerDefaultBankAccountSetSuccesful) {
-            context.read<BankBloc>().add(BankFetchAccounts());
             await showSuccessSnackbar(context, 'Default bank account updated');
           }
           if (state is BankAccountDeleted) {
-            context.read<BankBloc>().add(BankFetchAccounts());
             await showSuccessSnackbar(context, 'Bank account deleted');
           }
 
@@ -109,7 +106,6 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
           }
 
           if (state is BankFailure) {
-            context.read<BankBloc>().add(BankFetchAccounts());
             await showErrorSnackbar(
               context,
               state.error.isNotEmpty ? state.error : 'An error occurred',
@@ -124,84 +120,9 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                 Expanded(
                   child: ListView(
                     children: [
-                      if (existingAccounts.isNotEmpty) ...[
-                        GenText(
-                          'Your Saved Bank Accounts',
-                          weight: FontWeight.w600,
-                          color: appColors.textColor.shade700,
-                        ),
-                        10.verticalSpace,
-
-                        ...existingAccounts.map((acc) {
-                          return Dismissible(
-                            key: ValueKey(acc.id),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 20),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade600,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.delete,
-                                color: Colors.white,
-                              ),
-                            ),
-                            confirmDismiss: (_) async {
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder:
-                                    (_) => AlertDialog(
-                                      backgroundColor: appColors.whiteColor,
-                                      title: const Text('Delete Bank Account'),
-                                      content: const Text(
-                                        'Are you sure you want to delete this bank account?',
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed:
-                                              () =>
-                                                  Navigator.pop(context, false),
-                                          child: Text(
-                                            'Cancel',
-                                            style: TextStyle(
-                                              color: appColors.darkGreyColor,
-                                            ),
-                                          ),
-                                        ),
-                                        TextButton(
-                                          onPressed:
-                                              () =>
-                                                  Navigator.pop(context, true),
-                                          child: Text(
-                                            'Delete',
-                                            style: TextStyle(
-                                              color: appColors.error,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                              );
-                              return confirmed ?? false;
-                            },
-                            onDismissed: (_) {
-                              setState(() {
-                                existingAccounts.removeWhere(
-                                  (item) => item.id == acc.id,
-                                );
-                              });
-                              context.read<BankBloc>().add(
-                                DeleteBankAccount(bankAccountId: acc.id!),
-                              );
-                            },
-                            child: BankAccountTile(bank: acc),
-                          );
-                        }),
-                        20.verticalSpace,
-                      ],
-
+                     10.verticalSpace,
+                const SavedBankAccountsSection(),
+                      20.verticalSpace,
                       ValueListenableBuilder<String?>(
                         valueListenable: _selectBank,
                         builder: (context, value, _) {
@@ -270,10 +191,6 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                 BlocBuilder<BankBloc, BankState>(
                   builder: (context, state) {
                     final isLoading = state is BankLoading;
-                    // var bankModels = <BankModel>[];
-                    // if (state is LocalBanksFetched) {
-                    //   bankModels = state.banks;
-                    // }
                     return WideButton(
                       label: 'Add Bank Details',
                       loading: isLoading,
@@ -292,7 +209,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                                   );
                                   return;
                                 }
-                                bloc.add(
+                                context.read<BankBloc>().add(
                                   BankAddAccount(
                                     accountName: nameController.text.trim(),
                                     accountNumber:

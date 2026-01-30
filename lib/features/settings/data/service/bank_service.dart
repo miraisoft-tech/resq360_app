@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
@@ -36,7 +37,9 @@ class BankRepo extends BaseAPI {
       } else {
         return ApiResult(error: res.data?['message'].toString() ?? 'Failed to add bank account');
       }
-    } on Exception catch (e) {
+    }  on DioException catch (e) {
+      return handleDioError(e);
+    }on Exception catch (e) {
       return ApiResult(error: e.toString());
     }
   }
@@ -77,7 +80,9 @@ class BankRepo extends BaseAPI {
           error: response.data!['message'].toString()
         );
       }
-    } on Exception catch (e) {
+    }  on DioException catch (e) {
+      return handleDioError(e);
+    }on Exception catch (e) {
       throw Exception('Error verifying and registering bank account: $e');
     }
   }
@@ -101,6 +106,8 @@ class BankRepo extends BaseAPI {
           error: response.data!['message'].toString()
         );
       }
+    } on DioException catch (e) {
+      return handleDioError(e);
     } on Exception catch (e) {
       throw Exception('Error setting default bank account: $e');
     }
@@ -135,6 +142,8 @@ Future<ApiResult<String>> updateBankAccount({
           error: response.data!['message'].toString()
         );
       }
+    }  on DioException catch (e) {
+      return handleDioError(e);
     } on Exception catch (e) {
       throw Exception('Error updating bank account: $e');
     }
@@ -155,7 +164,9 @@ Future<ApiResult<String>> updateBankAccount({
           error: response.data!['message'].toString()
         );
       }
-    } on Exception catch (e) {
+    }  on DioException catch (e) {
+      return handleDioError(e);
+    }on Exception catch (e) {
       throw Exception('Error deleting bank account: $e');
     }
   }

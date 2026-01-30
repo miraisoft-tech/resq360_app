@@ -2,7 +2,10 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
 import 'package:resq360/features/provider/dashboard/widgets/no_bank_account_dialog.dart';
+import 'package:resq360/features/provider/dashboard/widgets/saved_bank_accounts_section.dart';
+import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
 
 class ProviderWithdrawScreen extends StatefulWidget {
   const ProviderWithdrawScreen({required this.balance, super.key});
@@ -16,7 +19,6 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
   late TextEditingController amountController;
   late TextEditingController accountNumberController;
 
-
   final List<String> values = [
     '₦ 5,000',
     '₦ 10,000',
@@ -24,10 +26,12 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
     '₦ 50,000',
   ];
 
+  List<BankDetails> existingAccounts = [];
+
   @override
   void initState() {
     super.initState();
-
+    context.read<BankBloc>().add(BankFetchAccounts());
     nameController = TextEditingController();
     amountController = TextEditingController();
     accountNumberController = TextEditingController();
@@ -65,33 +69,79 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
         ),
         actions: const [SizedBox(width: 40)],
       ),
-      body: BlocListener<WalletTransactionsBloc, WalletTransactionsState>(
-        listener: (context, state) async {
-          if (state is WithdrawalSuccess) {
-            context.read<WalletBloc>().add(FetchWalletInfo());
-            context.read<WalletTransactionsBloc>().add(
-              FetchWalletTransactions(),
-            );
-            Navigator.pop(context);
-            await GeneralDialogs.showCustomDialog<void>(
-              context,
-              body: const WithdrawalCompletedModal(),
-            );
-          }
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<WalletTransactionsBloc, WalletTransactionsState>(
+            listener: (context, state) async {
+              if (state is WithdrawalSuccess) {
+                context.read<WalletBloc>().add(FetchWalletInfo());
+                context.read<WalletTransactionsBloc>().add(
+                  FetchWalletTransactions(),
+                );
+                Navigator.pop(context);
+                await GeneralDialogs.showCustomDialog<void>(
+                  context,
+                  body: const WithdrawalCompletedModal(),
+                );
+              }
 
-          if (state is WithdrawalFailure) {
-            final error = state.error.toLowerCase();
+              if (state is WithdrawalFailure) {
+                final error = state.error.toLowerCase();
 
-            if (error.contains('add a verified bank account first')) {
-              await GeneralDialogs.showCustomDialog<void>(
-                context,
-                body: const NoBankAccountDialog(),
-              );
-            } else {
-              await showErrorSnackbar(context, state.error);
-            }
-          }
-        },
+                if (error.contains('add a verified bank account first')) {
+                  await GeneralDialogs.showCustomDialog<void>(
+                    context,
+                    body: const NoBankAccountDialog(),
+                  );
+                } else {
+                  await showErrorSnackbar(context, state.error);
+                }
+              }
+            },
+          ),
+          BlocListener<BankBloc, BankState>(
+            listener: (context, state) async {
+              // if ( state is BankLoading) {
+              //   showLoadingDialog(context);
+              // } else{
+              //   Navigator()
+              // }
+
+              if (state is BankAccountsFetched) {
+                setState(() {
+                  existingAccounts = state.bankAcounts;
+                });
+              }
+              if (state is CustomerDefaultBankAccountSetSuccesful) {
+                context.read<BankBloc>().add(BankFetchAccounts());
+                await showSuccessSnackbar(
+                  context,
+                  'Default bank account updated',
+                );
+              }
+              if (state is BankAccountDeleted) {
+                context.read<BankBloc>().add(BankFetchAccounts());
+                await showSuccessSnackbar(context, 'Bank account deleted');
+              }
+
+              if (state is BankAccountUpdated) {
+                await showSuccessSnackbar(
+                  context,
+                  'Bank details updated successfully',
+                );
+              }
+
+              if (state is BankFailure) {
+                context.read<BankBloc>().add(BankFetchAccounts());
+                await showErrorSnackbar(
+                  context,
+                  state.error.isNotEmpty ? state.error : 'An error occurred',
+                );
+              }
+            },
+          ),
+        ],
+
         child: SafeArea(
           child: Padding(
             padding: pad(horizontal: 16, vertical: 10),
@@ -122,6 +172,7 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
                   ),
                 ),
                 20.verticalSpace,
+                const SavedBankAccountsSection(),
                 KFormField(
                   label: 'Enter Amount',
                   hintText: '₦ 0.00',
@@ -164,39 +215,6 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
                     ),
                   ],
                 ),
-                16.verticalSpace,
-                // KFormField(
-                //   label: 'Account Number',
-                //   hintText: 'Enter Account Number',
-                //   controller: accountNumberController,
-                //   keyboardType: TextInputType.number,
-                //   onChanged: (a) {
-                //     setState(() {});
-                //   },
-                // ),
-                // 16.verticalSpace,
-                // ValueListenableBuilder<String?>(
-                //   valueListenable: _selectBank,
-                //   builder: (
-                //     BuildContext context,
-                //     String? value,
-                //     Widget? child,
-                //   ) {
-                //     return ObjectKDropDown(
-                //       label: 'Bank Name',
-                //       hintText: 'Select Bank ',
-                //       displayStringForOption: (String? id) => id ?? '',
-                //       showPrefix: false,
-                //       value: value,
-                //       dropdownItems: banks,
-                //       onChanged: (value) {
-                //         setState(() {
-                //           _selectBank.value = value;
-                //         });
-                //       },
-                //     );
-                //   },
-                // ),
                 20.verticalSpace,
                 Container(
                   padding: pad(horizontal: 20, vertical: 12),
