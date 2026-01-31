@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/settings/screens/change_password_screen.dart';
 import 'package:resq360/features/settings/widgets/delete_account_dialog.dart';
+import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class AccountAndSecurityScreen extends StatelessWidget {
   const AccountAndSecurityScreen({
@@ -13,21 +14,9 @@ class AccountAndSecurityScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const GenText(
-          'Account & Security',
-          size: 20,
-          weight: FontWeight.w600,
-        ),
-        centerTitle: true,
-        backgroundColor: colors.whiteColor,
-        foregroundColor: colors.black,
-        elevation: 0,
-      ),
-      backgroundColor: colors.whiteColor,
+    return AppScaffold(
+     title:  'Account & Security',
       body: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
         children: [
           ListTile(
             leading: Icon(Icons.lock_outline, color: colors.black),

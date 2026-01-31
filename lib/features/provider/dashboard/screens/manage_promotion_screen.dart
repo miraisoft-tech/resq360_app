@@ -106,7 +106,7 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
   }) {
 
     if (state is PromotionLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(color: context.appColors.primary,));
     }
 
     var promotions = <Advertisement>[];

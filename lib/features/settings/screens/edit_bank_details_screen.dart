@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
+import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class EditBankDetailScreen extends StatefulWidget {
   const EditBankDetailScreen({required this.bank, super.key});
@@ -30,14 +31,9 @@ class _EditBankDetailScreenState extends State<EditBankDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Bank Details'),
-        backgroundColor: colors.whiteColor,
-      ),
-      backgroundColor: colors.whiteColor,
+    return AppScaffold(
+      title: 'Edit Bank Details',
       body: Padding(
         padding: pad(horizontal: 20, vertical: 20),
         child: Column(
