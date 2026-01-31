@@ -4,7 +4,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/promotion_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/provider/dashboard/models/duration.enum.dart';
 import 'package:resq360/features/widgets/dialogs/payment_finished.modal.dart';
@@ -31,7 +31,7 @@ class _PromoteServiceReviewScreenState
   @override
   void initState() {
     super.initState();
-    context.read<CustomerAdvertisementBloc>().add(FetchAdvertisementPrice());
+    context.read<PromotionBloc>().add(FetchPromotionPrice());
   }
 
   @override
@@ -40,7 +40,7 @@ class _PromoteServiceReviewScreenState
     var balance = '';
     return MultiBlocListener(
       listeners: [
-        BlocListener<CustomerAdvertisementBloc, CustomerAdvertisementState>(
+        BlocListener<PromotionBloc, PromotionState>(
           listener: _handleAdvertisementState,
         ),
         BlocListener<WalletBloc, WalletState>(
@@ -148,11 +148,11 @@ class _PromoteServiceReviewScreenState
                           ),
                           const Spacer(),
                           BlocBuilder<
-                            CustomerAdvertisementBloc,
-                            CustomerAdvertisementState
+                            PromotionBloc,
+                            PromotionState
                           >(
                             builder: (context, state) {
-                              if (state is AdvertisementPriceFetched) {
+                              if (state is PromotionPriceFetched) {
                                 return GenText(
                                  '₦ ${ AppTextUtil.formatAmount(state.price.toString())}',
                                   height: 24.5,
@@ -181,12 +181,12 @@ class _PromoteServiceReviewScreenState
                           ),
                           const Spacer(),
                           BlocBuilder<
-                            CustomerAdvertisementBloc,
-                            CustomerAdvertisementState
+                            PromotionBloc,
+                            PromotionState
                           >(
                             builder: (context, state) {
-                              if (state is AdvertisementPriceFetched) {
-                                final price = state.price ?? 0;
+                              if (state is PromotionPriceFetched) {
+                                final price = state.price;
                                 // final duration = widget.duration.value;
                                 final total = price * widget.duration.value;
                                 final formattedTotal = AppTextUtil.formatAmount(total.toString());
@@ -219,11 +219,11 @@ class _PromoteServiceReviewScreenState
                     ),
                     12.horizontalSpace,
                     BlocBuilder<
-                      CustomerAdvertisementBloc,
-                      CustomerAdvertisementState
+                      PromotionBloc,
+                      PromotionState
                     >(
                       builder: (context, state) {
-                        final isLoaded = state is AdvertisementPriceFetched;
+                        final isLoaded = state is PromotionPriceFetched;
 
                         return Expanded(
                           child: WideButton(
@@ -233,7 +233,7 @@ class _PromoteServiceReviewScreenState
                             onPressed:
                                 isLoaded
                                     ? () async {
-                                      final price = state.price ?? 0;
+                                      final price = state.price;
                                       final total =
                                           price * widget.duration.value;
 
@@ -251,10 +251,7 @@ class _PromoteServiceReviewScreenState
                                               context,
                                               body: FinishPaymentDialog(
                                                 amount: state.price.toString(),
-                                                walletBalance:
-                                                    double.parse(
-                                                      balance,
-                                                    ).toInt(),
+                                                walletBalance: double.tryParse(balance)?.toInt() ?? 0,
                                                 discount: widget.discount,
                                                 duration: widget.duration,
                                                 description: widget.description,
@@ -281,66 +278,81 @@ class _PromoteServiceReviewScreenState
     );
   }
 
-  Future<void> _handleAdvertisementState(
-    BuildContext context,
-    CustomerAdvertisementState state,
-  ) async {
-    if (state is CustomerAdvertisementLoading ||
-        state is AdvertisementPaymentVerifying) {
-      showLoadingDialog(context);
-      return;
-    }
+Future<void> _handleAdvertisementState(
+  BuildContext context,
+  PromotionState state,
+) async {
+  if (!mounted) return;
 
-    if (state is AdvertisementPaymentInitiatedState) {
-      Navigator.pop(context);
+  if (state is PromotionLoading ||state is PromotionPaymentVerifying) {
+    if (mounted) showLoadingDialog(context);
+    return;
+  } 
 
-      final completed = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(
-          builder:
-              (_) => PaystackWebViewPage(
-                authorizationUrl: state.payment.authorizationUrl,
-                reference: state.payment.reference,
-                callbackUrl: 'https://example.com/callback',
-              ),
+  if (state is PromotionPriceFetched) {
+      if (mounted) await pop(context);
+  }
+  if (state is PromotionPaymentInitiated) {
+    if (!mounted) return;
+
+    Navigator.pop(context);
+
+    final completed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PaystackWebViewPage(
+          authorizationUrl: state.payment.authorizationUrl,
+          reference: state.payment.reference,
+          callbackUrl: 'https://example.com/callback',
         ),
-      );
+      ),
+    );
 
-      if (completed ?? false) {
-        await _verifyAdvertisementPayment(state.payment.reference);
-      } else {
-        await showErrorSnackbar(context, 'Payment cancelled');
-      }
-      return;
+    if (!mounted) return;
+
+    if (completed ?? false) {
+      await _verifyAdvertisementPayment(state.payment.reference);
+    } else {
+      await showErrorSnackbar(context, 'Payment cancelled');
     }
+    return;
+  }
 
-    if (state is AdvertisementCreated) {
-      await pop(context);
-      await GeneralDialogs.showCustomDialog<void>(
-        context,
-        body: PaymentFinished(
-          onTap: () async {
-            if (context.mounted) await pop(context);
-            if (context.mounted) await pop(context);
-            if (context.mounted) await pop(context);
-          },
-        ),
-      );
-      return;
-    }
+  if (state is PromotionCreated) {
+    if (!mounted) return;
 
-    if (state is CustomerAdvertisementError) {
-      Navigator.pop(context);
+    await pop(context);
+
+    if (!mounted) return;
+
+    await GeneralDialogs.showCustomDialog<void>(
+      context,
+      body: PaymentFinished(
+        onTap: () async {
+          if (mounted) await pop(context);
+          if (mounted) await pop(context);
+          if (mounted) await pop(context);
+        },
+      ),
+    );
+    return;
+  }
+
+  if (state is PromotionError) {
+    if (mounted) {
       await showErrorSnackbar(context, state.error);
     }
   }
-
-  Future<void> _verifyAdvertisementPayment(String reference) async {
-    context.read<CustomerAdvertisementBloc>().add(
-      VerifyAdvertisementPayment(reference: reference),
-    );
-  }
 }
+Future<void> _verifyAdvertisementPayment(String reference) async {
+  if (!mounted) return;
+
+  context.read<PromotionBloc>().add(
+    VerifyPromotionPayment(reference: reference),
+  );
+}
+    }
+
 
 class FinishPaymentDialog extends StatefulWidget {
   const FinishPaymentDialog({
@@ -547,10 +559,10 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
       return;
     }
 
-    context.read<CustomerAdvertisementBloc>().add(
-      CreateAdvertisement(
-        discount: int.parse(widget.discount),
-        duration: widget.duration.milliseconds,
+    context.read<PromotionBloc>().add(
+      CreatePromotion(
+        discountPercentage: int.parse(widget.discount),
+        durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.wallet.name,
         description: widget.description,
       ),
@@ -558,10 +570,10 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
   }
 
   Future<void> _payWithCard() async {
-    context.read<CustomerAdvertisementBloc>().add(
-      CreateAdvertisement(
-        discount: int.parse(widget.discount),
-        duration: widget.duration.milliseconds,
+    context.read<PromotionBloc>().add(
+      CreatePromotion(
+        discountPercentage: int.parse(widget.discount),
+        durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.new_card.name,
 
         description: widget.description,

@@ -39,42 +39,44 @@ class _SavedBankAccountsSectionState extends State<SavedBankAccountsSection> {
           );
         }
 
-          if (state is BankAccountsFetched && state.bankAcounts.isEmpty) {
-            return  Column(
-              children: [
-                 Center(
-                  child:  GestureDetector(
-                    onTap: ()async {
-                      await pushScreen(context, const AddBankDetailsScreen());
-                    },
-                    child: RichText(
-                      text: TextSpan(
-                        style: TextStyle(color: appColors.textColor.shade500),
-                        children: [
-                          TextSpan(
-                            text:  'No Saved Bank Accounts',
-                            style: TextStyle(
-                              fontFamily: 'inter',
-                              fontSize: 15.sp,
-                              color: appColors.textColor.shade500,
-                              fontWeight: FontWeight.w700,
-                            ),
+        if (state is BankAccountsFetched && state.bankAcounts.isEmpty) {
+          return Column(
+            children: [
+              Center(
+                child: GestureDetector(
+                  onTap: () async {
+                    await pushScreen(context, const AddBankDetailsScreen());
+                  },
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(color: appColors.textColor.shade500),
+                      children: [
+                        TextSpan(
+                          text: 'No Saved Bank Accounts',
+                          style: TextStyle(
+                            fontFamily: 'inter',
+                            fontSize: 15.sp,
+                            color: appColors.textColor.shade500,
+                            fontWeight: FontWeight.w700,
                           ),
-                        ],),
+                        ),
+                      ],
                     ),
-                  )
+                  ),
                 ),
-10.verticalSpace,
-              ],
-            );
-          }
+              ),
+              10.verticalSpace,
+            ],
+          );
+        }
         if (state is BankAccountsFetched && state.bankAcounts.isNotEmpty) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              GenText(
                 'Your Saved Bank Accounts',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                color: appColors.textColor.shade700,
+                weight: FontWeight.w600,
               ),
               const SizedBox(height: 10),
 

@@ -2,6 +2,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/promotion_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
 import 'package:resq360/features/customer/dashboard/screens/notification_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
@@ -301,12 +302,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
 
                       30.verticalSpace,
                       BlocBuilder<
-                        CustomerAdvertisementBloc,
-                        CustomerAdvertisementState
+                        PromotionBloc,
+                        PromotionState
                       >(
                         builder: (context, state) {
-                          if (state is ProviderActiveAdvertisementsFetched) {
-                            final activeAds = state.advertisements;
+                          if (state is ActivePromotionsFetched) {
+                            final activeAds = state.promotions;
                             if (activeAds.isNotEmpty &&
                                 activeAds.first.endDate != null) {
                               return Column(

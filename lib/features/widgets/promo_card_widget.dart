@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/ad_tracking_service.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/widgets/images.widgets.dart';
@@ -19,11 +20,14 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
   late PageController _pageController;
   int _currentPage = 0;
 
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+       unawaited(_trackCurrentImpression());
+
       _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) async {
         if (!mounted) return;
         final adsState = context.read<CustomerAdvertisementBloc>().state;
@@ -43,7 +47,21 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
           curve: Curves.easeInOut,
         );
       });
+
+       unawaited(_trackCurrentImpression());
     });
+  }
+
+  Future<void> _trackCurrentImpression() async {
+    final state = context.read<CustomerAdvertisementBloc>().state;
+    if (state is! CustomerAdvertisementFetched) return;
+
+    final ad = state.adminAds[_currentPage];
+    final id = ad.id;
+
+    if (id == null) return;
+
+     unawaited(AdTrackingService.trackImpressionOnce(id));
   }
 
   @override
@@ -73,16 +91,20 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
                 child: PageView.builder(
                   controller: _pageController,
                   itemCount: ads.length,
-                  onPageChanged: (index) {
+                  onPageChanged: (index) async {
                     setState(() {
                       _currentPage = index;
                     });
+                    await _trackCurrentImpression();
                   },
                   itemBuilder: (context, index) {
                     final ad = ads[index];
 
                     return GestureDetector(
                       onTap: () async {
+                        if (ad.id != null) {
+                         unawaited(AdTrackingService.trackClick(ad.id!));
+                        }
                         await AppGenUtil.launchUrlText(ad.targetUrl ?? '');
                       },
                       child: ClipRRect(

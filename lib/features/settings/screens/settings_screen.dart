@@ -13,6 +13,7 @@ import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
+import 'package:resq360/features/provider/dashboard/screens/mange_promotion_screen.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
@@ -209,6 +210,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: 'Update Service',
         onTap: () async {
           await pushScreen(context, const UpdateServiceScreen());
+        },
+      ),
+      SettingsItem(
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_UPDATE_SERVICE_SVG.svg,
+        title: 'Manage promotions',
+        onTap: () async {
+          await pushScreen(context, const PromotionsDashboardScreen());
         },
       ),
       SettingsItem(

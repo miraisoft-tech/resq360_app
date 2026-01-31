@@ -56,9 +56,9 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
   }
 
   void _finish([bool success = true]) {
-    if (finished) return;
+    if (finished || !mounted) return;
     finished = true;
-    Navigator.pop(context, success);
+    Navigator.of(context).pop(success);
   }
 
   @override
@@ -115,7 +115,9 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
             onLoadStart: (_, url) {
               setState(() => _loading = true);
               log('the url is now: $url');
-
+              if (url.toString().startsWith(widget.callbackUrl)) {
+                _finish();
+              }
               if (url.toString().contains(
                     'domain=resq360.com',
                   ) ||
