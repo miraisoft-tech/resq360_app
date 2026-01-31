@@ -13,7 +13,7 @@ import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
-import 'package:resq360/features/provider/dashboard/screens/mange_promotion_screen.dart';
+import 'package:resq360/features/provider/dashboard/screens/manage_promotion_screen.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';

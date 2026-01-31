@@ -17,11 +17,7 @@ class PromotionStatsOverview extends StatelessWidget {
       margin: pad(horizontal: 16, vertical: 16),
       padding: pad(both: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [colors.primary.shade500, colors.primary.shade700],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: colors.primary.shade500,
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
