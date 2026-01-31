@@ -106,6 +106,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
           }
 
           if (state is BankFailure) {
+            context.read<BankBloc>().add(BankFetchAccounts());
             await showErrorSnackbar(
               context,
               state.error.isNotEmpty ? state.error : 'An error occurred',
@@ -121,7 +122,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                   child: ListView(
                     children: [
                      10.verticalSpace,
-                const SavedBankAccountsSection(),
+                const SavedBankAccountsSection( disableNavigation: true,),
                       20.verticalSpace,
                       ValueListenableBuilder<String?>(
                         valueListenable: _selectBank,

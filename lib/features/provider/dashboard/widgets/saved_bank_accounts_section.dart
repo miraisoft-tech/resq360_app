@@ -4,8 +4,11 @@ import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/widgets/bank_account_tile.dart';
 
 class SavedBankAccountsSection extends StatefulWidget {
-  const SavedBankAccountsSection({super.key});
-
+  const SavedBankAccountsSection({
+    super.key,
+    this.disableNavigation = false,
+  });
+  final bool disableNavigation;
   @override
   State<SavedBankAccountsSection> createState() =>
       _SavedBankAccountsSectionState();
@@ -44,9 +47,15 @@ class _SavedBankAccountsSectionState extends State<SavedBankAccountsSection> {
             children: [
               Center(
                 child: GestureDetector(
-                  onTap: () async {
-                    await pushScreen(context, const AddBankDetailsScreen());
-                  },
+                  onTap:
+                      widget.disableNavigation
+                          ? null
+                          : () async {
+                            await pushScreen(
+                              context,
+                              const AddBankDetailsScreen(),
+                            );
+                          },
                   child: RichText(
                     text: TextSpan(
                       style: TextStyle(color: appColors.textColor.shade500),
