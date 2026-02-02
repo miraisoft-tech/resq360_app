@@ -40,9 +40,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-         context.read<ProviderAuthBloc>().add(
-      const ProvidergetProviderProfile(),
-    );
+      context.read<ProviderAuthBloc>().add(
+        const ProvidergetProviderProfile(),
+      );
 
       context.read<CustomerAdvertisementBloc>().add(
         CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
@@ -228,25 +228,13 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           if (authState is ProviderProfileLoadedState) {
                             final provider = authState.user;
 
-                            final progress = calculateProviderProgress(provider,);
-                            final isProfileComplete = progress >= 1.0;
-
-                            final descriptionMissing =
-                                provider.description == null ||
-                                provider.description!.trim().isEmpty;
-
-                            final servicesMissing =
-                                provider.providerServices == null ||
-                                provider.providerServices!.isEmpty;
-
-                            final profileImageMissing =
-                                provider.profileImage == null ||
-                                provider.profileImage!.trim().isEmpty;
-
-                            final profileNotDone =
-                                descriptionMissing ||
-                                servicesMissing ||
-                                profileImageMissing;
+                            // final progress = calculateProviderProgress(
+                            //   provider,
+                            // );
+                            
+                            final isProfileComplete = isProviderProfileComplete(
+                              provider,
+                            );
 
                             return Column(
                               children: [
@@ -255,7 +243,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                   20.verticalSpace,
                                 ],
 
-                                if (profileNotDone) ...[
+                                if (!isProfileComplete) ...[
                                   GestureDetector(
                                     onTap:
                                         () => pushScreen(
@@ -301,10 +289,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       ),
 
                       30.verticalSpace,
-                      BlocBuilder<
-                        PromotionBloc,
-                        PromotionState
-                      >(
+                      BlocBuilder<PromotionBloc, PromotionState>(
                         builder: (context, state) {
                           if (state is ActivePromotionsFetched) {
                             final activeAds = state.promotions;
@@ -405,5 +390,27 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         ),
       ),
     );
+  }
+
+  bool isProviderProfileComplete(ProviderModel provider) {
+    final hasProfileImage =
+        provider.profileImage != null &&
+        provider.profileImage!.trim().isNotEmpty;
+
+    final hasServices = provider.providerServices?.isNotEmpty ?? false;
+
+    final hasDescription =
+        provider.description != null && provider.description!.trim().isNotEmpty;
+
+    final hasAddress = provider.address != null;
+
+    final hasWorkingHours =
+        provider.openingHours != null && provider.closingHours != null;
+
+    return hasProfileImage &&
+        hasServices &&
+        hasDescription &&
+        hasAddress &&
+        hasWorkingHours;
   }
 }

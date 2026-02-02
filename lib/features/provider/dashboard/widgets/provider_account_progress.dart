@@ -41,15 +41,31 @@ final progress = calculateProviderProgress(provider);
   }
 }
 double calculateProviderProgress(ProviderModel provider) {
-  const totalSteps = 4;
+  const totalSteps = 5;
   var completed = 0;
 
-  // if (provider.isEmailVerified) completed++;
-  if (provider.profileImage != null) completed++;
-  // if (provider.isApproved) completed++;
-  if (provider.providerServices?.isNotEmpty ?? false) completed++;
-  if (provider.address != null) completed++;
-  if (provider.openingHours != null && provider.closingHours != null) completed++;
+  if (provider.profileImage != null &&
+      provider.profileImage!.trim().isNotEmpty) {
+    completed++;
+  }
+
+  if (provider.providerServices?.isNotEmpty ?? false) {
+    completed++;
+  }
+
+  if (provider.description != null &&
+      provider.description!.trim().isNotEmpty) {
+    completed++;
+  }
+
+  if (provider.address != null) {
+    completed++;
+  }
+
+  if (provider.openingHours != null &&
+      provider.closingHours != null) {
+    completed++;
+  }
 
   return completed / totalSteps;
 }
