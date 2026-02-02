@@ -180,3 +180,37 @@ final class UpdatePasswordEvent extends ProfileUpdateEvent {
   @override
   List<Object> get props => [oldPassword, newPassword];
 }
+
+
+class UpdateProviderServicesEvent extends ProfileUpdateEvent {
+  const UpdateProviderServicesEvent({
+    required this.services,
+  });
+
+  final List<ProviderServiceUpdate> services;
+
+  @override
+  List<Object?> get props => [services];
+}
+
+class ToggleProviderServiceEvent extends ProfileUpdateEvent {
+  const ToggleProviderServiceEvent({
+    required this.serviceCategoryId,
+    required this.isActive,
+    this.customServiceName,
+    this.minorServices = const [],
+  });
+
+  final int serviceCategoryId;
+  final bool isActive;
+  final String? customServiceName;
+  final List<String> minorServices;
+
+  @override
+  List<Object?> get props => [
+        serviceCategoryId,
+        isActive,
+        customServiceName,
+        minorServices,
+      ];
+}

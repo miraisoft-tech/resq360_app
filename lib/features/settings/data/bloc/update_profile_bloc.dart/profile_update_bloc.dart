@@ -6,6 +6,7 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
+import 'package:resq360/features/settings/data/models/provider_service_update.dart';
 import 'package:resq360/features/settings/data/service/update_user_repo.dart';
 
 part 'profile_update_event.dart';
@@ -26,6 +27,8 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
     on<UpdateBankAccountEvent>(_onUpdateBankAccount);
     on<UpdatePasswordEvent>(_onUpdatePassword);
     on<UpdateActivityStatusEvent>(_onUpdateActivityStatus);
+    on<UpdateProviderServicesEvent>(_onUpdateProviderServices);
+    on<ToggleProviderServiceEvent>(_onToggleProviderService);
   }
 
   Future<void> _onUpdateUserInfo(
@@ -309,4 +312,49 @@ class ProfileUpdateBloc extends Bloc<ProfileUpdateEvent, ProfileUpdateState> {
       emit(PasswordUpdateSuccess(result.data));
     }
   }
+
+  Future<void> _onUpdateProviderServices(
+  UpdateProviderServicesEvent event,
+  Emitter<ProfileUpdateState> emit,
+) async {
+  emit(ProfileUpdateLoading());
+  
+  try {
+    final result = await updateUserRepo.updateProviderServices(
+      services: event.services,
+    );
+
+    if (result.error != null) {
+      emit(ProfileUpdateError(result.error!));
+    } else {
+      emit(ProfileUpdateSuccess(result.data));
+    }
+  } on Exception catch (e) {
+    emit(ProfileUpdateError(e.toString()));
+  }
+}
+
+Future<void> _onToggleProviderService(
+  ToggleProviderServiceEvent event,
+  Emitter<ProfileUpdateState> emit,
+) async {
+  emit(ProfileUpdateLoading());
+
+  try {
+    final result = await updateUserRepo.updateSingleProviderService(
+      isActive: event.isActive,
+      serviceCategoryId: event.serviceCategoryId,
+      customServiceName: event.customServiceName,
+      minorServices: event.minorServices,
+    );
+
+    if (result.error != null) {
+      emit(ProfileUpdateError(result.error!));
+    } else {
+      emit(ProfileUpdateSuccess(result.data));
+    }
+  } on Exception catch (e) {
+    emit(ProfileUpdateError(e.toString()));
+  }
+}
 }

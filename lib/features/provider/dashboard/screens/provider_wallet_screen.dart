@@ -276,7 +276,14 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                       );
                     }
 
-                    return const SizedBox.shrink();
+                    return ErrorMessageAndButton(
+                        error: 'An error occured',
+                        onPressed: () {
+                          context.read<WalletTransactionsBloc>().add(
+                            FetchWalletTransactions(),
+                          );
+                        },
+                      );
                   },
                 ),
               ],

@@ -75,6 +75,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       final result = await bankRepo.setDefaultBankAccount(event.bankAccountId);
       if (result.isSuccess) {
         emit(CustomerDefaultBankAccountSetSuccesful());
+        add(BankFetchAccounts());
       } else {
         emit(BankFailure(error: result.error!));
       }

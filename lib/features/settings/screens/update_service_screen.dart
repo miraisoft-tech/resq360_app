@@ -2,10 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart'
+    as provider_models;
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
-import 'package:resq360/features/settings/data/models/service_type.enums.dart';
+import 'package:resq360/features/settings/data/models/provider_service_update.dart';
 import 'package:resq360/features/widgets/custom_switch.dart';
 import 'package:resq360/features/widgets/images.widgets.dart';
 import 'package:resq360/features/widgets/issue_radio_widget.dart';
@@ -25,7 +29,10 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
   List<File> pickedImages = [];
   List<String> existingImageUrls = [];
   List<String> imagesToKeep = [];
-  ServiceTypeEnums? selectedServiceType;
+
+  final Map<int, ServiceCategorySelection> selectedServices = {};
+  List<Service> availableCategories = [];
+  bool isLoadingCategories = true;
 
   final startTimeController = TextEditingController();
   final endTimeController = TextEditingController();
@@ -52,7 +59,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
+    context.read<ServiceCatalogBloc>().add(const FetchServices());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProviderData();
     });
@@ -72,6 +79,30 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
 
       if (provider.description != null) {
         descController.text = provider.description!;
+      }
+
+      final services =
+          provider.providerServices ?? <provider_models.ProviderService>[];
+
+      for (final providerService in services) {
+        final service = providerService.service;
+        final serviceId = service?.id;
+        final minorServices =
+            providerService.minorServices
+                ?.where((e) => e.trim().isNotEmpty)
+                .toList() ??
+            <String>[];
+
+        if (service == null || serviceId == null) continue;
+
+        setState(() {
+          selectedServices[serviceId] = ServiceCategorySelection(
+            service: service,
+            isSelected: providerService.isActive,
+            providerServiceId: providerService.id,
+            minorServices: minorServices,
+          );
+        });
       }
 
       if (provider.openingHours != null) {
@@ -141,17 +172,40 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
       endTime?.minute ?? 0,
     );
 
-    bloc.add(
-      UpdateProviderInfoEvent(
-        description: descController.text.trim(),
-        workingDays: selectedDays,
-        openingHours: startDateTime,
-        closingHours: endDateTime,
-        filePath: pickedImages.isNotEmpty ? pickedImages.first.path : null,
-        images: pickedImages,
-        existingImages: imagesToKeep,
-      ),
-    );
+    final servicesToUpdate =
+        selectedServices.entries
+            .where(
+              (e) => e.value.isSelected || e.value.providerServiceId != null,
+            )
+            .map(
+              (e) => ProviderServiceUpdate(
+                isActive: e.value.isSelected,
+                serviceCategoryId: e.key,
+                minorServices: e.value.minorServices,
+              ),
+            )
+            .toList();
+
+    if (servicesToUpdate.isEmpty) {
+      unawaited(
+        showErrorSnackbar(context, 'Please select at least one service'),
+      );
+      return;
+    }
+
+    bloc
+      ..add(UpdateProviderServicesEvent(services: servicesToUpdate))
+      ..add(
+        UpdateProviderInfoEvent(
+          description: descController.text.trim(),
+          workingDays: selectedDays,
+          openingHours: startDateTime,
+          closingHours: endDateTime,
+          filePath: pickedImages.isNotEmpty ? pickedImages.first.path : null,
+          images: pickedImages,
+          existingImages: imagesToKeep,
+        ),
+      );
   }
 
   @override
@@ -212,36 +266,58 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
               ],
             ),
           ),
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              ServiceDetailSection(
-                descController: descController,
-                pickedImages: pickedImages,
-                existingImageUrls: existingImageUrls,
-                imagesToKeep: imagesToKeep,
-                onImagesPicked:
-                    (images) => setState(() => pickedImages = images),
-                onExistingImageRemoved: (url) {
-                  setState(() {
-                    imagesToKeep.remove(url);
-                  });
-                },
-                onServiceSelected: (type) => selectedServiceType = type,
-                onSubmit: handleUpdateService,
-              ),
-              WorkingHoursSection(
-                workingDays: workingDays,
-                startTimeController: startTimeController,
-                endTimeController: endTimeController,
-                onTimeSelected: (start, end) {
-                  startTime = start;
-                  endTime = end;
-                },
-                onSubmit: handleUpdateService,
-                onToggleDay: handleToggleDay,
-              ),
-            ],
+          body: BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
+            builder: (context, state) {
+              if (state is ServiceCatalogLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (state is ServicesLoaded) {
+                availableCategories = state.services;
+
+                return TabBarView(
+                  controller: _tabController,
+                  children: [
+                    ServiceDetailSection(
+                      descController: descController,
+                      pickedImages: pickedImages,
+                      existingImageUrls: existingImageUrls,
+                      imagesToKeep: imagesToKeep,
+                      availableCategories: availableCategories,
+                      selectedServices: selectedServices,
+                      onServicesChanged: (services) {
+                        setState(() {
+                          selectedServices
+                            ..clear()
+                            ..addAll(services);
+                        });
+                      },
+                      onImagesPicked:
+                          (images) => setState(() => pickedImages = images),
+                      onExistingImageRemoved: (url) {
+                        setState(() {
+                          imagesToKeep.remove(url);
+                        });
+                      },
+                      onSubmit: handleUpdateService,
+                    ),
+                    WorkingHoursSection(
+                      workingDays: workingDays,
+                      startTimeController: startTimeController,
+                      endTimeController: endTimeController,
+                      onTimeSelected: (start, end) {
+                        startTime = start;
+                        endTime = end;
+                      },
+                      onSubmit: handleUpdateService,
+                      onToggleDay: handleToggleDay,
+                    ),
+                  ],
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
           ),
         );
       },
@@ -255,19 +331,24 @@ class ServiceDetailSection extends StatefulWidget {
     required this.pickedImages,
     required this.existingImageUrls,
     required this.imagesToKeep,
+    required this.availableCategories,
+    required this.selectedServices,
+    required this.onServicesChanged,
     required this.onImagesPicked,
     required this.onExistingImageRemoved,
-    required this.onServiceSelected,
     required this.onSubmit,
     super.key,
   });
+
   final TextEditingController descController;
   final List<File> pickedImages;
   final List<String> existingImageUrls;
   final List<String> imagesToKeep;
+  final List<Service> availableCategories;
+  final Map<int, ServiceCategorySelection> selectedServices;
+  final ValueChanged<Map<int, ServiceCategorySelection>> onServicesChanged;
   final ValueChanged<List<File>> onImagesPicked;
   final ValueChanged<String> onExistingImageRemoved;
-  final ValueChanged<ServiceTypeEnums> onServiceSelected;
   final Future<void> Function() onSubmit;
 
   @override
@@ -275,7 +356,8 @@ class ServiceDetailSection extends StatefulWidget {
 }
 
 class _ServiceDetailSectionState extends State<ServiceDetailSection> {
-  final selectedIssue = ValueNotifier<ServiceTypeEnums?>(null);
+  final Map<int, TextEditingController> minorServiceControllers = {};
+  final Map<int, bool> expandedServices = {};
 
   Future<void> pickImages(BuildContext context) async {
     final images = await AppFilePicker.pickMultiImages(limit: 10) ?? [];
@@ -284,16 +366,87 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
     }
   }
 
+  void _toggleService(Service service) {
+    final updated = Map<int, ServiceCategorySelection>.from(
+      widget.selectedServices,
+    );
+
+    if (updated.containsKey(service.id)) {
+      final current = updated[service.id]!;
+      updated[service.id] = ServiceCategorySelection(
+        service: service,
+        isSelected: !current.isSelected,
+        minorServices: current.minorServices,
+        providerServiceId: current.providerServiceId,
+      );
+    } else {
+      updated[service.id] = ServiceCategorySelection(
+        service: service,
+        isSelected: true,
+        minorServices: [],
+      );
+    }
+
+    widget.onServicesChanged(updated);
+  }
+
+  void _addMinorService(int serviceId) {
+    final controller = minorServiceControllers[serviceId];
+    if (controller == null) return;
+
+    final text = controller.text.trim();
+    if (text.isEmpty) return;
+
+    final updated = Map<int, ServiceCategorySelection>.from(
+      widget.selectedServices,
+    );
+    if (updated.containsKey(serviceId)) {
+      final current = updated[serviceId]!;
+      final newMinorServices = List<String>.from(current.minorServices);
+
+      if (!newMinorServices.contains(text)) {
+        newMinorServices.add(text);
+        updated[serviceId] = ServiceCategorySelection(
+          service: current.service,
+          isSelected: current.isSelected,
+          minorServices: newMinorServices,
+          providerServiceId: current.providerServiceId,
+        );
+        widget.onServicesChanged(updated);
+        controller.clear();
+      }
+    }
+  }
+
+  void _removeMinorService(int serviceId, String minorService) {
+    final updated = Map<int, ServiceCategorySelection>.from(
+      widget.selectedServices,
+    );
+    if (updated.containsKey(serviceId)) {
+      final current = updated[serviceId]!;
+      final newMinorServices = List<String>.from(current.minorServices)
+        ..remove(minorService);
+      updated[serviceId] = ServiceCategorySelection(
+        service: current.service,
+        isSelected: current.isSelected,
+        minorServices: newMinorServices,
+        providerServiceId: current.providerServiceId,
+      );
+      widget.onServicesChanged(updated);
+    }
+  }
+
   @override
   void dispose() {
-    selectedIssue.dispose();
+    for (final controller in minorServiceControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
     final totalImages = widget.imagesToKeep.length + widget.pickedImages.length;
 
     return ListView(
@@ -304,24 +457,133 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
           color: appColors.black,
         ),
         16.verticalSpace,
-        ValueListenableBuilder<ServiceTypeEnums?>(
-          valueListenable: selectedIssue,
-          builder: (context, selected, _) {
-            return Column(
-              children:
-                  ServiceTypeEnums.values.map((type) {
-                    return IssueRadio(
-                      label: type.name.capitalize,
-                      selected: selected == type,
-                      onTap: () {
-                        selectedIssue.value = type;
-                        widget.onServiceSelected(type);
+
+        ...widget.availableCategories.map((service) {
+          final isSelected =
+              widget.selectedServices[service.id]?.isSelected ?? false;
+          final minorServices =
+              widget.selectedServices[service.id]?.minorServices ?? [];
+          final isExpanded =
+              expandedServices[service.id] ??
+              (isSelected && minorServices.isNotEmpty);
+
+          if (!minorServiceControllers.containsKey(service.id)) {
+            minorServiceControllers[service.id] = TextEditingController();
+          }
+
+          return Column(
+            children: [
+              Row(
+                children: [
+                  IssueRadio(
+                    label: service.name,
+                    selected: isSelected,
+                    onTap: () => _toggleService(service),
+                  ),
+                  const Spacer(),
+                  if (isSelected) ...[
+                    IconButton(
+                      icon: Icon(
+                        isExpanded
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        size: 20.sp,
+                        color: appColors.textColor.shade400,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          expandedServices[service.id] = !isExpanded;
+                        });
                       },
-                    );
-                  }).toList(),
-            );
-          },
-        ),
+                    ),
+                  ],
+                ],
+              ),
+
+              if (isSelected) ...[
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  child: Column(
+                    children: [
+                      if (isExpanded) ...[
+                        Padding(
+                          padding: EdgeInsets.only(
+                            left: 40.w,
+                            right: 16.w,
+                            bottom: 16.h,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // GenText(
+                              //   'Add minor services (optional)',
+                              //   color: appColors.textColor.shade600,
+                              //   size: 13,
+                              // ),
+                              // 8.verticalSpace,
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: KFormField(
+                                      controller:
+                                          minorServiceControllers[service.id]!,
+                                      hintText: 'e.g., Jump Start, Tire Change',
+                                      onFieldSubmitted: (_) => _addMinorService(service.id),
+                                      label:  'Add minor services (optional)',
+                                    ),
+                                  ),
+                                  8.horizontalSpace,
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.add_circle,
+                                      color: appColors.primary.shade500,
+                                      size: 28.sp,
+                                    ),
+                                    onPressed:
+                                        () => _addMinorService(service.id),
+                                  ),
+                                ],
+                              ),
+
+                              if (minorServices.isNotEmpty) ...[
+                                12.verticalSpace,
+                                Wrap(
+                                  spacing: 8.w,
+                                  runSpacing: 8.h,
+                                  children:
+                                      minorServices.map((minor) {
+                                        return Chip(
+                                          label: GenText(minor, size: 12),
+                                          deleteIcon: Icon(
+                                            Icons.close,
+                                            size: 16.sp,
+                                          ),
+                                          onDeleted:
+                                              () => _removeMinorService(
+                                                service.id,
+                                                minor,
+                                              ),
+                                          backgroundColor:
+                                              appColors.primary.shade100,
+                                          deleteIconColor:
+                                              appColors.error.shade500,
+                                          side: BorderSide.none,
+                                        );
+                                      }).toList(),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          );
+        }),
+
         30.verticalSpace,
         KFormField(
           label: 'Service Description',
@@ -509,6 +771,7 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
   }
 }
 
+// Keep your existing WorkingHoursSection exactly as is
 class WorkingHoursSection extends StatelessWidget {
   const WorkingHoursSection({
     required this.workingDays,
@@ -619,7 +882,6 @@ class WorkingHoursSection extends StatelessWidget {
     );
 
     if (picked != null) {
-      // Format with AM/PM using 12-hour format
       final hour12 = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
       final period = picked.period == DayPeriod.am ? 'AM' : 'PM';
       final formattedTime =
@@ -627,14 +889,12 @@ class WorkingHoursSection extends StatelessWidget {
 
       if (isStart) {
         startTimeController.text = formattedTime;
-        // Preserve existing end time, or use a default if not set
         final currentEndTime =
             _parseTimeOfDay(endTimeController.text) ??
             const TimeOfDay(hour: 17, minute: 0);
         onTimeSelected(picked, currentEndTime);
       } else {
         endTimeController.text = formattedTime;
-        // Preserve existing start time, or use a default if not set
         final currentStartTime =
             _parseTimeOfDay(startTimeController.text) ??
             const TimeOfDay(hour: 9, minute: 0);
@@ -646,7 +906,6 @@ class WorkingHoursSection extends StatelessWidget {
   TimeOfDay? _parseTimeOfDay(String timeString) {
     if (timeString.isEmpty) return null;
     try {
-      // Parse format like "09:00 AM" or "05:30 PM"
       final parts = timeString.split(' ');
       if (parts.length != 2) return null;
 
@@ -657,7 +916,6 @@ class WorkingHoursSection extends StatelessWidget {
       final minute = int.parse(timeParts[1]);
       final period = parts[1].toUpperCase();
 
-      // Convert 12-hour to 24-hour format
       if (period == 'PM' && hour != 12) {
         hour += 12;
       } else if (period == 'AM' && hour == 12) {
@@ -667,7 +925,6 @@ class WorkingHoursSection extends StatelessWidget {
       return TimeOfDay(hour: hour, minute: minute);
     } on Exception catch (e) {
       log(e);
-
       return null;
     }
   }

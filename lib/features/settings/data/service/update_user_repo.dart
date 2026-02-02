@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
+import 'package:resq360/features/settings/data/models/provider_service_update.dart';
 
 class UpdateUserRepo extends BaseAPI {
   factory UpdateUserRepo() {
@@ -234,6 +235,55 @@ class UpdateUserRepo extends BaseAPI {
       endpoint: endpoint,
       data: data,
       logTag: 'Change Password',
+    );
+  }
+
+    Future<ApiResult<dynamic>> updateProviderServices({
+    required List<ProviderServiceUpdate> services,
+  }) async {
+    const endpoint = '/user/provider/services';
+
+    final data = {
+      'services': services.map((s) => s.toJson()).toList(),
+    };
+
+    try {
+      final res = await dio().put<Map<String, dynamic>>(endpoint, data: data);
+
+      log('Provider Services Batch Update: $endpoint');
+      log('Status: ${res.statusCode}');
+      log('Response: ${res.data}');
+
+      if (res.statusCode == 200 || res.statusCode == 201 && res.data != null) {
+        return ApiResult(data: res.data);
+      }
+
+      final message = res.data?['message'] ?? 'Failed to update services';
+      return ApiResult(error: message.toString());
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
+      log('Provider Services Update failed: $e');
+      log('Stacktrace: $s');
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<dynamic>> updateSingleProviderService({
+    required bool isActive,
+    required int serviceCategoryId,
+    List<String>? minorServices,
+    String? customServiceName,
+  }) async {
+    return updateProviderServices(
+      services: [
+        ProviderServiceUpdate(
+          isActive: isActive,
+          serviceCategoryId: serviceCategoryId,
+          customServiceName: customServiceName,
+          minorServices: minorServices ?? [],
+        ),
+      ],
     );
   }
 }

@@ -173,31 +173,38 @@ class ProviderService {
     this.name,
     this.isActive = false,
     this.service,
+    this.minorServices,
   });
 
-  factory ProviderService.fromJson(Map<String, dynamic> json) =>
-      ProviderService(
-        id: json['id'] as int?,
-        name: json['name'] as String?,
-        isActive: json['isActive'] as bool? ?? false,
-        service:
-            json['service'] is Map<String, dynamic>
-                ? Service.fromJson(json['service'] as Map<String, dynamic>)
-                : null,
-      );
+  factory ProviderService.fromJson(Map<String, dynamic> json) {
+    return ProviderService(
+      id: json['id'] as int?,
+      name: json['name'] as String?,
+      isActive: json['isActive'] as bool? ?? false,
+      service: json['service'] is Map<String, dynamic>
+          ? Service.fromJson(json['service'] as Map<String, dynamic>)
+          : null,
+      minorServices: (json['minorServices'] as List?)
+          ?.map((e) => e.toString())
+          .toList(),
+    );
+  }
 
   final int? id;
   final String? name;
   final bool isActive;
   final Service? service;
+  final List<String>? minorServices;
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'isActive': isActive,
-    'service': service?.toJson(),
-  };
+        'id': id,
+        'name': name,
+        'isActive': isActive,
+        'service': service?.toJson(),
+        'minorServices': minorServices,
+      };
 }
+
 
 
 class KYCVerification {

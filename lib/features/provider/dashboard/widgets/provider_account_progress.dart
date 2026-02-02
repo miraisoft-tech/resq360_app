@@ -41,11 +41,12 @@ final progress = calculateProviderProgress(provider);
   }
 }
 double calculateProviderProgress(ProviderModel provider) {
-  const totalSteps = 6;
+  const totalSteps = 4;
   var completed = 0;
 
-  if (provider.isEmailVerified) completed++;
-  if (provider.isApproved) completed++;
+  // if (provider.isEmailVerified) completed++;
+  if (provider.profileImage != null) completed++;
+  // if (provider.isApproved) completed++;
   if (provider.providerServices?.isNotEmpty ?? false) completed++;
   if (provider.address != null) completed++;
   if (provider.openingHours != null && provider.closingHours != null) completed++;
