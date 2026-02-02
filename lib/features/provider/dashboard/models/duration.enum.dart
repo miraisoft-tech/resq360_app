@@ -1,14 +1,14 @@
 
 enum PromotionDuration {
-  oneWeek(1, '1 Week'),
-  twoWeeks(2, '2 Weeks'),
-  oneMonth(4, '1 Month'),
-  threeMonths(12, '3 Months');
+  oneWeek(7, '1 Week'),
+  twoWeeks(14, '2 Weeks'),
+  oneMonth(28, '1 Month'),
+  threeMonths(84, '3 Months');
 
   const PromotionDuration(this.value, this.label);
 
-  final int value;
+  final int value; 
   final String label;
 
-  int get milliseconds => Duration(days: value * 7).inMilliseconds;
+  int get milliseconds => Duration(days: value).inMilliseconds;
 }

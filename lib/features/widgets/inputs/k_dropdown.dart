@@ -500,6 +500,7 @@ class _KSearchDropDownState extends State<KSearchDropDown> {
   }
 
   Widget _styledItem(String item, bool isLast) {
+    final colors = context.appColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -510,12 +511,12 @@ class _KSearchDropDownState extends State<KSearchDropDown> {
           child: GenText(
             item,
             weight: FontWeight.w500,
-            color: Colors.black,
+            color: colors.black,
           ),
         ),
         if (!isLast)
-          const Divider(
-            color: Color(0xFFD6D6D6),
+          Divider(
+            color: colors.lightGreyColor,
             height: 10,
             thickness: 0.8,
           ),
@@ -563,6 +564,11 @@ class _KSearchDropDownState extends State<KSearchDropDown> {
             },
 
             searchFieldProps: TextFieldProps(
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: colors.black, 
+              ),
               decoration: InputDecoration(
                 hintText: 'Search...',
                 hintStyle: GoogleFonts.inter(

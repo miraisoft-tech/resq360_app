@@ -2,6 +2,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
 import 'package:resq360/features/provider/dashboard/widgets/no_bank_account_dialog.dart';
 import 'package:resq360/features/provider/dashboard/widgets/saved_bank_accounts_section.dart';
@@ -81,7 +82,10 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
                 Navigator.pop(context);
                 await GeneralDialogs.showCustomDialog<void>(
                   context,
-                  body: const WithdrawalCompletedModal(),
+                  body: WithdrawalCompletedModal(
+                    amount: state.payout.amount ?? 0,
+                    reference: state.payout.reference ?? '',
+                  ),
                 );
               }
 
@@ -279,8 +283,9 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
 }
 
 class WithdrawalCompletedModal extends StatelessWidget {
-  const WithdrawalCompletedModal({super.key});
-
+  const WithdrawalCompletedModal({required this.amount, required this.reference, super.key});
+  final int amount;
+  final String reference;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -327,7 +332,7 @@ class WithdrawalCompletedModal extends StatelessWidget {
               ),
               5.verticalSpace,
               UrbText(
-                '₦10,000',
+                AppTextUtil.formatAmount(amount.toString()),
                 size: 18,
                 height: 28.5,
                 color: appColors.black,
@@ -357,7 +362,6 @@ class WithdrawalCompletedModal extends StatelessWidget {
                 backgroundColor: appColors.primary.shade500,
                 textColor: appColors.whiteColor,
                 onPressed: () async {
-                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 },
               ),

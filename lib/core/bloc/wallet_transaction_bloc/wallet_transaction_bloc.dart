@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/request_payout_response.dart';
 
 import 'package:resq360/core/services/wallet.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
@@ -8,9 +9,9 @@ import 'package:resq360/features/customer/dashboard/data/service/payment_repo.da
 part 'wallet_transaction_event.dart';
 part 'wallet_transaction_state.dart';
 
-
 final WalletRepo walletRepo = WalletRepo.instance;
 final PaymentRepo paymentRepo = PaymentRepo();
+
 class WalletTransactionsBloc
     extends Bloc<WalletTransactionsEvent, WalletTransactionsState> {
   WalletTransactionsBloc() : super(WalletTransactionsInitial()) {
@@ -18,7 +19,6 @@ class WalletTransactionsBloc
     on<RefreshWalletTransactions>(_onRefreshWalletTransactions);
     on<LoadMoreWalletTransactions>(_onLoadMoreWalletTransactions);
     on<RequestWithdrawal>(_onRequestWithdrawal);
-
   }
 
   int _currentPage = 1;
@@ -65,13 +65,15 @@ class WalletTransactionsBloc
     bool isRefresh = false,
     bool isLoadMore = false,
   }) async {
-    final result = await walletRepo.fetchAllWalletTransaction(page: _currentPage);
+    final result = await walletRepo.fetchAllWalletTransaction(
+      page: _currentPage,
+    );
 
     if (result.isSuccess && result.data != null) {
       final data = result.data!;
 
       _transactions.addAll(data.transactions);
-      _hasNextPage = data.pagination.hasNextPage?? false;
+      _hasNextPage = data.pagination.hasNextPage ?? false;
 
       emit(
         WalletTransactionsLoaded(
@@ -90,22 +92,21 @@ class WalletTransactionsBloc
   }
 
   Future<void> _onRequestWithdrawal(
-  RequestWithdrawal event,
-  Emitter<WalletTransactionsState> emit,
-) async {
-  emit(WithdrawalProcessing());
+    RequestWithdrawal event,
+    Emitter<WalletTransactionsState> emit,
+  ) async {
+    emit(WithdrawalProcessing());
 
-  final result = await paymentRepo.requestPayout(
-    amount: event.amount,
-    reason: event.reason,
-  );
+    final result = await paymentRepo.requestPayout(
+      amount: event.amount,
+      reason: event.reason,
+    );
 
-  if (result.isSuccess) {
-    emit(WithdrawalSuccess(result.data ?? 'Withdrawal submitted'));
-    add(FetchWalletTransactions());
-  } else {
-    emit(WithdrawalFailure(result.error ?? 'Withdrawal failed'));
+    if (result.isSuccess && result.data != null) {
+      emit(WithdrawalSuccess(result.data!));
+      add(FetchWalletTransactions());
+    } else {
+      emit(WithdrawalFailure(result.error ?? 'Withdrawal failed'));
+    }
   }
-}
-
 }

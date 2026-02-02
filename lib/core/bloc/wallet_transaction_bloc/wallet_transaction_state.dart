@@ -49,8 +49,9 @@ class WalletTransactionsError extends WalletTransactionsState {
 class WithdrawalProcessing extends WalletTransactionsState {}
 
 class WithdrawalSuccess extends WalletTransactionsState {
-  const WithdrawalSuccess(this.message);
-  final String message;
+
+  const WithdrawalSuccess(this.payout);
+  final PayoutResponse payout;
 }
 
 class WithdrawalFailure extends WalletTransactionsState {
