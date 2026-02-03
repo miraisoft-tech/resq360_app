@@ -147,14 +147,11 @@ class _PromoteServiceReviewScreenState
                             color: appColors.textColor.shade400,
                           ),
                           const Spacer(),
-                          BlocBuilder<
-                            PromotionBloc,
-                            PromotionState
-                          >(
+                          BlocBuilder<PromotionBloc, PromotionState>(
                             builder: (context, state) {
                               if (state is PromotionPriceFetched) {
                                 return GenText(
-                                 '₦ ${ AppTextUtil.formatAmount(state.price.toString())}',
+                                  '₦ ${AppTextUtil.formatAmount(state.price.toString())}',
                                   height: 24.5,
                                   weight: FontWeight.w500,
                                   color: appColors.black,
@@ -180,19 +177,18 @@ class _PromoteServiceReviewScreenState
                             color: appColors.textColor.shade400,
                           ),
                           const Spacer(),
-                          BlocBuilder<
-                            PromotionBloc,
-                            PromotionState
-                          >(
+                          BlocBuilder<PromotionBloc, PromotionState>(
                             builder: (context, state) {
                               if (state is PromotionPriceFetched) {
                                 final price = state.price;
                                 // final duration = widget.duration.value;
                                 final total = price * widget.duration.value;
-                                final formattedTotal = AppTextUtil.formatAmount(total.toString());
+                                final formattedTotal = AppTextUtil.formatAmount(
+                                  total.toString(),
+                                );
                                 // print('price: $price, total: $total, formattedtotal: $formattedTotal, duration ${widget.duration.value}'  );
                                 return GenText(
-                                '₦ $formattedTotal',
+                                  '₦ $formattedTotal',
                                   height: 24.5,
                                   weight: FontWeight.w500,
                                   color: appColors.black,
@@ -218,10 +214,7 @@ class _PromoteServiceReviewScreenState
                       ),
                     ),
                     12.horizontalSpace,
-                    BlocBuilder<
-                      PromotionBloc,
-                      PromotionState
-                    >(
+                    BlocBuilder<PromotionBloc, PromotionState>(
                       builder: (context, state) {
                         final isLoaded = state is PromotionPriceFetched;
 
@@ -251,7 +244,11 @@ class _PromoteServiceReviewScreenState
                                               context,
                                               body: FinishPaymentDialog(
                                                 amount: state.price.toString(),
-                                                walletBalance: double.tryParse(balance)?.toInt() ?? 0,
+                                                walletBalance:
+                                                    double.tryParse(
+                                                      balance,
+                                                    )?.toInt() ??
+                                                    0,
                                                 discount: widget.discount,
                                                 duration: widget.duration,
                                                 description: widget.description,
@@ -278,81 +275,82 @@ class _PromoteServiceReviewScreenState
     );
   }
 
-Future<void> _handleAdvertisementState(
-  BuildContext context,
-  PromotionState state,
-) async {
-  if (!mounted) return;
+  Future<void> _handleAdvertisementState(
+    BuildContext context,
+    PromotionState state,
+  ) async {
+    if (!mounted) return;
 
-  if (state is PromotionLoading ||state is PromotionPaymentVerifying) {
-    if (mounted) showLoadingDialog(context);
-    return;
-  } 
+    if (state is PromotionLoading || state is PromotionPaymentVerifying) {
+      if (mounted) showLoadingDialog(context);
+      return;
+    }
 
-  if (state is PromotionPriceFetched) {
+    if (state is PromotionPriceFetched) {
       if (mounted) await pop(context);
-  }
-  if (state is PromotionPaymentInitiated) {
-    if (!mounted) return;
+    }
+    if (state is PromotionPaymentInitiated) {
+      if (!mounted) return;
 
-    Navigator.pop(context);
+      Navigator.pop(context);
 
-    final completed = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PaystackWebViewPage(
-          authorizationUrl: state.payment.authorizationUrl,
-          reference: state.payment.reference,
-          callbackUrl: 'https://example.com/callback',
+      final completed = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => PaystackWebViewPage(
+                authorizationUrl: state.payment.authorizationUrl,
+                reference: state.payment.reference,
+                callbackUrl: 'https://example.com/callback',
+              ),
         ),
-      ),
-    );
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (completed ?? false) {
-      await _verifyAdvertisementPayment(state.payment.reference);
-    } else {
-      await showErrorSnackbar(context, 'Payment cancelled');
+      if (completed ?? false) {
+        await _verifyAdvertisementPayment(state.payment.reference);
+      } else {
+        await showErrorSnackbar(context, 'Payment cancelled');
+      }
+      return;
     }
-    return;
+
+    if (state is PromotionCreated) {
+      if (!mounted) return;
+
+      await pop(context);
+
+      if (!mounted) return;
+
+      await GeneralDialogs.showCustomDialog<void>(
+        context,
+        body: PaymentFinished(
+          onTap: () async {
+            if (mounted) await pop(context);
+            if (mounted) await pop(context);
+            if (mounted) await pop(context);
+          },
+        ),
+      );
+      return;
+    }
+
+    if (state is PromotionError) {
+      if (mounted) {
+        await showErrorSnackbar(context, state.error);
+      }
+    }
   }
 
-  if (state is PromotionCreated) {
+  Future<void> _verifyAdvertisementPayment(String reference) async {
     if (!mounted) return;
 
-    await pop(context);
-
-    if (!mounted) return;
-
-    await GeneralDialogs.showCustomDialog<void>(
-      context,
-      body: PaymentFinished(
-        onTap: () async {
-          if (mounted) await pop(context);
-          if (mounted) await pop(context);
-          if (mounted) await pop(context);
-        },
-      ),
+    context.read<PromotionBloc>().add(
+      VerifyPromotionPayment(reference: reference),
     );
-    return;
-  }
-
-  if (state is PromotionError) {
-    if (mounted) {
-      await showErrorSnackbar(context, state.error);
-    }
   }
 }
-Future<void> _verifyAdvertisementPayment(String reference) async {
-  if (!mounted) return;
-
-  context.read<PromotionBloc>().add(
-    VerifyPromotionPayment(reference: reference),
-  );
-}
-    }
-
 
 class FinishPaymentDialog extends StatefulWidget {
   const FinishPaymentDialog({
@@ -367,7 +365,7 @@ class FinishPaymentDialog extends StatefulWidget {
   });
 
   final String amount;
-  final int walletBalance;
+  final num walletBalance;
   final String discount;
   final PromotionDuration duration;
   final String description;
@@ -386,7 +384,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
     final remaining = widget.walletBalance - fee;
 
     return Padding(
-      padding: EdgeInsets.only(top: 220.h, bottom: 200.h),
+      padding: EdgeInsets.only(top: 220.h, bottom: 320.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -440,7 +438,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                     ),
                     10.verticalSpace,
                     GenText(
-                      '₦${widget.amount}',
+                      '₦${AppTextUtil.formatAmount(widget.amount)}',
                       weight: FontWeight.w500,
                       color: appColors.black,
                     ),
@@ -468,7 +466,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                           ),
                           const Spacer(),
                           GenText(
-                            '₦${widget.walletBalance}',
+                            '₦${AppTextUtil.formatAmount(widget.walletBalance.toString())}',
                             weight: FontWeight.w500,
                             color: appColors.black,
                           ),
@@ -484,7 +482,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                           ),
                           const Spacer(),
                           GenText(
-                            '₦${widget.total}',
+                            '₦${AppTextUtil.formatAmount(widget.total.toString())}',
                             weight: FontWeight.w500,
                             color: appColors.neutral.shade500,
                           ),
@@ -500,7 +498,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                           ),
                           const Spacer(),
                           GenText(
-                            '₦$remaining',
+                            '₦${AppTextUtil.formatAmount(remaining.toString())}',
                             weight: FontWeight.w500,
                             color:
                                 remaining >= 0
@@ -527,7 +525,8 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                   12.horizontalSpace,
                   Expanded(
                     child: WideButton(
-                      label: 'Pay ₦${widget.total}',
+                      label:
+                          'Pay ₦${AppTextUtil.formatAmount(widget.total.toString())}',
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {

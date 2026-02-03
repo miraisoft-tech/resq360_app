@@ -166,7 +166,7 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
                       ),
                       5.verticalSpace,
                       UrbText(
-                        '₦ ${widget.balance}',
+                        '₦ ${AppTextUtil.formatAmount(widget.balance)}',
                         size: 18,
                         height: 24.5,
                         weight: FontWeight.w700,
@@ -283,7 +283,11 @@ class _ProviderWithdrawScreenState extends State<ProviderWithdrawScreen> {
 }
 
 class WithdrawalCompletedModal extends StatelessWidget {
-  const WithdrawalCompletedModal({required this.amount, required this.reference, super.key});
+  const WithdrawalCompletedModal({
+    required this.amount,
+    required this.reference,
+    super.key,
+  });
   final int amount;
   final String reference;
   @override
@@ -332,7 +336,7 @@ class WithdrawalCompletedModal extends StatelessWidget {
               ),
               5.verticalSpace,
               UrbText(
-                AppTextUtil.formatAmount(amount.toString()),
+                '₦${AppTextUtil.formatAmount(amount.toString())}',
                 size: 18,
                 height: 28.5,
                 color: appColors.black,

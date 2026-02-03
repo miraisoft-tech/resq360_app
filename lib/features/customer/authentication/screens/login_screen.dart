@@ -113,15 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
-      //  if (state is CustomerAuthLoading) {
-      //     showLoadingDialog(context);
-      //   }
 
         if (state is CustomerAuthFailure) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-
           log(state.error);
           await showSnackBar(context, 'Error', state.error);
         }

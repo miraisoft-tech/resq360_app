@@ -9,10 +9,10 @@ class RecommendedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final title = advertisement.title ?? 'Untitled';
+    final title = advertisement.provider?.fullName ?? 'Untitled';
     final description = advertisement.description ?? '';
-    final image = advertisement.imageUrl;
-    final serviceType = advertisement.serviceType ?? '';
+    final image = advertisement.provider?.profileImage;
+    final serviceType = advertisement.provider?.description ?? '';
 
     final rating = advertisement.provider?.averageRating ?? 0;
     final reviewCount = advertisement.provider?.totalReviews ?? 0;
