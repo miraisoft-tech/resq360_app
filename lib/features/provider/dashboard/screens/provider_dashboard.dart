@@ -231,7 +231,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             // final progress = calculateProviderProgress(
                             //   provider,
                             // );
-                            
+
                             final isProfileComplete = isProviderProfileComplete(
                               provider,
                             );
@@ -260,7 +260,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           return const SizedBox.shrink();
                         },
                       ),
-                      30.verticalSpace,
                       const PromoCardWidget(),
                       30.verticalSpace,
                       BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
@@ -288,7 +287,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         },
                       ),
 
-                      30.verticalSpace,
                       BlocBuilder<PromotionBloc, PromotionState>(
                         builder: (context, state) {
                           if (state is ActivePromotionsFetched) {
@@ -297,6 +295,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                 activeAds.first.endDate != null) {
                               return Column(
                                 children: [
+                                  30.verticalSpace,
                                   AdvertCountdownTimer(
                                     endDate: activeAds.first.endDate!,
                                   ),
@@ -355,30 +354,39 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         ),
                       ),
                       20.verticalSpace,
-                      Container(
-                        padding: pad(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: colors.primary.shade500),
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: GenText(
-                                'Boost your visibility and attract more clients with our 10% off promotion package. Don’t miss this chance to grow your business',
-                                size: 12,
-                                height: 20.5,
-                                color: colors.black,
+                      GestureDetector(
+                        onTap: () async {
+                          await pushScreen(
+                            context,
+                            const PromoteServiceScreen(),
+                          );
+                        },
+                        child: Container(
+                          padding: pad(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: colors.primary.shade500),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: GenText(
+                                  'Boost your visibility and attract more clients with our 10% off promotion package. Don’t miss this chance to grow your business',
+                                  size: 12,
+                                  height: 20.5,
+                                  color: colors.black,
+                                ),
                               ),
-                            ),
-                            8.horizontalSpace,
-                            AppAssets.ASSETS_IMAGES_SPEAKER_ICON_PNG.imageAsset(
-                              width: 120.w,
-                              height: 80.h,
-                              fit: BoxFit.contain,
-                            ),
-                          ],
+                              8.horizontalSpace,
+                              AppAssets.ASSETS_IMAGES_SPEAKER_ICON_PNG
+                                  .imageAsset(
+                                    width: 120.w,
+                                    height: 80.h,
+                                    fit: BoxFit.contain,
+                                  ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
