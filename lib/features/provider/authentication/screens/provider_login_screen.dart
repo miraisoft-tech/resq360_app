@@ -113,14 +113,8 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
     return BlocListener<ProviderAuthBloc, ProviderAuthState>(
       listener: (context, state) async {
         if (!mounted) return;
-        // if (state is ProviderAuthLoadingState) {
-        //   showLoadingDialog(context);
-        // }
 
         if (state is ProviderAuthFailureState) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
           log(state.error);
           await showErrorSnackbar(context, state.error);
         }

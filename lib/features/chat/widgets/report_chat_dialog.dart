@@ -52,11 +52,11 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.r),
       ),
+      insetPadding: pad(vertical: 120, horizontal: 20),
       child: Padding(
-        padding: EdgeInsets.all(24.w),
+        padding: pad(vertical: 20, horizontal: 24),
         child: ListView(
-          // mainAxisSize: MainAxisSize.min,
-          // crossAxisAlignment: CrossAxisAlignment.start,
+          padding: EdgeInsets.zero,
           children: [
             Row(
               children: [
@@ -100,8 +100,8 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 12.h,
+                      horizontal: 10.w,
+                      vertical: 8.h,
                     ),
                     decoration: BoxDecoration(
                       border: Border.all(
@@ -171,12 +171,29 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
                 onChanged: (_) => setState(() {}),
               ),
             ],
-            24.verticalSpace,
+            Padding(
+              padding: pad(vertical: 12),
+              child: GenText(
+                'They will no longer be able to contact you.',
+                color: appColors.error,
+                size: 10,
+              ),
+            ),
             Row(
               children: [
-                Expanded(child: WideButton(label: 'Cancel', onPressed: () => Navigator.pop(context),)),
+                Expanded(
+                  child: WideButton(
+                    label: 'Cancel',
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
                 16.horizontalSpace,
-                Expanded(child: WideButton(label: 'Report', onPressed:canSubmit ? _handleSubmit : null ,)),
+                Expanded(
+                  child: WideButton(
+                    label: 'Report',
+                    onPressed: canSubmit ? _handleSubmit : null,
+                  ),
+                ),
               ],
             ),
           ],

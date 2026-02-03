@@ -92,7 +92,7 @@ class CameraModal extends StatelessWidget {
                     BlendMode.srcIn,
                   ),
                 ),
-                20.horizontalSpace,
+                12.horizontalSpace,
                 const GenText(
                   'Gallery',
                   height: 20,

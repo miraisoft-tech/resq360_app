@@ -27,11 +27,11 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
       final newIndex = _pageController.page?.round() ?? 0;
       if (newIndex != currentIndex) {
         setState(() => currentIndex = newIndex);
-          unawaited(_trackCurrentImpression());
+        unawaited(_trackCurrentImpression());
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-       unawaited(_trackCurrentImpression());
+      unawaited(_trackCurrentImpression());
     });
 
     _startAutoScroll();
@@ -69,7 +69,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
 
     if (adId == null) return;
 
-   unawaited(AdTrackingService.trackImpressionOnce(adId));
+    unawaited(AdTrackingService.trackImpressionOnce(adId));
   }
 
   @override
@@ -96,7 +96,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
                   final ad = widget.ads[index];
 
                   if (ad.id != null) {
-                     unawaited(AdTrackingService.trackClick(ad.id!));
+                    unawaited(AdTrackingService.trackClick(ad.id!));
                   }
 
                   final providerId = widget.ads[index].providerId;

@@ -121,8 +121,10 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                 Expanded(
                   child: ListView(
                     children: [
-                     10.verticalSpace,
-                const SavedBankAccountsSection( disableNavigation: true,),
+                      10.verticalSpace,
+                      const SavedBankAccountsSection(
+                        disableNavigation: true,
+                      ),
                       20.verticalSpace,
                       ValueListenableBuilder<String?>(
                         valueListenable: _selectBank,
@@ -134,7 +136,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                             items: bankList.map((b) => b.name ?? '').toList(),
                             onChanged: (value) {
                               setState(() {});
-                            return _selectBank.value = value;
+                              return _selectBank.value = value;
                             },
                           );
                         },

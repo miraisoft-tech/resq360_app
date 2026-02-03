@@ -47,19 +47,26 @@ class HeaderWidget extends StatelessWidget {
                   AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
                   4.horizontalSpace,
                   SizedBox(
-                    width: address.length > 10 ? 120.w : 65.w,
-                    child: GenText(
-                      address,
-                      height: 24,
-                      color: colors.black,
-                      weight: FontWeight.w500,
-                      maxLines: 1,
+                    width: 100.w,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GenText(
+                            address,
+                            height: 24,
+                            color: colors.black,
+                            weight: FontWeight.w500,
+                            maxLines: 1,
+                          ),
+                        ),
+                        5.horizontalSpace,
+                        Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 14,
+                          color: colors.textColor.shade500,
+                        ),
+                      ],
                     ),
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 14,
-                    color: colors.textColor.shade500,
                   ),
                 ],
               ),

@@ -231,7 +231,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             // final progress = calculateProviderProgress(
                             //   provider,
                             // );
-                            
+
                             final isProfileComplete = isProviderProfileComplete(
                               provider,
                             );

@@ -200,18 +200,17 @@ extension WalletTransactionUI on WalletTransaction {
     final diff = now.difference(date);
 
     if (diff.inDays == 0) {
-      return 'Today, ${_time(date)}';
+      return 'Today, ${_time(date.toLocal())}';
     }
     if (diff.inDays == 1) {
-      return 'Yesterday, ${_time(date)}';
+      return 'Yesterday, ${_time(date.toLocal())}';
     }
 
     String formatDate(DateTime date) {
       return DateFormat('MMM d, y - h:mma').format(date);
     }
 
-    return formatDate(date);
-    // 'Aug 27, 2025 - 5:16pm'
+    return formatDate(date.toLocal());
   }
 
   static String _time(DateTime d) {
