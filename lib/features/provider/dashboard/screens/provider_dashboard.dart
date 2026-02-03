@@ -353,42 +353,42 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           ],
                         ),
                       ),
-                      20.verticalSpace,
-                      GestureDetector(
-                        onTap: () async {
-                          await pushScreen(
-                            context,
-                            const PromoteServiceScreen(),
-                          );
-                        },
-                        child: Container(
-                          padding: pad(horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: colors.primary.shade500),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: GenText(
-                                  'Boost your visibility and attract more clients with our 10% off promotion package. Don’t miss this chance to grow your business',
-                                  size: 12,
-                                  height: 20.5,
-                                  color: colors.black,
-                                ),
-                              ),
-                              8.horizontalSpace,
-                              AppAssets.ASSETS_IMAGES_SPEAKER_ICON_PNG
-                                  .imageAsset(
-                                    width: 120.w,
-                                    height: 80.h,
-                                    fit: BoxFit.contain,
-                                  ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // 20.verticalSpace,
+                      // GestureDetector(
+                      //   onTap: () async {
+                      //     await pushScreen(
+                      //       context,
+                      //       const PromoteServiceScreen(),
+                      //     );
+                      //   },
+                      //   child: Container(
+                      //     padding: pad(horizontal: 16, vertical: 14),
+                      //     decoration: BoxDecoration(
+                      //       border: Border.all(color: colors.primary.shade500),
+                      //       borderRadius: BorderRadius.circular(12.r),
+                      //     ),
+                      //     child: Row(
+                      //       crossAxisAlignment: CrossAxisAlignment.start,
+                      //       children: [
+                      //         Expanded(
+                      //           child: GenText(
+                      //             'Boost your visibility and attract more clients with our 10% off promotion package. Don’t miss this chance to grow your business',
+                      //             size: 12,
+                      //             height: 20.5,
+                      //             color: colors.black,
+                      //           ),
+                      //         ),
+                      //         8.horizontalSpace,
+                      //         AppAssets.ASSETS_IMAGES_SPEAKER_ICON_PNG
+                      //             .imageAsset(
+                      //               width: 120.w,
+                      //               height: 80.h,
+                      //               fit: BoxFit.contain,
+                      //             ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
