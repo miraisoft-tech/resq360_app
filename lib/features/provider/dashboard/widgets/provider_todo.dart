@@ -2,6 +2,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
 import 'package:resq360/features/settings/screens/update_service_screen.dart';
+
 class ToDoSection extends StatelessWidget {
   const ToDoSection({required this.provider, super.key});
 
@@ -19,6 +20,9 @@ class ToDoSection extends StatelessWidget {
 
     final profileImageMissing =
         provider.profileImage == null || provider.profileImage!.trim().isEmpty;
+
+    final workingHoursMissing =
+        provider.openingHours == null || provider.closingHours == null;
 
     final todoItems = <Widget>[];
 
@@ -62,6 +66,29 @@ class ToDoSection extends StatelessWidget {
           },
           child: GenText(
             'Upload Photo',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.primary.shade600,
+          ),
+        ),
+      ]);
+    }
+
+    if (workingHoursMissing) {
+      todoItems.addAll([
+        GenText(
+          '⚠️ Set your working hours so clients know when you are available.',
+          height: 24.5,
+          weight: FontWeight.w400,
+          color: colors.black,
+        ),
+
+        GestureDetector(
+          onTap: () async {
+            await pushScreen(context, const UpdateServiceScreen());
+          },
+          child: GenText(
+            'Set Working Hours',
             height: 24.5,
             weight: FontWeight.w400,
             color: colors.primary.shade600,

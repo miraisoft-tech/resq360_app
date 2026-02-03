@@ -96,4 +96,28 @@ class AppTextUtil {
 
     return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
   }
+
+static String formatTransactionDate(DateTime? date) {
+  if (date == null) return '';
+
+  final now = DateTime.now();
+  final diff = now.difference(date);
+
+  if (diff.inDays == 0) {
+    return 'Today, ${_formatTime(date.toLocal())}';
+  }
+
+  if (diff.inDays == 1) {
+    return 'Yesterday, ${_formatTime(date.toLocal())}';
+  }
+
+  return DateFormat('MMM d, y - h:mma').format(date.toLocal());
+}
+
+static String _formatTime(DateTime d) {
+  final hour = d.hour > 12 ? d.hour - 12 : d.hour;
+  final period = d.hour >= 12 ? 'PM' : 'AM';
+  return '$hour:${d.minute.toString().padLeft(2, '0')} $period';
+}
+
 }
