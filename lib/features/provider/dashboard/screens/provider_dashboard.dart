@@ -307,7 +307,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           return const SizedBox.shrink();
                         },
                       ),
-                      30.verticalSpace,
                       const ServiceRequests(),
                       20.verticalSpace,
                       Container(
