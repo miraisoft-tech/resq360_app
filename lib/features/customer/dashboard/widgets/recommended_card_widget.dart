@@ -107,7 +107,7 @@ class RecommendedCard extends StatelessWidget {
                       size: 12,
                       weight: FontWeight.w400,
                       color: colors.textColor.shade500,
-                      maxLines: 3,
+                      maxLines: 2,
                     ),
                   ),
                 if (advertisement.budget != null)
