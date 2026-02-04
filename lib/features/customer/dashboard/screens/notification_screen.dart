@@ -281,12 +281,16 @@ class _HeaderRow extends StatelessWidget {
 NotificationModel mapToUi(notif.Notification n) {
   return NotificationModel(
     id: n.id!,
-    title: n.user?.fullName ?? '',
+    title: n.provider?.fullName ?? n.user?.fullName ?? '',
     message: n.details ?? '',
     time: AppTextUtil.timeAgo(n.createdAt),
     isUnread: n.status == 'UNREAD',
     group: AppTextUtil.groupByDate(n.createdAt),
     icon: _iconForCategory(n.category),
+    category: n.category,
+    serviceRequestId: int.tryParse(n.serviceRequestId ?? ''),
+    providerId: n.providerId,
+    providerName: n.provider?.fullName,
   );
 }
 
@@ -294,6 +298,8 @@ SvgPicture _iconForCategory(String? category) {
   switch (category) {
     case 'BOOKING':
       return AppAssets.ASSETS_ICONS_NOTIFICATION_B_SVG.svg;
+    case 'SERVICE_COMPLETION':
+      return AppAssets.ASSETS_ICONS_NOTIFICATION_S_SVG.svg;
     case 'NORMAL':
       return AppAssets.ASSETS_ICONS_NOTIFICATION_R_SVG.svg;
     default:
