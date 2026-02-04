@@ -41,6 +41,12 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
   }
 
   @override
+  void dispose() {
+    dashboardVM.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
