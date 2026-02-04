@@ -338,7 +338,9 @@ class _PromoteServiceReviewScreenState
 
     if (state is PromotionError) {
       if (mounted) {
+        await pop(context);
         await showErrorSnackbar(context, state.error);
+        context.read<PromotionBloc>().add(FetchPromotionPrice());
       }
     }
   }
