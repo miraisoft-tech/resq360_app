@@ -20,15 +20,15 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
   late PageController _pageController;
   int _currentPage = 0;
 
-
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-       unawaited(_trackCurrentImpression());
+      unawaited(_trackCurrentImpression());
 
       _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) async {
+        if (!_pageController.hasClients) return;
         if (!mounted) return;
         final adsState = context.read<CustomerAdvertisementBloc>().state;
 
@@ -48,7 +48,7 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
         );
       });
 
-       unawaited(_trackCurrentImpression());
+      unawaited(_trackCurrentImpression());
     });
   }
 
@@ -61,7 +61,7 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
 
     if (id == null) return;
 
-     unawaited(AdTrackingService.trackImpressionOnce(id));
+    unawaited(AdTrackingService.trackImpressionOnce(id));
   }
 
   @override
@@ -103,7 +103,7 @@ class _PromoCardWidgetState extends State<PromoCardWidget> {
                     return GestureDetector(
                       onTap: () async {
                         if (ad.id != null) {
-                         unawaited(AdTrackingService.trackClick(ad.id!));
+                          unawaited(AdTrackingService.trackClick(ad.id!));
                         }
                         await AppGenUtil.launchUrlText(ad.targetUrl ?? '');
                       },

@@ -21,7 +21,7 @@ class FetchRecentNotifications extends NotificationEvent {
 class FetchUnreadCount extends NotificationEvent {}
 
 class MarkNotificationsAsRead extends NotificationEvent {
-  const MarkNotificationsAsRead(this.ids);
+   const MarkNotificationsAsRead({required this.ids});
   final List<int> ids;
 }
 

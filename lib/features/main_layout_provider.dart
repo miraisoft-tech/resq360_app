@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
+import 'package:resq360/core/services/location_service.dart';
 import 'package:resq360/features/chat/screens/chat_list_screen.dart';
 import 'package:resq360/features/customer/bookings/screens/bookings_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/dashboard.dart';
@@ -11,7 +12,7 @@ import 'package:resq360/features/settings/screens/settings_screen.dart';
 
 final dashboardViewModel = DashboardViewModel();
 
-class DashboardViewModel extends ChangeNotifier {
+class DashboardViewModel extends BaseViewModel with LocationMixin {
   DashboardViewModel({this.userType = UserType.customer});
 
   UserType userType;
@@ -27,6 +28,11 @@ class DashboardViewModel extends ChangeNotifier {
     _currentIndex = newIndex;
     tabIndex = newTabIndex;
     notifyListeners();
+  }
+
+   @override
+  void onLocationUpdated() {
+    log('DashboardViewModel: Location is ready!');
   }
 
   void reset() {

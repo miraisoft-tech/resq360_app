@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:intl/intl.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 
 class WalletTransactionsData {
   WalletTransactionsData({
@@ -192,30 +192,14 @@ extension WalletTransactionUI on WalletTransaction {
   String get uiDate {
     final dt = processedAt ?? createdAt;
     if (dt == null) return '';
-    return _formatDate(dt);
+    return AppTextUtil.formatTransactionDate(dt);
   }
 
-  static String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
 
-    if (diff.inDays == 0) {
-      return 'Today, ${_time(date.toLocal())}';
-    }
-    if (diff.inDays == 1) {
-      return 'Yesterday, ${_time(date.toLocal())}';
-    }
 
-    String formatDate(DateTime date) {
-      return DateFormat('MMM d, y - h:mma').format(date);
-    }
-
-    return formatDate(date.toLocal());
-  }
-
-  static String _time(DateTime d) {
-    final hour = d.hour > 12 ? d.hour - 12 : d.hour;
-    final period = d.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:${d.minute.toString().padLeft(2, '0')} $period';
-  }
+  // static String _time(DateTime d) {
+  //   final hour = d.hour > 12 ? d.hour - 12 : d.hour;
+  //   final period = d.hour >= 12 ? 'PM' : 'AM';
+  //   return '$hour:${d.minute.toString().padLeft(2, '0')} $period';
+  // }
 }

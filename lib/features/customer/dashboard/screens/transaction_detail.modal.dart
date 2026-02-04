@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/core/utils/payment_receipt_pdf_util.dart';
 
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 
@@ -14,6 +15,24 @@ class TransactionDetailModal extends StatelessWidget {
   final WalletTransaction tx;
   final VoidCallback onRetry;
   final VoidCallback onSupport;
+
+  Future<void> _downloadReceipt() async {
+    try {
+      await PaymentReceiptPdfUtil.generatePaymentReceiptPdf(
+        reference: tx.reference ?? 'N/A',
+        title: tx.title,
+        amount: tx.uiAmount.toString(),
+        status: tx.status ?? 'UNKNOWN',
+        dateTime: tx.uiDate.isNotEmpty ? tx.uiDate : '-',
+        paymentMethod: tx.gatewayReference != null ? 'Card' : 'Wallet',
+        description: tx.description,
+        serviceId: tx.serviceRequestId?.toString(),
+        failureReason: tx.status == 'FAILED' ? 'Transaction failed' : null,
+      );
+    } on Exception catch (e) {
+      debugPrint('Error generating receipt: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +153,7 @@ class TransactionDetailModal extends StatelessWidget {
                 label: 'Download Receipt',
                 backgroundColor: appColors.primary.shade500,
                 textColor: appColors.whiteColor,
-                onPressed: onRetry,
+                onPressed: _downloadReceipt,
               ),
             ],
           ),

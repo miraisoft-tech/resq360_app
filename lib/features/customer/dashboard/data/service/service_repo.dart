@@ -108,9 +108,12 @@ class ServiceRepo extends BaseAPI {
   }) async {
     final longitude = await AppLocalPref().getValue(key: 'longitude');
     final latitude = await AppLocalPref().getValue(key: 'latitude');
-    if (longitude == null || latitude == null) {
-      return ApiResult(error: 'Location data not available');
-    }
+  if (longitude == null ||
+    latitude == null ||
+    longitude.toString().isEmpty ||
+    latitude.toString().isEmpty) {
+  return ApiResult(error: 'Location data not available');
+}
     final url = '/services/$serviceCategoryId/providers';
     try {
       final queryParams = {
