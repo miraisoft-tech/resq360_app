@@ -74,6 +74,7 @@ class RecommendedCard extends StatelessWidget {
                         height: 20.5,
                         weight: FontWeight.w400,
                         color: colors.textColor.shade500,
+                        maxLines: 2,
                       ),
                     4.verticalSpace,
 
@@ -100,16 +101,16 @@ class RecommendedCard extends StatelessWidget {
                         // ),
                       ],
                     ),
-                    8.verticalSpace,
+                    5.verticalSpace,
                     if (description.isNotEmpty)
                       GenText(
                         description,
                         size: 12,
                         weight: FontWeight.w400,
                         color: colors.textColor.shade500,
-                        maxLines: 3,
+                        maxLines: 1,
                       ),
-                    20.verticalSpace,
+                    10.verticalSpace,
                     if (advertisement.budget != null)
                       Container(
                         padding: pad(horizontal: 10, vertical: 6),

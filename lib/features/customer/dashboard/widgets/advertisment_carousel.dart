@@ -84,7 +84,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 170.h,
+          height: 180.h,
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.ads.length,
