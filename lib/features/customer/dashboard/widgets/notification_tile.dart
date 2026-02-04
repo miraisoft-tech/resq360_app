@@ -20,11 +20,18 @@ Future<void> _handleNotificationTap(BuildContext context, NotificationModel noti
   context.read<NotificationBloc>().add(MarkNotificationsAsRead(ids: [notification.id]));
 
   if (notification.category == 'SERVICE_COMPLETION') {
-    await pushScreen(context, RateProviderScreen(
-          serviceRequestId: notification.serviceRequestId!,
-          providerId: notification.providerId!,
-          providerName: notification.providerName!,
+    final serviceRequestId = notification.serviceRequestId;
+    final providerId = notification.providerId;
+    final providerName = notification.providerName;
+
+    if (serviceRequestId != null && providerId != null && providerName != null ) {
+      await pushScreen(context, RateProviderScreen(
+          serviceRequestId:serviceRequestId ,
+          providerId: providerId,
+          providerName: providerName,
         ),);
+    }
+    
     
   } 
 }
