@@ -36,7 +36,7 @@ bool profileNotDone = false;
 ProviderModel? providerData;
 
 class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
-  int? providerId;
+  // int? providerId;
   @override
   void initState() {
     super.initState();
@@ -102,6 +102,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             v is ProviderProfileLoadedState ? v.user : null;
                         providerData = user;
                         isApproved = providerData?.isApproved ?? false;
+                        if (providerData != null) {
+                          final providerId = providerData!.id;
+                          if (providerId != null) {
+                            context.read<PromotionBloc>().add(
+                            FetchActivePromotions(providerId),
+                          );
+                          }
+                        }
                         // final profileNotDone =
                         //     !(providerData?.isEmailVerified == true &&
                         //         providerData?.isApproved == true &&
@@ -283,12 +291,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                 children: [
                                   GestureDetector(
                                     onTap: () async {
-                                     await pushScreen(
-                                    context,
-                                    ProviderServiceDetailScreen(
-                                      booking: booking,
-                                    ),
-                                  );
+                                      await pushScreen(
+                                        context,
+                                        ProviderServiceDetailScreen(
+                                          booking: booking,
+                                        ),
+                                      );
                                     },
                                     child: ProviderOngoingService(
                                       booking: booking,
@@ -311,7 +319,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                 activeAds.first.endDate != null) {
                               return Column(
                                 children: [
-                                  30.verticalSpace,
                                   AdvertCountdownTimer(
                                     endDate: activeAds.first.endDate!,
                                   ),
