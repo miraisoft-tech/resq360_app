@@ -12,7 +12,8 @@ class RecommendedCard extends StatelessWidget {
     final title = advertisement.provider?.fullName ?? 'Untitled';
     final description = advertisement.description ?? '';
     final image = advertisement.provider?.profileImage;
-    final serviceType = advertisement.provider?.providerServices?.first.name ?? '';
+    final serviceType =
+        advertisement.provider?.providerServices?.first.name ?? '';
 
     final rating = advertisement.provider?.averageRating ?? 0;
     final reviewCount = advertisement.provider?.totalReviews ?? 0;
@@ -100,13 +101,13 @@ class RecommendedCard extends StatelessWidget {
                 ),
                 8.verticalSpace,
                 if (description.isNotEmpty)
-                 Expanded(
+                  Expanded(
                     child: GenText(
                       description,
                       size: 12,
                       weight: FontWeight.w400,
                       color: colors.textColor.shade500,
-                      maxLines: 3,
+                      maxLines: 2,
                     ),
                   ),
                 if (advertisement.budget != null)
