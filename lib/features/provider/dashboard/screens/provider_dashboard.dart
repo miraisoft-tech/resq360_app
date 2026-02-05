@@ -414,10 +414,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     final hasWorkingHours =
         provider.openingHours != null && provider.closingHours != null;
 
+          final kycApproved =
+      provider.isKYCVerified ||
+      provider.kycStatus?.toUpperCase() == 'APPROVED';
+
     return hasProfileImage &&
         hasServices &&
         hasDescription &&
         hasAddress &&
-        hasWorkingHours;
+        hasWorkingHours  && kycApproved;
   }
 }

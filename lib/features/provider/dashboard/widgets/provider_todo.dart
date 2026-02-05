@@ -24,6 +24,11 @@ class ToDoSection extends StatelessWidget {
     final workingHoursMissing =
         provider.openingHours == null || provider.closingHours == null;
 
+    final kycStatus = provider.kycStatus?.toUpperCase();
+    // final kycMissingOrFailed = kycStatus == null || kycStatus == 'FAILED';
+    final kycPending = kycStatus == 'PENDING';
+    final kycApproved = kycStatus == 'APPROVED' || provider.isKYCVerified;
+
     final todoItems = <Widget>[];
 
     if (descriptionMissing || servicesMissing) {
@@ -95,6 +100,58 @@ class ToDoSection extends StatelessWidget {
           ),
         ),
       ]);
+    }
+
+    if (!kycApproved) {
+      if (kycPending) {
+        todoItems.addAll([
+          GenText(
+            '⏳ Your KYC verification is pending. We are reviewing your documents.',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.black,
+          ),
+          // GestureDetector(
+          //   onTap: () async {
+          //     await pushScreen(
+          //       context,
+          //       const SettingsScreen(),
+          //     );
+          //   },
+          //   child: GenText(
+          //     'View KYC Status',
+          //     height: 24.5,
+          //     weight: FontWeight.w400,
+          //     color: colors.primary.shade600,
+          //   ),
+          // ),
+          // 10.verticalSpace,
+        ]);
+      } else {
+        todoItems.addAll([
+          GenText(
+            '⚠️ Your KYC verification failed or is incomplete. Please resubmit your documents.',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.black,
+          ),
+          GestureDetector(
+            onTap: () async {
+              await pushScreen(
+                context,
+                const SettingsScreen(),
+              ); 
+            },
+            child: GenText(
+              'Complete KYC Verification',
+              height: 24.5,
+              weight: FontWeight.w400,
+              color: colors.primary.shade600,
+            ),
+          ),
+          10.verticalSpace,
+        ]);
+      }
     }
 
     if (todoItems.isEmpty) return const SizedBox.shrink();
