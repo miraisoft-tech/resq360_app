@@ -133,7 +133,7 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> validateResetToken({
+  Future<ApiResult<bool>> validateResetToken({
     required String token,
   }) async {
     try {
@@ -146,23 +146,24 @@ class AuthRemoteRepo extends BaseAPI {
 
       log(res.statusCode);
       log(res.data);
-
+      final success = res.data?['success'] as bool;
+      final error = res.data?['message'] as String;
       switch (res.statusCode) {
         case 201:
-         await AuthLocalRepo.instance.storeForgotPasswordOtp(otp: token);
-          return true;
+          await AuthLocalRepo.instance.storeForgotPasswordOtp(otp: token);
+          log('saved $token');
+          return ApiResult(data: success);
         default:
-          return false;
+          return ApiResult(error: error);
       }
     } on Exception catch (e, s) {
       log(e);
       log(s);
-
-      return false;
+      return ApiResult(error: e.toString());
     }
   }
 
-  Future<bool> setNewPassword({
+  Future<ApiResult<bool>> setNewPassword({
     required String password,
   }) async {
     try {
@@ -183,21 +184,24 @@ class AuthRemoteRepo extends BaseAPI {
 
         log(res.statusCode);
         log(res.data);
+        final success = res.data?['success'] as bool;
+        final error = res.data?['message'] as String;
 
         switch (res.statusCode) {
-          case 200:
-            return true;
+          case 201:
+            return ApiResult(data: success);
           default:
-            return false;
+            return ApiResult(error: error);
         }
       }
 
-      return false;
+      return ApiResult(error: 'An error occurred');
+    
     } on Exception catch (e, s) {
       log(e);
       log(s);
 
-      return false;
+      return ApiResult(error: e.toString());
     }
   }
 
@@ -524,40 +528,42 @@ class AuthRemoteRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+
   Future<ApiResult<dynamic>> deleteAccount() async {
-  try {
-    const url = '/user/account';
-    
+    try {
+      const url = '/user/account';
 
-    final res = await dio().delete<Map<String, dynamic>>(
-      url,
-    );
+      final res = await dio().delete<Map<String, dynamic>>(
+        url,
+      );
 
-    log(res.statusCode);
-    log(res.data);
+      log(res.statusCode);
+      log(res.data);
 
-    if (res.statusCode == 200 && res.data != null) {
-      final success = res.data!['success'] == true;
-      
-      if (success) {
-        return ApiResult(data: res.data);
-      } else {
-        return ApiResult(
-          error: res.data!['message']?.toString() ?? 'Account deletion failed',
-        );
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          return ApiResult(data: res.data);
+        } else {
+          return ApiResult(
+            error:
+                res.data!['message']?.toString() ?? 'Account deletion failed',
+          );
+        }
       }
+
+      return ApiResult(
+        error:
+            res.data?['message']?.toString() ??
+            'An error occurred, please try again!',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+      return ApiResult(error: '$e $s');
     }
-    
-    return ApiResult(
-      error: res.data?['message']?.toString() ?? 
-             'An error occurred, please try again!',
-    );
-  } on DioException catch (e) {
-    return handleDioError(e);
-  } on Exception catch (e, s) {
-    log(e);
-    log(s);
-    return ApiResult(error: '$e $s');
   }
-}
 }

@@ -160,12 +160,12 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         token: event.token,
       );
 
-      if (result) {
+      if (result.data ?? false) {
         emit(CustomerResetTokenValidatedState());
       } else {
         emit(
-          const CustomerAuthFailure(
-            'Invalid or expired reset token. Please request a new one.',
+           CustomerAuthFailure(
+            result.error ?? 'Invalid or expired reset token. Please request a new one.',
           ),
         );
       }
@@ -183,12 +183,12 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
       final result = await authRemoteRepo.setNewPassword(
         password: event.password,
       );
-      if (result) {
+      if (result.data ?? false) {
         emit(CustomerPasswordResetSuccessState());
       } else {
         emit(
-          const CustomerAuthFailure(
-            'Password reset failed. Please try again.',
+           CustomerAuthFailure(
+            result.error ?? 'Password reset failed. Please try again.',
           ),
         );
       }
