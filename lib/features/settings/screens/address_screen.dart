@@ -168,9 +168,10 @@ class _AddressScreenState extends State<AddressScreen> {
   Future<void> _saveAddress() async {
     if (_addressController.text.isEmpty ||
         _cityController.text.isEmpty ||
-        _stateController.text.isEmpty ||
-        _zipCodeController.text.isEmpty) {
-      unawaited(showErrorSnackbar(context, 'Please fill all fields'));
+        _stateController.text.isEmpty) {
+      unawaited(
+        showErrorSnackbar(context, 'Please fill address, city and state'),
+      );
       return;
     }
 
