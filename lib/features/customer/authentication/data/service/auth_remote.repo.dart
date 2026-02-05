@@ -149,6 +149,7 @@ class AuthRemoteRepo extends BaseAPI {
 
       switch (res.statusCode) {
         case 201:
+         await AuthLocalRepo.instance.storeForgotPasswordOtp(otp: token);
           return true;
         default:
           return false;
