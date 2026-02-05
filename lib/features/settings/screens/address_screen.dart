@@ -187,7 +187,8 @@ class _AddressScreenState extends State<AddressScreen> {
         UpdateCustomerAddress(
           state: _stateController.text,
           city: _cityController.text,
-          zipCode: _zipCodeController.text,
+          zipCode:
+              _zipCodeController.text.isEmpty ? null : _zipCodeController.text,
           address: _addressController.text,
           longitude: _longitude!,
           latitude: _latitude!,
@@ -198,10 +199,11 @@ class _AddressScreenState extends State<AddressScreen> {
         'location': {
           'state': _stateController.text,
           'city': _cityController.text,
-          'zipCode': _zipCodeController.text,
           'address': _addressController.text,
           'longitude': _longitude!,
           'latitude': _latitude!,
+          if (_zipCodeController.text.isNotEmpty)
+            'zipCode': _zipCodeController.text,
         },
       };
       context.read<ProfileUpdateBloc>().add(

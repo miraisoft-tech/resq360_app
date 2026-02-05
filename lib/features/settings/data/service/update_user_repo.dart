@@ -138,10 +138,10 @@ class UpdateUserRepo extends BaseAPI {
   Future<ApiResult<dynamic>> updateUserAddress({
     required String state,
     required String city,
-    required String zipCode,
     required String address,
     required double longitude,
     required double latitude,
+    String? zipCode,
   }) async {
     const endpoint = '/user/address';
 
