@@ -26,6 +26,17 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
         if (state is BookingCancelled) {
           Navigator.pop(context);
           await showSuccessSnackbar(context, 'Booking cancelled');
+          await GeneralDialogs.showCustomBottomSheet(
+            context,
+            body: CancelledModal(
+              onContinuePressed: () async {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          );
         }
       },
       child: Scaffold(
@@ -216,7 +227,7 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                   ),
                   12.horizontalSpace,
                   Expanded(
-                    child: BlocConsumer<BookingBloc, BookingState>(
+                    child: BlocBuilder<BookingBloc, BookingState>(
                       builder: (context, state) {
                         return WideButton(
                           label: 'Confirm',
@@ -237,28 +248,18 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                                   : null,
                         );
                       },
-                      listener: (
-                        BuildContext context,
-                        BookingState state,
-                      ) async {
-                        if (state is BookingCancelled) {
-                          await GeneralDialogs.showCustomBottomSheet(
-                            context,
-                            body: CancelledModal(
-                              onContinuePressed: () async {
-                                if (Navigator.canPop(context)) {
-                                  Navigator.pop(context);
-                                  Navigator.pop(context);
-                                }
-                              },
-                            ),
-                          );
-                        }
+                      // listener: (
+                      //   BuildContext context,
+                      //   BookingState state,
+                      // ) async {
+                      //   if (state is BookingCancelled) {
 
-                        if (state is BookingError) {
-                          await showErrorSnackbar(context, state.error);
-                        }
-                      },
+                      //   }
+
+                      //   if (state is BookingError) {
+                      //     await showErrorSnackbar(context, state.error);
+                      //   }
+                      // },
                     ),
                   ),
                 ],

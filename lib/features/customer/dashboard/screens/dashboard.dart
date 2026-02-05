@@ -14,6 +14,7 @@ import 'package:resq360/features/customer/dashboard/widgets/service_category_wid
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
+import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/widgets/header_widget.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
@@ -188,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           final ongoingBooking = state.bookings.first;
 
                           return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               UrbText(
                                 'Ongoing Service',
@@ -197,8 +199,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: colors.black,
                               ),
                               12.verticalSpace,
-                              OngoingServiceCard(
-                                booking: ongoingBooking,
+                              GestureDetector(
+                                onTap: () async {
+                                  await pushScreen(
+                                    context,
+                                    ProviderServiceDetailScreen(
+                                      booking: ongoingBooking,
+                                    ),
+                                  );
+                                },
+                                child: OngoingServiceCard(
+                                  booking: ongoingBooking,
+                                ),
                               ),
                             ],
                           );

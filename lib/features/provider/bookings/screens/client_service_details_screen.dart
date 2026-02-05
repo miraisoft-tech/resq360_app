@@ -59,23 +59,26 @@ class _ProviderServiceDetailScreenState
     final serviceCategoryname = widget.booking.serviceCategory?.name;
     final chatId = widget.booking.chatId;
     final clientPhoneNumber  = widget.booking.user?.phoneNumber ?? '';
+    final providerPhoneNumber  = widget.booking.assignedProvider?.phoneNumber ?? '';
+    final showAction = widget.booking.status?.toUpperCase()  != BookingEnums.completed.name;
 
     return MultiBlocListener(
       listeners: [
         BlocListener<BookingBloc, BookingState>(
           listener: (context, state) async {
-            if (state is BookingStarted) {
-              await showSuccessSnackbar(context, 'Service has started');
+
+            if (state is BookingLoading) {
+              showLoadingDialog(context);
             }
 
-            if (state is BookingCompleted) {
-              await showSuccessSnackbar(
-                context,
-                'Service has been marked as completed',
-              );
+            if (state is BookingStarted) {
+              await pop(context);
+              await showSuccessSnackbar(context, 'Service has started');
+              await pop(context);
             }
 
             if (state is BookingError) {
+              await pop(context);
               await showErrorSnackbar(context, state.error);
             }
           },
@@ -128,6 +131,9 @@ class _ProviderServiceDetailScreenState
                     rating: providerRating,
                     reviewCount: providerReviewCount,
                     avatar: providerImage ?? '', 
+                    showActions:showAction,
+                     chatId: chatId,
+                    phoneNumber: providerPhoneNumber,
                   );
                 },
               ),
@@ -153,7 +159,7 @@ class _ProviderServiceDetailScreenState
                     rating: customerRating,
                     reviewCount: customerReviewCount,
                     avatar: clientImage ?? '',
-                    showActions: true,
+                    showActions: showAction,
                     chatId: chatId,
                     phoneNumber: clientPhoneNumber,
                   );
