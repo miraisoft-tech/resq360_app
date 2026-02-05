@@ -246,7 +246,10 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                             context,
                             body: CancelledModal(
                               onContinuePressed: () async {
-                                if (context.mounted) await pop(context);
+                                if (Navigator.canPop(context)) {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                }
                               },
                             ),
                           );

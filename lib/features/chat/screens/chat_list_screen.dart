@@ -201,21 +201,39 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   List<ChatSummary> _applyFilter(List<ChatSummary> chats) {
-    final query = _searchController.text.toLowerCase();
+  final query = _searchController.text.toLowerCase();
 
-    return chats.where((chat) {
-      if (query.isNotEmpty && !chat.title.toLowerCase().contains(query)) {
-        return false;
-      }
+  final filtered = chats.where((chat) {
+    if (query.isNotEmpty && !chat.title.toLowerCase().contains(query)) {
+      return false;
+    }
 
-      switch (selectedFilter) {
-        case 'Unread':
-          return chat.unreadCount > 0;
-        case 'Appeal':
-          return chat.title.toLowerCase().contains('appeal');
-        default:
-          return true;
-      }
-    }).toList();
+    switch (selectedFilter) {
+      case 'Unread':
+        return chat.unreadCount > 0;
+      case 'Appeal':
+        return chat.title.toLowerCase().contains('appeal');
+      default:
+        return true;
+    }
+  }).toList()
+
+..sort((a, b) {
+  final aHasMessage = a.lastMessageTime != null;
+  final bHasMessage = b.lastMessageTime != null;
+
+  if (!aHasMessage && !bHasMessage) {
+    return 0;
   }
+  if (!aHasMessage && bHasMessage) {
+    return 1;
+  }
+  if (aHasMessage && !bHasMessage) {
+    return -1;
+  }
+  return b.lastMessageTime!.compareTo(a.lastMessageTime!);
+});
+  return filtered;
+}
+
 }
