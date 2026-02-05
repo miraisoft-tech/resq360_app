@@ -31,9 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-       context.read<CustomerAuthBloc>().add(
-                    const CustomergetUserProfile(),
-                  );
+      context.read<CustomerAuthBloc>().add(
+        const CustomergetUserProfile(),
+      );
 
       context.read<ServiceCatalogBloc>().add(const FetchServices());
 
@@ -47,7 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<CustomerBookingBloc>().add(
         FetchCustomerBookings(status: BookingStatus.ongoing.value),
       );
-
     });
   }
 
@@ -166,14 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     20.verticalSpace,
                     const PromoCardWidget(),
                     20.verticalSpace,
-                    UrbText(
-                      'Ongoing Service',
-                      size: 18,
-                      height: 28.5,
-                      weight: FontWeight.w700,
-                      color: colors.black,
-                    ),
-                    12.verticalSpace,
+
                     BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
                       builder: (context, state) {
                         if (state is CustomerBookingLoading) {
@@ -186,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         if (state is CustomerBookingLoaded) {
                           if (state.bookings.isEmpty) {
-                            return const GenText('No ongoing service');
+                            return const SizedBox.shrink();
                           }
 
                           if (state.bookings.isEmpty) {
@@ -195,8 +187,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           final ongoingBooking = state.bookings.first;
 
-                          return OngoingServiceCard(
-                            booking: ongoingBooking,
+                          return Column(
+                            children: [
+                              UrbText(
+                                'Ongoing Service',
+                                size: 18,
+                                height: 28.5,
+                                weight: FontWeight.w700,
+                                color: colors.black,
+                              ),
+                              12.verticalSpace,
+                              OngoingServiceCard(
+                                booking: ongoingBooking,
+                              ),
+                            ],
                           );
                         }
 

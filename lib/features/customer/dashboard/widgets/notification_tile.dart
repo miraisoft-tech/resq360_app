@@ -53,7 +53,7 @@ class _NotificationTileState extends State<NotificationTile> {
           SlidableAction(
             onPressed: (_) {
               bloc.add(ArchiveNotification(widget.notification.id));
-              unawaited(showSuccessSnackbar(context, 'Notification archived'));
+              // unawaited(showSuccessSnackbar(context, 'Notification archived'));
             },
             backgroundColor: appColors.warning.shade500,
             foregroundColor: Colors.white,
@@ -69,15 +69,15 @@ class _NotificationTileState extends State<NotificationTile> {
         children: [
           SlidableAction(
             onPressed: (_) async {
-              final response = await _confirmDelete(
+               await _confirmDelete(
                 context,
                 bloc,
                 widget.notification.id,
               );
 
-              if (response) {
-                unawaited(showSuccessSnackbar(context, 'Notification deleted'));
-              }
+              // if (response) {
+              //   unawaited(showSuccessSnackbar(context, 'Notification deleted'));
+              // }
             },
             backgroundColor: appColors.error.shade500,
             foregroundColor: Colors.white,
@@ -154,9 +154,9 @@ Future<bool> _confirmDelete(
     context: context,
     builder:
         (_) => AlertDialog(
-          backgroundColor: Colors.white,
-          title: const Text('Delete notification?'),
-          content: const Text(
+          backgroundColor: context.appColors.whiteColor,
+          title:  const GenText('Delete notification?', size:17, weight: FontWeight.w500,),
+          content: const GenText(
             'This action cannot be undone.',
           ),
           actions: [
@@ -164,14 +164,14 @@ Future<bool> _confirmDelete(
               onPressed: () {
                 Navigator.pop(context, false);
               },
-              child: const Text('Cancel'),
+              child: const GenText('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 bloc.add(DeleteNotification(id));
                 Navigator.pop(context, true);
               },
-              child: const Text('Delete'),
+              child: GenText('Delete', color: context.appColors.error.shade500,),
             ),
           ],
         ),

@@ -96,6 +96,7 @@ if (widget.issueType != null &&
     context,
     'Ticket has been sent, check email for response',
   );
+  await pop(context);
 }
 
   @override

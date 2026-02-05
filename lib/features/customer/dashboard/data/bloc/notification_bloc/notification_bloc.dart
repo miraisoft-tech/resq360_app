@@ -39,14 +39,14 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       final fetched = res.notifications;
 
       if (current is NotificationLoaded && event.loadMore) {
-        emit(
-          current.copyWith(
-            notifications: [
-              ...current.notifications,
-              ...fetched,
-            ],
-          ),
-        );
+        final existingIds = current.notifications.map((e) => e.id).toSet();
+
+        final merged = [
+          ...current.notifications,
+          ...fetched.where((n) => !existingIds.contains(n.id)),
+        ];
+
+        emit(current.copyWith(notifications: merged));
       } else {
         emit(
           NotificationLoaded(
@@ -143,6 +143,8 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     final previousList = current.notifications;
     final newList = previousList.where((n) => n.id != event.id).toList();
 
+    emit(current.copyWith(notifications: newList));
+
     try {
       final success = await _notificationRepo.deleteNotification(event.id);
 
@@ -150,12 +152,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
         throw Exception('Delete failed');
       }
 
-      emit(
-        current.copyWith(
-          notifications: newList,
-        ),
-      );
+      emit(const NotificationActionSuccess('Notification deleted'));
     } on Exception catch (e) {
+      emit(current.copyWith(notifications: previousList));
       emit(NotificationError(e.toString()));
     }
   }

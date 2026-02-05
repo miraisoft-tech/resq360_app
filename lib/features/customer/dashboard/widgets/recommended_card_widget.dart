@@ -12,8 +12,11 @@ class RecommendedCard extends StatelessWidget {
     final title = advertisement.provider?.fullName ?? 'Untitled';
     final description = advertisement.description ?? '';
     final image = advertisement.provider?.profileImage;
+    final services = advertisement.provider?.providerServices;
     final serviceType =
-        advertisement.provider?.providerServices?.first.name ?? '';
+        (services != null && services.isNotEmpty)
+            ? (services.first.name ?? '')
+            : '';
 
     final rating = advertisement.provider?.averageRating ?? 0;
     final reviewCount = advertisement.provider?.totalReviews ?? 0;
@@ -101,30 +104,31 @@ class RecommendedCard extends StatelessWidget {
                 ),
                 8.verticalSpace,
                 if (description.isNotEmpty)
-                  Expanded(
-                    child: GenText(
-                      description,
-                      size: 12,
-                      weight: FontWeight.w400,
-                      color: colors.textColor.shade500,
-                      maxLines: 2,
-                    ),
+                  GenText(
+                    description,
+                    size: 12,
+                    weight: FontWeight.w400,
+                    color: colors.textColor.shade500,
+                    maxLines: 4,
                   ),
-                if (advertisement.budget != null)
-                  Container(
-                    padding: pad(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: colors.primary.shade500,
-                      borderRadius: BorderRadius.circular(33.r),
-                    ),
-                    child: GenText(
-                      '-${advertisement.budget}% Today',
-                      size: 13,
-                      weight: FontWeight.w600,
-                      color: colors.whiteColor,
-                    ),
+                     8.verticalSpace,
+                if (advertisement.budget != null)...[
+              
+                Container(
+                  padding: pad(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: colors.primary.shade500,
+                    borderRadius: BorderRadius.circular(33.r),
                   ),
+                  child: GenText(
+                    '-${advertisement.budget}% Today',
+                    size: 13,
+                    weight: FontWeight.w600,
+                    color: colors.whiteColor,
+                  ),
+                ),
               ],
+              ]
             ),
           ),
         ],
