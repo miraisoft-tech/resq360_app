@@ -340,6 +340,7 @@ class _BookingCardState extends State<BookingCard> {
     final end = data.completedAt?.formatTime ?? '--';
 
     final status = data.status?.capitalize ?? 'Unknown';
+    final paymentMethod = data.paymentMethod ?? '';
 
     final phonenumber = data.assignedProvider?.phoneNumber ?? '';
     final serviceRequest = data.id;
@@ -463,7 +464,7 @@ class _BookingCardState extends State<BookingCard> {
                           status: status,
                           invoice: data.requestId ?? 'N/A',
                           dateTime: '$date - $end',
-                          method: 'Card',
+                          method: paymentMethod,
                           onDownload: () async {
                             await BookingReceiptPdfUtil.generateBookingReceiptPdf(
                               bookingId: data.requestId ?? 'N/A',
@@ -471,8 +472,8 @@ class _BookingCardState extends State<BookingCard> {
                               providerName: providerName,
                               status: status,
                               dateTime: '$date - $end',
-                              paymentMethod: 'Card',
-                              amount: 'To be billed',
+                              paymentMethod: paymentMethod,
+                              amount: amount,
                             );
                           },
                         ),
