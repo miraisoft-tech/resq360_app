@@ -159,11 +159,49 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
 
                   if (state is ServicesLoaded) {
                     isProcessing = false;
+
+                    final chatServiceCategoryId = widget.chat.serviceCategoryId;
+
+                    final filteredServices =
+                        chatServiceCategoryId == null
+                            ? <Service>[]
+                            : state.services
+                                .where((s) => s.id == chatServiceCategoryId)
+                                .toList();
+
+                    if (filteredServices.isEmpty) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GenText(
+                            'No service found for this request.',
+                            color: appColors.textColor.shade400,
+                          ),
+                          12.verticalSpace,
+                          WideButton(
+                            label: 'Retry',
+                            onPressed: () {
+                              context.read<ServiceCatalogBloc>().add(
+                                const FetchServices(),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    }
+
+                    final current = _selectType.value;
+                    if (current == null ||
+                        !filteredServices.any((s) => s.id == current.id)) {
+                      _selectType.value = filteredServices.first;
+                    }
+
                     return ServiceDropdown(
-                      items: state.services,
+                      items: filteredServices,
                       controller: _selectType,
                     );
                   }
+
                   return const SizedBox.shrink();
                 },
               ),

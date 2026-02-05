@@ -3,7 +3,7 @@ import 'package:resq360/core/extensions/invoice_date_formatter.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 
-class ProviderChatInvoiceCardWidget extends StatelessWidget {
+class ProviderChatInvoiceCardWidget extends StatefulWidget {
   const ProviderChatInvoiceCardWidget({
     required this.onTapPay,
     required this.paymentStatus,
@@ -18,14 +18,29 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
   final Metadata metadata;
   final ChatResponse chat;
   final MessageResponse message;
+
+  @override
+  State<ProviderChatInvoiceCardWidget> createState() =>
+      _ProviderChatInvoiceCardWidgetState();
+}
+
+class _ProviderChatInvoiceCardWidgetState
+    extends State<ProviderChatInvoiceCardWidget> {
+  bool viewMore = false;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final time = message.createdAt != null ? message.createdAt!.formatDate : '';
-    final date = metadata.date != null ? metadata.date!.toInvoiceDate() : '';
+    final time =
+        widget.message.createdAt != null
+            ? widget.message.createdAt!.formatDate
+            : '';
+    final date =
+        widget.metadata.date != null
+            ? widget.metadata.date!.toInvoiceDate()
+            : '';
 
-    if (metadata.type != MessageReceivedType.invoice.value ||
-        metadata.amount == null) {
+    if (widget.metadata.type != MessageReceivedType.invoice.value ||
+        widget.metadata.amount == null) {
       return const SizedBox.shrink();
     }
 
@@ -34,7 +49,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
       padding: pad(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color:
-            paymentStatus == PaymentStatus.completed
+            widget.paymentStatus == PaymentStatus.completed
                 ? const Color(0xFFF0FDF4)
                 : appColors.primary.shade500,
         borderRadius: BorderRadius.circular(12.r),
@@ -47,7 +62,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color:
-                    paymentStatus == PaymentStatus.completed
+                    widget.paymentStatus == PaymentStatus.completed
                         ? appColors.textColor.shade100
                         : Colors.white,
               ),
@@ -64,7 +79,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         UrbText(
                           'Invoice No.',
                           color:
-                              paymentStatus == PaymentStatus.completed
+                              widget.paymentStatus == PaymentStatus.completed
                                   ? appColors.success.shade700
                                   : Colors.white,
                           size: 18,
@@ -73,10 +88,10 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         ),
                         4.verticalSpace,
                         GenText(
-                          metadata.invoiceId ?? '—',
+                          widget.metadata.invoiceId ?? '—',
                           weight: FontWeight.w400,
                           color:
-                              paymentStatus == PaymentStatus.completed
+                              widget.paymentStatus == PaymentStatus.completed
                                   ? appColors.textColor.shade300
                                   : Colors.white,
                         ),
@@ -88,7 +103,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         UrbText(
                           'Date',
                           color:
-                              paymentStatus == PaymentStatus.completed
+                              widget.paymentStatus == PaymentStatus.completed
                                   ? appColors.success.shade700
                                   : Colors.white,
                           size: 18,
@@ -100,7 +115,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                           date,
                           weight: FontWeight.w400,
                           color:
-                              paymentStatus == PaymentStatus.completed
+                              widget.paymentStatus == PaymentStatus.completed
                                   ? appColors.textColor.shade300
                                   : Colors.white,
                         ),
@@ -118,18 +133,18 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         GenText(
                           'Service Provider',
                           color:
-                              paymentStatus == PaymentStatus.completed
+                              widget.paymentStatus == PaymentStatus.completed
                                   ? appColors.success.shade700
                                   : Colors.white,
                           weight: FontWeight.w500,
                         ),
                         2.verticalSpace,
                         GenText(
-                          chat.serviceName ?? '-',
+                          widget.chat.provider?.fullName ?? '-',
                           size: 12,
                           weight: FontWeight.w400,
                           color:
-                              paymentStatus == PaymentStatus.completed
+                              widget.paymentStatus == PaymentStatus.completed
                                   ? appColors.textColor.shade300
                                   : Colors.white,
                         ),
@@ -141,18 +156,18 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                         GenText(
                           'Client',
                           color:
-                              paymentStatus == PaymentStatus.completed
+                              widget.paymentStatus == PaymentStatus.completed
                                   ? appColors.success.shade700
                                   : Colors.white,
                           weight: FontWeight.w500,
                         ),
                         2.verticalSpace,
                         GenText(
-                          chat.user?.fullName ?? '',
+                          widget.chat.user?.fullName ?? '',
                           size: 12,
                           weight: FontWeight.w400,
                           color:
-                              paymentStatus == PaymentStatus.completed
+                              widget.paymentStatus == PaymentStatus.completed
                                   ? appColors.textColor.shade300
                                   : Colors.white,
                         ),
@@ -161,28 +176,99 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                   ],
                 ),
                 12.verticalSpace,
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    children: [
-                      GenText(
-                        'View More Details',
-                        color:
-                            paymentStatus == PaymentStatus.completed
-                                ? appColors.success.shade700
-                                : Colors.white,
-                        weight: FontWeight.w500,
-                      ),
-                      4.horizontalSpace,
-                      AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
-                        color:
-                            paymentStatus == PaymentStatus.completed
-                                ? appColors.success.shade700
-                                : Colors.white,
-                      ),
-                    ],
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      viewMore = !viewMore;
+                    });
+                  },
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      children: [
+                        GenText(
+                          viewMore ? 'View Less Details' : 'View More Details',
+                          color:
+                              widget.paymentStatus == PaymentStatus.completed
+                                  ? appColors.success.shade700
+                                  : Colors.white,
+                          weight: FontWeight.w500,
+                        ),
+                        4.horizontalSpace,
+                        Transform.flip(
+                          flipY: viewMore,
+                          child: AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
+                              .svgColor(
+                                color:
+                                    widget.paymentStatus ==
+                                            PaymentStatus.completed
+                                        ? appColors.success.shade700
+                                        : Colors.white,
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                16.verticalSpace,
+                if (viewMore)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GenText(
+                        'Service Type',
+                        weight: FontWeight.w500,
+                        color: appColors.success.shade700,
+                      ),
+                      2.verticalSpace,
+                      GenText(
+                        widget.chat.serviceName ?? '-',
+                        size: 12,
+                        color: context.appColors.textColor.shade300,
+                      ),
+                      10.verticalSpace,
+                      GenText(
+                        'Description',
+                        weight: FontWeight.w500,
+                        color: appColors.success.shade700,
+                      ),
+                      2.verticalSpace,
+                      GenText(
+                        widget.metadata.description ?? '-',
+                        size: 12,
+                        color: context.appColors.textColor.shade300,
+                      ),
+                      if (widget.metadata.date != null) ...[
+                         10.verticalSpace,
+                        GenText(
+                          'Date',
+                          weight: FontWeight.w500,
+                          color: appColors.success.shade700
+                        ),
+                        2.verticalSpace,
+                        GenText(
+                          AppTextUtil.formatDateToString(widget.metadata.date!,),
+                          size: 12,
+                          color: context.appColors.textColor.shade300,
+                        ),
+                        10.verticalSpace,
+                      ],
+
+                      if (widget.metadata.address != null) ...[
+                        GenText(
+                          'Location',
+                          weight: FontWeight.w500,
+                          color: context.appColors.black,
+                        ),
+                        2.verticalSpace,
+                        GenText(
+                          widget.metadata.address!,
+                          size: 12,
+                          color: context.appColors.textColor.shade300,
+                        ),
+                      ],
+                    ],
+                  ),
                 16.verticalSpace,
                 Divider(color: appColors.textColor.shade100),
                 12.verticalSpace,
@@ -192,18 +278,18 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
                     GenText(
                       'Total Amount',
                       color:
-                          paymentStatus == PaymentStatus.completed
+                          widget.paymentStatus == PaymentStatus.completed
                               ? appColors.textColor.shade400
                               : Colors.white,
                     ),
                     GenText(
                       'NGN${AppTextUtil.formatAmount(
-                        metadata.amount?.toString() ?? '0',
+                        widget.metadata.amount?.toString() ?? '0',
                       )}',
                       size: 16,
                       weight: FontWeight.w700,
                       color:
-                          paymentStatus == PaymentStatus.completed
+                          widget.paymentStatus == PaymentStatus.completed
                               ? appColors.success.shade700
                               : Colors.white,
                     ),
@@ -214,14 +300,14 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
           ),
           16.verticalSpace,
           UrbText(
-            paymentStatus == PaymentStatus.completed
+            widget.paymentStatus == PaymentStatus.completed
                 ? 'Payment Confirmed'
                 : 'Pending Payment...',
             size: 16,
             height: 26.5,
             weight: FontWeight.w700,
             color:
-                paymentStatus == PaymentStatus.completed
+                widget.paymentStatus == PaymentStatus.completed
                     ? appColors.success.shade700
                     : Colors.white,
           ),
@@ -230,7 +316,7 @@ class ProviderChatInvoiceCardWidget extends StatelessWidget {
             time,
             size: 12,
             color:
-                paymentStatus == PaymentStatus.completed
+                widget.paymentStatus == PaymentStatus.completed
                     ? appColors.textColor.shade300
                     : Colors.white,
           ),
