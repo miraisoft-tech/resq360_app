@@ -8,6 +8,7 @@ import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
@@ -45,6 +46,8 @@ class _ProviderServiceDetailScreenState
       );
     }
   }
+
+  final isProvider = dashboardViewModel.userType == UserType.provider;
 
   @override
   Widget build(BuildContext context) {
@@ -111,6 +114,7 @@ class _ProviderServiceDetailScreenState
           ),
           child: Column(
             children: [
+              if(!isProvider)
               16.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, ratingsState) {
@@ -137,6 +141,7 @@ class _ProviderServiceDetailScreenState
                   );
                 },
               ),
+              if (isProvider)
               12.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, ratingsState) {
@@ -242,7 +247,7 @@ class _ProviderServiceDetailScreenState
                           if (serviceRequestId == null) return;
                           await pushScreen(
                             context,
-                            CancelSlientServiceScreen(
+                            CancelClientServiceScreen(
                               serviceRequestId: serviceRequestId,
                             ),
                           );
@@ -275,7 +280,7 @@ class _ProviderServiceDetailScreenState
                     ),
                   ),
                   12.horizontalSpace,
-                  if (widget.booking.status ==BookingEnums.progress.name
+                  if (widget.booking.status ==BookingEnums.progress.name && isProvider
                       )
                     Expanded(
                       child: WideButton(

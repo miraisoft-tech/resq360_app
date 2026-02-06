@@ -2,25 +2,43 @@
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/data/provider_cancel_enums.dart';
 import 'package:resq360/features/widgets/dialogs/cancelled.modal.dart';
 
-class CancelSlientServiceScreen extends StatefulWidget {
-  const CancelSlientServiceScreen({required this.serviceRequestId, super.key});
+class CancelClientServiceScreen extends StatefulWidget {
+  const CancelClientServiceScreen({required this.serviceRequestId, super.key});
   final int serviceRequestId;
   @override
-  State<CancelSlientServiceScreen> createState() =>
-      _CancelSlientServiceScreenState();
+  State<CancelClientServiceScreen> createState() =>
+      _CancelClientServiceScreenState();
 }
 
-class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
+bool get isProvider =>
+    dashboardViewModel.userType == UserType.provider;
+
+String get pageTitle =>
+    isProvider ? 'Cancel Client Service' : 'Cancel Service';
+
+String get subtitle =>
+    isProvider
+        ? 'Please review provider cancellation terms'
+        : 'Please review cancellation terms';
+
+// String get cancellationChargeText =>
+//     isProvider
+//         ? 'Cancelling may affect your provider wallet balance.'
+//         : 'Cancellation of service attracts a cancellation charge of ₦3,000.';
+
+class _CancelClientServiceScreenState extends State<CancelClientServiceScreen> {
   CancelReasonEnum? selectedReason;
   final TextEditingController reasonController = TextEditingController();
-
+  final isProvider = dashboardViewModel.userType == UserType.provider;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
+  
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
         if (state is BookingCancelled) {
@@ -31,6 +49,7 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
             body: CancelledModal(
               onContinuePressed: () async {
                 if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
                   Navigator.pop(context);
                   Navigator.pop(context);
                 }
@@ -66,14 +85,14 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
               ),
               12.verticalSpace,
               UrbText(
-                'Cancel Service',
+                pageTitle,
                 size: 22,
                 weight: FontWeight.w700,
                 color: appColors.black,
               ),
               4.verticalSpace,
               GenText(
-                'Please review cancellation terms',
+                subtitle,
                 color: appColors.textColor.shade400,
                 weight: FontWeight.w400,
               ),
@@ -138,7 +157,7 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                         ),
                         Expanded(
                           child: GenText(
-                            'Service provider can have a negative wallet balance',
+                            'You can have a negative wallet balance',
                             color: appColors.error.shade600,
                             size: 13,
                           ),
@@ -172,7 +191,7 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                       size: 13,
                     ),
                     14.verticalSpace,
-                    ...CancelReasonEnum.values.map((reason) {
+                    ...visibleReasons.map((reason) {
                       return GestureDetector(
                         onTap: () => setState(() => selectedReason = reason),
                         child: Padding(
@@ -230,7 +249,7 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
                     child: BlocBuilder<BookingBloc, BookingState>(
                       builder: (context, state) {
                         return WideButton(
-                          label: 'Confirm',
+                          label: isProvider ? 'Cancel Job' : 'Cancel Service',
                           backgroundColor: appColors.error,
                           textColor: appColors.whiteColor,
                           loading: state is BookingLoading,
@@ -293,16 +312,57 @@ class _CancelSlientServiceScreenState extends State<CancelSlientServiceScreen> {
     return true;
   }
 
-  String _reasonText(CancelReasonEnum reason) {
-    switch (reason) {
-      case CancelReasonEnum.unableToReachClient:
-        return 'Unable to reach client';
-      case CancelReasonEnum.vehicleEquipmentIssue:
-        return 'Vehicle/Equipment issue';
-      case CancelReasonEnum.emergencySituation:
-        return 'Emergency situation';
-      case CancelReasonEnum.other:
-        return 'Other';
-    }
+String _reasonText(CancelReasonEnum reason) {
+  switch (reason) {
+    case CancelReasonEnum.unableToReach:
+      return isProvider
+          ? 'Unable to reach client'
+          : 'Provider is unreachable';
+
+    case CancelReasonEnum.vehicleEquipmentIssue:
+      return isProvider
+          ? 'Vehicle / Equipment issue'
+          : 'Provider unavailable';
+
+    case CancelReasonEnum.providerDelayed:
+      return isProvider
+          ? 'Client reported provider delay'
+          : 'Provider delayed or unavailable';
+
+    case CancelReasonEnum.noLongerNeeded:
+      return isProvider
+          ? 'Client no longer needs service'
+          : 'Service no longer needed';
+
+    case CancelReasonEnum.changedMind:
+      return isProvider
+          ? 'Client changed mind'
+          : 'Changed my mind';
+
+    case CancelReasonEnum.emergencySituation:
+      return 'Emergency situation';
+
+    case CancelReasonEnum.other:
+      return 'Other';
   }
+}
+
+List<CancelReasonEnum> get visibleReasons {
+  return isProvider
+      ? [
+          CancelReasonEnum.unableToReach,
+          CancelReasonEnum.vehicleEquipmentIssue,
+          CancelReasonEnum.emergencySituation,
+          CancelReasonEnum.other,
+        ]
+      : [
+          CancelReasonEnum.providerDelayed,
+          CancelReasonEnum.noLongerNeeded,
+          CancelReasonEnum.changedMind,
+          CancelReasonEnum.emergencySituation,
+          CancelReasonEnum.other,
+        ];
+}
+
+
 }
