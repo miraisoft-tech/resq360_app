@@ -2,7 +2,6 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/features/chat/screens/thank_you.modal.dart';
-import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 
 class ServiceCompletedScreen extends StatefulWidget {
   const ServiceCompletedScreen({required this.serviceRequestId, super.key});
@@ -154,7 +153,7 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
             40.verticalSpace,
             BlocConsumer<BookingBloc, BookingState>(
               listener: (context, state) async {
-                if (state is RateProviderSuccess) {
+                if (state is BookingCompleted) {
                   await GeneralDialogs.showCustomBottomSheet(
                     context,
                     body: ThankYouModal(

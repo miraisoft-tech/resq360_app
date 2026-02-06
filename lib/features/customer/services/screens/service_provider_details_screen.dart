@@ -59,14 +59,18 @@ class _ServiceProviderDetailsScreenState
     }
   }
 
-  Future<void> _createServiceRequest() async {
-    final providerServiceId = _provider?.providerServiceId;
-    if (providerServiceId == null) return;
-
-    context.read<ServiceRequestBloc>().add(
-      CreateServiceRequest(providerServiceId: providerServiceId),
-    );
+Future<void> _createServiceRequest() async {
+  if (_provider == null || _provider!.providerServices.isEmpty) {
+    log('No provider services available');
+    return;
   }
+
+  final providerServiceId = _provider!.providerServices.first.id;
+
+  context.read<ServiceRequestBloc>().add(
+    CreateServiceRequest(providerServiceId: providerServiceId),
+  );
+}
 
   Future<void> _openImagesFullScreen(int indexOfImage) async {
     await Navigator.push(

@@ -9,6 +9,7 @@ import 'package:resq360/features/provider/authentication/data/bloc/provider_auth
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
+import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/advertisement_countdown_timer.dart';
@@ -35,7 +36,7 @@ bool profileNotDone = false;
 ProviderModel? providerData;
 
 class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
-  int? providerId;
+  // int? providerId;
   @override
   void initState() {
     super.initState();
@@ -101,6 +102,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             v is ProviderProfileLoadedState ? v.user : null;
                         providerData = user;
                         isApproved = providerData?.isApproved ?? false;
+                        if (providerData != null) {
+                          final providerId = providerData!.id;
+                          if (providerId != null) {
+                            context.read<PromotionBloc>().add(
+                            FetchActivePromotions(providerId),
+                          );
+                          }
+                        }
                         // final profileNotDone =
                         //     !(providerData?.isEmailVerified == true &&
                         //         providerData?.isApproved == true &&
@@ -278,8 +287,23 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               return const SizedBox.shrink();
                             }
                             if (booking != null) {
-                              return ProviderOngoingService(
-                                booking: booking,
+                              return Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await pushScreen(
+                                        context,
+                                        ProviderServiceDetailScreen(
+                                          booking: booking,
+                                        ),
+                                      );
+                                    },
+                                    child: ProviderOngoingService(
+                                      booking: booking,
+                                    ),
+                                  ),
+                                  20.verticalSpace,
+                                ],
                               );
                             }
                           }
@@ -295,7 +319,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                 activeAds.first.endDate != null) {
                               return Column(
                                 children: [
-                                  30.verticalSpace,
                                   AdvertCountdownTimer(
                                     endDate: activeAds.first.endDate!,
                                   ),
@@ -414,10 +437,15 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     final hasWorkingHours =
         provider.openingHours != null && provider.closingHours != null;
 
+    final kycApproved =
+        provider.isKYCVerified ||
+        provider.kycStatus?.toUpperCase() == 'APPROVED';
+
     return hasProfileImage &&
         hasServices &&
         hasDescription &&
         hasAddress &&
-        hasWorkingHours;
+        hasWorkingHours &&
+        kycApproved;
   }
 }

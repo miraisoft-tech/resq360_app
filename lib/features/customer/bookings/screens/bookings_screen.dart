@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/booking_enums.dart';
 import 'package:resq360/core/utils/app_pdf_util.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
@@ -10,6 +11,7 @@ import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bl
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class BookingsScreen extends StatefulWidget {
@@ -255,12 +257,12 @@ class _BookingList extends StatelessWidget {
                 return BookingCard(
                   data: booking,
                   onTap: () async {
-                    // await pushScreen(
-                    //   context,
-                    //   ProviderServiceDetailScreen(
-                    //     booking: booking,
-                    //   ),
-                    // );
+                    await pushScreen(
+                      context,
+                      ProviderServiceDetailScreen(
+                        booking: booking,
+                      ),
+                    );
                   },
                 );
               },
@@ -340,9 +342,16 @@ class _BookingCardState extends State<BookingCard> {
     final end = data.completedAt?.formatTime ?? '--';
 
     final status = data.status?.capitalize ?? 'Unknown';
+    final paymentMethod = data.paymentMethod ?? '';
 
     final phonenumber = data.assignedProvider?.phoneNumber ?? '';
     final serviceRequest = data.id;
+    final showAction = status.toUpperCase()  != BookingEnums.completed.name;
+
+
+    log('data $showAction');
+    log('status $status');
+
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -400,6 +409,7 @@ class _BookingCardState extends State<BookingCard> {
                     ],
                   ),
                 ),
+                if(showAction)...[
                 SVGButton(
                   path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
                   onTap: () async {
@@ -420,6 +430,7 @@ class _BookingCardState extends State<BookingCard> {
                   },
                 ),
                 10.horizontalSpace,
+                ]
               ],
             ),
             const ListDivider(
@@ -463,7 +474,7 @@ class _BookingCardState extends State<BookingCard> {
                           status: status,
                           invoice: data.requestId ?? 'N/A',
                           dateTime: '$date - $end',
-                          method: 'Card',
+                          method: paymentMethod,
                           onDownload: () async {
                             await BookingReceiptPdfUtil.generateBookingReceiptPdf(
                               bookingId: data.requestId ?? 'N/A',
@@ -471,8 +482,8 @@ class _BookingCardState extends State<BookingCard> {
                               providerName: providerName,
                               status: status,
                               dateTime: '$date - $end',
-                              paymentMethod: 'Card',
-                              amount: 'To be billed',
+                              paymentMethod: paymentMethod,
+                              amount: amount,
                             );
                           },
                         ),

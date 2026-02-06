@@ -42,17 +42,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Widget build(BuildContext context) {
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-        if (!mounted) return;
-        if (state is! CustomerAuthLoading) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-        }
-        if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
-          return; 
-        }
-
         if (state is CustomerAuthFailure) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
@@ -61,10 +50,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         }
 
         if (state is CustomerPasswordResetSuccessState) {
-          // showSuccessSnackbar(context, 'Password reset email sent successfully!');
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
+          // showSuccessSnackbar(
+          //   context,
+          //   'Password reset email sent successfully!',
+          // );
           if (context.mounted) {
             await GeneralDialogs.showCustomBottomSheet(
               context,
@@ -120,25 +109,31 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         Validators.validateNotEmpty(value, 'confirm password'),
               ),
               60.verticalSpace,
-              WideButton(
-                label: 'Reset Password',
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    if (newPasswordController.text != passwordController.text) {
-                      showSnackBar(
-                        context,
-                        'Error',
-                        'Passwords do not match',
-                      );
-                      return;
-                    }
+              BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
+                builder: (context, state) {
+                  return WideButton(
+                    loading: state is CustomerAuthLoading,
+                    label: 'Reset Password',
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        if (newPasswordController.text !=
+                            passwordController.text) {
+                          showSnackBar(
+                            context,
+                            'Error',
+                            'Passwords do not match',
+                          );
+                          return;
+                        }
 
-                    context.read<CustomerAuthBloc>().add(
-                      CustomerSetNewPasswordEvent(
-                        password: newPasswordController.text,
-                      ),
-                    );
-                  }
+                        context.read<CustomerAuthBloc>().add(
+                          CustomerSetNewPasswordEvent(
+                            password: newPasswordController.text,
+                          ),
+                        );
+                      }
+                    },
+                  );
                 },
               ),
             ],

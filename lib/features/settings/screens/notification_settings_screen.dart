@@ -35,6 +35,8 @@ class _NotificationSettingsScreenState
     });
   }
 
+  final Map<String, bool> _updating = {};
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -65,34 +67,42 @@ class _NotificationSettingsScreenState
           }
 
           if (state is UpdatingNotificationSettingsError) {
+            context.read<NotificationSettingsBloc>().add(
+              FetchNotificationSettings(),
+            );
+            _updating.clear();
             await showErrorSnackbar(context, state.error);
           }
 
           if (state is UpdatedNotificationSettings) {
             setState(() {
               currentSettings = state.settings;
+              _updating.clear();
             });
           }
 
           if (state is FetchedNotificationSettings) {
             setState(() {
               currentSettings = state.settings;
+              _updating.clear();
             });
           }
         },
         builder: (context, state) {
           if (state is FetchNotificationSettingsLoading) {
-           return  Center(child: CircularProgressIndicator(
-                       color: appColors.primary,
-
-                    ));
+            return Center(
+              child: CircularProgressIndicator(
+                color: appColors.primary,
+              ),
+            );
           }
 
           if (currentSettings == null) {
-           return  Center(child: CircularProgressIndicator(
-                       color: appColors.primary,
-
-                    ));
+            return Center(
+              child: CircularProgressIndicator(
+                color: appColors.primary,
+              ),
+            );
           }
 
           return SafeArea(
@@ -107,10 +117,18 @@ class _NotificationSettingsScreenState
                         'In-app notification are mandatory for important updates.',
                     isEnabled: currentSettings!.pushNotifications,
                     onChanged: ({required value}) {
+                      setState(() {
+                        _updating['push'] = true;
+                        currentSettings = currentSettings!.copyWith(
+                          pushNotifications: value,
+                        );
+                      });
                       context.read<NotificationSettingsBloc>().add(
                         UpdatePushNotification(value: value),
                       );
                     },
+                    isLoading: _updating['push'] ?? false,
+                    enabled: true,
                   ),
                   20.verticalSpace,
                   _CardTile(
@@ -120,10 +138,18 @@ class _NotificationSettingsScreenState
                         'Email notification are mandatory for important updates.',
                     isEnabled: currentSettings!.emailNotifications,
                     onChanged: ({required value}) {
+                      setState(() {
+                        _updating['email'] = true;
+                        currentSettings = currentSettings!.copyWith(
+                          emailNotifications: value,
+                        );
+                      });
                       context.read<NotificationSettingsBloc>().add(
                         UpdateEmailNotification(value: value),
                       );
                     },
+                    isLoading: _updating['email'] ?? false,
+                    enabled: true,
                   ),
                   20.verticalSpace,
                   _CardTile(
@@ -133,10 +159,18 @@ class _NotificationSettingsScreenState
                         'Subscription is required to boost your chances of getting quick access to job offers by 85%.',
                     isEnabled: currentSettings!.smsNotifications,
                     onChanged: ({required value}) {
+                      setState(() {
+                        _updating['sms'] = true;
+                        currentSettings = currentSettings!.copyWith(
+                          smsNotifications: value,
+                        );
+                      });
                       context.read<NotificationSettingsBloc>().add(
                         UpdateSmsNotification(value: value),
                       );
                     },
+                    isLoading: _updating['sms'] ?? false,
+                    enabled: true,
                   ),
                   Col(
                     children: [
@@ -147,24 +181,49 @@ class _NotificationSettingsScreenState
                             'Enable automatic renewal to avoid missing job offers.',
                         isEnabled: currentSettings!.weeklyReports,
                         onChanged: ({required value}) async {
-                          context.read<NotificationSettingsBloc>().add(
-                            UpdateWeeklyReports(value: value),
-                          );
-
-                          await GeneralDialogs.showCustomDialog<void>(
-                            context,
-                            body: PaymentOptionDialog(
-                              onPaymentSelected: (method) async {
-                                await GeneralDialogs.showCustomDialog<void>(
+                          if (value) {
+                            final result =
+                                await GeneralDialogs.showCustomDialog<bool>(
                                   context,
-                                  body: const SubscribeConfirmDialog(
-                                    amount: '₦15,0000',
+                                  body: PaymentOptionDialog(
+                                    onPaymentSelected: (method) async {
+                                      await GeneralDialogs.showCustomDialog<
+                                        void
+                                      >(
+                                        context,
+                                        body: const SubscribeConfirmDialog(
+                                          amount: '₦15,000',
+                                        ),
+                                      );
+                                      Navigator.pop(
+                                        context,
+                                        true,
+                                      );
+                                    },
                                   ),
                                 );
-                              },
-                            ),
-                          );
+
+                            if (result ?? false) {
+                              setState(() {
+                                _updating['subscription'] = true;
+                              });
+
+                              context.read<NotificationSettingsBloc>().add(
+                                const UpdateWeeklyReports(value: true),
+                              );
+                            }
+                          } else {
+                            setState(() {
+                              _updating['subscription'] = true;
+                            });
+
+                            context.read<NotificationSettingsBloc>().add(
+                              const UpdateWeeklyReports(value: false),
+                            );
+                          }
                         },
+                        isLoading: _updating['Subscription'] ?? false,
+                        enabled: false,
                       ),
                       20.verticalSpace,
                       FutureBuilder(
@@ -234,6 +293,8 @@ class _CardTile extends StatelessWidget {
     required this.header,
     required this.title,
     required this.subtitle,
+    required this.isLoading,
+    required this.enabled,
     this.isEnabled = true,
     this.onChanged,
   });
@@ -242,8 +303,9 @@ class _CardTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool isEnabled;
+  final bool isLoading;
+  final bool enabled;
   final void Function({required bool value})? onChanged;
-
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -259,44 +321,75 @@ class _CardTile extends StatelessWidget {
           ),
           16.verticalSpace,
         ],
-        Container(
-          width: double.infinity,
-          padding: pad(vertical: 16, horizontal: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: appColors.textColor.shade100),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  GenText(
-                    title,
-                    color: appColors.black,
-                    weight: FontWeight.w500,
-                  ),
-                  const Spacer(),
-                  CustomSwitchWidget(
-                    value: isEnabled,
-                    onChanged: onChanged,
-                    activeThumbColor: appColors.primary.shade500,
-                    disabledThumbColor: appColors.textColor.shade100,
-                    tapColor: appColors.whiteColor,
-                  ),
-                ],
-              ),
-              5.verticalSpace,
-              SizedBox(
-                width: 200.w,
-                child: GenText(
-                  subtitle,
-                  size: 12,
-                  color: appColors.textColor.shade500,
-                  weight: FontWeight.w400,
+        GestureDetector(
+          onTap:
+              enabled && !isLoading
+                  ? () => onChanged?.call(value: !isEnabled)
+                  : null,
+          child: Container(
+            width: double.infinity,
+            padding: pad(vertical: 16, horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: appColors.textColor.shade100),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    GenText(
+                      title,
+                      color: appColors.black,
+                      weight: FontWeight.w500,
+                    ),
+                    // if (!enabled)
+                    //   Container(
+                    //     margin: const EdgeInsets.only(left: 8),
+                    //     padding: const EdgeInsets.symmetric(
+                    //       horizontal: 8,
+                    //       vertical: 4,
+                    //     ),
+                    //     decoration: BoxDecoration(
+                    //       color: appColors.primary.shade50,
+                    //       borderRadius: BorderRadius.circular(6),
+                    //     ),
+                    //     child: GenText(
+                    //       'Required',
+                    //       size: 10,
+                    //       color: appColors.primary,
+                    //       weight: FontWeight.w500,
+                    //     ),
+                    //   ),
+                    const Spacer(),
+                    if (isLoading)
+                       SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: appColors.primary,),
+                      )
+                    else
+                      CustomSwitchWidget(
+                        value: isEnabled,
+                        onChanged: enabled ? onChanged : null,
+                        activeThumbColor: appColors.primary.shade500,
+                        disabledThumbColor: appColors.textColor.shade100,
+                        tapColor: appColors.whiteColor,
+                      ),
+                  ],
                 ),
-              ),
-            ],
+                5.verticalSpace,
+                SizedBox(
+                  width: 200.w,
+                  child: GenText(
+                    subtitle,
+                    size: 12,
+                    color: appColors.textColor.shade500,
+                    weight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],

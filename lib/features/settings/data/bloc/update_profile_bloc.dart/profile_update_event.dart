@@ -118,20 +118,21 @@ final class UpdateCustomerAddress extends ProfileUpdateEvent {
   const UpdateCustomerAddress({
     required this.state,
     required this.city,
-    required this.zipCode,
     required this.address,
     required this.longitude,
     required this.latitude,
+    this.zipCode = '',
+
   });
   final String state;
   final String city;
-  final String zipCode;
+  final String? zipCode;
   final String address;
   final double longitude;
   final double latitude;
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
     state,
     city,
     zipCode,

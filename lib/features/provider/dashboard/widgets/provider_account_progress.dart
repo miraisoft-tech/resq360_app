@@ -41,7 +41,7 @@ final progress = calculateProviderProgress(provider);
   }
 }
 double calculateProviderProgress(ProviderModel provider) {
-  const totalSteps = 5;
+  const totalSteps = 6;
   var completed = 0;
 
   if (provider.profileImage != null &&
@@ -64,6 +64,14 @@ double calculateProviderProgress(ProviderModel provider) {
 
   if (provider.openingHours != null &&
       provider.closingHours != null) {
+    completed++;
+  }
+
+  final kycApproved =
+      provider.isKYCVerified ||
+      provider.kycStatus?.toUpperCase() == 'APPROVED';
+
+  if (kycApproved) {
     completed++;
   }
 

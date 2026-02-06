@@ -71,11 +71,11 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: context.appColors.whiteColor,
-          title: const Text('Complete Payment'),
+          title: const GenText('Complete Payment'),
           actions: [
             TextButton(
               onPressed: _finish,
-              child: const Text('Done'),
+              child: const GenText('Done'),
             ),
             if (_loading)
               Padding(

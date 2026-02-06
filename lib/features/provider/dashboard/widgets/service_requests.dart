@@ -31,7 +31,7 @@ class _ServiceRequestsState extends State<ServiceRequests> {
         if (state is ProviderBookingsLoaded) {
           final bookings = state.bookings;
           if (bookings.isEmpty) {
-            return const Center(child: GenText('No bookings found.'));
+            return const SizedBox.shrink();
           }
 
           return Column(

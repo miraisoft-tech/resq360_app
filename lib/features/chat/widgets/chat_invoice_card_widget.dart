@@ -2,7 +2,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 
-class ChatInvoiceCardWidget extends StatelessWidget {
+class ChatInvoiceCardWidget extends StatefulWidget {
   const ChatInvoiceCardWidget({
     required this.onTapPay,
     required this.metadata,
@@ -19,10 +19,17 @@ class ChatInvoiceCardWidget extends StatelessWidget {
   final ChatResponse chat;
   final String messageCreatedAt;
   final String status;
+
+  @override
+  State<ChatInvoiceCardWidget> createState() => _ChatInvoiceCardWidgetState();
+}
+
+class _ChatInvoiceCardWidgetState extends State<ChatInvoiceCardWidget> {
+  bool viewMore = false;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    log(status);
+    log(widget.status);
     return Container(
       width: double.infinity,
       padding: pad(horizontal: 14, vertical: 14),
@@ -49,7 +56,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   4.verticalSpace,
                   GenText(
-                    metadata.invoiceId ?? '—',
+                    widget.metadata.invoiceId ?? '—',
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
                   ),
@@ -67,7 +74,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    chat.createdAt?.formatDate ?? '—',
+                    widget.chat.createdAt?.formatDate ?? '—',
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
                   ),
@@ -89,7 +96,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    chat.serviceName ?? '—',
+                    widget.chat.serviceName ?? '—',
                     size: 12,
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
@@ -106,7 +113,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                   ),
                   2.verticalSpace,
                   GenText(
-                    chat.user?.fullName ?? '',
+                    widget.chat.user?.fullName ?? '',
                     size: 12,
                     weight: FontWeight.w400,
                     color: appColors.textColor.shade300,
@@ -116,20 +123,87 @@ class ChatInvoiceCardWidget extends StatelessWidget {
             ],
           ),
           12.verticalSpace,
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              children: [
-                GenText(
-                  'View More Details',
-                  color: appColors.primary,
-                  weight: FontWeight.w500,
-                ),
-                4.horizontalSpace,
-                AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svg,
-              ],
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                viewMore = !viewMore;
+              });
+            },
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                children: [
+                  GenText(
+                    viewMore ? 'View Less Details' : 'View More Details',
+                    color: context.appColors.primary,
+                    weight: FontWeight.w500,
+                  ),
+                  4.horizontalSpace,
+                  Transform.flip(
+                    flipY: viewMore,
+                    child: AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svg,
+                  ),
+                ],
+              ),
             ),
           ),
+          16.verticalSpace,
+          if (viewMore)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const GenText(
+                  'Service Type',
+                  weight: FontWeight.w500,
+                ),
+                2.verticalSpace,
+                GenText(
+                  widget.chat.serviceName ?? '-',
+                  size: 12,
+                  color: context.appColors.textColor.shade300,
+                ),
+                10.verticalSpace,
+                const GenText(
+                  'Description',
+                  weight: FontWeight.w500,
+                ),
+                2.verticalSpace,
+                GenText(
+                  widget.metadata.description ?? '-',
+                  size: 12,
+                  color: context.appColors.textColor.shade300,
+                ),
+                if (widget.metadata.date != null) ...[
+                   10.verticalSpace,
+                  GenText(
+                    'Date',
+                    weight: FontWeight.w500,
+                    color: context.appColors.black,
+                  ),
+                  2.verticalSpace,
+                  GenText(
+                    AppTextUtil.formatDateToString(widget.metadata.date!,),
+                    size: 12,
+                    color: appColors.success.shade700
+                  ),
+                  10.verticalSpace,
+                ],
+
+                if (widget.metadata.address != null) ...[
+                  GenText(
+                    'Location',
+                    weight: FontWeight.w500,
+                    color: context.appColors.black,
+                  ),
+                  2.verticalSpace,
+                  GenText(
+                    widget.metadata.address!,
+                    size: 12,
+                    color: context.appColors.textColor.shade300,
+                  ),
+                ],
+              ],
+            ),
           16.verticalSpace,
           Divider(color: appColors.textColor.shade100),
           12.verticalSpace,
@@ -141,7 +215,7 @@ class ChatInvoiceCardWidget extends StatelessWidget {
                 color: appColors.textColor.shade400,
               ),
               GenText(
-                'NGN${AppTextUtil.formatAmount(metadata.amount?.toString() ?? '0')}',
+                'NGN${AppTextUtil.formatAmount(widget.metadata.amount?.toString() ?? '0')}',
                 size: 15,
                 weight: FontWeight.w700,
                 color: appColors.black,
@@ -150,13 +224,18 @@ class ChatInvoiceCardWidget extends StatelessWidget {
           ),
           16.verticalSpace,
           WideButton(
-            label: status == PaymentStatus.completed.value ? 'Paid' : 'Pay Now',
+            label:
+                widget.status == PaymentStatus.completed.value
+                    ? 'Paid'
+                    : 'Pay Now',
             onPressed:
-                status != PaymentStatus.completed.value ? onTapPay : null,
+                widget.status != PaymentStatus.completed.value
+                    ? widget.onTapPay
+                    : null,
           ),
           6.verticalSpace,
           GenText(
-            messageCreatedAt,
+            widget.messageCreatedAt,
             size: 12,
             color: appColors.textColor.shade300,
           ),
