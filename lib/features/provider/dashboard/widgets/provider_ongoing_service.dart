@@ -122,7 +122,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                           if (serviceRequestId != null) {
                             await pushScreen(
                               context,
-                              CancelSlientServiceScreen(
+                              CancelClientServiceScreen(
                                 serviceRequestId: serviceRequestId,
                               ),
                             );
