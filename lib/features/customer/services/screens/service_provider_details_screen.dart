@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/gallery_item_model.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
@@ -36,10 +38,13 @@ class _ServiceProviderDetailsScreenState
     extends State<ServiceProviderDetailsScreen> {
   int currentIndex = 0;
   ServiceProvider? _provider;
+  bool _isGuest = false;
 
   @override
   void initState() {
     super.initState();
+
+    unawaited(_loadGuestMode());
 
     if (widget.provider != null) {
       _provider = widget.provider;
@@ -51,6 +56,17 @@ class _ServiceProviderDetailsScreenState
     }
   }
 
+  Future<void> _loadGuestMode() async {
+    final isGuest = await AuthLocalRepo.instance.getGuestMode();
+    if (!mounted) return;
+    setState(() => _isGuest = isGuest);
+  }
+
+  Future<void> _requireLogin() async {
+    await showErrorSnackbar(context, 'Please log in to continue');
+    await pushScreen(context, const LoginScreen());
+  }
+
   void _loadRatings() {
     if (_provider != null) {
       context.read<RatingsBloc>().add(
@@ -59,18 +75,18 @@ class _ServiceProviderDetailsScreenState
     }
   }
 
-Future<void> _createServiceRequest() async {
-  if (_provider == null || _provider!.providerServices.isEmpty) {
-    log('No provider services available');
-    return;
+  Future<void> _createServiceRequest() async {
+    if (_provider == null || _provider!.providerServices.isEmpty) {
+      log('No provider services available');
+      return;
+    }
+
+    final providerServiceId = _provider!.providerServices.first.id;
+
+    context.read<ServiceRequestBloc>().add(
+      CreateServiceRequest(providerServiceId: providerServiceId),
+    );
   }
-
-  final providerServiceId = _provider!.providerServices.first.id;
-
-  context.read<ServiceRequestBloc>().add(
-    CreateServiceRequest(providerServiceId: providerServiceId),
-  );
-}
 
   Future<void> _openImagesFullScreen(int indexOfImage) async {
     await Navigator.push(
@@ -530,6 +546,10 @@ Future<void> _createServiceRequest() async {
                       child: WideButton(
                         label: 'Book Now',
                         onPressed: () async {
+                          if (_isGuest) {
+                            await _requireLogin();
+                            return;
+                          }
                           await _createServiceRequest();
                         },
                       ),

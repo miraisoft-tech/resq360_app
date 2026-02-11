@@ -25,92 +25,99 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _icon2SlideAnimation;
   int _currentStage = 0;
 
-Future<void> _goToNext() async {
-  try {
-    await CustomerAuthProvider.instance.init();
-    await ProviderAuthProvider.instance.init();
+  Future<void> _goToNext() async {
+    try {
+      await CustomerAuthProvider.instance.init();
+      await ProviderAuthProvider.instance.init();
 
-    final isIntroCompleted =
-        await AuthLocalRepo.instance.getIsIntroCompleted();
+      final isIntroCompleted =
+          await AuthLocalRepo.instance.getIsIntroCompleted();
 
-    if (!mounted) return;
-
-    if (!isIntroCompleted) {
-      await replaceScreen(context, const IntroScreen());
-      return;
-    }
-
-    final token = await AuthLocalRepo.instance.getAccessToken();
-    if (token == null) {
-      await replaceScreen(context, const SelectAccountTypeScreen());
-      return;
-    }
-
-    final userTypeStr = await AuthLocalRepo.instance.getUserType();
-    if (userTypeStr == null) {
-      await replaceScreen(context, const SelectAccountTypeScreen());
-      return;
-    }
-
-    final userType = userTypeStr == UserType.provider.value
-        ? UserType.provider
-        : UserType.customer;
-
-    dashboardViewModel.userType = userType;
-
-
-    await replaceScreen(
-      context,
-      MainLayoutPage(userType: userType),
-    );
-
-    if (!mounted) return;
-    
-    Future.delayed(const Duration(milliseconds: 100), () {
       if (!mounted) return;
-      
-      if (userType == UserType.provider) {
-        context.read<ProviderAuthBloc>()
-          .add(const ProvidergetProviderProfile());
-      } else {
-        context.read<CustomerAuthBloc>()
-          .add(const CustomergetUserProfile());
-      }
-    });
 
-  } on Exception catch (e, s) {
-    log('Splash Error: $e\n$s');
-    if (mounted) {
-      await replaceScreen(context, const IntroScreen());
+      if (!isIntroCompleted) {
+        await replaceScreen(context, const IntroScreen());
+        return;
+      }
+
+      final isGuest = await AuthLocalRepo.instance.getGuestMode();
+      if (isGuest) {
+        dashboardViewModel.userType = UserType.customer;
+        await replaceScreen(
+          context,
+          const MainLayoutPage(userType: UserType.customer),
+        );
+        return;
+      }
+
+      final token = await AuthLocalRepo.instance.getAccessToken();
+      if (token == null) {
+        await replaceScreen(context, const SelectAccountTypeScreen());
+        return;
+      }
+
+      final userTypeStr = await AuthLocalRepo.instance.getUserType();
+      if (userTypeStr == null) {
+        await replaceScreen(context, const SelectAccountTypeScreen());
+        return;
+      }
+
+      final userType =
+          userTypeStr == UserType.provider.value
+              ? UserType.provider
+              : UserType.customer;
+
+      dashboardViewModel.userType = userType;
+
+      await replaceScreen(
+        context,
+        MainLayoutPage(userType: userType),
+      );
+
+      if (!mounted) return;
+
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (!mounted) return;
+
+        if (userType == UserType.provider) {
+          context.read<ProviderAuthBloc>().add(
+            const ProvidergetProviderProfile(),
+          );
+        } else {
+          context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
+        }
+      });
+    } on Exception catch (e, s) {
+      log('Splash Error: $e\n$s');
+      if (mounted) {
+        await replaceScreen(context, const IntroScreen());
+      }
     }
   }
-}
 
+  //   Future<void> _navigateToNext() async {
 
+  //     final userTypeString = await AuthLocalRepo.instance.getUserType();
+  //     final userType =
+  //         userTypeString == UserType.provider.name
+  //             ? UserType.provider
+  //             : UserType.customer;
+  // log('LOCAL STORED USER TYPE = $userType');
+  //     if (userTypeString == null && mounted) {
+  //       await replaceScreen(
+  //         context,
+  //         const SelectAccountTypeScreen(),
+  //       );
+  //       return;
+  //     }
 
-//   Future<void> _navigateToNext() async {
+  //     dashboardViewModel.userType = userType;
 
-//     final userTypeString = await AuthLocalRepo.instance.getUserType();
-//     final userType =
-//         userTypeString == UserType.provider.name
-//             ? UserType.provider
-//             : UserType.customer;
-// log('LOCAL STORED USER TYPE = $userType');
-//     if (userTypeString == null && mounted) {
-//       await replaceScreen(
-//         context,
-//         const SelectAccountTypeScreen(),
-//       );
-//       return;
-//     }
-
-//     dashboardViewModel.userType = userType;
-
-//     await replaceScreen(
-//       context,
-//       MainLayoutPage(userType: userType),
-//     );
-//   }
+  //     await replaceScreen(
+  //       context,
+  //       MainLayoutPage(userType: userType),
+  //     );
+  //   }
 
   @override
   void initState() {

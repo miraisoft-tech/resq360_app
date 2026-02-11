@@ -10,6 +10,7 @@ class DBKeys {
   static const String providerAuthData = 'providerAuthData';
 
   static const String accessTokenKey = 'accessTokenKey';
+  static const String guestModeKey = 'guestModeKey';
 
   static const String emailNotifications = 'emailNotifications';
   static const String pushNotifications = 'pushNotifications';

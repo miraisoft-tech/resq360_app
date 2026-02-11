@@ -146,6 +146,34 @@ class AuthLocalRepo {
     }
   }
 
+  Future<bool> saveGuestMode({required bool isGuest}) async {
+    try {
+      return await pref.saveBool(key: DBKeys.guestModeKey, value: isGuest);
+    } on Exception catch (e) {
+      log(e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> getGuestMode() async {
+    try {
+      final result = await pref.getBool(key: DBKeys.guestModeKey) as bool?;
+      return result ?? false;
+    } on Exception catch (e) {
+      log(e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> clearGuestMode() async {
+    try {
+      return await pref.deleteKey(key: DBKeys.guestModeKey);
+    } on Exception catch (e) {
+      log(e.toString());
+      return false;
+    }
+  }
+
   ////////////Username and Password///////////
 
   Future<bool> storeLocalCredentials({
@@ -182,15 +210,14 @@ class AuthLocalRepo {
   }
 
   Future<int?> getProviderId() async {
-  final provider = await getProviderAuthCredentials();
-  return provider?.id;
-}
+    final provider = await getProviderAuthCredentials();
+    return provider?.id;
+  }
 
-Future<int?> getCustomerId() async {
-  final customer = await getCustomerAuthCredentials();
-  return customer?.id;
-}
-
+  Future<int?> getCustomerId() async {
+    final customer = await getCustomerAuthCredentials();
+    return customer?.id;
+  }
 
   Future<bool> clearLocalCredentials() async {
     try {

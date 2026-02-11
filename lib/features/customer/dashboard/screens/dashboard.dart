@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
@@ -13,6 +17,7 @@ import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widg
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
@@ -27,14 +32,38 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isGuest = false;
+
+  String _guestAddress() {
+    final place = dashboardViewModel.currentPlacemark;
+    if (place == null) return 'Unknown location';
+    final parts =
+        [
+          place.street,
+          place.locality,
+          place.administrativeArea,
+          place.country,
+        ].where((value) => value != null && value.isNotEmpty).toList();
+    return parts.isEmpty ? 'Unknown location' : parts.join(', ');
+  }
+
   @override
   void initState() {
     super.initState();
+    unawaited(_initDashboard());
+  }
+
+  Future<void> _initDashboard() async {
+    final isGuest = await AuthLocalRepo.instance.getGuestMode();
+    if (!mounted) return;
+    setState(() => _isGuest = isGuest);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CustomerAuthBloc>().add(
-        const CustomergetUserProfile(),
-      );
+      if (!_isGuest) {
+        context.read<CustomerAuthBloc>().add(
+          const CustomergetUserProfile(),
+        );
+      }
 
       context.read<ServiceCatalogBloc>().add(const FetchServices());
 
@@ -45,10 +74,18 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<CustomerAdvertisementBloc>().add(
         CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
       );
-      context.read<CustomerBookingBloc>().add(
-        FetchCustomerBookings(status: BookingStatus.ongoing.value),
-      );
+
+      if (!_isGuest) {
+        context.read<CustomerBookingBloc>().add(
+          FetchCustomerBookings(status: BookingStatus.ongoing.value),
+        );
+      }
     });
+  }
+
+  Future<void> _requireLogin() async {
+    await showErrorSnackbar(context, 'Please log in to continue');
+    await pushScreen(context, const LoginScreen());
   }
 
   @override
@@ -76,12 +113,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     builder: (context, v) {
                       final user = v is CustomerProfileLoaded ? v.user : null;
-                      return HeaderWidget(
-                        name: user?.fullName?.capitalize ?? 'N/A',
-                        address: user?.location?.firstOrNull?.address ?? 'N/A',
-                        profileImage: user?.profileImage ?? '',
-                        onTapAddress: () async {
-                          await pushScreen(context, const AddressScreen());
+                      return AnimatedBuilder(
+                        animation: dashboardViewModel,
+                        builder: (context, _) {
+                          return HeaderWidget(
+                            name: user?.fullName?.capitalize ?? 'Friend',
+                            address:
+                                user?.location?.firstOrNull?.address ??
+                                (_isGuest
+                                    ? _guestAddress()
+                                    : 'Unknown location'),
+                            profileImage: user?.profileImage ?? '',
+                            onTapAddress: () async {
+                              if (_isGuest) {
+                                await _requireLogin();
+                                return;
+                              }
+                              await pushScreen(
+                                context,
+                                const AddressScreen(),
+                              );
+                            },
+                          );
                         },
                       );
                     },
@@ -91,12 +144,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   IconButton(
                     icon: AppAssets.ASSETS_ICONS_WALLET_SVG.svg,
                     onPressed: () async {
+                      if (_isGuest) {
+                        await _requireLogin();
+                        return;
+                      }
                       await pushScreen(context, const WalletScreen());
                     },
                   ),
                   IconButton(
                     icon: AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg,
                     onPressed: () async {
+                      if (_isGuest) {
+                        await _requireLogin();
+                        return;
+                      }
                       await pushScreen(context, const NotificationScreen());
                     },
                   ),
@@ -108,9 +169,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: RefreshIndicator(
                 color: colors.primary,
                 onRefresh: () async {
-                  context.read<CustomerAuthBloc>().add(
-                    const CustomergetUserProfile(),
-                  );
+                  if (!_isGuest) {
+                    context.read<CustomerAuthBloc>().add(
+                      const CustomergetUserProfile(),
+                    );
+                  }
 
                   context.read<ServiceCatalogBloc>().add(const FetchServices());
                   context.read<CustomerAdvertisementBloc>().add(
@@ -123,9 +186,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       creatorType: CreatorType.admin.name,
                     ),
                   );
-                  context.read<CustomerBookingBloc>().add(
-                    FetchCustomerBookings(status: BookingStatus.ongoing.value),
-                  );
+                  if (!_isGuest) {
+                    context.read<CustomerBookingBloc>().add(
+                      FetchCustomerBookings(
+                        status: BookingStatus.ongoing.value,
+                      ),
+                    );
+                  }
                 },
                 child: ListView(
                   padding: EdgeInsets.only(

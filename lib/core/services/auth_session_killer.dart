@@ -12,6 +12,7 @@ class AuthSessionKiller {
     await AuthLocalRepo.instance.clearAccessToken();
     await AuthLocalRepo.instance.clearLocalCred();
     await AuthLocalRepo.instance.clearUserType();
+    await AuthLocalRepo.instance.clearGuestMode();
     await ChatSocketService.instance.dispose();
 
     Future.delayed(const Duration(milliseconds: 300), () {

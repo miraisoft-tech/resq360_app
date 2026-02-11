@@ -164,8 +164,9 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         emit(CustomerResetTokenValidatedState());
       } else {
         emit(
-           CustomerAuthFailure(
-            result.error ?? 'Invalid or expired reset token. Please request a new one.',
+          CustomerAuthFailure(
+            result.error ??
+                'Invalid or expired reset token. Please request a new one.',
           ),
         );
       }
@@ -187,7 +188,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         emit(CustomerPasswordResetSuccessState());
       } else {
         emit(
-           CustomerAuthFailure(
+          CustomerAuthFailure(
             result.error ?? 'Password reset failed. Please try again.',
           ),
         );
@@ -297,10 +298,10 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     }
   }
 
-
   Future<bool> _loadAndSaveUserProfile({
     required AuthResponse authResponse,
   }) async {
+    await AuthLocalRepo.instance.saveGuestMode(isGuest: false);
     await AuthLocalRepo.instance.storeAccessToken(
       authResponse.data?.accessToken ?? '',
     );
