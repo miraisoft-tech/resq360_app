@@ -208,7 +208,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           var isActive = false;
           var phone = '';
           var imageurl = '';
-          var status = '';
+          var paymentStatus = '';
+          var serviceStatus = '';
 
           if (state is ChatDetailReady) {
             final chat = state.chat;
@@ -219,12 +220,13 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                     : (chat.user?.phoneNumber ?? '');
             isActive = chat.isActive ?? false;
             imageurl = chat.image ?? '';
-            status = chat.paymentStatus ?? '';
+            paymentStatus = chat.paymentStatus ?? '';
+            serviceStatus = chat.serviceRequestStatus ?? '';
           }
 
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(title, isActive, phone, imageurl, status),
+            appBar: _buildAppBar( title: title, phoneNumber: phone, imageurl: imageurl, serviceStatus: serviceStatus, paymentStatus: paymentStatus, isActive: isActive, ),
             body: SafeArea(
               child: Column(
                 children: [
@@ -372,12 +374,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   }
 
   // Updated _buildAppBar method for ChatDetailScreen
-  PreferredSizeWidget _buildAppBar(
-    String title,
-    bool isActive,
-    String phoneNumber,
-    String imageurl,
-    String status,
+  PreferredSizeWidget _buildAppBar({
+    required String title,
+    required bool isActive,
+    required String phoneNumber,
+    required String imageurl,
+    required String serviceStatus,
+    required String paymentStatus,
+  }
   ) {
     final appColors = context.appColors;
 
@@ -419,7 +423,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         ],
       ),
       actions: [
-        if (status == 'COMPLETED')
+        if (paymentStatus == 'COMPLETED' && serviceStatus == 'ASSIGNED')
           SizedBox(
             width: 35.w,
             child: IconButton(

@@ -6,6 +6,7 @@ import 'package:resq360/core/services/__services.dart';
 import 'package:resq360/core/services/chat_cache_service.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/core/services/upload_service.dart';
+import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 
@@ -34,7 +35,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     on<SendImageMessage>(_onSendImageMessage);
     on<SendDocumentMessage>(_onSendDocumentMessage);
     on<SendLocationMessage>(_onSendLocationMessage);
-     on<ReportChat>(_onReportChat);
+    on<ReportChat>(_onReportChat);
     // on<BlockUser>(_onBlockUser);
   }
 
@@ -284,13 +285,14 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final current = state as ChatDetailReady;
 
+    final maskedForUi = Validators.maskPhoneNumbersInText(event.content);
     final localMessage = MessageResponse(
       id: DateTime.now().millisecondsSinceEpoch * -1,
       chatId: chatId,
       senderType: event.userType,
       senderId: event.senderid,
       messageType: 'TEXT',
-      content: event.content,
+      content: maskedForUi,
       createdAt: DateTime.now(),
     );
 
@@ -422,30 +424,29 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     );
   }
 
+  Future<void> _onReportChat(
+    ReportChat event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    try {
+      final result = await _repo.reportChat(
+        chatId: event.chatId,
+        reason: event.reason,
+      );
 
-Future<void> _onReportChat(
-  ReportChat event,
-  Emitter<ChatDetailState> emit,
-) async {
-  try {
-    final result = await _repo.reportChat(
-      chatId: event.chatId,
-      reason: event.reason,
-    );
-
-    if (result.data ?? false) {
-      emit(const ChatDetailReportSuccess());
-    } else {
-      emit(ChatDetailActionFailure(
-        error: result.error ?? 'Failed to report chat',
-      ));
+      if (result.data ?? false) {
+        emit(const ChatDetailReportSuccess());
+      } else {
+        emit(
+          ChatDetailActionFailure(
+            error: result.error ?? 'Failed to report chat',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(ChatDetailActionFailure(error: e.toString()));
     }
-  } on Exception catch (e) {
-    emit(ChatDetailActionFailure(error: e.toString()));
   }
-}
-
-
 
   /// Save current state to cache before closing
   void _saveToCache() {
@@ -469,105 +470,102 @@ Future<void> _onReportChat(
     return super.close();
   }
 
-Future<void> _onSendImageMessage(
-  SendImageMessage event,
-  Emitter<ChatDetailState> emit,
-) async {
-  if (state is! ChatDetailReady) return;
+  Future<void> _onSendImageMessage(
+    SendImageMessage event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    if (state is! ChatDetailReady) return;
 
-  final current = state as ChatDetailReady;
-  final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
+    final current = state as ChatDetailReady;
+    final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
 
-  final localMessage = MessageResponse(
-    id: localMessageId,
-    chatId: chatId,
-    senderType: event.userType,
-    senderId: event.senderId,
-    messageType: 'TEXT',
-    content: event.caption ?? 'Image',
-    createdAt: DateTime.now(),
-    fileUrl: event.filePaths.first,
-    metadata: MetadataFactories.custom(
-      type: 'IMAGE',
-      data: {
-        'files': event.filePaths, 
-      },
-    ),
-  );
+    final localMessage = MessageResponse(
+      id: localMessageId,
+      chatId: chatId,
+      senderType: event.userType,
+      senderId: event.senderId,
+      messageType: 'TEXT',
+      content: event.caption ?? 'Image',
+      createdAt: DateTime.now(),
+      fileUrl: event.filePaths.first,
+      metadata: MetadataFactories.custom(
+        type: 'IMAGE',
+        data: {
+          'files': event.filePaths,
+        },
+      ),
+    );
 
-  final newMessages = [localMessage, ...current.messages];
-  _cache.updateMessages(chatId: chatId, messages: newMessages);
-  emit(current.copyWith(messages: newMessages));
+    final newMessages = [localMessage, ...current.messages];
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+    emit(current.copyWith(messages: newMessages));
 
+    final uploadResult = await _uploadService.uploadMultiple(
+      files: event.filePaths.map(File.new).toList(),
+    );
 
-  final uploadResult = await _uploadService.uploadMultiple(
-    files: event.filePaths.map(File.new).toList(),
-  );
+    if (uploadResult.data == null) {
+      final latestState = state;
+      if (latestState is! ChatDetailReady) return;
 
-  if (uploadResult.data == null) {
+      final messagesWithoutLocal =
+          latestState.messages.where((m) => m.id != localMessageId).toList();
+      emit(latestState.copyWith(messages: messagesWithoutLocal));
+      return;
+    }
+
+    final uploaded = uploadResult.data!;
+    final uploadedUrls = uploaded.map((e) => e.url).toList();
+
+    final firstFile = File(event.filePaths.first);
+    final stat = await firstFile.length();
+    final fileSizeMB = stat / (1024 * 1024);
+
+    _socket.sendMessage(
+      SendMessageRequest(
+        chatId: chatId,
+        messageType: 'TEXT',
+        content: event.caption ?? 'Image',
+        fileUrl: uploadedUrls.first,
+        fileName: firstFile.path.split('/').last,
+        fileSize: double.parse(fileSizeMB.toStringAsFixed(2)),
+        mimeType: _getMimeType(firstFile.path),
+        metadata: {
+          'type': 'IMAGE',
+          'files': uploadedUrls,
+        },
+      ),
+    );
+
     final latestState = state;
     if (latestState is! ChatDetailReady) return;
 
-    final messagesWithoutLocal =
-        latestState.messages.where((m) => m.id != localMessageId).toList();
-    emit(latestState.copyWith(messages: messagesWithoutLocal));
-    return;
+    final updatedMessages =
+        latestState.messages.map((m) {
+          if (m.id == localMessageId) {
+            return MessageResponse(
+              id: m.id,
+              chatId: m.chatId,
+              senderType: m.senderType,
+              senderId: m.senderId,
+              messageType: m.messageType,
+              content: m.content,
+              createdAt: m.createdAt,
+              fileUrl: uploadedUrls.first,
+              metadata: MetadataFactories.custom(
+                type: 'IMAGE',
+                data: {
+                  'files': uploadedUrls,
+                },
+              ),
+            );
+          }
+          return m;
+        }).toList();
+
+    _cache.updateMessages(chatId: chatId, messages: updatedMessages);
+    emit(latestState.copyWith(messages: updatedMessages));
   }
-
-  final uploaded = uploadResult.data!;
-  final uploadedUrls = uploaded.map((e) => e.url).toList();
-
-
-  final firstFile = File(event.filePaths.first);
-  final stat = await firstFile.length();
-  final fileSizeMB = stat / (1024 * 1024);
-
-  _socket.sendMessage(
-    SendMessageRequest(
-      chatId: chatId,
-      messageType: 'TEXT',
-      content: event.caption ?? 'Image',
-      fileUrl: uploadedUrls.first,
-      fileName: firstFile.path.split('/').last,
-      fileSize: double.parse(fileSizeMB.toStringAsFixed(2)),
-      mimeType: _getMimeType(firstFile.path),
-      metadata: {
-        'type': 'IMAGE',
-        'files': uploadedUrls,
-      },
-    ),
-  );
-
-  final latestState = state;
-  if (latestState is! ChatDetailReady) return;
-
-  final updatedMessages = latestState.messages.map((m) {
-    if (m.id == localMessageId) {
-      return MessageResponse(
-        id: m.id,
-        chatId: m.chatId,
-        senderType: m.senderType,
-        senderId: m.senderId,
-        messageType: m.messageType,
-        content: m.content,
-        createdAt: m.createdAt,
-        fileUrl: uploadedUrls.first,
-        metadata: MetadataFactories.custom(
-          type: 'IMAGE',
-          data: {
-            'files': uploadedUrls,
-          },
-        ),
-      );
-    }
-    return m;
-  }).toList();
-
-  _cache.updateMessages(chatId: chatId, messages: updatedMessages);
-  emit(latestState.copyWith(messages: updatedMessages));
-}
-
-
 
   Future<void> _onSendDocumentMessage(
     SendDocumentMessage event,
@@ -591,10 +589,10 @@ Future<void> _onSendImageMessage(
       createdAt: DateTime.now(),
       fileName: fileName,
       fileUrl: event.filePath,
-      metadata:MetadataFactories.custom(
-      type: 'DOCUMENT',
-      data: {},
-    ),
+      metadata: MetadataFactories.custom(
+        type: 'DOCUMENT',
+        data: {},
+      ),
     );
 
     final newMessages = [localMessage, ...current.messages];
@@ -618,7 +616,6 @@ Future<void> _onSendImageMessage(
 
     final upload = uploadResult.data!;
 
-
     final fileSize = await file.length();
     final fileSizeInMB = (fileSize / (1024 * 1024)).toStringAsFixed(2);
     final mimeType = _getMimeType(file.path);
@@ -632,9 +629,9 @@ Future<void> _onSendImageMessage(
         fileUrl: upload.url,
         fileSize: double.parse(fileSizeInMB),
         mimeType: mimeType,
-        metadata:{
-        'type': 'DOCUMENT',
-      },
+        metadata: {
+          'type': 'DOCUMENT',
+        },
       ),
     );
 
@@ -681,10 +678,10 @@ Future<void> _onSendImageMessage(
       content: event.address,
       createdAt: DateTime.now(),
       metadata: MetadataFactories.location(
-      latitude: event.latitude,
-      longitude: event.longitude,
-      address: event.address,
-    ),
+        latitude: event.latitude,
+        longitude: event.longitude,
+        address: event.address,
+      ),
     );
 
     final newMessages = [localMessage, ...current.messages];
@@ -697,12 +694,12 @@ Future<void> _onSendImageMessage(
         chatId: chatId,
         messageType: 'TEXT',
         content: event.address,
-        metadata:  {
-        'type': 'LOCATION',
-        'latitude': event.latitude,
-        'longitude': event.longitude,
-        'address': event.address,
-      },
+        metadata: {
+          'type': 'LOCATION',
+          'latitude': event.latitude,
+          'longitude': event.longitude,
+          'address': event.address,
+        },
       ),
     );
   }

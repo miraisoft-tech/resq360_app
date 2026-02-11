@@ -1,11 +1,11 @@
 class Validators {
   // Email regex
-  static final RegExp emailRegex =
-      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  static final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
   // Password regex (example: at least 6 chars
-  static final RegExp passwordRegex =
-      RegExp(r'^.{6,}$'); // minimum 6 characters
+  static final RegExp passwordRegex = RegExp(
+    r'^.{6,}$',
+  ); // minimum 6 characters
 
   static String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -34,7 +34,10 @@ class Validators {
     return null;
   }
 
+  static String maskPhoneNumbersInText(String text) {
+    final phoneRegex = RegExp(r'(\+234|234|0)(7|8|9)\d{9}\b');
+    return text.replaceAllMapped(phoneRegex, (match) {
+      return 'xxxxxxxxx';
+    });
+  }
 }
-
-
- 
