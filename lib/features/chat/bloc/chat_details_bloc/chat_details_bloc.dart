@@ -286,8 +286,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     final current = state as ChatDetailReady;
 
     final maskedForUi = Validators.maskPhoneNumbersInText(event.content);
-    log('MASK CHECK -> original: ${event.content} | masked: $maskedForUi');
-
     final localMessage = MessageResponse(
       id: DateTime.now().millisecondsSinceEpoch * -1,
       chatId: chatId,
