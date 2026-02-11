@@ -123,7 +123,7 @@ class _CancelClientServiceScreenState extends State<CancelClientServiceScreen> {
                         ),
                         Expanded(
                           child: GenText(
-                            'Cancellation of service attracts a cancellation charge of ₦3,000.',
+                           'A cancellation of service attracts a 20% cancellation charge',
                             color: appColors.error.shade600,
                             size: 13,
                           ),
@@ -148,6 +148,7 @@ class _CancelClientServiceScreenState extends State<CancelClientServiceScreen> {
                       ],
                     ),
                     5.verticalSpace,
+                    if (isProvider)...[
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -164,6 +165,25 @@ class _CancelClientServiceScreenState extends State<CancelClientServiceScreen> {
                         ),
                       ],
                     ),
+
+                      Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GenText(
+                          '• ',
+                          color: appColors.error.shade600,
+                        ),
+                        Expanded(
+                          child: GenText(
+                            'Service payment will be sent back to the customer',
+                            color: appColors.error.shade600,
+                            size: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    5.verticalSpace,
+                    ]
                   ],
                 ),
               ),

@@ -11,26 +11,26 @@ class CustomerAdvertisementInitial extends CustomerAdvertisementState {}
 
 class CustomerAdvertisementLoading extends CustomerAdvertisementState {}
 
-class CustomerAdvertisementFetched extends CustomerAdvertisementState {
-  const CustomerAdvertisementFetched({
-    this.providerAds = const [],
+class AdminAdvertisementFetched extends CustomerAdvertisementState {
+  const AdminAdvertisementFetched({
+    // this.providerAds = const [],
     this.adminAds = const [],
   });
-  final List<Advertisement> providerAds;
+  // final List<Advertisement> providerAds;
   final List<Advertisement> adminAds;
 
   @override
-  List<Object?> get props => [providerAds, adminAds];
+  List<Object?> get props => [ adminAds];
 }
 
-// class ProviderActiveAdvertisementsFetched extends CustomerAdvertisementState {
-//   const ProviderActiveAdvertisementsFetched({required this.advertisements});
+class ProviderAdvertisementsFetched extends CustomerAdvertisementState {
+  const ProviderAdvertisementsFetched({required this.advertisements});
 
-//   final List<Advertisement> advertisements;
+  final List<Advertisement> advertisements;
 
-//   @override
-//   List<Object?> get props => [advertisements];
-// }
+  @override
+  List<Object?> get props => [advertisements];
+}
 
 // class AdvertisementCreated extends CustomerAdvertisementState {}
 

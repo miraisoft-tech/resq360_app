@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context.read<ServiceCatalogBloc>().add(const FetchServices());
 
       context.read<CustomerAdvertisementBloc>().add(
-        CustomerFetchAdvertisement(creatorType: CreatorType.provider.name),
+        const FetchProviderAdvertisements(),
       );
 
       context.read<CustomerAdvertisementBloc>().add(
@@ -177,10 +177,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   context.read<ServiceCatalogBloc>().add(const FetchServices());
                   context.read<CustomerAdvertisementBloc>().add(
-                    CustomerFetchAdvertisement(
-                      creatorType: CreatorType.provider.name,
-                    ),
+                    const FetchProviderAdvertisements(),
                   );
+
                   context.read<CustomerAdvertisementBloc>().add(
                     CustomerFetchAdvertisement(
                       creatorType: CreatorType.admin.name,
@@ -230,9 +229,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    20.verticalSpace,
+
                     const PromoCardWidget(),
-                    20.verticalSpace,
 
                     BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
                       builder: (context, state) {
@@ -376,8 +374,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             final state =
                                 context.read<CustomerAdvertisementBloc>().state;
 
-                            if (state is CustomerAdvertisementFetched) {
-                              final ads = state.providerAds;
+                            if (state is ProviderAdvertisementsFetched) {
+                              final ads = state.advertisements;
                               await pushScreen(
                                 context,
                                 RecommendedListScreen(
@@ -405,11 +403,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     >(
                       builder: (context, state) {
                         if (state is CustomerAdvertisementLoading) {
-                          return const CircularProgressIndicator();
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: context.appColors.primary,
+                            ),
+                          );
                         }
 
-                        if (state is CustomerAdvertisementFetched) {
-                          final ads = state.providerAds;
+                        if (state is ProviderAdvertisementsFetched) {
+                          final ads = state.advertisements;
 
                           if (ads.isEmpty) {
                             return const Center(
@@ -433,12 +435,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         if (state is CustomerAdvertisementError) {
                           return ErrorMessageAndButton(
-                            error: 'No data currently available.',
+                            error: state.error,
                             onPressed: () {
                               context.read<CustomerAdvertisementBloc>().add(
-                                CustomerFetchAdvertisement(
-                                  creatorType: CreatorType.provider.name,
-                                ),
+                                const FetchProviderAdvertisements(),
                               );
                             },
                           );

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
+import 'package:resq360/core/services/shared_preferences.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement_response.dart';
 
@@ -17,11 +18,52 @@ class AdvertisementRepo extends BaseAPI {
       );
       if (res.statusCode == 200) {
         final json = res.data;
-        final advertisementList = (json?['data'] as List)
-            .map(
-              (item) => Advertisement.fromJson(item as Map<String, dynamic>),
-            )
-            .toList();
+        final advertisementList =
+            (json?['data'] as List)
+                .map(
+                  (item) =>
+                      Advertisement.fromJson(item as Map<String, dynamic>),
+                )
+                .toList();
+        return ApiResult(data: advertisementList);
+      } else {
+        return ApiResult(error: res.data?['message'].toString());
+      }
+    } on DioException catch (e) {
+      final message =
+          e.response?.data?['message'] ?? e.message ?? 'Network error';
+      return ApiResult(error: message.toString());
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<List<Advertisement>>>
+  fetchActiveAdvertisementBasedOnLocation() async {
+    const url = '/advertisements/active/user';
+
+    try {
+      final longitude = await AppLocalPref().getValue(key: 'longitude');
+      final latitude = await AppLocalPref().getValue(key: 'latitude');
+      if (longitude == null ||
+          latitude == null ||
+          longitude.toString().isEmpty ||
+          latitude.toString().isEmpty) {
+        return ApiResult(error: 'Location data not available');
+      }
+      final res = await dio().get<Map<String, dynamic>>(
+        url,
+        queryParameters: {'lng': longitude, 'lat': latitude},
+      );
+      if (res.statusCode == 200) {
+        final json = res.data;
+        final advertisementList =
+            (json?['data'] as List)
+                .map(
+                  (item) =>
+                      Advertisement.fromJson(item as Map<String, dynamic>),
+                )
+                .toList();
         return ApiResult(data: advertisementList);
       } else {
         return ApiResult(error: res.data?['message'].toString());
@@ -56,11 +98,13 @@ class AdvertisementRepo extends BaseAPI {
 
       if (res.statusCode == 200) {
         final json = res.data;
-        final advertisementList = (json?['data'] as List)
-            .map(
-              (item) => Advertisement.fromJson(item as Map<String, dynamic>),
-            )
-            .toList();
+        final advertisementList =
+            (json?['data'] as List)
+                .map(
+                  (item) =>
+                      Advertisement.fromJson(item as Map<String, dynamic>),
+                )
+                .toList();
         return ApiResult(data: advertisementList);
       } else {
         return ApiResult(error: res.data?['message'].toString());
@@ -82,8 +126,9 @@ class AdvertisementRepo extends BaseAPI {
 
       if (res.statusCode == 200) {
         final json = res.data;
-        final advertisement =
-            Advertisement.fromJson(json?['data'] as Map<String, dynamic>);
+        final advertisement = Advertisement.fromJson(
+          json?['data'] as Map<String, dynamic>,
+        );
         return ApiResult(data: advertisement);
       } else {
         return ApiResult(error: res.data?['message'].toString());
@@ -124,7 +169,9 @@ class AdvertisementRepo extends BaseAPI {
       }
     } on DioException catch (e) {
       return ApiResult(
-        error: e.response?.data?['message'] as String? ?? 'Failed to create advertisement',
+        error:
+            e.response?.data?['message'] as String? ??
+            'Failed to create advertisement',
       );
     }
   }
@@ -149,8 +196,9 @@ class AdvertisementRepo extends BaseAPI {
 
       if (res.statusCode == 200) {
         final json = res.data;
-        final advertisement =
-            Advertisement.fromJson(json?['data'] as Map<String, dynamic>);
+        final advertisement = Advertisement.fromJson(
+          json?['data'] as Map<String, dynamic>,
+        );
         return ApiResult(data: advertisement);
       } else {
         return ApiResult(error: res.data?['message'].toString());
@@ -163,6 +211,7 @@ class AdvertisementRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+
   Future<ApiResult<bool>> deleteAdvertisement(int id) async {
     final url = '/advertisements/$id';
 
@@ -244,7 +293,6 @@ class AdvertisementRepo extends BaseAPI {
     }
   }
 
-
   // Convenience methods using the main endpoints
 
   Future<ApiResult<List<Advertisement>>> fetchMyPromotions({
@@ -263,5 +311,4 @@ class AdvertisementRepo extends BaseAPI {
       status: 'APPROVED',
     );
   }
-
 }

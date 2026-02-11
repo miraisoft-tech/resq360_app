@@ -14,7 +14,7 @@ class CustomerAdvertisementBloc
     extends Bloc<CustomerAdvertisementEvent, CustomerAdvertisementState> {
   CustomerAdvertisementBloc() : super(CustomerAdvertisementInitial()) {
     on<CustomerFetchAdvertisement>(_fetchAdvertisement);
-    // on<CreateAdvertisement>(_onCreateAdvertisement);
+    on<FetchProviderAdvertisements>(_fetchProviderActiveAdvertisements);
     // on<FetchAdvertisementPrice>(_onGetAdvertPrice);
     // on<VerifyAdvertisementPayment>(_onVerifyAdvertisementPayment);
     // on<FetchProviderActiveAdvertisements>(_fetchProviderActiveAdvertisements);
@@ -31,30 +31,9 @@ class CustomerAdvertisementBloc
 
       if (result.data != null) {
         final ads = result.data;
-
-        final currentState = state;
-        final existingProviderAds =
-            currentState is CustomerAdvertisementFetched
-                ? currentState.providerAds
-                : <Advertisement>[];
-
-        final existingAdminAds =
-            currentState is CustomerAdvertisementFetched
-                ? currentState.adminAds
-                : <Advertisement>[];
-
-        if (event.creatorType == CreatorType.provider.name) {
-          emit(
-            CustomerAdvertisementFetched(
-              providerAds: ads!,
-              adminAds: existingAdminAds,
-            ),
-          );
-        }
         if (event.creatorType == CreatorType.admin.name) {
           emit(
-            CustomerAdvertisementFetched(
-              providerAds: existingProviderAds,
+            AdminAdvertisementFetched(
               adminAds: ads!,
             ),
           );
@@ -67,30 +46,29 @@ class CustomerAdvertisementBloc
     }
   }
 
-  // Future<void> _fetchProviderActiveAdvertisements(
-  //   FetchProviderActiveAdvertisements event,
-  //   Emitter<CustomerAdvertisementState> emit,
-  // ) async {
-  //   emit(CustomerAdvertisementLoading());
+  Future<void> _fetchProviderActiveAdvertisements(
+    FetchProviderAdvertisements event,
+    Emitter<CustomerAdvertisementState> emit,
+  ) async {
+    emit(CustomerAdvertisementLoading());
 
-  //   try {
-  //     final result = await advertisementRepo.fetchProviderActiveAdvertisements(
-  //       providerId: event.providerId,
-  //     );
+    try {
+      final result =
+          await advertisementRepo.fetchActiveAdvertisementBasedOnLocation();
 
-  //     if (result.data != null) {
-  //       emit(ProviderActiveAdvertisementsFetched(advertisements: result.data!));
-  //     } else {
-  //       emit(
-  //         CustomerAdvertisementError(
-  //           error: result.error ?? 'Failed to fetch advertisements',
-  //         ),
-  //       );
-  //     }
-  //   } on Exception catch (e) {
-  //     emit(CustomerAdvertisementError(error: e.toString()));
-  //   }
-  // }
+      if (result.data != null) {
+        emit(ProviderAdvertisementsFetched(advertisements: result.data!));
+      } else {
+        emit(
+          CustomerAdvertisementError(
+            error: result.error ?? 'Failed to fetch advertisements',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(CustomerAdvertisementError(error: e.toString()));
+    }
+  }
 
   // Future<void> _onCreateAdvertisement(
   //   CreateAdvertisement event,

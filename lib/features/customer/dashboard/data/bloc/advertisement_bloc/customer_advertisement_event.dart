@@ -13,11 +13,9 @@ class CustomerFetchAdvertisement extends CustomerAdvertisementEvent {
   
   final String creatorType;
 }
-// class FetchProviderActiveAdvertisements extends CustomerAdvertisementEvent {
-//   const FetchProviderActiveAdvertisements({required this.providerId});
-
-//   final int providerId;
-// }
+class FetchProviderAdvertisements extends CustomerAdvertisementEvent {
+  const FetchProviderAdvertisements();
+}
 
 
 // class CreateAdvertisement extends CustomerAdvertisementEvent {
