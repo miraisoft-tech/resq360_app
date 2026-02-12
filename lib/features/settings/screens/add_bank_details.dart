@@ -275,18 +275,12 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   GenText(
-                                    'Account Name',
-                                    size: 12,
-                                    color: appColors.textColor.shade400,
-                                  ),
-                                  4.verticalSpace,
-                                  GenText(
                                     selectedAccountName!,
                                     weight: FontWeight.w600,
                                   ),
                                 ],
                               ),
-                              const Icon(Icons.person_outline),
+                               Icon(Icons.person_outline, color: appColors.black,),
                             ],
                           ),
                         ),
