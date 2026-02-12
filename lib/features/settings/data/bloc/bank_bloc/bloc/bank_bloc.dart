@@ -16,6 +16,7 @@ class BankBloc extends Bloc<BankEvent, BankState> {
   BankBloc() : super(BankInitial()) {
     on<BankAddAccount>(_onAddBankAccount);
     on<BankFetchAccounts>(_onFetchBankAccounts);
+    on<BankValidateAccount>(_onValidateBankAccount);
     on<BankSetDefaultAccount>(_onSetDefaultBankAccount);
     on<BankVerifyAndRegisterAccount>(_onVerifyAndRegisterBankAccount);
     on<GetBanks>(_getLocalBanks);
@@ -46,6 +47,32 @@ class BankBloc extends Bloc<BankEvent, BankState> {
       emit(BankFailure(error: '$e'));
     }
   }
+
+  Future<void> _onValidateBankAccount(
+  BankValidateAccount event,
+  Emitter<BankState> emit,
+) async {
+  emit(BankAccountValidating());
+
+  try {
+    final result = await bankRepo.validateBankAccount(
+      accountNumber: event.accountNumber,
+      bankCode: event.bankCode,
+    );
+
+    if (result.isSuccess) {
+      final data = result.data!;
+      final accountName = data['accountName'] as String;
+
+      emit(BankAccountValidated(accountName: accountName));
+    } else {
+      emit(BankFailure(error: result.error!));
+    }
+  } on Exception catch (e) {
+    emit(BankFailure(error: e.toString()));
+  }
+}
+
 
   Future<void> _onFetchBankAccounts(
     BankFetchAccounts event,

@@ -2,8 +2,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
-import 'package:resq360/core/services/base_api.dart';
-import 'package:resq360/core/services/shared_preferences.dart';
+import 'package:resq360/core/services/__services.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 
@@ -106,8 +105,8 @@ class ServiceRepo extends BaseAPI {
     String? search,
     bool nearYou = true,
   }) async {
-    final longitude = await AppLocalPref().getValue(key: 'longitude');
-    final latitude = await AppLocalPref().getValue(key: 'latitude');
+    final longitude = await AppLocalPref().getValue(key: DBKeys.longitude);
+    final latitude = await AppLocalPref().getValue(key: DBKeys.latitude);
   if (longitude == null ||
     latitude == null ||
     longitude.toString().isEmpty ||

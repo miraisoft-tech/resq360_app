@@ -41,6 +41,16 @@ class BankAddAccount extends BankEvent {
       ];
 }
 
+class BankValidateAccount extends BankEvent {
+
+  const BankValidateAccount({
+    required this.accountNumber,
+    required this.bankCode,
+  });
+  final String accountNumber;
+  final String bankCode;
+}
+
 class BankUpdateAccount extends BankEvent {
 
   const BankUpdateAccount({

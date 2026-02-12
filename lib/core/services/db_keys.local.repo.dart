@@ -19,4 +19,8 @@ class DBKeys {
 
   static const String backgroundLocationRequested =
       'backgroundLocationRequested';
+
+  static const String latitude = 'latitude';
+
+  static const String longitude = 'longitude';
 }

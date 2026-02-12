@@ -170,4 +170,32 @@ Future<ApiResult<String>> updateBankAccount({
       throw Exception('Error deleting bank account: $e');
     }
   }
+
+  Future<ApiResult<Map<String, dynamic>>> validateBankAccount({
+  required String accountNumber,
+  required String bankCode,
+}) async {
+  const url = '/bank-account/validate';
+
+  try {
+    final res = await dio().post<Map<String, dynamic>>(
+      url,
+      data: {
+        'accountNumber': accountNumber,
+        'bankCode': bankCode,
+      },
+    );
+
+    if (res.statusCode == 201 && res.data != null) {
+      return ApiResult(data: res.data!['data'] as Map<String, dynamic>);
+    } else {
+      return ApiResult(
+        error: res.data?['message']?.toString() ?? 'Failed to validate account',
+      );
+    }
+  } on Exception catch (e) {
+    return ApiResult(error: e.toString());
+  }
+}
+
 }

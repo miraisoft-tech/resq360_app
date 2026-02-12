@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
 import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/widgets/bank_account_tile.dart';
@@ -15,6 +16,8 @@ class SavedBankAccountsSection extends StatefulWidget {
 }
 
 class _SavedBankAccountsSectionState extends State<SavedBankAccountsSection> {
+  List<BankDetails> _bankAccounts = [];
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +45,11 @@ class _SavedBankAccountsSectionState extends State<SavedBankAccountsSection> {
           );
         }
 
-        if (state is BankAccountsFetched && state.bankAcounts.isEmpty) {
+        
+        if (state is BankAccountsFetched && state.bankAcounts.isNotEmpty) {
+          _bankAccounts = state.bankAcounts;
+        }
+        if (_bankAccounts.isEmpty) {
           return Column(
             children: [
               Center(
@@ -78,82 +85,78 @@ class _SavedBankAccountsSectionState extends State<SavedBankAccountsSection> {
             ],
           );
         }
-        if (state is BankAccountsFetched && state.bankAcounts.isNotEmpty) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GenText(
-                'Your Saved Bank Accounts',
-                color: appColors.textColor.shade700,
-                weight: FontWeight.w600,
-              ),
-              const SizedBox(height: 10),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GenText(
+              'Your Saved Bank Accounts',
+              color: appColors.textColor.shade700,
+              weight: FontWeight.w600,
+            ),
+            const SizedBox(height: 10),
 
-              ...state.bankAcounts.map(
-                (acc) => Dismissible(
-                  key: ValueKey(acc.id),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: appColors.error.shade500,
-                    ),
-                    child: Icon(Icons.delete, color: appColors.whiteColor),
+            ..._bankAccounts.map(
+              (acc) => Dismissible(
+                key: ValueKey(acc.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: appColors.error.shade500,
                   ),
-                  confirmDismiss: (_) async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder:
-                          (_) => AlertDialog(
-                            backgroundColor: appColors.whiteColor,
-                            title: GenText(
-                              'Delete Bank Account',
-                              color: appColors.textColor.shade700,
-                              weight: FontWeight.w600,
-                            ),
-                            content: GenText(
-                              'Are you sure you want to delete this bank account?',
-                              color: appColors.textColor.shade700,
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    color: appColors.darkGreyColor,
-                                  ),
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: Text(
-                                  'Delete',
-                                  style: TextStyle(
-                                    color: appColors.error,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                    );
-                    return confirmed ?? false;
-                  },
-                  onDismissed: (_) {
-                    context.read<BankBloc>().add(
-                      DeleteBankAccount(bankAccountId: acc.id!),
-                    );
-                  },
-                  child: BankAccountTile(bank: acc),
+                  child: Icon(Icons.delete, color: appColors.whiteColor),
                 ),
+                confirmDismiss: (_) async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder:
+                        (_) => AlertDialog(
+                          backgroundColor: appColors.whiteColor,
+                          title: GenText(
+                            'Delete Bank Account',
+                            color: appColors.textColor.shade700,
+                            weight: FontWeight.w600,
+                          ),
+                          content: GenText(
+                            'Are you sure you want to delete this bank account?',
+                            color: appColors.textColor.shade700,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: appColors.darkGreyColor,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: Text(
+                                'Delete',
+                                style: TextStyle(
+                                  color: appColors.error,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                  );
+                  return confirmed ?? false;
+                },
+                onDismissed: (_) {
+                  context.read<BankBloc>().add(
+                    DeleteBankAccount(bankAccountId: acc.id!),
+                  );
+                },
+                child: BankAccountTile(bank: acc),
               ),
-            ],
-          );
-        }
-
-        return const SizedBox.shrink();
+            ),
+          ],
+        );
       },
     );
   }

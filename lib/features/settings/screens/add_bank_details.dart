@@ -16,6 +16,10 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
   final nameController = TextEditingController();
   final cardNumberController = TextEditingController();
 
+  String? selectedAccountName; // what user picked
+  String? suggestedAccountName;
+  bool isValidating = false;
+
   final ValueNotifier<String?> _selectBank = ValueNotifier(null);
 
   List<BankModel> bankList = [];
@@ -31,8 +35,8 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
 
   bool _isFormValid() {
     return _selectBank.value != null &&
-        nameController.text.trim().isNotEmpty &&
-        accountNumberController.text.trim().isNotEmpty;
+        accountNumberController.text.trim().length == 10 &&
+        nameController.text.trim().isNotEmpty;
   }
 
   @override
@@ -105,7 +109,24 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
             );
           }
 
+          if (state is BankAccountValidating) {
+            setState(() {
+              isValidating = true;
+            });
+          }
+
+          if (state is BankAccountValidated) {
+            setState(() {
+              isValidating = false;
+              suggestedAccountName = state.accountName;
+            });
+          }
           if (state is BankFailure) {
+            setState(() {
+              isValidating = false;
+              suggestedAccountName = null;
+              nameController.clear();
+            });
             context.read<BankBloc>().add(BankFetchAccounts());
             await showErrorSnackbar(
               context,
@@ -143,25 +164,88 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                       ),
 
                       16.verticalSpace,
-                      KFormField(
-                        label: 'Account Name',
-                        controller: nameController,
-                        hintText: 'Enter Your Account Name',
-                        keyboardType: TextInputType.text,
-                        onChanged: (value) {
-                          setState(() {});
-                        },
-                      ),
-                      16.verticalSpace,
+
                       KFormField(
                         label: 'Account Number',
                         controller: accountNumberController,
                         hintText: 'Enter Account Number',
                         keyboardType: TextInputType.number,
                         onChanged: (value) {
-                          setState(() {});
+                          setState(() {
+                            suggestedAccountName =
+                                null; // reset suggestion if user edits
+                            selectedAccountName = null;
+                            nameController.clear();
+                          });
+
+                          // Nigerian account numbers are 10 digits
+                          if (value?.trim().length == 10 &&
+                              _selectBank.value != null) {
+                            final bankCode = _getBankCodeFromList(
+                              bankList,
+                              _selectBank.value,
+                            );
+
+                            if (bankCode != null && value != null) {
+                              context.read<BankBloc>().add(
+                                BankValidateAccount(
+                                  accountNumber: value,
+                                  bankCode: bankCode,
+                                ),
+                              );
+                            }
+                          }
                         },
                       ),
+
+                      16.verticalSpace,
+
+                      if (isValidating) ...[
+                        8.verticalSpace,
+                        LinearProgressIndicator(color: appColors.primary.shade200,),
+                         8.verticalSpace,
+                      ],
+
+                      if (suggestedAccountName != null) ...[
+                        8.verticalSpace,
+                        Material(
+                          elevation: 2,
+                          borderRadius: BorderRadius.circular(8),
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedAccountName = suggestedAccountName;
+                                nameController.text = suggestedAccountName!;
+
+                                suggestedAccountName = null;
+                                isValidating = false;
+                              });
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: pad(both: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: appColors.whiteColor,
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.person_outline),
+                                  8.horizontalSpace,
+                                  Expanded(
+                                    child: GenText(
+                                      suggestedAccountName!,
+                                      weight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const Icon(Icons.arrow_forward_ios, size: 14),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+
                       // 16.verticalSpace,
                       // KFormField(
                       //   label: 'Card Number',
@@ -172,7 +256,42 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                       //     setState(() {});
                       //   },
                       // ),
-                      20.verticalSpace,
+                      if (selectedAccountName != null) ...[
+                        16.verticalSpace,
+                        Container(
+                          padding: pad(vertical: 12, horizontal: 12),
+                          margin: pad(vertical: 4),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: appColors.lightGreyColor3,
+                            ),
+                            color: appColors.primary.shade50,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  GenText(
+                                    'Account Name',
+                                    size: 12,
+                                    color: appColors.textColor.shade400,
+                                  ),
+                                  4.verticalSpace,
+                                  GenText(
+                                    selectedAccountName!,
+                                    weight: FontWeight.w600,
+                                  ),
+                                ],
+                              ),
+                              const Icon(Icons.person_outline),
+                            ],
+                          ),
+                        ),
+                      ],
+
                       Row(
                         children: [
                           Icon(

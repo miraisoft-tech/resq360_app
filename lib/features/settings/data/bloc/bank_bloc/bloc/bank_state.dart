@@ -13,6 +13,15 @@ final class BankLoading extends BankState{}
 final class LocalBanksLoading extends BankState{}
 
 final class BankAccountAdded extends BankState{}
+
+class BankAccountValidating extends BankState {}
+
+class BankAccountValidated extends BankState {
+
+  const BankAccountValidated({required this.accountName});
+  final String accountName;
+}
+
 final class BankAccountsFetched extends BankState{
   const BankAccountsFetched({required this.bankAcounts});
 
