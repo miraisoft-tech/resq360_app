@@ -16,7 +16,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
   final nameController = TextEditingController();
   final cardNumberController = TextEditingController();
 
-  String? selectedAccountName; // what user picked
+  String? selectedAccountName;
   String? suggestedAccountName;
   bool isValidating = false;
 
@@ -246,18 +246,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                         ),
                       ],
 
-                      // 16.verticalSpace,
-                      // KFormField(
-                      //   label: 'Card Number',
-                      //   controller: cardNumberController,
-                      //   hintText: '1234 5678 8123 4567',
-                      //   keyboardType: TextInputType.number,
-                      //   onChanged: (value) {
-                      //     setState(() {});
-                      //   },
-                      // ),
                       if (selectedAccountName != null) ...[
-                        16.verticalSpace,
                         Container(
                           padding: pad(vertical: 12, horizontal: 12),
                           margin: pad(vertical: 4),
@@ -285,7 +274,7 @@ class _AddBankDetailsScreenState extends State<AddBankDetailsScreen> {
                           ),
                         ),
                       ],
-
+                      16.verticalSpace,
                       Row(
                         children: [
                           Icon(

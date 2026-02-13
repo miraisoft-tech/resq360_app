@@ -1,7 +1,5 @@
-import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
 import 'package:resq360/features/settings/data/models/banks_model.dart';
@@ -175,42 +173,33 @@ class BankBloc extends Bloc<BankEvent, BankState> {
     }
   }
 
-  Future<void> _getLocalBanks(
-    GetBanks event,
-    Emitter<BankState> emit,
-  ) async {
-    final tempBankList = <BankModel>[];
-    emit(LocalBanksLoading());
-    try {
-      final jsonString = await rootBundle.loadString(
-        'assets/json/banks_list.json',
-      );
-      final json = jsonDecode(jsonString);
+Future<void> _getLocalBanks(
+  GetBanks event,
+  Emitter<BankState> emit,
+) async {
+  emit(LocalBanksLoading());
 
-      if (json == null || json is! List) {
-        emit(LocalBanksFetched(tempBankList));
-        return;
-      }
+  try {
+    final result = await bankRepo.fetchBanksFromServer();
 
-      final banksListJson = json;
-      log('banks ${banksListJson.length}');
+    if (result.isSuccess) {
+      final banks = result.data ?? []
 
-      for (final item in banksListJson) {
-        if (item is Map<String, dynamic>) {
-          tempBankList.add(BankModel.fromJson(item));
-        }
-      }
-
-      tempBankList.sort((a, b) {
+      ..sort((a, b) {
         final nameA = a.name ?? '';
         final nameB = b.name ?? '';
         return nameA.compareTo(nameB);
       });
 
-      emit(LocalBanksFetched(tempBankList));
-    } on Exception catch (e) {
-      log('Error loading states: $e');
-      emit(LocalBanksFetched(tempBankList));
+      emit(LocalBanksFetched(banks));
+    } else {
+      emit(const LocalBanksFetched([]));
+      emit(BankFailure(error: result.error ?? 'Failed to fetch banks'));
     }
+  } on Exception catch (e) {
+    emit(const LocalBanksFetched([]));
+    emit(BankFailure(error: e.toString()));
   }
+}
+
 }

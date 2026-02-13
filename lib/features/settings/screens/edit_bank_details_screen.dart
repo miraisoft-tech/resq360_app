@@ -34,41 +34,38 @@ class _EditBankDetailScreenState extends State<EditBankDetailScreen> {
 
     return AppScaffold(
       title: 'Edit Bank Details',
-      body: Padding(
-        padding: pad(horizontal: 20, vertical: 20),
-        child: Column(
-          children: [
-            KFormField(
-              label: 'Account Name',
-              controller: nameCtrl,
-              hintText: 'Enter account name',
-            ),
-            16.verticalSpace,
-            KFormField(
-              label: 'Account Number',
-              controller: numberCtrl,
-              hintText: 'Enter account number',
-            ),
-            16.verticalSpace,
-            BlocBuilder<BankBloc, BankState>(
-              builder: (context, state) {
-                return WideButton(
-                  label: 'Save Changes',
-                  loading: state is BankLoading,
-                  onPressed: () {
-                    context.read<BankBloc>().add(
-                      BankUpdateAccount(
-                        id: widget.bank.id!,
-                        accountName: nameCtrl.text.trim(),
-                        accountNumber: numberCtrl.text.trim(),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+      body: Column(
+        children: [
+          KFormField(
+            label: 'Account Name',
+            controller: nameCtrl,
+            hintText: 'Enter account name',
+          ),
+          16.verticalSpace,
+          KFormField(
+            label: 'Account Number',
+            controller: numberCtrl,
+            hintText: 'Enter account number',
+          ),
+          16.verticalSpace,
+          BlocBuilder<BankBloc, BankState>(
+            builder: (context, state) {
+              return WideButton(
+                label: 'Save Changes',
+                loading: state is BankLoading,
+                onPressed: () {
+                  context.read<BankBloc>().add(
+                    BankUpdateAccount(
+                      id: widget.bank.id!,
+                      accountName: nameCtrl.text.trim(),
+                      accountNumber: numberCtrl.text.trim(),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
     );
   }

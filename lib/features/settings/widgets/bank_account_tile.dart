@@ -1,7 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bank/bank_details.model.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
-import 'package:resq360/features/settings/screens/edit_bank_details_screen.dart';
 
 
 class BankAccountTile extends StatelessWidget {
@@ -16,9 +15,9 @@ class BankAccountTile extends StatelessWidget {
     final appColors = context.appColors;
 
     return GestureDetector(
-      onTap: () async {
-       await pushScreen(context, EditBankDetailScreen(bank: bank));
-      },
+      // onTap: () async {
+      //  await pushScreen(context, EditBankDetailScreen(bank: bank));
+      // },
       child: Container(
         padding: pad(vertical: 12, horizontal: 12),
         margin: pad(vertical: 4),
