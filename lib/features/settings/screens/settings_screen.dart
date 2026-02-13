@@ -361,7 +361,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (context, authState) {
                   if (authState is ProviderProfileLoadedState) {
                     final status = authState.user.activityStatus ?? 'UNKNOWN';
+                    final normalizedStatus = status.toLowerCase();
                     final isOnline = status.toLowerCase() == 'online';
+                    final canToggle =
+                        normalizedStatus == 'online' ||
+                        normalizedStatus == 'offline';
 
                     return BlocBuilder<ProfileUpdateBloc, ProfileUpdateState>(
                       builder: (context, updateState) {
@@ -372,9 +376,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             GestureDetector(
                               onTap: () async {
+                                final status =
+                                    authState.user.activityStatus
+                                        ?.toUpperCase() ??
+                                    'UNKNOWN';
+
                                 await GeneralDialogs.showCustomDialog<void>(
                                   context,
                                   body: AccountStatusDialog(
+                                    currentStatus: status,
                                     onTap: () async {
                                       Navigator.pop(context);
                                       await pushScreen(
@@ -419,13 +429,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   isLoading
                                       ? appColors.textColor.shade100
                                       : appColors.textColor.shade200,
-                              onChanged: ({required value}) {
-                                final newStatus = value ? 'online' : 'offline';
+                              onChanged:
+                                  canToggle && !isLoading
+                                      ? ({required value}) {
+                                        final newStatus =
+                                            value ? 'online' : 'offline';
 
-                                context.read<ProfileUpdateBloc>().add(
-                                  UpdateActivityStatusEvent(newStatus),
-                                );
-                              },
+                                        context.read<ProfileUpdateBloc>().add(
+                                          UpdateActivityStatusEvent(newStatus),
+                                        );
+                                      }
+                                      : null,
                             ),
                           ],
                         );
@@ -537,7 +551,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             20.verticalSpace,
-                        Divider(
+            Divider(
               height: 5,
               color: appColors.textColor.shade100,
             ),
@@ -600,7 +614,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             //   ),
             // ),
             20.verticalSpace,
-                        Divider(
+            Divider(
               height: 5,
               color: appColors.textColor.shade100,
             ),
