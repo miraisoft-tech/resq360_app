@@ -225,7 +225,7 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-    Future<ApiResult<bool>> reportChat({
+  Future<ApiResult<bool>> blockChat({
     required int chatId,
     required String reason,
   }) async {
@@ -237,17 +237,18 @@ class ChatRepo extends BaseAPI {
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        log('Chat $chatId reported successfully');
+        log('Chat $chatId blocked successfully');
         return ApiResult(data: true);
       } else {
         return ApiResult(
-          error: response.data?['message'].toString() ?? 'Failed to report chat',
+          error:
+              response.data?['message'].toString() ?? 'Failed to blocked chat',
         );
       }
     } on DioException catch (e) {
       return handleDioError(e);
     } on Exception catch (e) {
-      log('Report chat failed: $e');
+      log('Block chat failed: $e');
       return ApiResult(error: e.toString());
     }
   }

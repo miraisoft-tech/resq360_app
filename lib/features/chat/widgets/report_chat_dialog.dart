@@ -68,7 +68,7 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
                 12.horizontalSpace,
                 Expanded(
                   child: GenText(
-                    'Report Chat',
+                    'Block Chat',
                     size: 20,
                     weight: FontWeight.w600,
                     color: appColors.black,
@@ -85,7 +85,7 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
             ),
             16.verticalSpace,
             GenText(
-              'Please select a reason for reporting this chat with "${widget.chatTitle}"',
+              'Please select a reason for blocking this chat with "${widget.chatTitle}"',
               color: appColors.neutral.shade700,
             ),
             24.verticalSpace,
@@ -190,7 +190,7 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
                 16.horizontalSpace,
                 Expanded(
                   child: WideButton(
-                    label: 'Report',
+                    label: 'Block',
                     onPressed: canSubmit ? _handleSubmit : null,
                   ),
                 ),

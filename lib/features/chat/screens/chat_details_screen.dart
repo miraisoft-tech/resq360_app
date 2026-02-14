@@ -226,7 +226,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar( title: title, phoneNumber: phone, imageurl: imageurl, serviceStatus: serviceStatus, paymentStatus: paymentStatus, isActive: isActive, ),
+            appBar: _buildAppBar(
+              title: title,
+              phoneNumber: phone,
+              imageurl: imageurl,
+              serviceStatus: serviceStatus,
+              paymentStatus: paymentStatus,
+              isActive: isActive,
+            ),
             body: SafeArea(
               child: Column(
                 children: [
@@ -381,8 +388,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     required String imageurl,
     required String serviceStatus,
     required String paymentStatus,
-  }
-  ) {
+  }) {
     final appColors = context.appColors;
 
     return AppBar(
@@ -455,9 +461,13 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                         size: 20.sp,
                       ),
                       12.horizontalSpace,
-                      GenText(
-                        'Report Chat',
-                        color: appColors.neutral.shade900,
+                      SizedBox(
+                        width: 200,
+                        child: GenText(
+                          'Block $title',
+                          color: appColors.neutral.shade900,
+                          maxLines: 1,
+                        ),
                       ),
                     ],
                   ),
@@ -853,7 +863,11 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     );
 
     if (reported ?? false) {
-      await showSuccessSnackbar(context, 'Chat reported successfully');
+      unawaited(pop(context));
+
+      context.read<ChatListBloc>().add(RefreshChatList());
+
+      await showSuccessSnackbar(context, 'Chat blocked successfully');
     }
   }
 }

@@ -35,7 +35,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     on<SendImageMessage>(_onSendImageMessage);
     on<SendDocumentMessage>(_onSendDocumentMessage);
     on<SendLocationMessage>(_onSendLocationMessage);
-    on<ReportChat>(_onReportChat);
+    on<ReportChat>(_onBlockChat);
     // on<BlockUser>(_onBlockUser);
   }
 
@@ -424,12 +424,12 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     );
   }
 
-  Future<void> _onReportChat(
+  Future<void> _onBlockChat(
     ReportChat event,
     Emitter<ChatDetailState> emit,
   ) async {
     try {
-      final result = await _repo.reportChat(
+      final result = await _repo.blockChat(
         chatId: event.chatId,
         reason: event.reason,
       );
@@ -439,7 +439,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       } else {
         emit(
           ChatDetailActionFailure(
-            error: result.error ?? 'Failed to report chat',
+            error: result.error ?? 'Failed to block chat',
           ),
         );
       }
