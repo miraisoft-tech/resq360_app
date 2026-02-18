@@ -1,29 +1,13 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 
-class ReportChatDialog extends StatefulWidget {
-  const ReportChatDialog({
-    required this.chatId,
-    required this.chatTitle,
-    this.returnSelectedReason = false,
-    this.dialogTitle,
-    this.description,
-    this.submitLabel,
-    super.key,
-  });
-
-  final int chatId;
-  final String chatTitle;
-  final bool returnSelectedReason;
-  final String? dialogTitle;
-  final String? description;
-  final String? submitLabel;
+class ReportMessageDialog extends StatefulWidget {
+  const ReportMessageDialog({super.key});
 
   @override
-  State<ReportChatDialog> createState() => _ReportChatDialogState();
+  State<ReportMessageDialog> createState() => _ReportMessageDialogState();
 }
 
-class _ReportChatDialogState extends State<ReportChatDialog> {
+class _ReportMessageDialogState extends State<ReportMessageDialog> {
   String? selectedReason;
   final TextEditingController _customReasonController = TextEditingController();
 
@@ -32,8 +16,7 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
     'Inappropriate content',
     'Harassment or bullying',
     'Scam or fraud',
-    'Fake profile',
-    'Poor service quality',
+    'Hate speech',
     'Other',
   ];
 
@@ -69,14 +52,14 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
             Row(
               children: [
                 Icon(
-                  Icons.report_outlined,
+                  Icons.flag_outlined,
                   color: appColors.error.shade600,
                   size: 24.sp,
                 ),
                 12.horizontalSpace,
                 Expanded(
                   child: GenText(
-                    widget.dialogTitle ?? 'Block Chat',
+                    'Report Message',
                     size: 20,
                     weight: FontWeight.w600,
                     color: appColors.black,
@@ -93,8 +76,7 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
             ),
             16.verticalSpace,
             GenText(
-              widget.description ??
-                  'Please select a reason for blocking this chat with "${widget.chatTitle}"',
+              'Please select a reason for reporting this message.',
               color: appColors.neutral.shade700,
             ),
             24.verticalSpace,
@@ -183,7 +165,7 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
             Padding(
               padding: pad(vertical: 12),
               child: GenText(
-                'They will no longer be able to contact you.',
+                'This message will be sent for moderation review.',
                 color: appColors.error,
                 size: 10,
               ),
@@ -199,7 +181,7 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
                 16.horizontalSpace,
                 Expanded(
                   child: WideButton(
-                    label: widget.submitLabel ?? 'Block',
+                    label: 'Report',
                     onPressed: canSubmit ? _handleSubmit : null,
                   ),
                 ),
@@ -217,18 +199,6 @@ class _ReportChatDialogState extends State<ReportChatDialog> {
             ? _customReasonController.text.trim()
             : selectedReason!;
 
-    if (widget.returnSelectedReason) {
-      Navigator.pop(context, reason);
-      return;
-    }
-
-    context.read<ChatDetailBloc>().add(
-      ReportChat(
-        chatId: widget.chatId,
-        reason: reason,
-      ),
-    );
-
-    Navigator.pop(context, true);
+    Navigator.pop(context, reason);
   }
 }

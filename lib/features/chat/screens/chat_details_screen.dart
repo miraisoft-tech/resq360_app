@@ -8,6 +8,7 @@ import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/generate_invoice.dialog.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/chat/screens/service_detail_screen.dart';
@@ -18,6 +19,7 @@ import 'package:resq360/features/chat/widgets/chat_location_bubble.dart';
 import 'package:resq360/features/chat/widgets/multi_image_chat_bubble.dart';
 import 'package:resq360/features/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/chat/widgets/report_chat_dialog.dart';
+import 'package:resq360/features/chat/widgets/report_message_dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
@@ -93,6 +95,7 @@ class _ChatDetailView extends StatefulWidget {
 
 class _ChatDetailViewState extends State<_ChatDetailView> {
   final ScrollController _scrollController = ScrollController();
+  final ChatRepo _chatRepo = ChatRepo();
 
   bool get isCustomer => widget.userType == UserType.customer;
   bool get isProvider => widget.userType == UserType.provider;
@@ -113,6 +116,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
   // Provider-specific state
   bool canShowServiceDetails = false;
+  bool _isModeratingMessage = false;
 
   bool _isAtBottom() {
     if (!_scrollController.hasClients) return false;
@@ -168,15 +172,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         _requestLoadMore();
       }
     });
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   if (!mounted) return;
-    //   if (isCustomer) {
-    //     await CustomerAuthProvider.instance.init();
-    //   } else {
-    //     await ProviderAuthProvider.instance.init();
-    //   }
-    // });
   }
 
   @override
@@ -359,6 +354,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             isLoadingMore: state.isLoadingMore,
             hasMoreMessages: state.hasMoreMessages,
             userType: widget.userType,
+            onMessageLongPress:
+                (message) => _onMessageLongPress(message, state.chat),
           ),
           if (_showJumpButton)
             Positioned(
@@ -870,6 +867,143 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       await showSuccessSnackbar(context, 'Chat blocked successfully');
     }
   }
+
+  Future<void> _onMessageLongPress(
+    MessageResponse message,
+    ChatResponse chat,
+  ) async {
+    if (message.id == null || _isModeratingMessage) return;
+
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: context.appColors.whiteColor,
+      builder: (sheetContext) {
+        final appColors = sheetContext.appColors;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.report_outlined,
+                  color: appColors.error.shade600,
+                ),
+                title: const GenText('Report message'),
+                onTap: () => Navigator.pop(sheetContext, 'report'),
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.gpp_bad_outlined,
+                  color: appColors.error.shade700,
+                ),
+                title: const GenText('Report and block user'),
+                onTap: () => Navigator.pop(sheetContext, 'report_block'),
+              ),
+              12.verticalSpace,
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted || action == null) return;
+
+    final shouldBlock = action == 'report_block';
+    final reason =
+        shouldBlock
+            ? await _showReportAndBlockDialog(chat)
+            : await _showMessageReportReasonDialog();
+    if (!mounted || reason == null || reason.isEmpty) return;
+
+    await _reportMessage(
+      chatId: chat.id,
+      messageId: message.id!,
+      reason: reason,
+      shouldBlock: shouldBlock,
+    );
+  }
+
+  Future<String?> _showMessageReportReasonDialog() async {
+    return GeneralDialogs.showCustomDialog<String>(
+      context,
+      body: const ReportMessageDialog(),
+    );
+  }
+
+  Future<String?> _showReportAndBlockDialog(ChatResponse chat) {
+    final chatId = chat.id;
+    if (chatId == null) return Future.value();
+
+    return GeneralDialogs.showCustomDialog<String>(
+      context,
+      body: ReportChatDialog(
+        chatId: chatId,
+        chatTitle: chat.title ?? 'Chat',
+        returnSelectedReason: true,
+        dialogTitle: 'Report and Block',
+        submitLabel: 'Continue',
+      ),
+    );
+  }
+
+  Future<void> _reportMessage({
+    required int? chatId,
+    required int messageId,
+    required String reason,
+    required bool shouldBlock,
+  }) async {
+    setState(() => _isModeratingMessage = true);
+
+    try {
+      final reportResult = await _chatRepo.reportMessage(
+        messageId: messageId,
+        reason: reason,
+      );
+
+      if (!mounted) return;
+
+      if (!(reportResult.data ?? false)) {
+        await showErrorSnackbar(
+          context,
+          reportResult.error ?? 'Failed to report message',
+        );
+        return;
+      }
+
+      var blockSucceeded = false;
+      if (shouldBlock && chatId != null) {
+        final blockResult = await _chatRepo.blockChat(
+          chatId: chatId,
+          reason: reason,
+        );
+
+        if (!mounted) return;
+        blockSucceeded = blockResult.data ?? false;
+
+        if (!blockSucceeded) {
+          await showErrorSnackbar(
+            context,
+            blockResult.error ?? 'Message reported, but failed to block user',
+          );
+        }
+      }
+
+      context.read<ChatDetailBloc>().add(RefreshMessages());
+
+      await showSuccessSnackbar(
+        context,
+        shouldBlock
+            ? (blockSucceeded
+                ? 'Message reported and user blocked successfully'
+                : 'Message reported successfully')
+            : 'Message reported successfully',
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isModeratingMessage = false);
+      }
+    }
+  }
 }
 
 class _MessageList extends StatelessWidget {
@@ -881,6 +1015,7 @@ class _MessageList extends StatelessWidget {
     required this.isLoadingMore,
     required this.hasMoreMessages,
     required this.userType,
+    this.onMessageLongPress,
   });
 
   final ScrollController controller;
@@ -890,6 +1025,7 @@ class _MessageList extends StatelessWidget {
   final bool isLoadingMore;
   final bool hasMoreMessages;
   final UserType userType;
+  final Future<void> Function(MessageResponse message)? onMessageLongPress;
 
   bool get isCustomer => userType == UserType.customer;
   bool get isProvider => userType == UserType.provider;
@@ -925,7 +1061,14 @@ class _MessageList extends StatelessWidget {
             message.id ?? message.createdAt?.millisecondsSinceEpoch,
           ),
           padding: EdgeInsets.only(bottom: 15.h),
-          child: _buildMessageWidget(context, message, isMine, time),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onLongPress:
+                (!isMine && message.id != null && onMessageLongPress != null)
+                    ? () => unawaited(onMessageLongPress!(message))
+                    : null,
+            child: _buildMessageWidget(context, message, isMine, time),
+          ),
         );
       },
     );
@@ -937,6 +1080,10 @@ class _MessageList extends StatelessWidget {
     bool isMine,
     String time,
   ) {
+    if (message.isReported ?? false) {
+      return _buildReportedMessageNotice(context, isMine, time);
+    }
+
     final type = message.messageType?.toUpperCase() ?? 'TEXT';
     final metaType = message.metadata?.type?.toUpperCase();
 
@@ -1002,6 +1149,63 @@ class _MessageList extends StatelessWidget {
           time: time,
         );
     }
+  }
+
+  Widget _buildReportedMessageNotice(
+    BuildContext context,
+    bool isMine,
+    String time,
+  ) {
+    final appColors = context.appColors;
+
+    return Align(
+      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin:
+            isMine ? EdgeInsets.only(left: 30.w) : EdgeInsets.only(right: 30.w),
+        padding: pad(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color:
+              isMine ? appColors.primary.shade50 : appColors.neutral.shade100,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color:
+                isMine
+                    ? appColors.primary.shade200
+                    : appColors.neutral.shade300,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.shield_outlined,
+              size: 16.sp,
+              color: appColors.primary.shade600,
+            ),
+            8.horizontalSpace,
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GenText(
+                    'Message under review',
+                    weight: FontWeight.w600,
+                    color: appColors.neutral.shade900,
+                  ),
+                  2.verticalSpace,
+                  GenText(
+                    time,
+                    size: 12,
+                    color: appColors.neutral.shade500,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildInvoiceCard(BuildContext context, MessageResponse message) {

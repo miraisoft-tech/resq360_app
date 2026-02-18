@@ -252,4 +252,30 @@ class ChatRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+
+  Future<ApiResult<bool>> reportMessage({
+    required int messageId,
+    required String reason,
+  }) async {
+    final url = '/chat/message/$messageId/report';
+    try {
+      final response = await dio().post<Map<String, dynamic>>(
+        url,
+        data: {'reason': reason},
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return ApiResult(data: true);
+      }
+
+      return ApiResult(
+        error:
+            response.data?['message'].toString() ?? 'Failed to report message',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
 }
