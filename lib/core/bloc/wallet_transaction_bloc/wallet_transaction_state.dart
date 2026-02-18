@@ -45,3 +45,16 @@ class WalletTransactionsError extends WalletTransactionsState {
   @override
   List<Object?> get props => [error];
 }
+
+class WithdrawalProcessing extends WalletTransactionsState {}
+
+class WithdrawalSuccess extends WalletTransactionsState {
+
+  const WithdrawalSuccess(this.payout);
+  final PayoutResponse payout;
+}
+
+class WithdrawalFailure extends WalletTransactionsState {
+  const WithdrawalFailure(this.error);
+  final String error;
+}

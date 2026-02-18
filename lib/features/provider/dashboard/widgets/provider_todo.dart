@@ -1,5 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/settings/screens/settings_screen.dart';
+import 'package:resq360/features/settings/screens/update_service_screen.dart';
 
 class ToDoSection extends StatelessWidget {
   const ToDoSection({required this.provider, super.key});
@@ -19,6 +21,14 @@ class ToDoSection extends StatelessWidget {
     final profileImageMissing =
         provider.profileImage == null || provider.profileImage!.trim().isEmpty;
 
+    final workingHoursMissing =
+        provider.openingHours == null || provider.closingHours == null;
+
+    final kycStatus = provider.kycStatus?.toUpperCase();
+    // final kycMissingOrFailed = kycStatus == null || kycStatus == 'FAILED';
+    final kycPending = kycStatus == 'PENDING';
+    final kycApproved = kycStatus == 'APPROVED' || provider.isKYCVerified;
+
     final todoItems = <Widget>[];
 
     if (descriptionMissing || servicesMissing) {
@@ -29,12 +39,19 @@ class ToDoSection extends StatelessWidget {
           weight: FontWeight.w400,
           color: colors.black,
         ),
-        GenText(
-          'Update Service Info',
-          height: 24.5,
-          weight: FontWeight.w400,
-          color: colors.primary.shade600,
+
+        GestureDetector(
+          onTap: () async {
+            await pushScreen(context, const UpdateServiceScreen());
+          },
+          child: GenText(
+            'Update Service Info',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.primary.shade600,
+          ),
         ),
+
         10.verticalSpace,
       ]);
     }
@@ -47,14 +64,96 @@ class ToDoSection extends StatelessWidget {
           weight: FontWeight.w400,
           color: colors.black,
         ),
-        GenText(
-          'Upload Photo',
-          height: 24.5,
-          weight: FontWeight.w400,
-          color: colors.primary.shade600,
+
+        GestureDetector(
+          onTap: () async {
+            await pushScreen(context, const SettingsScreen());
+          },
+          child: GenText(
+            'Upload Photo',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.primary.shade600,
+          ),
         ),
       ]);
     }
+
+    if (workingHoursMissing) {
+      todoItems.addAll([
+        GenText(
+          '⚠️ Set your working hours so clients know when you are available.',
+          height: 24.5,
+          weight: FontWeight.w400,
+          color: colors.black,
+        ),
+
+        GestureDetector(
+          onTap: () async {
+            await pushScreen(context, const UpdateServiceScreen());
+          },
+          child: GenText(
+            'Set Working Hours',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.primary.shade600,
+          ),
+        ),
+      ]);
+    }
+
+    if (!kycApproved) {
+      if (kycPending) {
+        todoItems.addAll([
+          GenText(
+            '⏳ Your KYC verification is pending. We are reviewing your documents.',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.black,
+          ),
+          // GestureDetector(
+          //   onTap: () async {
+          //     await pushScreen(
+          //       context,
+          //       const SettingsScreen(),
+          //     );
+          //   },
+          //   child: GenText(
+          //     'View KYC Status',
+          //     height: 24.5,
+          //     weight: FontWeight.w400,
+          //     color: colors.primary.shade600,
+          //   ),
+          // ),
+          // 10.verticalSpace,
+        ]);
+      } else {
+        todoItems.addAll([
+          GenText(
+            '⚠️ Your KYC verification failed or is incomplete. Please resubmit your documents.',
+            height: 24.5,
+            weight: FontWeight.w400,
+            color: colors.black,
+          ),
+          GestureDetector(
+            onTap: () async {
+              await pushScreen(
+                context,
+                const SettingsScreen(),
+              ); 
+            },
+            child: GenText(
+              'Complete KYC Verification',
+              height: 24.5,
+              weight: FontWeight.w400,
+              color: colors.primary.shade600,
+            ),
+          ),
+          10.verticalSpace,
+        ]);
+      }
+    }
+
     if (todoItems.isEmpty) return const SizedBox.shrink();
 
     return Col(

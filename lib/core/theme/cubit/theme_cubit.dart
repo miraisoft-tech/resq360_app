@@ -10,12 +10,9 @@ import 'package:resq360/core/theme/app_theme.preferences.dart';
 
 part 'theme_state.dart';
 
-
-
-
 class ThemeCubit extends Cubit<ThemeState> {
-  ThemeCubit(this._preferences) : super(ThemeState.initial()){
-     unawaited(_init());
+  ThemeCubit(this._preferences) : super(ThemeState.initial()) {
+    unawaited(_init());
   }
 
   final ThemePreferences _preferences;
@@ -23,6 +20,7 @@ class ThemeCubit extends Cubit<ThemeState> {
   Future<void> _init() async {
     await loadTheme();
   }
+
   Future<void> loadTheme() async {
     final mode = await _preferences.getTheme();
     emit(_buildState(mode));
@@ -34,17 +32,20 @@ class ThemeCubit extends Cubit<ThemeState> {
   }
 
   ThemeState _buildState(ThemeMode mode) {
-    final brightness = mode == ThemeMode.system
-        ? PlatformDispatcher.instance.platformBrightness
-        : (mode == ThemeMode.dark ? Brightness.dark : Brightness.light);
+    final brightness =
+        mode == ThemeMode.system
+            ? PlatformDispatcher.instance.platformBrightness
+            : (mode == ThemeMode.dark ? Brightness.dark : Brightness.light);
 
-    final colors = brightness == Brightness.light
-        ? AppColorPalette.light()
-        : AppColorPalette.dark();
+    final colors =
+        brightness == Brightness.light
+            ? AppColorPalette.light()
+            : AppColorPalette.dark();
 
-    final textTheme = brightness == Brightness.light
-        ? AppTextTheme.light().withColors(colors)
-        : AppTextTheme.dark().withColors(colors);
+    final textTheme =
+        brightness == Brightness.light
+            ? AppTextTheme.light().withColors(colors)
+            : AppTextTheme.dark().withColors(colors);
 
     final themeData = ThemeData(
       useMaterial3: true,
@@ -68,12 +69,15 @@ class ThemeCubit extends Cubit<ThemeState> {
         labelSmall: textTheme.labelSmall,
       ),
       extensions: <ThemeExtension<dynamic>>[colors, textTheme],
-          progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: AppColorPalette.dark().primary.shade600,
-    ),
-
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: AppColorPalette.dark().primary.shade600,
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: colors.primary.shade500,
+        selectionColor:  AppColorPalette.dark().primary.shade100,
+        selectionHandleColor:  AppColorPalette.dark().primary.shade500,
+      ),
     );
-    
 
     return ThemeState(
       mode: mode,

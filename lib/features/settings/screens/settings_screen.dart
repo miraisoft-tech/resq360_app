@@ -13,10 +13,12 @@ import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
+import 'package:resq360/features/provider/dashboard/screens/manage_promotion_screen.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
-import 'package:resq360/features/settings/screens/change_password_screen.dart';
+import 'package:resq360/features/settings/screens/account_and_security_screen.dart';
+import 'package:resq360/features/settings/screens/add_bank_details.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 import 'package:resq360/features/settings/screens/notification_settings_screen.dart';
 import 'package:resq360/features/settings/screens/ratings_screen.dart';
@@ -174,13 +176,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
         },
       ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
-        title: 'Change Password',
-        onTap: () async {
-          await pushScreen(context, const ChangePasswordScreen());
-        },
-      ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
+      //   title: 'Change Password',
+      //   onTap: () async {
+      //     await pushScreen(context, const ChangePasswordScreen());
+      //   },
+      // ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
@@ -211,6 +213,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
       SettingsItem(
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_UPDATE_SERVICE_SVG.svg,
+        title: 'Manage promotions',
+        onTap: () async {
+          await pushScreen(context, const PromotionsDashboardScreen());
+        },
+      ),
+      SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
         title: 'KYC',
         onTap: () async {
@@ -235,13 +244,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       //     await pushScreen(context, const ManageCardsScreen());
       //   },
       // ),
-      // SettingsItem(
-      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
-      //   title: 'Add Bank Details',
-      //   onTap: () async {
-      //     await pushScreen(context, const AddBankDetailsScreen());
-      //   },
-      // ),
+      SettingsItem(
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_ADD_BANK_SVG.svg,
+        title: 'Add Bank Details',
+        onTap: () async {
+          await pushScreen(context, const AddBankDetailsScreen());
+        },
+      ),
       // SettingsItem(
       //   icon: AppAssets.ASSETS_ICONS_SETTINGS_REFER_SVG.svg,
       //   title: 'Refer and Earn',
@@ -266,13 +275,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
         },
       ),
-      SettingsItem(
-        icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
-        title: 'Change Password',
-        onTap: () async {
-          await pushScreen(context, const ChangePasswordScreen());
-        },
-      ),
+      // SettingsItem(
+      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
+      //   title: 'Change Password',
+      //   onTap: () async {
+      //     await pushScreen(context, const ChangePasswordScreen());
+      //   },
+      // ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
@@ -321,15 +330,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (state is Loading) {
                   showLoadingDialog(context);
                 }
+
                 if (state is ProfileUpdateSuccess) {
-                  Navigator.pop(context);
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
                   await _refreshProfile();
                 }
-              if (state is ProviderAcivitityChanged) {
+
+                if (state is ProviderAcivitityChanged) {
                   await _refreshProfile();
                 }
+
                 if (state is ProfileUpdateError) {
-                  Navigator.pop(context);
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
                   await showErrorSnackbar(context, state.message);
                 }
               },
@@ -342,66 +358,92 @@ class _SettingsScreenState extends State<SettingsScreen> {
             10.verticalSpace,
             if (isProvider)
               BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
-                builder: (context, state) {
-                  if (state is ProviderProfileLoadedState) {
-                    final status = state.user.activityStatus ?? 'UNKNOWN';
+                builder: (context, authState) {
+                  if (authState is ProviderProfileLoadedState) {
+                    final status = authState.user.activityStatus ?? 'UNKNOWN';
+                    final normalizedStatus = status.toLowerCase();
                     final isOnline = status.toLowerCase() == 'online';
+                    final canToggle =
+                        normalizedStatus == 'online' ||
+                        normalizedStatus == 'offline';
 
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            await GeneralDialogs.showCustomDialog<void>(
-                              context,
-                              body: AccountStatusDialog(
-                                onTap: () async {
-                                  Navigator.pop(context);
-                                  await pushScreen(
-                                    context,
-                                    const ContactAdminScreen(
-                                      issueType: AdminIssueType.complaint,
-                                    ),
-                                  );
-                                },
+                    return BlocBuilder<ProfileUpdateBloc, ProfileUpdateState>(
+                      builder: (context, updateState) {
+                        final isLoading = updateState is ProfileUpdateLoading;
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                final status =
+                                    authState.user.activityStatus
+                                        ?.toUpperCase() ??
+                                    'UNKNOWN';
+
+                                await GeneralDialogs.showCustomDialog<void>(
+                                  context,
+                                  body: AccountStatusDialog(
+                                    currentStatus: status,
+                                    onTap: () async {
+                                      Navigator.pop(context);
+                                      await pushScreen(
+                                        context,
+                                        const ContactAdminScreen(
+                                          issueType: AdminIssueType.complaint,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                              child: Row(
+                                children: [
+                                  GenText(
+                                    'Account Status: ${isOnline ? 'Online' : 'Offline'}',
+                                    height: 24.5,
+                                    color:
+                                        isOnline
+                                            ? appColors.success.shade700
+                                            : appColors.error.shade500,
+                                    weight: FontWeight.w500,
+                                  ),
+                                  4.horizontalSpace,
+                                  AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
+                                      .svgColor(
+                                        color: appColors.success.shade700,
+                                      ),
+                                ],
                               ),
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              GenText(
-                                'Account Status: ${isOnline ? 'Online' : 'Offline'}',
-                                height: 24.5,
-                                color:
-                                    isOnline
-                                        ? appColors.success.shade700
-                                        : appColors.error.shade500,
-                                weight: FontWeight.w500,
-                              ),
+                            ),
 
-                              4.horizontalSpace,
-                          AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG.svgColor(
-                            color: appColors.success.shade700,
-                          ),
-                            ],
-                          ),
-                        ),
+                            12.horizontalSpace,
 
-                        12.horizontalSpace,
+                            CustomSwitchWidget(
+                              value: isOnline,
+                              activeThumbColor:
+                                  isLoading
+                                      ? appColors.textColor.shade100
+                                      : appColors.success.shade700,
+                              disabledThumbColor:
+                                  isLoading
+                                      ? appColors.textColor.shade100
+                                      : appColors.textColor.shade200,
+                              onChanged:
+                                  canToggle && !isLoading
+                                      ? ({required value}) {
+                                        final newStatus =
+                                            value ? 'online' : 'offline';
 
-                        CustomSwitchWidget(
-                          value: isOnline,
-                          activeThumbColor: appColors.success.shade700,
-                          disabledThumbColor: appColors.textColor.shade200,
-                          onChanged: ({required value}) {
-                            final newStatus = value ? 'online' : 'offline';
-
-                            context.read<ProfileUpdateBloc>().add(
-                              UpdateActivityStatusEvent(newStatus),
-                            );
-                          },
-                        ),
-                      ],
+                                        context.read<ProfileUpdateBloc>().add(
+                                          UpdateActivityStatusEvent(newStatus),
+                                        );
+                                      }
+                                      : null,
+                            ),
+                          ],
+                        );
+                      },
                     );
                   }
 
@@ -480,7 +522,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
-            30.verticalSpace,
+            20.verticalSpace,
+            GestureDetector(
+              onTap: () async {
+                await pushScreen(
+                  context,
+                  AccountAndSecurityScreen(isProvider: isProvider),
+                );
+              },
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.security,
+                    color: appColors.textColor.shade200,
+                  ),
+                  10.horizontalSpace,
+                  GenText(
+                    'Account & Security',
+                    color: appColors.black,
+                    weight: FontWeight.w500,
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.chevron_right,
+                    color: appColors.textColor.shade200,
+                  ),
+                ],
+              ),
+            ),
+            20.verticalSpace,
+            Divider(
+              height: 5,
+              color: appColors.textColor.shade100,
+            ),
+            20.verticalSpace,
             GestureDetector(
               onTap: () async {
                 await GeneralDialogs.showCustomDialog<void>(
@@ -508,6 +583,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
+            ),
+            // 30.verticalSpace,
+            // GestureDetector(
+            //   onTap: () async {
+            //     await GeneralDialogs.showCustomDialog<void>(
+            //       context,
+            //       body: const DeleteAccountDialog(),
+            //     );
+            //   },
+            //   child: Row(
+            //     children: [
+            //       Icon(
+            //         Icons.delete_forever_outlined,
+            //         color: appColors.error.shade500,
+            //       ),
+            //       10.horizontalSpace,
+            //       GenText(
+            //         'Delete Account',
+            //         color: appColors.error.shade500,
+            //         size: 15,
+            //         weight: FontWeight.w600,
+            //       ),
+            //       const Spacer(),
+            //       Icon(
+            //         Icons.chevron_right,
+            //         color: appColors.textColor.shade200,
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            20.verticalSpace,
+            Divider(
+              height: 5,
+              color: appColors.textColor.shade100,
             ),
             20.verticalSpace,
             Padding(

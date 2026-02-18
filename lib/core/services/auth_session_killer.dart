@@ -1,9 +1,7 @@
-import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/view_models/customer_auth_vm.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
+import 'package:resq360/core/services/chat_socket_service.dart';
 
-class AuthSessionKiller extends ChangeNotifier{
+class AuthSessionKiller {
   static bool _hasKilled = false;
 
   static Future<void> kill() async {
@@ -14,18 +12,12 @@ class AuthSessionKiller extends ChangeNotifier{
     await AuthLocalRepo.instance.clearAccessToken();
     await AuthLocalRepo.instance.clearLocalCred();
     await AuthLocalRepo.instance.clearUserType();
+    await AuthLocalRepo.instance.clearGuestMode();
+    await ChatSocketService.instance.dispose();
 
-    CustomerAuthProvider.instance
-      ..authInfo = null
-      ..localCred = null
-      ..useBiometics = false
-      ..notifyListeners();
-
-    ProviderAuthProvider.instance
-      ..authInfo = null
-      ..localCred = null
-      ..useBiometics = false
-      ..notifyListeners();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _hasKilled = false;
+    });
   }
 
   static void reset() {

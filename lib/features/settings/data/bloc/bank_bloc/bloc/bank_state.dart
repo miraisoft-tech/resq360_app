@@ -10,7 +10,18 @@ sealed class BankState extends Equatable {
 final class BankInitial extends BankState {}
 
 final class BankLoading extends BankState{}
+final class LocalBanksLoading extends BankState{}
+
 final class BankAccountAdded extends BankState{}
+
+class BankAccountValidating extends BankState {}
+
+class BankAccountValidated extends BankState {
+
+  const BankAccountValidated({required this.accountName});
+  final String accountName;
+}
+
 final class BankAccountsFetched extends BankState{
   const BankAccountsFetched({required this.bankAcounts});
 
@@ -30,3 +41,8 @@ final class BankFailure extends BankState{
 }
 final class BankAccountAddedFailed extends BankState{}
 final class BankAccountsFetchedfailed extends BankState{}
+final class LocalBanksFetched extends BankState{
+    const LocalBanksFetched(this.banks);
+
+  final List<BankModel> banks;
+}

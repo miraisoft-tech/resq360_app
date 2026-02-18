@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 
@@ -15,6 +19,8 @@ GlobalKey<ScaffoldState> mainLayoutScaffoldKey = GlobalKey<ScaffoldState>();
 
 class _MainLayoutPageState extends State<MainLayoutPage> {
   late DashboardViewModel dashboardVM;
+  bool _isGuest = false;
+  bool _ownsDashboardVM = false;
 
   DateTime currentBackPressTime = DateTime.now();
 
@@ -36,8 +42,29 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
   @override
   void initState() {
     super.initState();
+    dashboardVM = dashboardViewModel;
+    dashboardVM.userType = widget.userType;
+    _ownsDashboardVM = false;
+    unawaited(_loadGuestMode());
+  }
 
-    dashboardVM = DashboardViewModel(userType: widget.userType);
+  Future<void> _loadGuestMode() async {
+    final isGuest = await AuthLocalRepo.instance.getGuestMode();
+    if (!mounted) return;
+    setState(() => _isGuest = isGuest);
+  }
+
+  Future<void> _requireLogin() async {
+    await showErrorSnackbar(context, 'Please log in to continue');
+    await pushScreen(context, const LoginScreen());
+  }
+
+  @override
+  void dispose() {
+    if (_ownsDashboardVM) {
+      dashboardVM.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -97,6 +124,12 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                           child: InkWell(
                             onTap: () async {
                               await HapticFeedback.lightImpact();
+                              if (widget.userType == UserType.customer &&
+                                  _isGuest &&
+                                  index > 1) {
+                                await _requireLogin();
+                                return;
+                              }
                               dashboardVM.onChanged(index);
                             },
                             child: Column(

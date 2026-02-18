@@ -1,4 +1,3 @@
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
@@ -24,12 +23,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     on<CustomerResendVerificationEmailEvent>(_onResendVerificationEmail);
     on<CustomergetUserProfile>(_onGetUserProfile);
     on<CustomerLogout>(_onLogout);
-    // on<CustomerSubmitKyc>(_onSubmitKyc);
-    // on<CustomerGetUserKycInfo>(_onGetUserKycInfo);
-    // on<CustomerSubmitKycAddress>(_onSubmitKycAddress);
-    // on<CustomerSubmitId>(_onSubmitKycId);
-    // on<CustomerGetStates>(_getLocalStates);
-
+    on<CustomerDeleteAccount>(_onDeleteAccount);
   }
 
   Future<void> _onLoginWithEmail(
@@ -119,15 +113,13 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
 
       log(result.data.toString());
 
-     
       final user = result.data?.user;
       if (user != null) {
-
-      emit(CustomerAuthAuthenticated(user));
-       await AuthLocalRepo.instance.storeLocalCredentials(
-        email: event.email,
-        password: event.password,
-      );
+        emit(CustomerAuthAuthenticated(user));
+        await AuthLocalRepo.instance.storeLocalCredentials(
+          email: event.email,
+          password: event.password,
+        );
       }
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
@@ -168,12 +160,13 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         token: event.token,
       );
 
-      if (result) {
+      if (result.data ?? false) {
         emit(CustomerResetTokenValidatedState());
       } else {
         emit(
-          const CustomerAuthFailure(
-            'Invalid or expired reset token. Please request a new one.',
+          CustomerAuthFailure(
+            result.error ??
+                'Invalid or expired reset token. Please request a new one.',
           ),
         );
       }
@@ -191,12 +184,12 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
       final result = await authRemoteRepo.setNewPassword(
         password: event.password,
       );
-      if (result) {
+      if (result.data ?? false) {
         emit(CustomerPasswordResetSuccessState());
       } else {
         emit(
-          const CustomerAuthFailure(
-            'Password reset failed. Please try again.',
+          CustomerAuthFailure(
+            result.error ?? 'Password reset failed. Please try again.',
           ),
         );
       }
@@ -256,6 +249,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     CustomergetUserProfile event,
     Emitter<CustomerAuthState> emit,
   ) async {
+    log('Fetching customer profile...');
     emit(CustomerAuthLoading());
     try {
       final result = await authRemoteRepo.getUserProfile();
@@ -278,96 +272,36 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
     emit(CustomerAuthInitial());
   }
 
-  // // KYC Submission
-  // Future<void> _onSubmitKyc(
-  //   CustomerSubmitKyc event,
-  //   Emitter<CustomerAuthState> emit,
-  // ) async {
-  //   emit(CustomerAuthLoading());
-  //   try {
-  //     final result = await authRemoteRepo.uploadAndSubmitFaceId(
-  //       filePath: event.filePath,
-  //     );
-  //     if (result.data != null) {
-  //       emit(CustomerKycSubmitted(result.data!));
-  //     } else {
-  //       emit(
-  //         CustomerKycSubmissionFailure(result.error ?? 'KYC submission failed'),
-  //       );
-  //     }
-  //   } on Exception catch (e) {
-  //     emit(CustomerKycSubmissionFailure(e.toString()));
-  //   }
-  // }
+  Future<void> _onDeleteAccount(
+    CustomerDeleteAccount event,
+    Emitter<CustomerAuthState> emit,
+  ) async {
+    emit(CustomerAuthLoading());
 
-  // Future<void> _onGetUserKycInfo(
-  //   CustomerGetUserKycInfo event,
-  //   Emitter<CustomerAuthState> emit,
-  // ) async {
-  //   emit(CustomerAuthLoading());
-  //   try {
-  //     final result = await authRemoteRepo.getUserKycInfo();
-  //     if (result.data != null) {
-  //       emit(CustomerUserKycInfoLoaded(result.data!));
-  //     } else {
-  //       emit(CustomerAuthFailure(result.error ?? 'Failed to load KYC info'));
-  //     }
-  //   } on Exception catch (e) {
-  //     log('CustomerGetUserKycInfo Bloc Get User KYC Info Error: $e');
-  //     emit(CustomerAuthFailure(e.toString()));
-  //   }
-  // }
+    try {
+      final result = await authRemoteRepo.deleteAccount();
 
-  // Future<void> _onSubmitKycAddress(
-  //   CustomerSubmitKycAddress event,
-  //   Emitter<CustomerAuthState> emit,
-  // ) async {
-  //   emit(CustomerAuthLoading());
-  //   try {
-  //     final result = await authRemoteRepo.submitKycAddress(
-  //       address: event.address,
-  //       city: event.city,
-  //       state: event.state,
-  //     );
-  //     if (result) {
-  //       emit(CustomerKycAddressSubmitted());
-  //     } else {
-  //       emit(
-  //         CustomerKycSubmissionFailure('$result KYC address submission failed'),
-  //       );
-  //     }
-  //   } on Exception catch (e) {
-  //     emit(CustomerKycSubmissionFailure(e.toString()));
-  //   }
-  // }
-
-  // Future<void> _onSubmitKycId(
-  //   CustomerSubmitId event,
-  //   Emitter<CustomerAuthState> emit,
-  // ) async {
-  //   emit(CustomerAuthLoading());
-  //   try {
-  //     final result = await authRemoteRepo.uploadAndSubmitIdentity(
-  //       documentType: event.documentType,
-  //       filePath: event.filePath,
-  //     );
-  //     if (result.data != null) {
-  //       emit(CustumerIdentitySubmitted(data: result.data!));
-  //     } else {
-  //       emit(
-  //         CustomerKycSubmissionFailure(
-  //           result.error ?? 'KYC ID submission failed',
-  //         ),
-  //       );
-  //     }
-  //   } on Exception catch (e) {
-  //     emit(CustomerKycSubmissionFailure(e.toString()));
-  //   }
-  // }
+      if (result.data != null) {
+        final message =
+            result.data?['message'] ?? 'Account deleted successfully';
+        emit(CustomerAccountDeletedState(message.toString()));
+      } else {
+        emit(
+          CustomerAccountDeletionFailedState(
+            result.error ?? 'Failed to delete account',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      log('Delete Account Error: $e');
+      emit(CustomerAccountDeletionFailedState(e.toString()));
+    }
+  }
 
   Future<bool> _loadAndSaveUserProfile({
     required AuthResponse authResponse,
   }) async {
+    await AuthLocalRepo.instance.saveGuestMode(isGuest: false);
     await AuthLocalRepo.instance.storeAccessToken(
       authResponse.data?.accessToken ?? '',
     );
@@ -385,43 +319,4 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
 
     return true;
   }
-
-  //   Future<void> _getLocalStates(
-  //   CustomerGetStates event,
-  //   Emitter<CustomerAuthState> emit,
-  // ) async {
-  //   final tempStatesList = <StateModel>[];
-  //   try {
-  //     final jsonString = await rootBundle.loadString(
-  //       'assets/json/states_list.json',
-  //     );
-  //     final json = jsonDecode(jsonString);
-
-  //     if (json == null || json is! List) {
-  //       emit(CustomerStatesLoadedState(tempStatesList));
-  //       return;
-  //     }
-
-  //     final statesListJson = json;
-  //     log('states ${statesListJson.length}');
-
-  //     for (var i = 0; i < statesListJson.length; i++) {
-  //       final stateJson = statesListJson[i];
-  //       if (stateJson is String) {
-  //         tempStatesList.add(StateModel.fromJson(stateJson));
-  //       }
-  //     }
-
-  //     tempStatesList.sort((a, b) {
-  //       final nameA = a.name ?? '';
-  //       final nameB = b.name ?? '';
-  //       return nameA.compareTo(nameB);
-  //     });
-
-  //     emit(CustomerStatesLoadedState(tempStatesList));
-  //   } on Exception catch (e) {
-  //     log('Error loading states: $e');
-  //     emit(CustomerStatesLoadedState(tempStatesList));
-  //   }
-  // }
 }

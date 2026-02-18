@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet/wallet.model.dart';
@@ -34,6 +35,8 @@ class WalletRepo extends BaseAPI {
 
         return ApiResult(error: error);
       }
+    } on DioException catch (e) {
+      return handleDioError(e);
     } on Exception catch (e) {
       return ApiResult(error:  e.toString());
     }
@@ -55,7 +58,9 @@ Future<ApiResult<WalletTransactionsData>> fetchAllWalletTransaction({required in
         error: res.data?['message']?.toString() ?? 'Failed to fetch transactions',
       );
     }
-  } on Exception catch (e) {
+  }  on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
     return ApiResult(error: e.toString());
   }
 }

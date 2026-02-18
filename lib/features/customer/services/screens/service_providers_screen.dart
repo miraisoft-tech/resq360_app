@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
 import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
@@ -17,6 +21,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final bool _sortByProximity = false;
+  bool _isGuest = false;
 
   final TextEditingController _searchController = TextEditingController();
 
@@ -25,6 +30,8 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    unawaited(_loadGuestMode());
 
     context.read<ServiceProviderBloc>().add(
       FetchServiceProviders(
@@ -38,6 +45,17 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
         _fetchProviders();
       }
     });
+  }
+
+  Future<void> _loadGuestMode() async {
+    final isGuest = await AuthLocalRepo.instance.getGuestMode();
+    if (!mounted) return;
+    setState(() => _isGuest = isGuest);
+  }
+
+  Future<void> _requireLogin() async {
+    await showErrorSnackbar(context, 'Please log in to continue');
+    await pushScreen(context, const LoginScreen());
   }
 
   void _fetchProviders() {
@@ -65,7 +83,11 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     );
   }
 
-  void _pingProviders() {
+  Future<void> _pingProviders() async {
+    if (_isGuest) {
+      await _requireLogin();
+      return;
+    }
     final event = PingServiceProviders(
       serviceCategoryId: widget.serviceProviderId,
     );
@@ -177,9 +199,9 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                         ),
-                        onPressed: () {
+                        onPressed: () async {
                           log('Ping Providers pressed');
-                          _pingProviders();
+                          await _pingProviders();
                         },
                         icon: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG.svg,
                         label: GenText(

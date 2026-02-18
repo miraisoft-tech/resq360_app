@@ -44,12 +44,36 @@ double calculateProviderProgress(ProviderModel provider) {
   const totalSteps = 6;
   var completed = 0;
 
-  if (provider.isEmailVerified) completed++;
-  if (provider.isApproved) completed++;
-  if (provider.isKYCVerified) completed++;
-  if (provider.providerServices!.isNotEmpty) completed++;
-  if (provider.address != null) completed++;
-  if (provider.openingHours != null && provider.closingHours != null) completed++;
+  if (provider.profileImage != null &&
+      provider.profileImage!.trim().isNotEmpty) {
+    completed++;
+  }
+
+  if (provider.providerServices?.isNotEmpty ?? false) {
+    completed++;
+  }
+
+  if (provider.description != null &&
+      provider.description!.trim().isNotEmpty) {
+    completed++;
+  }
+
+  if (provider.address != null) {
+    completed++;
+  }
+
+  if (provider.openingHours != null &&
+      provider.closingHours != null) {
+    completed++;
+  }
+
+  final kycApproved =
+      provider.isKYCVerified ||
+      provider.kycStatus?.toUpperCase() == 'APPROVED';
+
+  if (kycApproved) {
+    completed++;
+  }
 
   return completed / totalSteps;
 }

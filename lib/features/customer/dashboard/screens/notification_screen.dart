@@ -25,6 +25,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   bool _isLoadingMore = false;
   int unreadCount = 0;
 
+  List<NotificationModel> _cached = [];
+  bool _hasLoadedOnce = false;
+
   @override
   void initState() {
     super.initState();
@@ -109,120 +112,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ),
       ),
       body: BlocConsumer<NotificationBloc, NotificationState>(
-        builder: (context, state) {
-          if (state is NotificationInitial) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: appColors.primary,
-              ),
-            );
-          }
-          if (state is NotificationLoading) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: appColors.primary,
-              ),
-            );
-          }
-
+        listener: (context, state) {
           if (state is UnreadCountLoaded) {
-            unreadCount = state.count;
+            setState(() {
+              unreadCount = state.count;
+            });
           }
 
-          if (state is NotificationLoaded) {
-            final notifications = state.notifications;
-            _isLoadingMore = false;
-            if (notifications.isEmpty) {
-              return EmptyScreenWidget(
-                image:
-                    AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG
-                        .imageAsset(),
-                message: 'No Notifications Yet',
-                subMessage:
-                    "You'll see updates about your bookings and payments here.",
-              );
-            }
-
-            final uiList = state.notifications.map(mapToUi).toList();
-            final grouped = _groupNotifications(uiList);
-
-            return RefreshIndicator(
-              color: appColors.primary,
-              onRefresh: _onRefresh,
-              child: Padding(
-                padding: pad(horizontal: 20, vertical: 10),
-                child: ListView(
-                  controller: _scrollController,
-                  children: [
-                    if (unreadCount > 0)
-                      _HeaderRow(
-                        count: unreadCount,
-                        color: appColors,
-                      )
-                    else
-                      SizedBox.fromSize(),
-                    20.verticalSpace,
-                    if (grouped.isEmpty)
-                      Center(
-                        child: EmptyScreenWidget(
-                          image:
-                              AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG
-                                  .imageAsset(),
-                          message: 'No Notifications Yet',
-                          subMessage:
-                              "You'll see updates about your bookings and payments here. ",
-                        ),
-                      )
-                    else
-                      ...grouped.entries.map(
-                        (group) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (group.key != null) ...[
-                              GenText(
-                                group.key!,
-                                color: appColors.black,
-                                weight: FontWeight.w400,
-                              ),
-                              10.verticalSpace,
-                            ],
-                            ...group.value.map(
-                              (n) => NotificationTile(notification: n),
-                            ),
-                            20.verticalSpace,
-
-                            if (_isLoadingMore)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 16),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          }
-          if (state is NotificationError) {
-            return ErrorMessageAndButton(
-              error: state.message,
-              onPressed: () {
-                context.read<NotificationBloc>().add(
-                  const FetchRecentNotifications(),
-                );
-              },
-            );
-          }
-          return const SizedBox.shrink();
-        },
-        listener: (BuildContext context, NotificationState state) {
           if (state is NotificationActionSuccess) {
             context.read<NotificationBloc>().add(
-              const FetchRecentNotifications(),
-            );
+                  const FetchRecentNotifications(),
+                );
             unawaited(showSuccessSnackbar(context, state.message));
           }
 
@@ -230,6 +130,98 @@ class _NotificationScreenState extends State<NotificationScreen> {
             unawaited(showErrorSnackbar(context, state.message));
           }
         },
+        builder: (context, state) {
+          if (state is NotificationInitial || state is NotificationLoading) {
+            if (_cached.isNotEmpty) {
+              return _buildList(appColors);
+            }
+            return Center(
+              child: CircularProgressIndicator(color: appColors.primary),
+            );
+          }
+
+          if (state is NotificationLoaded) {
+            _isLoadingMore = false;
+            _hasLoadedOnce = true;
+
+            final uiList = state.notifications.map(mapToUi).toList();
+
+            if (uiList.isNotEmpty || _offset == 0) {
+              _cached = uiList;
+            }
+
+            if (_cached.isEmpty && _hasLoadedOnce) {
+              return EmptyScreenWidget(
+                image:
+                    AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG.imageAsset(),
+                message: 'No Notifications Yet',
+                subMessage:
+                    "You'll see updates about your bookings and payments here.",
+              );
+            }
+
+            return _buildList(appColors);
+          }
+
+          if (state is NotificationError && _cached.isEmpty) {
+            return ErrorMessageAndButton(
+              error: state.message,
+              onPressed: () {
+                context.read<NotificationBloc>().add(
+                      const FetchRecentNotifications(),
+                    );
+              },
+            );
+          }
+
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
+  Widget _buildList(AppColorPalette appColors) {
+    final grouped = _groupNotifications(_cached);
+
+    return RefreshIndicator(
+      color: appColors.primary,
+      onRefresh: _onRefresh,
+      child: Padding(
+        padding: pad(horizontal: 20, vertical: 10),
+        child: ListView(
+          controller: _scrollController,
+          children: [
+            if (unreadCount > 0)
+              _HeaderRow(count: unreadCount, color: appColors),
+            20.verticalSpace,
+
+            ...grouped.entries.map(
+              (group) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (group.key != null) ...[
+                    GenText(
+                      group.key!,
+                      color: appColors.black,
+                      weight: FontWeight.w400,
+                    ),
+                    10.verticalSpace,
+                  ],
+                  ...group.value.map(
+                    (n) => NotificationTile(notification: n),
+                  ),
+                  20.verticalSpace,
+                ],
+              ),
+            ),
+
+            if (_isLoadingMore)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -250,6 +242,7 @@ class _HeaderRow extends StatelessWidget {
 
   final int count;
   final AppColorPalette color;
+
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<NotificationBloc>();
@@ -281,12 +274,16 @@ class _HeaderRow extends StatelessWidget {
 NotificationModel mapToUi(notif.Notification n) {
   return NotificationModel(
     id: n.id!,
-    title: n.user?.fullName ?? '',
+    title: n.provider?.fullName ?? n.user?.fullName ?? '',
     message: n.details ?? '',
     time: AppTextUtil.timeAgo(n.createdAt),
     isUnread: n.status == 'UNREAD',
     group: AppTextUtil.groupByDate(n.createdAt),
     icon: _iconForCategory(n.category),
+    category: n.category,
+    serviceRequestId: int.tryParse(n.serviceRequestId ?? ''),
+    providerId: n.providerId,
+    providerName: n.provider?.fullName,
   );
 }
 
@@ -294,6 +291,8 @@ SvgPicture _iconForCategory(String? category) {
   switch (category) {
     case 'BOOKING':
       return AppAssets.ASSETS_ICONS_NOTIFICATION_B_SVG.svg;
+    case 'SERVICE_COMPLETION':
+      return AppAssets.ASSETS_ICONS_NOTIFICATION_S_SVG.svg;
     case 'NORMAL':
       return AppAssets.ASSETS_ICONS_NOTIFICATION_R_SVG.svg;
     default:

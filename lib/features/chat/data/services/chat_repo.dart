@@ -224,4 +224,58 @@ class ChatRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+
+  Future<ApiResult<bool>> blockChat({
+    required int chatId,
+    required String reason,
+  }) async {
+    final url = '/chat/$chatId/report';
+    try {
+      final response = await dio().post<Map<String, dynamic>>(
+        url,
+        data: {'reason': reason},
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        log('Chat $chatId blocked successfully');
+        return ApiResult(data: true);
+      } else {
+        return ApiResult(
+          error:
+              response.data?['message'].toString() ?? 'Failed to blocked chat',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      log('Block chat failed: $e');
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<bool>> reportMessage({
+    required int messageId,
+    required String reason,
+  }) async {
+    final url = '/chat/message/$messageId/report';
+    try {
+      final response = await dio().post<Map<String, dynamic>>(
+        url,
+        data: {'reason': reason},
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return ApiResult(data: true);
+      }
+
+      return ApiResult(
+        error:
+            response.data?['message'].toString() ?? 'Failed to report message',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
 }

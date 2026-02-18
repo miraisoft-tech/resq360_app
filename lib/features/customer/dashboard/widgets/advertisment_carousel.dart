@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/ad_tracking_service.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/recommended_card_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
@@ -22,11 +23,15 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
     super.initState();
     _pageController = PageController(viewportFraction: 0.95);
 
-    _pageController.addListener(() {
+    _pageController.addListener(() async {
       final newIndex = _pageController.page?.round() ?? 0;
       if (newIndex != currentIndex) {
         setState(() => currentIndex = newIndex);
+        unawaited(_trackCurrentImpression());
       }
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      unawaited(_trackCurrentImpression());
     });
 
     _startAutoScroll();
@@ -47,13 +52,24 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
           curve: Curves.easeOut,
         );
       } else {
-       await _pageController.animateToPage(
+        await _pageController.animateToPage(
           nextPage,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeOut,
         );
       }
     });
+  }
+
+  Future<void> _trackCurrentImpression() async {
+    if (widget.ads.isEmpty) return;
+
+    final ad = widget.ads[currentIndex];
+    final adId = ad.id;
+
+    if (adId == null) return;
+
+    unawaited(AdTrackingService.trackImpressionOnce(adId));
   }
 
   @override
@@ -68,7 +84,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 170.h,
+          height: 180.h,
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.ads.length,
@@ -77,6 +93,12 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () async {
+                  final ad = widget.ads[index];
+
+                  if (ad.id != null) {
+                    unawaited(AdTrackingService.trackClick(ad.id!));
+                  }
+
                   final providerId = widget.ads[index].providerId;
                   if (providerId == null) return;
                   await pushScreen(

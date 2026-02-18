@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/biometric_auth_service.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
@@ -25,6 +26,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
+  bool _canUseBiometrics = false;
+  bool _hasStoredCredentials = false;
+
   @override
   void initState() {
     super.initState();
@@ -46,8 +50,51 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (customerRef.isLocalCredStored) {
       emailController.text = customerRef.localCred?.userName ?? '';
+      _hasStoredCredentials = true;
 
       setState(() {});
+    }
+
+    await _checkBiometricAvailability();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    final customerRef = CustomerAuthProvider.instance;
+    final biometricService = BiometricAuthService.instance;
+
+    final isAvailable = await biometricService.isBiometricAvailable();
+    final hasBiometricsEnabled = customerRef.useBiometrics;
+
+    setState(() {
+      _canUseBiometrics =
+          isAvailable && hasBiometricsEnabled && _hasStoredCredentials;
+    });
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    final customerRef = CustomerAuthProvider.instance;
+    final biometricService = BiometricAuthService.instance;
+
+    final authenticated = await biometricService.authenticate(
+      reason: 'Authenticate to login to your account',
+    );
+
+    if (authenticated && customerRef.localCred != null) {
+      emailController.text = customerRef.localCred!.userName ?? '';
+      passwordController.text = customerRef.localCred!.password ?? '';
+
+      setState(() {});
+
+      if (_formKey.currentState?.validate() ?? false) {
+        if (mounted) {
+          context.read<CustomerAuthBloc>().add(
+            CustomerLoginWithEmail(
+              email: emailController.text,
+              password: passwordController.text,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -67,15 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
       listener: (context, state) async {
         if (!mounted) return;
 
-        if (state is CustomerAuthLoading) {
-          showLoadingDialog(context);
-        }
-
         if (state is CustomerAuthFailure) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-
           log(state.error);
           await showSnackBar(context, 'Error', state.error);
         }
@@ -85,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pop(context);
           }
 
-         await pushAndReplaceScreen(
+          await pushAndReplaceScreen(
             context: context,
             ConfirmEmailScreen(
               email: emailController.text,
@@ -152,19 +191,47 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               24.verticalSpace,
-              WideButton(
-                label: 'Log in',
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    context.read<CustomerAuthBloc>().add(
-                      CustomerLoginWithEmail(
-                        email: emailController.text,
-                        password: passwordController.text,
-                      ),
-                    );
-                  }
+              BlocBuilder<CustomerAuthBloc, CustomerAuthState>(
+                builder: (context, state) {
+                  return WideButton(
+                    label: 'Log in',
+                    loading: state is CustomerAuthLoading,
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        context.read<CustomerAuthBloc>().add(
+                          CustomerLoginWithEmail(
+                            email: emailController.text,
+                            password: passwordController.text,
+                          ),
+                        );
+                      }
+                    },
+                  );
                 },
               ),
+              if (_canUseBiometrics) ...[
+                16.verticalSpace,
+                GestureDetector(
+                  onTap: _authenticateWithBiometrics,
+                  child: Center(
+                    child: Container(
+                      padding: pad(
+                        vertical: 14,
+                        horizontal: 20,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: colors.primary.shade500),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Icon(
+                        Icons.fingerprint,
+                        color: colors.primary.shade500,
+                        size: 24.sp,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               25.verticalSpace,
               Center(
                 child: GestureDetector(

@@ -4,6 +4,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
@@ -17,6 +18,8 @@ class LogoutDialog extends StatelessWidget {
       await AuthLocalRepo.instance.clearAuthCredentials();
       await AuthLocalRepo.instance.clearAccessToken();
       await AuthLocalRepo.instance.clearUserType();
+
+      dashboardViewModel.reset();
 
       log('Cleared all local auth data successfully');
 

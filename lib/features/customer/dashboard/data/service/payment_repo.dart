@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/models/request_payout_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/core/utils/build_config.dart';
 import 'package:resq360/features/customer/dashboard/data/models/payment/payment.model.dart';
@@ -153,4 +154,33 @@ Future<ApiResult<ServicePaymentResponse>> initiatePaymentForAServiceRequest({
       return ApiResult(error: e.toString());
     }
   }
+
+Future<ApiResult<PayoutResponse>> requestPayout({
+  required int amount,
+  required String reason,
+}) async {
+  const url = '/payouts/request';
+
+  try {
+    final response = await dio().post<Map<String, dynamic>>(
+      url,
+      data: {
+        'amount': amount,
+        'requestReason': reason,
+      },
+    );
+
+    if ((response.statusCode == 201 || response.statusCode == 200) &&
+        response.data != null) {
+       final payout = PayoutResponse.fromJson(response.data!['data'] as Map<String, dynamic>);
+      return ApiResult(data: payout);
+    } else {
+      return ApiResult(error: response.data?['message'].toString());
+    }
+  } on Exception catch (e) {
+    return ApiResult(error: e.toString());
+  }
+}
+
+
 }

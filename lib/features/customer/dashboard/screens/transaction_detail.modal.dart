@@ -1,4 +1,6 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/core/utils/payment_receipt_pdf_util.dart';
 
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 
@@ -13,6 +15,24 @@ class TransactionDetailModal extends StatelessWidget {
   final WalletTransaction tx;
   final VoidCallback onRetry;
   final VoidCallback onSupport;
+
+  Future<void> _downloadReceipt() async {
+    try {
+      await PaymentReceiptPdfUtil.generatePaymentReceiptPdf(
+        reference: tx.reference ?? 'N/A',
+        title: tx.title,
+        amount: tx.uiAmount.toString(),
+        status: tx.status ?? 'UNKNOWN',
+        dateTime: tx.uiDate.isNotEmpty ? tx.uiDate : '-',
+        paymentMethod: tx.gatewayReference != null ? 'Card' : 'Wallet',
+        description: tx.description,
+        serviceId: tx.serviceRequestId?.toString(),
+        failureReason: tx.status == 'FAILED' ? 'Transaction failed' : null,
+      );
+    } on Exception catch (e) {
+      debugPrint('Error generating receipt: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +95,7 @@ class TransactionDetailModal extends StatelessWidget {
               4.verticalSpace,
 
               UrbText(
-                '₦${tx.uiAmount}',
+                '₦${AppTextUtil.formatAmount(tx.uiAmount.toString())}',
                 size: 18,
                 weight: FontWeight.w700,
                 color: appColors.black,
@@ -115,40 +135,25 @@ class TransactionDetailModal extends StatelessWidget {
                 value: tx.gatewayReference != null ? 'Card' : 'Wallet',
               ),
 
-              if(tx.status == 'FAILED')
-              _TransactionDetailItem(
-                label: 'Failure Reason',
-                value: tx.status == 'FAILED' ? 'Transaction failed' : '-',
-              ),
+              if (tx.status == 'FAILED')
+                _TransactionDetailItem(
+                  label: 'Failure Reason',
+                  value: tx.status == 'FAILED' ? 'Transaction failed' : '-',
+                ),
 
               24.verticalSpace,
-              Row(
-                children: [
-                  Expanded(
-                    child: WideButton(
-                      label: 'Contact Support',
-                      backgroundColor: appColors.error.shade50,
-                      textColor: appColors.primary.shade500,
-                      onPressed: onSupport,
-                    ),
-                  ),
-                  10.horizontalSpace,
-                  // Expanded(
-                  //   child: WideButton(
-                  //     label: 'Try Again',
-                  //     backgroundColor: appColors.primary.shade500,
-                  //     textColor: appColors.whiteColor,
-                  //     onPressed: onRetry,
-                  //   ),
-                  // ),
-                ],
+              WideButton(
+                label: 'Contact Support',
+                backgroundColor: appColors.error.shade50,
+                textColor: appColors.primary.shade500,
+                onPressed: onSupport,
               ),
               20.verticalSpace,
               WideButton(
                 label: 'Download Receipt',
                 backgroundColor: appColors.primary.shade500,
                 textColor: appColors.whiteColor,
-                onPressed: onRetry,
+                onPressed: _downloadReceipt,
               ),
             ],
           ),

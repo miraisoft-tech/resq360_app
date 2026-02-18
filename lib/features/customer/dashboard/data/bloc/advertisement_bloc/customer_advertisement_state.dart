@@ -11,20 +11,20 @@ class CustomerAdvertisementInitial extends CustomerAdvertisementState {}
 
 class CustomerAdvertisementLoading extends CustomerAdvertisementState {}
 
-class CustomerAdvertisementFetched extends CustomerAdvertisementState {
-  const CustomerAdvertisementFetched({
-    this.providerAds = const [],
+class AdminAdvertisementFetched extends CustomerAdvertisementState {
+  const AdminAdvertisementFetched({
+    // this.providerAds = const [],
     this.adminAds = const [],
   });
-  final List<Advertisement> providerAds;
+  // final List<Advertisement> providerAds;
   final List<Advertisement> adminAds;
 
   @override
-  List<Object?> get props => [providerAds, adminAds];
+  List<Object?> get props => [ adminAds];
 }
 
-class ProviderActiveAdvertisementsFetched extends CustomerAdvertisementState {
-  const ProviderActiveAdvertisementsFetched({required this.advertisements});
+class ProviderAdvertisementsFetched extends CustomerAdvertisementState {
+  const ProviderAdvertisementsFetched({required this.advertisements});
 
   final List<Advertisement> advertisements;
 
@@ -32,7 +32,7 @@ class ProviderActiveAdvertisementsFetched extends CustomerAdvertisementState {
   List<Object?> get props => [advertisements];
 }
 
-class AdvertisementCreated extends CustomerAdvertisementState {}
+// class AdvertisementCreated extends CustomerAdvertisementState {}
 
 class CustomerAdvertisementError extends CustomerAdvertisementState {
   const CustomerAdvertisementError({required this.error});
@@ -43,33 +43,33 @@ class CustomerAdvertisementError extends CustomerAdvertisementState {
   List<Object?> get props => [error];
 }
 
-class AdvertisementFetchPriceLoading extends CustomerAdvertisementState {}
+// class AdvertisementFetchPriceLoading extends CustomerAdvertisementState {}
 
-class AdvertisementPriceFetched extends CustomerAdvertisementState {
-  const AdvertisementPriceFetched({required this.price});
+// class AdvertisementPriceFetched extends CustomerAdvertisementState {
+//   const AdvertisementPriceFetched({required this.price});
 
-  final int? price;
+//   final int? price;
 
-  @override
-  List<Object?> get props => [price];
-}
+//   @override
+//   List<Object?> get props => [price];
+// }
 
-class AdvertisementPaymentInitiatedState extends CustomerAdvertisementState {
-  const AdvertisementPaymentInitiatedState(this.payment);
+// class AdvertisementPaymentInitiatedState extends CustomerAdvertisementState {
+//   const AdvertisementPaymentInitiatedState(this.payment);
 
-  final PaymentResponse payment;
+//   final PaymentResponse payment;
 
-  @override
-  List<Object?> get props => [payment];
-}
+//   @override
+//   List<Object?> get props => [payment];
+// }
 
-class AdvertisementPaymentVerifying extends CustomerAdvertisementState {}
+// class AdvertisementPaymentVerifying extends CustomerAdvertisementState {}
 
-class AdvertisementPaymentVerified extends CustomerAdvertisementState {
-  const AdvertisementPaymentVerified({required this.message});
+// class AdvertisementPaymentVerified extends CustomerAdvertisementState {
+//   const AdvertisementPaymentVerified({required this.message});
 
-  final String message;
+//   final String message;
 
-  @override
-  List<Object?> get props => [message];
-}
+//   @override
+//   List<Object?> get props => [message];
+// }

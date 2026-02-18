@@ -22,6 +22,7 @@ import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bl
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/notification_bloc/notification_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/promotion_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
@@ -115,6 +116,12 @@ Future<void> main() async {
           ),
            BlocProvider(
             create: (_) => KycBloc(),
+          ),
+           BlocProvider(
+            create: (_) => BankBloc(),
+          ),
+           BlocProvider(
+            create: (_) => PromotionBloc(),
           ),
         ],
         child: const MyApp(),

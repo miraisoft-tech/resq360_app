@@ -22,8 +22,9 @@ class KFormField extends StatefulWidget {
     this.formKey,
     this.fillColor,
     this.onEditingComplete,
+    this.onFieldSubmitted,
     this.type = InputType.primary,
-    super.key,
+    super.key, 
   });
   final bool button;
   final InputType type;
@@ -44,6 +45,7 @@ class KFormField extends StatefulWidget {
   final Key? formKey;
   final Color? fillColor;
   final void Function()? onEditingComplete;
+  final void Function(String)? onFieldSubmitted;
 
   @override
   State<KFormField> createState() => _KFormFieldState();
@@ -112,6 +114,7 @@ class _KFormFieldState extends State<KFormField> {
                 validator: widget.validator,
                 onChanged: widget.onChanged,
                 onEditingComplete: widget.onEditingComplete,
+                onFieldSubmitted: widget.onFieldSubmitted,
                 inputFormatters: widget.inputFormatters,
                 controller: widget.controller,
                 focusNode: widget.focusNode ?? _focusNode,

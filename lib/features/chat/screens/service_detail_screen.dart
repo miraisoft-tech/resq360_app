@@ -1,7 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/models/booking_enums.dart';
-import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
+// import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
@@ -63,10 +63,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         }
         if (state is BookingStarted) {
           Navigator.pop(context);
-          if (widget.chat.id != null) {
-            context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chat.id!));
-          }
+          // if (widget.chat.id != null) {
+          //   context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chat.id!));
+          // }
           await showSuccessSnackbar(context, 'Service has started');
+          Navigator.pop(context);
         }
 
         if (state is BookingCompleted) {
@@ -86,7 +87,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
           title: UrbText(
-            'Service Detail',
+            'Service Details',
             color: appColors.black,
             weight: FontWeight.w700,
             size: 22,
@@ -162,6 +163,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     reviewCount: providerReviews,
                     avatar:
                         AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
+                        showActions: true,
                   );
                 },
               ),
@@ -309,10 +311,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 ],
               ),
               5.verticalSpace,
-              if (widget.chat.serviceRequestStatus ==
-                      BookingEnums.assigned.name ||
-                  widget.chat.serviceRequestStatus ==
-                      BookingEnums.progress.name)
+              // if (widget.chat.serviceRequestStatus ==
+              //         BookingEnums.assigned.name ||
+              //     widget.chat.serviceRequestStatus ==
+              //         BookingEnums.progress.name)
                 WideButton(
                   label: 'Cancel',
                   backgroundColor: appColors.primary.shade50,

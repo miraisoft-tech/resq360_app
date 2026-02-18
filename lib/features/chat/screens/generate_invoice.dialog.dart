@@ -3,13 +3,12 @@ import 'dart:math';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/invoice_confirm.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
-import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
-import 'package:resq360/features/provider/authentication/view_models/provider_auth_vm.dart';
 
 class GenerateInvoiceDialog extends StatefulWidget {
   const GenerateInvoiceDialog({required this.chat, super.key});
@@ -30,20 +29,29 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
   late TextEditingController serviceController;
 
   late String selectedCategory;
-  late final int? currentUserId;
+  int? currentUserId;
+
+  Future<int?> _loadProviderId() async {
+    return AuthLocalRepo.instance.getProviderId();
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       unawaited(initializeLocation());
       context.read<ServiceCatalogBloc>().add(const FetchServices());
       unawaited(fetchCategory());
       dateController.text = '';
+      final id = await _loadProviderId();
+      setState(() {
+        currentUserId = id;
+      });
     });
 
     priceController = TextEditingController();
     serviceController = TextEditingController();
-    currentUserId = auth?.id;
+    // currentUserId = auth?.id;
   }
 
   Future<void> initializeLocation() async {
@@ -78,7 +86,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
 
   bool isProcessing = false;
 
-  final ProviderModel? auth = ProviderAuthProvider.instance.authInfo;
+  // final ProviderModel? auth = ProviderAuthProvider.instance.authInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -151,11 +159,49 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
 
                   if (state is ServicesLoaded) {
                     isProcessing = false;
+
+                    final chatServiceCategoryId = widget.chat.serviceCategoryId;
+
+                    final filteredServices =
+                        chatServiceCategoryId == null
+                            ? <Service>[]
+                            : state.services
+                                .where((s) => s.id == chatServiceCategoryId)
+                                .toList();
+
+                    if (filteredServices.isEmpty) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GenText(
+                            'No service found for this request.',
+                            color: appColors.textColor.shade400,
+                          ),
+                          12.verticalSpace,
+                          WideButton(
+                            label: 'Retry',
+                            onPressed: () {
+                              context.read<ServiceCatalogBloc>().add(
+                                const FetchServices(),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    }
+
+                    final current = _selectType.value;
+                    if (current == null ||
+                        !filteredServices.any((s) => s.id == current.id)) {
+                      _selectType.value = filteredServices.first;
+                    }
+
                     return ServiceDropdown(
-                      items: state.services,
+                      items: filteredServices,
                       controller: _selectType,
                     );
                   }
+
                   return const SizedBox.shrink();
                 },
               ),
@@ -229,6 +275,14 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
+                        if (currentUserId == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Unable to identify provider.',
+                          );
+                          return;
+                        }
+
                         if (locationController.text.isEmpty ||
                             priceController.text.isEmpty ||
                             serviceController.text.isEmpty ||

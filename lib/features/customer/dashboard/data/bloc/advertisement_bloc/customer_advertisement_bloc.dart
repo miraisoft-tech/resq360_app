@@ -2,24 +2,22 @@ import 'package:equatable/equatable.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
-import 'package:resq360/features/customer/dashboard/data/models/payment/payment.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/advertisement_repo.dart';
-import 'package:resq360/features/customer/dashboard/data/service/payment_repo.dart';
 
 part 'customer_advertisement_event.dart';
 part 'customer_advertisement_state.dart';
 
 final AdvertisementRepo advertisementRepo = AdvertisementRepo();
-final PaymentRepo paymentRepo = PaymentRepo();
+// final PaymentRepo paymentRepo = PaymentRepo();
 
 class CustomerAdvertisementBloc
     extends Bloc<CustomerAdvertisementEvent, CustomerAdvertisementState> {
   CustomerAdvertisementBloc() : super(CustomerAdvertisementInitial()) {
     on<CustomerFetchAdvertisement>(_fetchAdvertisement);
-    on<CreateAdvertisement>(_onCreateAdvertisement);
-    on<FetchAdvertisementPrice>(_onGetAdvertPrice);
-    on<VerifyAdvertisementPayment>(_onVerifyAdvertisementPayment);
-    on<FetchProviderActiveAdvertisements>(_fetchProviderActiveAdvertisements);
+    on<FetchProviderAdvertisements>(_fetchProviderActiveAdvertisements);
+    // on<FetchAdvertisementPrice>(_onGetAdvertPrice);
+    // on<VerifyAdvertisementPayment>(_onVerifyAdvertisementPayment);
+    // on<FetchProviderActiveAdvertisements>(_fetchProviderActiveAdvertisements);
   }
 
   Future<void> _fetchAdvertisement(
@@ -33,30 +31,9 @@ class CustomerAdvertisementBloc
 
       if (result.data != null) {
         final ads = result.data;
-
-        final currentState = state;
-        final existingProviderAds =
-            currentState is CustomerAdvertisementFetched
-                ? currentState.providerAds
-                : <Advertisement>[];
-
-        final existingAdminAds =
-            currentState is CustomerAdvertisementFetched
-                ? currentState.adminAds
-                : <Advertisement>[];
-
-        if (event.creatorType == CreatorType.provider.name) {
-          emit(
-            CustomerAdvertisementFetched(
-              providerAds: ads!,
-              adminAds: existingAdminAds,
-            ),
-          );
-        }
         if (event.creatorType == CreatorType.admin.name) {
           emit(
-            CustomerAdvertisementFetched(
-              providerAds: existingProviderAds,
+            AdminAdvertisementFetched(
               adminAds: ads!,
             ),
           );
@@ -70,18 +47,17 @@ class CustomerAdvertisementBloc
   }
 
   Future<void> _fetchProviderActiveAdvertisements(
-    FetchProviderActiveAdvertisements event,
+    FetchProviderAdvertisements event,
     Emitter<CustomerAdvertisementState> emit,
   ) async {
     emit(CustomerAdvertisementLoading());
 
     try {
-      final result = await advertisementRepo.fetchProviderActiveAdvertisements(
-        providerId: event.providerId,
-      );
+      final result =
+          await advertisementRepo.fetchActiveAdvertisementBasedOnLocation();
 
       if (result.data != null) {
-        emit(ProviderActiveAdvertisementsFetched(advertisements: result.data!));
+        emit(ProviderAdvertisementsFetched(advertisements: result.data!));
       } else {
         emit(
           CustomerAdvertisementError(
@@ -94,89 +70,89 @@ class CustomerAdvertisementBloc
     }
   }
 
-  Future<void> _onCreateAdvertisement(
-    CreateAdvertisement event,
-    Emitter<CustomerAdvertisementState> emit,
-  ) async {
-    emit(CustomerAdvertisementLoading());
+  // Future<void> _onCreateAdvertisement(
+  //   CreateAdvertisement event,
+  //   Emitter<CustomerAdvertisementState> emit,
+  // ) async {
+  //   emit(CustomerAdvertisementLoading());
 
-    final result = await advertisementRepo.createAdvertisement(
-      discountPercentage: event.discount,
-      durationInMilliSeconds: event.duration,
-      paymentMethod: event.paymentMethod,
-      description: event.description,
-    );
+  //   final result = await advertisementRepo.createAdvertisement(
+  //     discountPercentage: event.discount,
+  //     durationInMilliSeconds: event.duration,
+  //     paymentMethod: event.paymentMethod,
+  //     description: event.description,
+  //   );
 
-    if (result.error != null) {
-      emit(CustomerAdvertisementError(error: result.error!));
-      return;
-    }
+  //   if (result.error != null) {
+  //     emit(CustomerAdvertisementError(error: result.error!));
+  //     return;
+  //   }
 
-    if (result.data != null) {
-      if (result.data?.paymentResponse == null) {
-        emit(AdvertisementCreated());
-        return;
-      }
+  //   if (result.data != null) {
+  //     if (result.data?.paymentResponse == null) {
+  //       emit(AdvertisementCreated());
+  //       return;
+  //     }
 
-      if (result.data!.paymentResponse != null) {
-        emit(
-          AdvertisementPaymentInitiatedState(result.data!.paymentResponse!),
-        );
-      }
-    }
-  }
+  //     if (result.data!.paymentResponse != null) {
+  //       emit(
+  //         AdvertisementPaymentInitiatedState(result.data!.paymentResponse!),
+  //       );
+  //     }
+  //   }
+  // }
 
-  Future<void> _onGetAdvertPrice(
-    FetchAdvertisementPrice event,
-    Emitter<CustomerAdvertisementState> emit,
-  ) async {
-    emit(AdvertisementFetchPriceLoading());
+  // Future<void> _onGetAdvertPrice(
+  //   FetchAdvertisementPrice event,
+  //   Emitter<CustomerAdvertisementState> emit,
+  // ) async {
+  //   emit(AdvertisementFetchPriceLoading());
 
-    final result = await advertisementRepo.fetchAdvertPrice();
+  //   final result = await advertisementRepo.fetchAdvertPrice();
 
-    if (result.error != null) {
-      emit(CustomerAdvertisementError(error: result.error!));
-    } else {
-      final price = result.data;
-      emit(AdvertisementPriceFetched(price: price));
-    }
-  }
+  //   if (result.error != null) {
+  //     emit(CustomerAdvertisementError(error: result.error!));
+  //   } else {
+  //     final price = result.data;
+  //     emit(AdvertisementPriceFetched(price: price));
+  //   }
+  // }
 
-  Future<void> _onVerifyAdvertisementPayment(
-    VerifyAdvertisementPayment event,
-    Emitter<CustomerAdvertisementState> emit,
-  ) async {
-    emit(AdvertisementPaymentVerifying());
+  // Future<void> _onVerifyAdvertisementPayment(
+  //   VerifyAdvertisementPayment event,
+  //   Emitter<CustomerAdvertisementState> emit,
+  // ) async {
+  //   emit(AdvertisementPaymentVerifying());
 
-    try {
-      final result = await paymentRepo.verifyPayment(event.reference);
+  //   try {
+  //     final result = await paymentRepo.verifyPayment(event.reference);
 
-      if (result.isSuccess && result.data != null) {
-        if (result.data!.gatewayResponse == 'Successful' ||
-            result.data!.status == 'success') {
-          emit(AdvertisementCreated());
-        } else {
-          emit(
-            CustomerAdvertisementError(
-              error:
-                  'Payment was not successful: ${result.data!.gatewayResponse}',
-            ),
-          );
-        }
-      } else {
-        emit(
-          CustomerAdvertisementError(
-            error: result.error ?? 'Payment verification failed',
-          ),
-        );
-      }
-    } on Exception catch (e) {
-      log('Payment verification error: $e');
-      emit(
-        CustomerAdvertisementError(
-          error: 'Payment verification failed: $e',
-        ),
-      );
-    }
-  }
+  //     if (result.isSuccess && result.data != null) {
+  //       if (result.data!.gatewayResponse == 'Successful' ||
+  //           result.data!.status == 'success') {
+  //         emit(AdvertisementCreated());
+  //       } else {
+  //         emit(
+  //           CustomerAdvertisementError(
+  //             error:
+  //                 'Payment was not successful: ${result.data!.gatewayResponse}',
+  //           ),
+  //         );
+  //       }
+  //     } else {
+  //       emit(
+  //         CustomerAdvertisementError(
+  //           error: result.error ?? 'Payment verification failed',
+  //         ),
+  //       );
+  //     }
+  //   } on Exception catch (e) {
+  //     log('Payment verification error: $e');
+  //     emit(
+  //       CustomerAdvertisementError(
+  //         error: 'Payment verification failed: $e',
+  //       ),
+  //     );
+  //   }
+  // }
 }

@@ -118,20 +118,21 @@ final class UpdateCustomerAddress extends ProfileUpdateEvent {
   const UpdateCustomerAddress({
     required this.state,
     required this.city,
-    required this.zipCode,
     required this.address,
     required this.longitude,
     required this.latitude,
+    this.zipCode = '',
+
   });
   final String state;
   final String city;
-  final String zipCode;
+  final String? zipCode;
   final String address;
   final double longitude;
   final double latitude;
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
     state,
     city,
     zipCode,
@@ -179,4 +180,38 @@ final class UpdatePasswordEvent extends ProfileUpdateEvent {
 
   @override
   List<Object> get props => [oldPassword, newPassword];
+}
+
+
+class UpdateProviderServicesEvent extends ProfileUpdateEvent {
+  const UpdateProviderServicesEvent({
+    required this.services,
+  });
+
+  final List<ProviderServiceUpdate> services;
+
+  @override
+  List<Object?> get props => [services];
+}
+
+class ToggleProviderServiceEvent extends ProfileUpdateEvent {
+  const ToggleProviderServiceEvent({
+    required this.serviceCategoryId,
+    required this.isActive,
+    this.customServiceName,
+    this.minorServices = const [],
+  });
+
+  final int serviceCategoryId;
+  final bool isActive;
+  final String? customServiceName;
+  final List<String> minorServices;
+
+  @override
+  List<Object?> get props => [
+        serviceCategoryId,
+        isActive,
+        customServiceName,
+        minorServices,
+      ];
 }

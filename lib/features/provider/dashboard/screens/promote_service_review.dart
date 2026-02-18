@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
-import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/promotion_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/provider/dashboard/models/duration.enum.dart';
 import 'package:resq360/features/widgets/dialogs/payment_finished.modal.dart';
@@ -30,7 +31,7 @@ class _PromoteServiceReviewScreenState
   @override
   void initState() {
     super.initState();
-    context.read<CustomerAdvertisementBloc>().add(FetchAdvertisementPrice());
+    context.read<PromotionBloc>().add(FetchPromotionPrice());
   }
 
   @override
@@ -39,7 +40,7 @@ class _PromoteServiceReviewScreenState
     var balance = '';
     return MultiBlocListener(
       listeners: [
-        BlocListener<CustomerAdvertisementBloc, CustomerAdvertisementState>(
+        BlocListener<PromotionBloc, PromotionState>(
           listener: _handleAdvertisementState,
         ),
         BlocListener<WalletBloc, WalletState>(
@@ -146,14 +147,11 @@ class _PromoteServiceReviewScreenState
                             color: appColors.textColor.shade400,
                           ),
                           const Spacer(),
-                          BlocBuilder<
-                            CustomerAdvertisementBloc,
-                            CustomerAdvertisementState
-                          >(
+                          BlocBuilder<PromotionBloc, PromotionState>(
                             builder: (context, state) {
-                              if (state is AdvertisementPriceFetched) {
+                              if (state is PromotionPriceFetched) {
                                 return GenText(
-                                  state.price.toString(),
+                                  '₦ ${AppTextUtil.formatAmount(state.price.toString())}',
                                   height: 24.5,
                                   weight: FontWeight.w500,
                                   color: appColors.black,
@@ -179,16 +177,18 @@ class _PromoteServiceReviewScreenState
                             color: appColors.textColor.shade400,
                           ),
                           const Spacer(),
-                          BlocBuilder<
-                            CustomerAdvertisementBloc,
-                            CustomerAdvertisementState
-                          >(
+                          BlocBuilder<PromotionBloc, PromotionState>(
                             builder: (context, state) {
-                              if (state is AdvertisementPriceFetched) {
-                                final price = state.price ?? 0;
+                              if (state is PromotionPriceFetched) {
+                                final price = state.price;
+                                // final duration = widget.duration.value;
                                 final total = price * widget.duration.value;
-                                return GenText(
+                                final formattedTotal = AppTextUtil.formatAmount(
                                   total.toString(),
+                                );
+                                // print('price: $price, total: $total, formattedtotal: $formattedTotal, duration ${widget.duration.value}'  );
+                                return GenText(
+                                  '₦ $formattedTotal',
                                   height: 24.5,
                                   weight: FontWeight.w500,
                                   color: appColors.black,
@@ -214,12 +214,9 @@ class _PromoteServiceReviewScreenState
                       ),
                     ),
                     12.horizontalSpace,
-                    BlocBuilder<
-                      CustomerAdvertisementBloc,
-                      CustomerAdvertisementState
-                    >(
+                    BlocBuilder<PromotionBloc, PromotionState>(
                       builder: (context, state) {
-                        final isLoaded = state is AdvertisementPriceFetched;
+                        final isLoaded = state is PromotionPriceFetched;
 
                         return Expanded(
                           child: WideButton(
@@ -229,7 +226,7 @@ class _PromoteServiceReviewScreenState
                             onPressed:
                                 isLoaded
                                     ? () async {
-                                      final price = state.price ?? 0;
+                                      final price = state.price;
                                       final total =
                                           price * widget.duration.value;
 
@@ -248,9 +245,10 @@ class _PromoteServiceReviewScreenState
                                               body: FinishPaymentDialog(
                                                 amount: state.price.toString(),
                                                 walletBalance:
-                                                    double.parse(
+                                                    double.tryParse(
                                                       balance,
-                                                    ).toInt(),
+                                                    )?.toInt() ??
+                                                    0,
                                                 discount: widget.discount,
                                                 duration: widget.duration,
                                                 description: widget.description,
@@ -279,15 +277,21 @@ class _PromoteServiceReviewScreenState
 
   Future<void> _handleAdvertisementState(
     BuildContext context,
-    CustomerAdvertisementState state,
+    PromotionState state,
   ) async {
-    if (state is CustomerAdvertisementLoading ||
-        state is AdvertisementPaymentVerifying) {
-      showLoadingDialog(context);
+    if (!mounted) return;
+
+    if (state is PromotionLoading || state is PromotionPaymentVerifying) {
+      if (mounted) showLoadingDialog(context);
       return;
     }
 
-    if (state is AdvertisementPaymentInitiatedState) {
+    if (state is PromotionPriceFetched) {
+      if (mounted) await pop(context);
+    }
+    if (state is PromotionPaymentInitiated) {
+      if (!mounted) return;
+
       Navigator.pop(context);
 
       final completed = await Navigator.push<bool>(
@@ -302,6 +306,8 @@ class _PromoteServiceReviewScreenState
         ),
       );
 
+      if (!mounted) return;
+
       if (completed ?? false) {
         await _verifyAdvertisementPayment(state.payment.reference);
       } else {
@@ -310,30 +316,40 @@ class _PromoteServiceReviewScreenState
       return;
     }
 
-    if (state is AdvertisementCreated) {
+    if (state is PromotionCreated) {
+      if (!mounted) return;
+
       await pop(context);
+
+      if (!mounted) return;
+
       await GeneralDialogs.showCustomDialog<void>(
         context,
         body: PaymentFinished(
           onTap: () async {
-            if (context.mounted) await pop(context);
-            if (context.mounted) await pop(context);
-            if (context.mounted) await pop(context);
+            if (mounted) await pop(context);
+            if (mounted) await pop(context);
+            if (mounted) await pop(context);
           },
         ),
       );
       return;
     }
 
-    if (state is CustomerAdvertisementError) {
-      Navigator.pop(context);
-      await showErrorSnackbar(context, state.error);
+    if (state is PromotionError) {
+      if (mounted) {
+        await pop(context);
+        await showErrorSnackbar(context, state.error);
+        context.read<PromotionBloc>().add(FetchPromotionPrice());
+      }
     }
   }
 
   Future<void> _verifyAdvertisementPayment(String reference) async {
-    context.read<CustomerAdvertisementBloc>().add(
-      VerifyAdvertisementPayment(reference: reference),
+    if (!mounted) return;
+
+    context.read<PromotionBloc>().add(
+      VerifyPromotionPayment(reference: reference),
     );
   }
 }
@@ -351,7 +367,7 @@ class FinishPaymentDialog extends StatefulWidget {
   });
 
   final String amount;
-  final int walletBalance;
+  final num walletBalance;
   final String discount;
   final PromotionDuration duration;
   final String description;
@@ -370,7 +386,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
     final remaining = widget.walletBalance - fee;
 
     return Padding(
-      padding: EdgeInsets.only(top: 220.h, bottom: 200.h),
+      padding: EdgeInsets.only(top: 220.h, bottom: 320.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -424,7 +440,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                     ),
                     10.verticalSpace,
                     GenText(
-                      '₦${widget.amount}',
+                      '₦${AppTextUtil.formatAmount(widget.amount)}',
                       weight: FontWeight.w500,
                       color: appColors.black,
                     ),
@@ -452,7 +468,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                           ),
                           const Spacer(),
                           GenText(
-                            '₦${widget.walletBalance}',
+                            '₦${AppTextUtil.formatAmount(widget.walletBalance.toString())}',
                             weight: FontWeight.w500,
                             color: appColors.black,
                           ),
@@ -468,7 +484,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                           ),
                           const Spacer(),
                           GenText(
-                            '₦${widget.total}',
+                            '₦${AppTextUtil.formatAmount(widget.total.toString())}',
                             weight: FontWeight.w500,
                             color: appColors.neutral.shade500,
                           ),
@@ -484,7 +500,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                           ),
                           const Spacer(),
                           GenText(
-                            '₦$remaining',
+                            '₦${AppTextUtil.formatAmount(remaining.toString())}',
                             weight: FontWeight.w500,
                             color:
                                 remaining >= 0
@@ -511,7 +527,8 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                   12.horizontalSpace,
                   Expanded(
                     child: WideButton(
-                      label: 'Pay ₦${widget.total}',
+                      label:
+                          'Pay ₦${AppTextUtil.formatAmount(widget.total.toString())}',
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
@@ -543,10 +560,10 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
       return;
     }
 
-    context.read<CustomerAdvertisementBloc>().add(
-      CreateAdvertisement(
-        discount: int.parse(widget.discount),
-        duration: widget.duration.milliseconds,
+    context.read<PromotionBloc>().add(
+      CreatePromotion(
+        discountPercentage: int.parse(widget.discount),
+        durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.wallet.name,
         description: widget.description,
       ),
@@ -554,10 +571,10 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
   }
 
   Future<void> _payWithCard() async {
-    context.read<CustomerAdvertisementBloc>().add(
-      CreateAdvertisement(
-        discount: int.parse(widget.discount),
-        duration: widget.duration.milliseconds,
+    context.read<PromotionBloc>().add(
+      CreatePromotion(
+        discountPercentage: int.parse(widget.discount),
+        durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.new_card.name,
 
         description: widget.description,

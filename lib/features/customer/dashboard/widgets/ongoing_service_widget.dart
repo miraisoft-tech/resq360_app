@@ -1,8 +1,9 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
+// import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
-import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
+// import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 
@@ -56,6 +57,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                           height: 24.5,
                           weight: FontWeight.w500,
                           color: colors.black,
+                          maxLines: 1,
                         ),
                         const Spacer(),
                         Container(
@@ -79,6 +81,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                       height: 20.5,
                       weight: FontWeight.w500,
                       color: colors.neutral.shade400,
+                      maxLines: 1,
                     ),
                     Row(
                       children: [
@@ -132,7 +135,23 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                 ),
               ),
 
-              if (status == BookingStatus.completed.value) ...[
+              //  WideButton(
+              //     label: 'Cancel',
+              //     backgroundColor: colors.primary.shade50,
+              //     textColor: colors.primary.shade500,
+              //     onPressed: () async {
+              //        final serviceRequestId = widget.booking.id;
+              //       if (serviceRequestId == null) return;
+              //       await pushScreen(
+              //         context,
+              //         ServiceCancelledScreen(
+              //           serviceRequestId: serviceRequestId,
+              //         ),
+              //       );
+              //     },
+              //   ),
+
+              // if (status == BookingStatus.completed.value) ...[
                 20.horizontalSpace,
                 Expanded(
                   child: ElevatedButton(
@@ -164,7 +183,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                   ),
                 ),
               ],
-            ],
+            // ],
           ),
         ],
       ),

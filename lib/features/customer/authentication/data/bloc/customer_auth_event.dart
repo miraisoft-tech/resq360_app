@@ -97,6 +97,9 @@ class CustomergetUserProfile extends CustomerAuthEvent {
 
 class CustomerLogout extends CustomerAuthEvent {}
 
+class CustomerDeleteAccount extends CustomerAuthEvent {
+  const CustomerDeleteAccount();
+}
 // KYC
 // class CustomerSubmitKyc extends CustomerAuthEvent {
 //   const CustomerSubmitKyc({required this.filePath});

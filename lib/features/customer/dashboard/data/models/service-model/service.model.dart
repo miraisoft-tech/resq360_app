@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
+@immutable
 class Service {
-  Service({
+  const Service({
     required this.id,
     required this.name,
     required this.image,
@@ -13,10 +15,9 @@ class Service {
 
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
-      id:
-          json['id'] is int
-              ? json['id'] as int
-              : int.tryParse(json['id'].toString()) ?? 0,
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id'].toString()) ?? 0,
       name: json['name']?.toString() ?? '',
       image: json['image']?.toString() ?? '',
       imageId: json['imageId']?.toString(),
@@ -39,17 +40,27 @@ class Service {
   final String status;
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'image': image,
-    'imageId': imageId,
-    'description': description,
-    'createdBy': createdBy,
-    'createdAt': createdAt,
-    'updatedAt': updatedAt,
-    'status': status,
-  };
+        'id': id,
+        'name': name,
+        'image': image,
+        'imageId': imageId,
+        'description': description,
+        'createdBy': createdBy,
+        'createdAt': createdAt,
+        'updatedAt': updatedAt,
+        'status': status,
+      };
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Service && other.id == id;
+  }
+
+  @override
+   int get hashCode => id.hashCode;
 }
+
 
 class ServiceProvider {
   ServiceProvider({

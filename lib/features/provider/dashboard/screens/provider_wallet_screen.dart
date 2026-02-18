@@ -3,6 +3,7 @@ import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
+import 'package:resq360/features/customer/dashboard/screens/all_transactions_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
@@ -175,7 +176,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                         onWithdraw: () async {
                           await pushScreen(
                             context,
-                            const ProviderWithdrawScreen(),
+                            ProviderWithdrawScreen(balance: balance.toString(),),
                           );
                         },
                       );
@@ -192,12 +193,20 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                       size: 18,
                       weight: FontWeight.w700,
                       color: appColors.black,
-                    ),
-                    GenText(
+                    ), 
+                     GestureDetector(
+                      onTap: () async {
+                        await pushScreen(
+                          context,
+                          const AllTransactionsScreen(),
+                        );
+                      },
+                   child: GenText(
                       'View All',
                       size: 12,
                       weight: FontWeight.w400,
                       color: appColors.primary.shade500,
+                    ),
                     ),
                   ],
                 ),
@@ -267,7 +276,14 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                       );
                     }
 
-                    return const SizedBox.shrink();
+                    return ErrorMessageAndButton(
+                        error: 'An error occured',
+                        onPressed: () {
+                          context.read<WalletTransactionsBloc>().add(
+                            FetchWalletTransactions(),
+                          );
+                        },
+                      );
                   },
                 ),
               ],

@@ -56,9 +56,9 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
   }
 
   void _finish([bool success = true]) {
-    if (finished) return;
+    if (finished || !mounted) return;
     finished = true;
-    Navigator.pop(context, success);
+    Navigator.of(context).pop(success);
   }
 
   @override
@@ -71,11 +71,11 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: context.appColors.whiteColor,
-          title: const Text('Complete Payment'),
+          title: const GenText('Complete Payment'),
           actions: [
             TextButton(
               onPressed: _finish,
-              child: const Text('Done'),
+              child: const GenText('Done'),
             ),
             if (_loading)
               Padding(
@@ -115,10 +115,18 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
             onLoadStart: (_, url) {
               setState(() => _loading = true);
               log('the url is now: $url');
-
+              if (url.toString().startsWith(widget.callbackUrl)) {
+                _finish();
+              }
               if (url.toString().contains(
-                'https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
-              )) {
+                    'domain=resq360.com',
+                  ) ||
+                  url.toString().contains(
+                    'https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
+                  ) ||
+                  url.toString().contains(
+                    'https://www.searchhounds.com/favicon.svg',
+                  )) {
                 _finish();
               }
             },

@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-import 'package:resq360/core/utils/build_config.dart';
 
 class AppTextUtil {
   AppTextUtil._();
@@ -24,24 +23,20 @@ class AppTextUtil {
     return DateFormat('d MMMM, yyyy').format(date);
   }
 
-  static String formatAmount(String amountString) {
-    if (amountString == '') return '0.00';
-
-    final amount = amountString.replaceAll(',', '');
-    try {
-      final f = NumberFormat('###,###,###,###.00', 'en_US');
-      if (f.format(double.tryParse(amount)) == '.00') {
-        return '0.00';
-      }
-      if (f.format(double.parse(amount)).startsWith('.')) {
-        return '0${f.format(double.parse(amount))}';
-      }
-      return f.format(double.parse(amount));
-    } on Exception catch (e) {
-      log(e);
-
+  static String formatAmount(String? amountString) {
+    if (amountString == null || amountString.trim().isEmpty) {
       return '0.00';
     }
+
+    final cleanedAmount = amountString.replaceAll(',', '');
+
+    final parsed = double.tryParse(cleanedAmount);
+    if (parsed == null) {
+      return '0.00';
+    }
+
+    final f = NumberFormat('#,##0.00', 'en_US');
+    return f.format(parsed);
   }
 
   static String formatDateToString(String date, [String? format]) {
@@ -101,4 +96,28 @@ class AppTextUtil {
 
     return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
   }
+
+static String formatTransactionDate(DateTime? date) {
+  if (date == null) return '';
+
+  final now = DateTime.now();
+  final diff = now.difference(date);
+
+  if (diff.inDays == 0) {
+    return 'Today, ${_formatTime(date.toLocal())}';
+  }
+
+  if (diff.inDays == 1) {
+    return 'Yesterday, ${_formatTime(date.toLocal())}';
+  }
+
+  return DateFormat('MMM d, y - h:mma').format(date.toLocal());
+}
+
+static String _formatTime(DateTime d) {
+  final hour = d.hour > 12 ? d.hour - 12 : d.hour;
+  final period = d.hour >= 12 ? 'PM' : 'AM';
+  return '$hour:${d.minute.toString().padLeft(2, '0')} $period';
+}
+
 }

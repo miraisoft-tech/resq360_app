@@ -8,6 +8,7 @@ import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
@@ -46,6 +47,8 @@ class _ProviderServiceDetailScreenState
     }
   }
 
+  final isProvider = dashboardViewModel.userType == UserType.provider;
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -59,23 +62,26 @@ class _ProviderServiceDetailScreenState
     final serviceCategoryname = widget.booking.serviceCategory?.name;
     final chatId = widget.booking.chatId;
     final clientPhoneNumber  = widget.booking.user?.phoneNumber ?? '';
+    final providerPhoneNumber  = widget.booking.assignedProvider?.phoneNumber ?? '';
+    final showAction = widget.booking.status?.toUpperCase()  != BookingEnums.completed.name;
 
     return MultiBlocListener(
       listeners: [
         BlocListener<BookingBloc, BookingState>(
           listener: (context, state) async {
-            if (state is BookingStarted) {
-              await showSuccessSnackbar(context, 'Service has started');
+
+            if (state is BookingLoading) {
+              showLoadingDialog(context);
             }
 
-            if (state is BookingCompleted) {
-              await showSuccessSnackbar(
-                context,
-                'Service has been marked as completed',
-              );
+            if (state is BookingStarted) {
+              await pop(context);
+              await showSuccessSnackbar(context, 'Service has started');
+              await pop(context);
             }
 
             if (state is BookingError) {
+              await pop(context);
               await showErrorSnackbar(context, state.error);
             }
           },
@@ -108,6 +114,7 @@ class _ProviderServiceDetailScreenState
           ),
           child: Column(
             children: [
+              if(!isProvider)
               16.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, ratingsState) {
@@ -128,9 +135,13 @@ class _ProviderServiceDetailScreenState
                     rating: providerRating,
                     reviewCount: providerReviewCount,
                     avatar: providerImage ?? '', 
+                    showActions:showAction,
+                     chatId: chatId,
+                    phoneNumber: providerPhoneNumber,
                   );
                 },
               ),
+              if (isProvider)
               12.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, ratingsState) {
@@ -153,7 +164,7 @@ class _ProviderServiceDetailScreenState
                     rating: customerRating,
                     reviewCount: customerReviewCount,
                     avatar: clientImage ?? '',
-                    showActions: true,
+                    showActions: showAction,
                     chatId: chatId,
                     phoneNumber: clientPhoneNumber,
                   );
@@ -236,7 +247,7 @@ class _ProviderServiceDetailScreenState
                           if (serviceRequestId == null) return;
                           await pushScreen(
                             context,
-                            CancelSlientServiceScreen(
+                            CancelClientServiceScreen(
                               serviceRequestId: serviceRequestId,
                             ),
                           );
@@ -269,7 +280,7 @@ class _ProviderServiceDetailScreenState
                     ),
                   ),
                   12.horizontalSpace,
-                  if (widget.booking.status ==BookingEnums.progress.name
+                  if (widget.booking.status ==BookingEnums.progress.name && isProvider
                       )
                     Expanded(
                       child: WideButton(

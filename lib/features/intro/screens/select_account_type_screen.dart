@@ -5,6 +5,7 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/main_layout.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
 
@@ -42,6 +43,22 @@ class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
     } else {
       await pushScreen(context, const ProviderLoginScreen());
     }
+  }
+
+  Future<void> _onContinueAsGuest() async {
+    await AuthLocalRepo.instance.saveGuestMode(isGuest: true);
+    await AuthLocalRepo.instance.saveUserType(UserType.customer);
+    await AuthLocalRepo.instance.clearAccessToken();
+    await AuthLocalRepo.instance.clearAuthCredentials();
+
+    if (!mounted) return;
+
+    dashboardViewModel.userType = UserType.customer;
+
+    await replaceScreen(
+      context,
+      const MainLayoutPage(userType: UserType.customer),
+    );
   }
 
   @override
@@ -101,6 +118,18 @@ class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
               ),
               const Spacer(),
               WideButton(label: 'Continue', onPressed: _onContinue),
+              10.verticalSpace,
+              if (_selectedIndex == 0)
+                GestureDetector(
+                  onTap: _onContinueAsGuest,
+                  child: GenText(
+                    'Continue as guest',
+                    height: 20,
+                    weight: FontWeight.w600,
+                    color: colors.primary.shade500,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               20.verticalSpace,
             ],
           ),

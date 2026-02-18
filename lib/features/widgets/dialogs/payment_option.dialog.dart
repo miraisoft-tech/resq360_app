@@ -1,5 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 
 enum PaymentMethod {
   wallet,
@@ -75,7 +76,8 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
                   var subtitle = 'Loading...';
                   var disabled = true;
                   if (state is FetchedWalletInfo) {
-                    subtitle = 'Balance: ₦${state.wallet.balance}';
+                    subtitle =
+                        'Balance: ₦${AppTextUtil.formatAmount(state.wallet.balance?.toString() ?? '0')}';
                     disabled = false;
                   } else if (state is FetchingWalletInfoError) {
                     subtitle = 'Unable to fetch balance';
@@ -104,7 +106,7 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
               // 12.verticalSpace,
               PaymentOption(
                 icon: AppAssets.ASSETS_ICONS_PAYMENT_CARD_SVG.svg,
-                title: 'Pay with Card',
+                title: 'Pay Online',
                 bordered: true,
                 isSelected: selectedPayment == PaymentMethod.new_card,
                 onTap: () => _selectPayment(PaymentMethod.new_card),
