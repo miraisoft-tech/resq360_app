@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/notification_service.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
@@ -33,6 +34,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isGuest = false;
+  int _unreadCount = 0;
 
   String _guestAddress() {
     final place = dashboardViewModel.currentPlacemark;
@@ -55,8 +57,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initDashboard() async {
     final isGuest = await AuthLocalRepo.instance.getGuestMode();
+    final unreadCount =
+        await NotificationRepo.instance.getUnreadNotificationCount();
+
     if (!mounted) return;
-    setState(() => _isGuest = isGuest);
+    setState(() {
+      _isGuest = isGuest;
+      _unreadCount = unreadCount;
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_isGuest) {
@@ -152,7 +160,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   IconButton(
-                    icon: AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg,
+                    icon:
+                        _unreadCount > 0
+                            ? AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg
+                            : Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: colors.neutral.shade300,
+                                ),
+                                borderRadius: BorderRadiusDirectional.circular(
+                                  17,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: Icon(
+                                  Icons.notifications_none,
+                                  color: colors.neutral.shade500,
+                                  size: 17,
+                                ),
+                              ),
+                            ),
                     onPressed: () async {
                       if (_isGuest) {
                         await _requireLogin();
