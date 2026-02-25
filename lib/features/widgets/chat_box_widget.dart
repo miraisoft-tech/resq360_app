@@ -8,7 +8,7 @@ class ChatBoxWidget extends StatefulWidget {
   });
 
   final void Function(String message) onSend;
-  final VoidCallback onAttachment;
+  final void Function(BuildContext) onAttachment;
 
   @override
   State<ChatBoxWidget> createState() => _ChatBoxWidgetState();
@@ -52,7 +52,7 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
         children: [
           SVGButton(
             path: AppAssets.ASSETS_ICONS_ATTACHMENT_ICON_SVG,
-            onTap: widget.onAttachment,
+            onTap: () => widget.onAttachment(context),
           ),
           6.horizontalSpace,
           Expanded(

@@ -124,8 +124,8 @@ class _IntroScreenState extends State<IntroScreen> {
                           child: Column(
                             children: [
                               e.imagePath.imageAsset(
-                                height: 350,
-                                width: 350,
+                                height: 330,
+                                width: 330,
                                 fit: BoxFit.contain,
                               ),
                               20.verticalSpace,

@@ -50,7 +50,10 @@ void clearFocus(BuildContext context) {
 }
 
 Future<dynamic> pop(BuildContext context, [dynamic result]) {
-  Navigator.pop(context, result);
+  if (Navigator.canPop(context)) {
+    Navigator.pop(context, result);
+  }
+
   return Future.value(result);
 }
 

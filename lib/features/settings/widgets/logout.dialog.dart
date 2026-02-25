@@ -44,11 +44,11 @@ class LogoutDialog extends StatelessWidget {
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 290.h, bottom: 290.h),
+      padding: EdgeInsets.only(top: 280.h, bottom: 280.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
-          margin: pad(horizontal: 20),
+          margin: pad(horizontal: 16),
           padding: pad(horizontal: 25, vertical: 25),
           decoration: BoxDecoration(
             color: appColors.whiteColor,
@@ -60,7 +60,7 @@ class LogoutDialog extends StatelessWidget {
               UrbText(
                 'Are you sure you want to log out?',
                 size: 19,
-                height: 26.5,
+                height: 20.5,
                 weight: FontWeight.w700,
                 color: appColors.black,
               ),

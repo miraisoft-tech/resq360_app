@@ -10,11 +10,11 @@ import 'package:resq360/core/services/base_api.dart';
 
 class NotificationRepo extends BaseAPI {
   factory NotificationRepo() {
-    return _instance;
+    return instance;
   }
 
   NotificationRepo._internal();
-  static final NotificationRepo _instance = NotificationRepo._internal();
+  static final NotificationRepo instance = NotificationRepo._internal();
 
   Future<NotificationResponse> getRecentNotificationActivities({
      String? toDate,

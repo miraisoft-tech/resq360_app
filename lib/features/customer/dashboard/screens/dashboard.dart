@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/notification_service.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
@@ -17,6 +17,7 @@ import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widg
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
@@ -33,6 +34,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isGuest = false;
+  int _unreadCount = 0;
 
   String _guestAddress() {
     final place = dashboardViewModel.currentPlacemark;
@@ -55,14 +57,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initDashboard() async {
     final isGuest = await AuthLocalRepo.instance.getGuestMode();
-    if (!mounted) return;
-    setState(() => _isGuest = isGuest);
+    // if (!_isGuest) {
+    //   final unreadCount =
+    //       await NotificationRepo.instance.getUnreadNotificationCount();
+    //   if (!mounted) return;
+    //   setState(() {
+    //     _unreadCount = unreadCount;
+    //   });
+    // }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    setState(() {
+      _isGuest = isGuest;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!_isGuest) {
         context.read<CustomerAuthBloc>().add(
           const CustomergetUserProfile(),
         );
+        final unreadCount =
+            await NotificationRepo.instance.getUnreadNotificationCount();
+        if (!mounted) return;
+        setState(() {
+          _unreadCount = unreadCount;
+        });
       }
 
       context.read<ServiceCatalogBloc>().add(const FetchServices());
@@ -85,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _requireLogin() async {
     await showErrorSnackbar(context, 'Please log in to continue');
-    await pushScreen(context, const LoginScreen());
+    await pushScreen(context, const SelectAccountTypeScreen());
   }
 
   @override
@@ -152,7 +171,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   IconButton(
-                    icon: AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg,
+                    icon:
+                        _unreadCount > 0
+                            ? AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg
+                            : Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: colors.neutral.shade300,
+                                ),
+                                borderRadius: BorderRadiusDirectional.circular(
+                                  17,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: Icon(
+                                  Icons.notifications_none,
+                                  color: colors.neutral.shade500,
+                                  size: 17,
+                                ),
+                              ),
+                            ),
                     onPressed: () async {
                       if (_isGuest) {
                         await _requireLogin();

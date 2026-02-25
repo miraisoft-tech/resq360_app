@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/core/services/notification_service.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/promotion_bloc.dart';
@@ -34,27 +37,38 @@ String revenue = '-';
 bool isApproved = false;
 bool profileNotDone = false;
 ProviderModel? providerData;
+int _unreadCount = 0;
 
 class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   // int? providerId;
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      context.read<ProviderAuthBloc>().add(
-        const ProvidergetProviderProfile(),
-      );
+    unawaited(_initDashboard());
+  }
 
-      context.read<CustomerAdvertisementBloc>().add(
-        CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
-      );
+  Future<void> _initDashboard() async {
+    final unreadCount =
+        await NotificationRepo.instance.getUnreadNotificationCount();
 
-      context.read<ProviderServiceBloc>().add(
-        ProviderFetchBookings(
-          status: BookingStatus.ongoing.value,
-        ),
-      );
+    if (!mounted) return;
+    setState(() {
+      _unreadCount = unreadCount;
     });
+
+    context.read<ProviderAuthBloc>().add(
+      const ProvidergetProviderProfile(),
+    );
+
+    context.read<CustomerAdvertisementBloc>().add(
+      CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
+    );
+
+    context.read<ProviderServiceBloc>().add(
+      ProviderFetchBookings(
+        status: BookingStatus.ongoing.value,
+      ),
+    );
   }
 
   @override
@@ -106,8 +120,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           final providerId = providerData!.id;
                           if (providerId != null) {
                             context.read<PromotionBloc>().add(
-                            FetchActivePromotions(providerId),
-                          );
+                              FetchActivePromotions(providerId),
+                            );
                           }
                         }
                         // final profileNotDone =
@@ -139,7 +153,28 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       },
                     ),
                     IconButton(
-                      icon: AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg,
+                      icon:
+                          _unreadCount > 0
+                              ? AppAssets.ASSETS_ICONS_NOTIFICATION_SVG.svg
+                              : Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: colors.neutral.shade300,
+                                  ),
+                                  borderRadius:
+                                      BorderRadiusDirectional.circular(
+                                        17,
+                                      ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: Icon(
+                                    Icons.notifications_none,
+                                    color: colors.neutral.shade500,
+                                    size: 17,
+                                  ),
+                                ),
+                              ),
                       onPressed: () async {
                         await pushScreen(context, const NotificationScreen());
                       },
