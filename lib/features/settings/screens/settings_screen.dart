@@ -301,339 +301,337 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        forceMaterialTransparency: true,
-        elevation: 0,
-        title: UrbText(
-          'Settings',
-          size: 22,
-          weight: FontWeight.w700,
-          color: appColors.black,
-        ),
-        centerTitle: true,
-        backgroundColor: appColors.whiteColor,
-        foregroundColor: appColors.black,
-      ),
-      body: RefreshIndicator(
-        color: appColors.primary,
-        onRefresh: _refreshProfile,
-        child: ListView(
-          padding: EdgeInsets.only(
-            left: 24.w,
-            right: 24.w,
-            bottom: 100.h,
-          ),
-          children: [
-            10.verticalSpace,
-            BlocListener<ProfileUpdateBloc, ProfileUpdateState>(
-              listener: (context, state) async {
-                if (state is Loading) {
-                  showLoadingDialog(context);
-                }
-
-                if (state is ProfileUpdateSuccess) {
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-                  await _refreshProfile();
-                }
-
-                if (state is ProviderAcivitityChanged) {
-                  await _refreshProfile();
-                }
-
-                if (state is ProfileUpdateError) {
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-                  await showErrorSnackbar(context, state.message);
-                }
-              },
-              child: ProfileSection(
-                isProvider: isProvider,
-                refreshProfile: _refreshProfile,
-                onPickImage: () => _pickProfileImage(context),
-              ),
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: appColors.primary,
+          onRefresh: _refreshProfile,
+          child: ListView(
+            padding: EdgeInsets.only(
+              left: 16.w,
+              right: 16.w,
+              bottom: 100.h,
             ),
-            10.verticalSpace,
-            if (isProvider)
-              BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
-                builder: (context, authState) {
-                  if (authState is ProviderProfileLoadedState) {
-                    final status = authState.user.activityStatus ?? 'UNKNOWN';
-                    final normalizedStatus = status.toLowerCase();
-                    final isOnline = status.toLowerCase() == 'online';
-                    final canToggle =
-                        normalizedStatus == 'online' ||
-                        normalizedStatus == 'offline';
+            children: [
+              UrbText(
+                'Settings',
+                size: 20,
+                height: 28,
+                weight: FontWeight.w700,
+                color: appColors.black,
+              ),
+              10.verticalSpace,
+              BlocListener<ProfileUpdateBloc, ProfileUpdateState>(
+                listener: (context, state) async {
+                  if (state is Loading) {
+                    showLoadingDialog(context);
+                  }
 
-                    return BlocBuilder<ProfileUpdateBloc, ProfileUpdateState>(
-                      builder: (context, updateState) {
-                        final isLoading = updateState is ProfileUpdateLoading;
+                  if (state is ProfileUpdateSuccess) {
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                    await _refreshProfile();
+                  }
 
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                final status =
-                                    authState.user.activityStatus
-                                        ?.toUpperCase() ??
-                                    'UNKNOWN';
+                  if (state is ProviderAcivitityChanged) {
+                    await _refreshProfile();
+                  }
 
-                                await GeneralDialogs.showCustomDialog<void>(
-                                  context,
-                                  body: AccountStatusDialog(
-                                    currentStatus: status,
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      await pushScreen(
-                                        context,
-                                        const ContactAdminScreen(
-                                          issueType: AdminIssueType.complaint,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                              child: Row(
-                                children: [
-                                  GenText(
-                                    'Account Status: ${isOnline ? 'Online' : 'Offline'}',
-                                    height: 24.5,
-                                    color:
-                                        isOnline
-                                            ? appColors.success.shade700
-                                            : appColors.error.shade500,
-                                    weight: FontWeight.w500,
-                                  ),
-                                  4.horizontalSpace,
-                                  AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
-                                      .svgColor(
-                                        color: appColors.success.shade700,
-                                      ),
-                                ],
-                              ),
-                            ),
+                  if (state is ProfileUpdateError) {
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                    await showErrorSnackbar(context, state.message);
+                  }
+                },
+                child: ProfileSection(
+                  isProvider: isProvider,
+                  refreshProfile: _refreshProfile,
+                  onPickImage: () => _pickProfileImage(context),
+                ),
+              ),
+              10.verticalSpace,
+              if (isProvider)
+                BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+                  builder: (context, authState) {
+                    if (authState is ProviderProfileLoadedState) {
+                      final status = authState.user.activityStatus ?? 'UNKNOWN';
+                      final normalizedStatus = status.toLowerCase();
+                      final isOnline = status.toLowerCase() == 'online';
+                      final canToggle =
+                          normalizedStatus == 'online' ||
+                          normalizedStatus == 'offline';
 
-                            12.horizontalSpace,
+                      return BlocBuilder<ProfileUpdateBloc, ProfileUpdateState>(
+                        builder: (context, updateState) {
+                          final isLoading = updateState is ProfileUpdateLoading;
 
-                            CustomSwitchWidget(
-                              value: isOnline,
-                              activeThumbColor:
-                                  isLoading
-                                      ? appColors.textColor.shade100
-                                      : appColors.success.shade700,
-                              disabledThumbColor:
-                                  isLoading
-                                      ? appColors.textColor.shade100
-                                      : appColors.textColor.shade200,
-                              onChanged:
-                                  canToggle && !isLoading
-                                      ? ({required value}) {
-                                        final newStatus =
-                                            value ? 'online' : 'offline';
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  final status =
+                                      authState.user.activityStatus
+                                          ?.toUpperCase() ??
+                                      'UNKNOWN';
 
-                                        context.read<ProfileUpdateBloc>().add(
-                                          UpdateActivityStatusEvent(newStatus),
+                                  await GeneralDialogs.showCustomDialog<void>(
+                                    context,
+                                    body: AccountStatusDialog(
+                                      currentStatus: status,
+                                      onTap: () async {
+                                        Navigator.pop(context);
+                                        await pushScreen(
+                                          context,
+                                          const ContactAdminScreen(
+                                            issueType: AdminIssueType.complaint,
+                                          ),
                                         );
-                                      }
-                                      : null,
+                                      },
+                                    ),
+                                  );
+                                },
+                                child: Row(
+                                  children: [
+                                    GenText(
+                                      'Account Status: ${isOnline ? 'Online' : 'Offline'}',
+                                      height: 24.5,
+                                      color:
+                                          isOnline
+                                              ? appColors.success.shade700
+                                              : appColors.error.shade500,
+                                      weight: FontWeight.w500,
+                                    ),
+                                    4.horizontalSpace,
+                                    AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
+                                        .svgColor(
+                                          color: appColors.success.shade700,
+                                        ),
+                                  ],
+                                ),
+                              ),
+
+                              12.horizontalSpace,
+
+                              CustomSwitchWidget(
+                                value: isOnline,
+                                activeThumbColor:
+                                    isLoading
+                                        ? appColors.textColor.shade100
+                                        : appColors.success.shade700,
+                                disabledThumbColor:
+                                    isLoading
+                                        ? appColors.textColor.shade100
+                                        : appColors.textColor.shade200,
+                                onChanged:
+                                    canToggle && !isLoading
+                                        ? ({required value}) {
+                                          final newStatus =
+                                              value ? 'online' : 'offline';
+
+                                          context.read<ProfileUpdateBloc>().add(
+                                            UpdateActivityStatusEvent(
+                                              newStatus,
+                                            ),
+                                          );
+                                        }
+                                        : null,
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+
+                    return const SizedBox.shrink();
+                  },
+                ),
+
+              20.verticalSpace,
+              if (isProvider)
+                Container(
+                  decoration: BoxDecoration(
+                    color: appColors.whiteColor,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Column(
+                    children: [
+                      ...providerSettingsOptions.map(
+                        (item) => Column(
+                          children: [
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: item.icon,
+                              title: GenText(
+                                item.title,
+                                color: appColors.black,
+                                weight: FontWeight.w500,
+                              ),
+                              trailing: Icon(
+                                Icons.chevron_right,
+                                color: appColors.textColor.shade200,
+                              ),
+                              onTap: item.onTap,
+                            ),
+                            Divider(
+                              height: 5,
+                              color: appColors.textColor.shade100,
                             ),
                           ],
-                        );
-                      },
-                    );
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
-
-            20.verticalSpace,
-            if (isProvider)
-              Container(
-                decoration: BoxDecoration(
-                  color: appColors.whiteColor,
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Column(
-                  children: [
-                    ...providerSettingsOptions.map(
-                      (item) => Column(
-                        children: [
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: item.icon,
-                            title: GenText(
-                              item.title,
-                              color: appColors.black,
-                              weight: FontWeight.w500,
-                            ),
-                            trailing: Icon(
-                              Icons.chevron_right,
-                              color: appColors.textColor.shade200,
-                            ),
-                            onTap: item.onTap,
-                          ),
-                          Divider(
-                            height: 5,
-                            color: appColors.textColor.shade100,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Container(
-                decoration: BoxDecoration(
-                  color: appColors.whiteColor,
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Column(
-                  children: [
-                    ...customerSettingsOptions.map(
-                      (item) => Column(
-                        children: [
-                          ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: item.icon,
-                            title: GenText(
-                              item.title,
-                              color: appColors.black,
-                              weight: FontWeight.w500,
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    color: appColors.whiteColor,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Column(
+                    children: [
+                      ...customerSettingsOptions.map(
+                        (item) => Column(
+                          children: [
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: item.icon,
+                              title: GenText(
+                                item.title,
+                                color: appColors.black,
+                                weight: FontWeight.w500,
+                              ),
+                              trailing: Icon(
+                                Icons.chevron_right,
+                                color: appColors.textColor.shade200,
+                              ),
+                              onTap: item.onTap,
                             ),
-                            trailing: Icon(
-                              Icons.chevron_right,
-                              color: appColors.textColor.shade200,
+                            Divider(
+                              height: 5,
+                              color: appColors.textColor.shade100,
                             ),
-                            onTap: item.onTap,
-                          ),
-                          Divider(
-                            height: 5,
-                            color: appColors.textColor.shade100,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            20.verticalSpace,
-            GestureDetector(
-              onTap: () async {
-                await pushScreen(
-                  context,
-                  AccountAndSecurityScreen(isProvider: isProvider),
-                );
-              },
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.security,
-                    color: appColors.textColor.shade200,
-                  ),
-                  10.horizontalSpace,
-                  GenText(
-                    'Account & Security',
-                    color: appColors.black,
-                    weight: FontWeight.w500,
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.chevron_right,
-                    color: appColors.textColor.shade200,
-                  ),
-                ],
-              ),
-            ),
-            20.verticalSpace,
-            Divider(
-              height: 5,
-              color: appColors.textColor.shade100,
-            ),
-            20.verticalSpace,
-            GestureDetector(
-              onTap: () async {
-                await GeneralDialogs.showCustomDialog<void>(
-                  context,
-                  body: const LogoutDialog(),
-                );
-              },
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.logout,
-                    color: appColors.error.shade500,
-                  ),
-                  10.horizontalSpace,
-                  GenText(
-                    'Log out',
-                    color: appColors.error.shade500,
-                    size: 15,
-                    weight: FontWeight.w600,
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.chevron_right,
-                    color: appColors.textColor.shade200,
-                  ),
-                ],
-              ),
-            ),
-            // 30.verticalSpace,
-            // GestureDetector(
-            //   onTap: () async {
-            //     await GeneralDialogs.showCustomDialog<void>(
-            //       context,
-            //       body: const DeleteAccountDialog(),
-            //     );
-            //   },
-            //   child: Row(
-            //     children: [
-            //       Icon(
-            //         Icons.delete_forever_outlined,
-            //         color: appColors.error.shade500,
-            //       ),
-            //       10.horizontalSpace,
-            //       GenText(
-            //         'Delete Account',
-            //         color: appColors.error.shade500,
-            //         size: 15,
-            //         weight: FontWeight.w600,
-            //       ),
-            //       const Spacer(),
-            //       Icon(
-            //         Icons.chevron_right,
-            //         color: appColors.textColor.shade200,
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            20.verticalSpace,
-            Divider(
-              height: 5,
-              color: appColors.textColor.shade100,
-            ),
-            20.verticalSpace,
-            Padding(
-              padding: pad(vertical: 20),
-              child: FutureBuilder<String>(
-                future: getAppVersion(),
-                builder: (_, snapshot) {
-                  return GenText(
-                    'v${snapshot.data == null ? '' : snapshot.data!}',
-                    weight: FontWeight.w500,
-                    color: Colors.black,
-                    textAlign: TextAlign.center,
+              20.verticalSpace,
+              GestureDetector(
+                onTap: () async {
+                  await pushScreen(
+                    context,
+                    AccountAndSecurityScreen(isProvider: isProvider),
                   );
                 },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.security,
+                      color: appColors.textColor.shade200,
+                    ),
+                    10.horizontalSpace,
+                    GenText(
+                      'Account & Security',
+                      color: appColors.black,
+                      weight: FontWeight.w500,
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.chevron_right,
+                      color: appColors.textColor.shade200,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              20.verticalSpace,
+              Divider(
+                height: 5,
+                color: appColors.textColor.shade100,
+              ),
+              20.verticalSpace,
+              GestureDetector(
+                onTap: () async {
+                  await GeneralDialogs.showCustomDialog<void>(
+                    context,
+                    body: const LogoutDialog(),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.logout,
+                      color: appColors.error.shade500,
+                    ),
+                    10.horizontalSpace,
+                    GenText(
+                      'Log out',
+                      color: appColors.error.shade500,
+                      size: 15,
+                      weight: FontWeight.w600,
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Icons.chevron_right,
+                      color: appColors.textColor.shade200,
+                    ),
+                  ],
+                ),
+              ),
+              // 30.verticalSpace,
+              // GestureDetector(
+              //   onTap: () async {
+              //     await GeneralDialogs.showCustomDialog<void>(
+              //       context,
+              //       body: const DeleteAccountDialog(),
+              //     );
+              //   },
+              //   child: Row(
+              //     children: [
+              //       Icon(
+              //         Icons.delete_forever_outlined,
+              //         color: appColors.error.shade500,
+              //       ),
+              //       10.horizontalSpace,
+              //       GenText(
+              //         'Delete Account',
+              //         color: appColors.error.shade500,
+              //         size: 15,
+              //         weight: FontWeight.w600,
+              //       ),
+              //       const Spacer(),
+              //       Icon(
+              //         Icons.chevron_right,
+              //         color: appColors.textColor.shade200,
+              //       ),
+              //     ],
+              //   ),
+              // ),
+              20.verticalSpace,
+              Divider(
+                height: 5,
+                color: appColors.textColor.shade100,
+              ),
+              20.verticalSpace,
+              Padding(
+                padding: pad(vertical: 20),
+                child: FutureBuilder<String>(
+                  future: getAppVersion(),
+                  builder: (_, snapshot) {
+                    return GenText(
+                      'v${snapshot.data == null ? '' : snapshot.data!}',
+                      weight: FontWeight.w500,
+                      color: Colors.black,
+                      textAlign: TextAlign.center,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

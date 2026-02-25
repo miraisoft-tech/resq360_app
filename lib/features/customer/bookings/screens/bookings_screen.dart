@@ -72,90 +72,98 @@ class _BookingsScreenState extends State<BookingsScreen>
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        backgroundColor: appColors.whiteColor,
-        elevation: 0,
-        title: UrbText(
-          'My Bookings',
-          size: 18,
-          weight: FontWeight.w700,
-          color: appColors.black,
-        ),
-        leading:
-            Navigator.canPop(context)
-                ? IconButton(
-                  icon: Icon(Icons.arrow_back, color: appColors.black),
-                  onPressed: () => pop(context),
-                )
-                : null,
-        bottom: TabBar(
-          onTap: (value) {
-            setState(() {});
-          },
-          controller: _tabController,
-          indicatorColor: appColors.primary,
-          labelColor: appColors.primary,
-          unselectedLabelColor: appColors.textColor.shade500,
-          indicatorSize: TabBarIndicatorSize.tab,
-          padding: EdgeInsets.only(bottom: 10.h),
-          tabs: [
-            SizedBox(
-              width: double.infinity,
-              child: GenText(
-                'Upcoming',
-                textAlign: TextAlign.center,
-                weight: FontWeight.w500,
-                size: 12,
-                height: 30,
-                color:
-                    _tabController.index == 0
-                        ? appColors.primary
-                        : appColors.neutral.shade500,
-              ),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100.h),
+        child: AppBar(
+          backgroundColor: appColors.whiteColor,
+          elevation: 0,
+          centerTitle: false,
+          title: Padding(
+            padding: pad(horizontal: 10),
+            child: UrbText(
+              'My Bookings',
+              size: 20,
+              height: 22,
+              weight: FontWeight.w700,
+              color: appColors.black,
             ),
-            SizedBox(
-              width: double.infinity,
-              child: GenText(
-                'Ongoing',
-                textAlign: TextAlign.center,
-                weight: FontWeight.w500,
-                size: 12,
-                height: 30,
-                color:
-                    _tabController.index == 1
-                        ? appColors.primary
-                        : appColors.neutral.shade500,
+          ),
+          leading:
+              Navigator.canPop(context)
+                  ? IconButton(
+                    icon: Icon(Icons.arrow_back, color: appColors.black),
+                    onPressed: () => pop(context),
+                  )
+                  : null,
+          bottom: TabBar(
+            onTap: (value) {
+              setState(() {});
+            },
+            controller: _tabController,
+            indicatorColor: appColors.primary,
+            labelColor: appColors.primary,
+            unselectedLabelColor: appColors.textColor.shade500,
+            indicatorSize: TabBarIndicatorSize.tab,
+            padding: EdgeInsets.only(bottom: 10.h),
+            tabs: [
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Upcoming',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 12,
+                  height: 30,
+                  color:
+                      _tabController.index == 0
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                ),
               ),
-            ),
-            SizedBox(
-              width: double.infinity,
-              child: GenText(
-                'Completed',
-                textAlign: TextAlign.center,
-                weight: FontWeight.w500,
-                size: 12,
-                height: 30,
-                color:
-                    _tabController.index == 2
-                        ? appColors.primary
-                        : appColors.neutral.shade500,
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Ongoing',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 12,
+                  height: 30,
+                  color:
+                      _tabController.index == 1
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                ),
               ),
-            ),
-            SizedBox(
-              width: double.infinity,
-              child: GenText(
-                'Cancelled',
-                textAlign: TextAlign.center,
-                weight: FontWeight.w500,
-                size: 12,
-                height: 30,
-                color:
-                    _tabController.index == 3
-                        ? appColors.primary
-                        : appColors.neutral.shade500,
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Completed',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 12,
+                  height: 30,
+                  color:
+                      _tabController.index == 2
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                ),
               ),
-            ),
-          ],
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Cancelled',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 12,
+                  height: 30,
+                  color:
+                      _tabController.index == 3
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: TabBarView(
@@ -346,12 +354,10 @@ class _BookingCardState extends State<BookingCard> {
 
     final phonenumber = data.assignedProvider?.phoneNumber ?? '';
     final serviceRequest = data.id;
-    final showAction = status.toUpperCase()  != BookingEnums.completed.name;
-
+    final showAction = status.toUpperCase() != BookingEnums.completed.name;
 
     log('data $showAction');
     log('status $status');
-
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -409,28 +415,28 @@ class _BookingCardState extends State<BookingCard> {
                     ],
                   ),
                 ),
-                if(showAction)...[
-                SVGButton(
-                  path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                  onTap: () async {
-                    if (serviceRequest != null) {
-                      await _navigateToChatByServiceRequest(
-                        context,
-                        serviceRequest,
-                      );
-                    }
-                  },
-                ),
-                15.horizontalSpace,
-                SVGButton(
-                  path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-                  color: colors.primary.shade500,
-                  onTap: () async {
-                    await DialerUtil.open(phonenumber);
-                  },
-                ),
-                10.horizontalSpace,
-                ]
+                if (showAction) ...[
+                  SVGButton(
+                    path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
+                    onTap: () async {
+                      if (serviceRequest != null) {
+                        await _navigateToChatByServiceRequest(
+                          context,
+                          serviceRequest,
+                        );
+                      }
+                    },
+                  ),
+                  15.horizontalSpace,
+                  SVGButton(
+                    path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
+                    color: colors.primary.shade500,
+                    onTap: () async {
+                      await DialerUtil.open(phonenumber);
+                    },
+                  ),
+                  10.horizontalSpace,
+                ],
               ],
             ),
             const ListDivider(

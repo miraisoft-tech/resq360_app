@@ -125,8 +125,8 @@ class _SupportChatViewState extends State<_SupportChatView> {
                   )
                 else
                   ChatBoxWidget(
-                    onAttachment: () async {
-                      await _showAttachmentMenu(context);
+                    onAttachment: (ctx) async {
+                      await _showAttachmentMenu(ctx);
                     },
                     onSend: (text) async {
                       await context.read<SupportTicketCubit>().sendMessage(
@@ -192,16 +192,14 @@ class _SupportChatViewState extends State<_SupportChatView> {
     final button = context.findRenderObject()! as RenderBox;
     final overlay =
         Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
-    final position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset(0, 800.h), ancestor: overlay),
-        button.localToGlobal(
-          button.size.bottomRight(Offset.zero),
-          ancestor: overlay,
-        ),
-      ),
-      Offset.zero & overlay.size,
+    final buttonOffset = button.localToGlobal(Offset.zero, ancestor: overlay);
+    final rect = Rect.fromLTWH(
+      buttonOffset.dx,
+      buttonOffset.dy,
+      button.size.width,
+      button.size.height,
     );
+    final position = RelativeRect.fromRect(rect, Offset.zero & overlay.size);
 
     await showMenu<String>(
       context: context,
