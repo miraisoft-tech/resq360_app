@@ -6,7 +6,6 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/notification_service.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
@@ -18,6 +17,7 @@ import 'package:resq360/features/customer/dashboard/widgets/ongoing_service_widg
 import 'package:resq360/features/customer/dashboard/widgets/service_category_widget.dart';
 import 'package:resq360/features/customer/services/screens/service_categories_screen.dart';
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
@@ -57,20 +57,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initDashboard() async {
     final isGuest = await AuthLocalRepo.instance.getGuestMode();
-    final unreadCount =
-        await NotificationRepo.instance.getUnreadNotificationCount();
+    // if (!_isGuest) {
+    //   final unreadCount =
+    //       await NotificationRepo.instance.getUnreadNotificationCount();
+    //   if (!mounted) return;
+    //   setState(() {
+    //     _unreadCount = unreadCount;
+    //   });
+    // }
 
     if (!mounted) return;
     setState(() {
       _isGuest = isGuest;
-      _unreadCount = unreadCount;
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!_isGuest) {
         context.read<CustomerAuthBloc>().add(
           const CustomergetUserProfile(),
         );
+        final unreadCount =
+            await NotificationRepo.instance.getUnreadNotificationCount();
+        if (!mounted) return;
+        setState(() {
+          _unreadCount = unreadCount;
+        });
       }
 
       context.read<ServiceCatalogBloc>().add(const FetchServices());
@@ -93,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _requireLogin() async {
     await showErrorSnackbar(context, 'Please log in to continue');
-    await pushScreen(context, const LoginScreen());
+    await pushScreen(context, const SelectAccountTypeScreen());
   }
 
   @override
