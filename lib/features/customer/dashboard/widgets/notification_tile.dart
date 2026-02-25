@@ -15,25 +15,32 @@ class NotificationTile extends StatefulWidget {
   State<NotificationTile> createState() => _NotificationTileState();
 }
 
-
-Future<void> _handleNotificationTap(BuildContext context, NotificationModel notification) async {
-  context.read<NotificationBloc>().add(MarkNotificationsAsRead(ids: [notification.id]));
+Future<void> _handleNotificationTap(
+  BuildContext context,
+  NotificationModel notification,
+) async {
+  context.read<NotificationBloc>().add(
+    MarkNotificationsAsRead(ids: [notification.id]),
+  );
 
   if (notification.category == 'SERVICE_COMPLETION') {
     final serviceRequestId = notification.serviceRequestId;
     final providerId = notification.providerId;
     final providerName = notification.providerName;
 
-    if (serviceRequestId != null && providerId != null && providerName != null ) {
-      await pushScreen(context, RateProviderScreen(
-          serviceRequestId:serviceRequestId ,
+    if (serviceRequestId != null &&
+        providerId != null &&
+        providerName != null) {
+      await pushScreen(
+        context,
+        RateProviderScreen(
+          serviceRequestId: serviceRequestId,
           providerId: providerId,
           providerName: providerName,
-        ),);
+        ),
+      );
     }
-    
-    
-  } 
+  }
 }
 
 class _NotificationTileState extends State<NotificationTile> {
@@ -69,7 +76,7 @@ class _NotificationTileState extends State<NotificationTile> {
         children: [
           SlidableAction(
             onPressed: (_) async {
-               await _confirmDelete(
+              await _confirmDelete(
                 context,
                 bloc,
                 widget.notification.id,
@@ -88,7 +95,7 @@ class _NotificationTileState extends State<NotificationTile> {
       ),
 
       child: GestureDetector(
-        onTap: ()=> _handleNotificationTap(context, widget.notification),
+        onTap: () => _handleNotificationTap(context, widget.notification),
         child: Container(
           margin: EdgeInsets.only(bottom: 16.h),
           padding: pad(vertical: 12),
@@ -119,11 +126,23 @@ class _NotificationTileState extends State<NotificationTile> {
                       color: appColors.textColor.shade400,
                     ),
                     6.verticalSpace,
-                    GenText(
-                      widget.notification.time,
-                      size: 10,
-                      weight: FontWeight.w400,
-                      color: appColors.textColor.shade300,
+                    Row(
+                      children: [
+                        GenText(
+                          widget.notification.time,
+                          size: 10,
+                          weight: FontWeight.w400,
+                          color: appColors.textColor.shade300,
+                        ),
+                        const Spacer(),
+                        if (widget.notification.category ==
+                            'SERVICE_COMPLETION')
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 16.w,
+                            color: appColors.textColor.shade400,
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -155,7 +174,11 @@ Future<bool> _confirmDelete(
     builder:
         (_) => AlertDialog(
           backgroundColor: context.appColors.whiteColor,
-          title:  const GenText('Delete notification?', size:17, weight: FontWeight.w500,),
+          title: const GenText(
+            'Delete notification?',
+            size: 17,
+            weight: FontWeight.w500,
+          ),
           content: const GenText(
             'This action cannot be undone.',
           ),
@@ -171,7 +194,10 @@ Future<bool> _confirmDelete(
                 bloc.add(DeleteNotification(id));
                 Navigator.pop(context, true);
               },
-              child: GenText('Delete', color: context.appColors.error.shade500,),
+              child: GenText(
+                'Delete',
+                color: context.appColors.error.shade500,
+              ),
             ),
           ],
         ),

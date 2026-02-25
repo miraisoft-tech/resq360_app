@@ -404,11 +404,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GenText(
-              title.capitalize,
-              weight: FontWeight.w500,
-              color: appColors.black,
-              maxLines: 1,
+            SizedBox(
+              width: 200,
+              child: GenText(
+                title.capitalize,
+                weight: FontWeight.w500,
+                color: appColors.black,
+                maxLines: 1,
+              ),
             ),
             GenText(
               isActive ? 'Online' : 'Offline',
