@@ -47,153 +47,153 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: appColors.whiteColor,
-        forceMaterialTransparency: true,
-        automaticallyImplyLeading: false,
-        centerTitle: false,
-        title: UrbText(
-          'Chats',
-          size: 22,
-          height: 32.5,
-          weight: FontWeight.w700,
-          color: appColors.black,
-        ),
-      ),
-      body: Padding(
-        padding: pad(horizontal: 16),
-        child: RefreshIndicator(
-          color: appColors.primary,
-          onRefresh: _onRefresh,
-          child: Column(
-            children: [
-              FilterSearchFormField(
-                controller: _searchController,
-                onChanged: (_) => setState(() {}),
-                prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
-                hintText: isCustomer ? 'Search' : 'Search chats...',
-                onTapSuffix: () {
-                  _searchController.clear();
-                  setState(() {});
-                },
-              ),
-              16.verticalSpace,
-              Row(
-                children:
-                    filters.map((f) {
-                      final isActive = selectedFilter == f;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() => selectedFilter = f);
-                          },
-                          child: Container(
-                            padding: pad(vertical: 4, horizontal: 10),
-                            decoration: BoxDecoration(
-                              color:
-                                  isActive
-                                      ? appColors.primary
-                                      : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8.r),
-                              border: Border.all(
-                                color:
-                                    isActive
-                                        ? Colors.transparent
-                                        : appColors.textColor.shade200,
-                              ),
-                            ),
-                            child: GenText(
-                              f,
-                              color:
-                                  isActive
-                                      ? appColors.whiteColor
-                                      : appColors.textColor.shade500,
-                              height: 16.5,
-                              weight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-              ),
-              16.verticalSpace,
-              Expanded(
-                child: BlocBuilder<ChatListBloc, ChatListState>(
-                  builder: (context, state) {
-                    if (state.isLoading && state.chats.isEmpty) {
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: appColors.primary,
-                        ),
-                      );
-                    }
 
-                    if (state.error != null) {
-                      return ErrorMessageAndButton(
-                        error: state.error!,
-                        onPressed: () {
-                          context.read<ChatListBloc>().add(LoadChatList());
-                        },
-                      );
-                    }
-
-                    final chats = _applyFilter(state.chats);
-
-                    if (chats.isEmpty) {
-                      return EmptyScreenWidget(
-                        image:
-                            AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG.imageAsset(),
-                        message: 'No messages yet',
-                        subMessage:
-                            isCustomer
-                                ? 'Start a conversation with a service provider'
-                                : 'Start a conversation with a customer',
-                      );
-                    }
-
-                    return ListView.separated(
-                      itemCount: chats.length,
-                      separatorBuilder:
-                          (_, _) => const ListDivider(
-                            verticalSpacing: 0,
-                          ),
-                      itemBuilder: (context, index) {
-                        final chat = chats[index];
-
-                        return ChatTile(
-                          chat: Chat(
-                            name: chat.title,
-                            message: chat.lastMessage ?? '',
-                            time:
-                                chat.lastMessageTime != null
-                                    ? AppTextUtil.formatChatListTime(
-                                      chat.lastMessageTime!,
-                                    )
-                                    : '',
-                            imgUrl: chat.imgurl,
-                          ),
-                          onTap: () async {
-                            context.read<ChatListBloc>().add(
-                              ClearUnreadCount(chat.chatId),
-                            );
-
-                            await pushScreen(
-                              context,
-                              ChatDetailScreen(
-                                chatId: chat.chatId,
-                                userType: widget.userType,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
+      body: SafeArea(
+        child: Padding(
+          padding: pad(
+            horizontal: 16,
+          ),
+          child: RefreshIndicator(
+            color: appColors.primary,
+            onRefresh: _onRefresh,
+            child: Col(
+              children: [
+                UrbText(
+                  'Chats',
+                  size: 20,
+                  height: 28,
+                  weight: FontWeight.w700,
+                  color: appColors.black,
+                ),
+                10.verticalSpace,
+                FilterSearchFormField(
+                  controller: _searchController,
+                  onChanged: (_) => setState(() {}),
+                  prefixIconPath: AppAssets.ASSETS_ICONS_SEARCH_SVG,
+                  hintText: isCustomer ? 'Search' : 'Search chats...',
+                  onTapSuffix: () {
+                    _searchController.clear();
+                    setState(() {});
                   },
                 ),
-              ),
-            ],
+                16.verticalSpace,
+                Row(
+                  children:
+                      filters.map((f) {
+                        final isActive = selectedFilter == f;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() => selectedFilter = f);
+                            },
+                            child: Container(
+                              padding: pad(vertical: 4, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color:
+                                    isActive
+                                        ? appColors.primary
+                                        : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8.r),
+                                border: Border.all(
+                                  color:
+                                      isActive
+                                          ? Colors.transparent
+                                          : appColors.textColor.shade200,
+                                ),
+                              ),
+                              child: GenText(
+                                f,
+                                color:
+                                    isActive
+                                        ? appColors.whiteColor
+                                        : appColors.textColor.shade500,
+                                height: 16.5,
+                                weight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                ),
+                16.verticalSpace,
+                Expanded(
+                  child: BlocBuilder<ChatListBloc, ChatListState>(
+                    builder: (context, state) {
+                      if (state.isLoading && state.chats.isEmpty) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: appColors.primary,
+                          ),
+                        );
+                      }
+
+                      if (state.error != null) {
+                        return ErrorMessageAndButton(
+                          error: state.error!,
+                          onPressed: () {
+                            context.read<ChatListBloc>().add(LoadChatList());
+                          },
+                        );
+                      }
+
+                      final chats = _applyFilter(state.chats);
+
+                      if (chats.isEmpty) {
+                        return EmptyScreenWidget(
+                          image:
+                              AppAssets.ASSETS_IMAGES_EMPTY_CHAT_PNG
+                                  .imageAsset(),
+                          message: 'No messages yet',
+                          subMessage:
+                              isCustomer
+                                  ? 'Start a conversation with a service provider'
+                                  : 'Start a conversation with a customer',
+                        );
+                      }
+
+                      return ListView.separated(
+                        itemCount: chats.length,
+                        separatorBuilder:
+                            (_, _) => const ListDivider(
+                              verticalSpacing: 0,
+                            ),
+                        itemBuilder: (context, index) {
+                          final chat = chats[index];
+
+                          return ChatTile(
+                            chat: Chat(
+                              name: chat.title,
+                              message: chat.lastMessage ?? '',
+                              time:
+                                  chat.lastMessageTime != null
+                                      ? AppTextUtil.formatChatListTime(
+                                        chat.lastMessageTime!,
+                                      )
+                                      : '',
+                              imgUrl: chat.imgurl,
+                            ),
+                            onTap: () async {
+                              context.read<ChatListBloc>().add(
+                                ClearUnreadCount(chat.chatId),
+                              );
+
+                              await pushScreen(
+                                context,
+                                ChatDetailScreen(
+                                  chatId: chat.chatId,
+                                  userType: widget.userType,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -201,39 +201,38 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   List<ChatSummary> _applyFilter(List<ChatSummary> chats) {
-  final query = _searchController.text.toLowerCase();
+    final query = _searchController.text.toLowerCase();
 
-  final filtered = chats.where((chat) {
-    if (query.isNotEmpty && !chat.title.toLowerCase().contains(query)) {
-      return false;
-    }
+    final filtered =
+        chats.where((chat) {
+            if (query.isNotEmpty && !chat.title.toLowerCase().contains(query)) {
+              return false;
+            }
 
-    switch (selectedFilter) {
-      case 'Unread':
-        return chat.unreadCount > 0;
-      case 'Appeal':
-        return chat.title.toLowerCase().contains('appeal');
-      default:
-        return true;
-    }
-  }).toList()
+            switch (selectedFilter) {
+              case 'Unread':
+                return chat.unreadCount > 0;
+              case 'Appeal':
+                return chat.title.toLowerCase().contains('appeal');
+              default:
+                return true;
+            }
+          }).toList()
+          ..sort((a, b) {
+            final aHasMessage = a.lastMessageTime != null;
+            final bHasMessage = b.lastMessageTime != null;
 
-..sort((a, b) {
-  final aHasMessage = a.lastMessageTime != null;
-  final bHasMessage = b.lastMessageTime != null;
-
-  if (!aHasMessage && !bHasMessage) {
-    return 0;
+            if (!aHasMessage && !bHasMessage) {
+              return 0;
+            }
+            if (!aHasMessage && bHasMessage) {
+              return 1;
+            }
+            if (aHasMessage && !bHasMessage) {
+              return -1;
+            }
+            return b.lastMessageTime!.compareTo(a.lastMessageTime!);
+          });
+    return filtered;
   }
-  if (!aHasMessage && bHasMessage) {
-    return 1;
-  }
-  if (aHasMessage && !bHasMessage) {
-    return -1;
-  }
-  return b.lastMessageTime!.compareTo(a.lastMessageTime!);
-});
-  return filtered;
-}
-
 }

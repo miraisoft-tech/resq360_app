@@ -29,7 +29,7 @@ Future<void> showSnackBar(
   BuildContext context,
   String? title,
   String? msg, {
-  int duration = 2,
+  int duration = 3,
   TextAlign align = TextAlign.start,
 }) async {
   final flushBar = Flushbar<void>(

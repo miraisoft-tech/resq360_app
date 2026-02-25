@@ -221,17 +221,17 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
           return Scaffold(
             backgroundColor: appColors.whiteColor,
-            appBar: _buildAppBar(
-              title: title,
-              phoneNumber: phone,
-              imageurl: imageurl,
-              serviceStatus: serviceStatus,
-              paymentStatus: paymentStatus,
-              isActive: isActive,
-            ),
             body: SafeArea(
               child: Column(
                 children: [
+                  _buildAppBar(
+                    title: title,
+                    phoneNumber: phone,
+                    imageurl: imageurl,
+                    serviceStatus: serviceStatus,
+                    paymentStatus: paymentStatus,
+                    isActive: isActive,
+                  ),
                   const ListDivider(),
                   Expanded(
                     child: _buildChatContent(state),
@@ -274,9 +274,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                     child: Opacity(
                       opacity: state is ChatDetailReady ? 1.0 : 0.5,
                       child: ChatBoxWidget(
-                        onAttachment: () {
+                        onAttachment: (ctx) {
                           if (state is ChatDetailReady) {
-                            unawaited(_showAttachmentMenu(context, state.chat));
+                            unawaited(_showAttachmentMenu(ctx, state.chat));
                           }
                         },
                         onSend: (text) {
@@ -378,7 +378,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   }
 
   // Updated _buildAppBar method for ChatDetailScreen
-  PreferredSizeWidget _buildAppBar({
+  Widget _buildAppBar({
     required String title,
     required bool isActive,
     required String phoneNumber,
@@ -387,45 +387,40 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     required String paymentStatus,
   }) {
     final appColors = context.appColors;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final menuMaxWidth = screenWidth * 0.7;
 
-    return AppBar(
-      elevation: 0,
-      backgroundColor: appColors.whiteColor,
-      forceMaterialTransparency: true,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: appColors.black),
-        onPressed: () => pop(context),
-      ),
-      title: Row(
-        children: [
-          PictureWidget(
-            image: imageurl,
-          ),
-          8.horizontalSpace,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GenText(
-                  title.capitalize,
-                  weight: FontWeight.w500,
-                  color: appColors.black,
-                  maxLines: 1,
-                ),
-                GenText(
-                  isActive ? 'Online' : 'Offline',
-                  size: 13,
-                  color:
-                      isActive
-                          ? appColors.success.shade600
-                          : appColors.error.shade600,
-                ),
-              ],
+    return Row(
+      children: [
+        IconButton(
+          icon: Icon(Icons.arrow_back, color: appColors.black),
+          onPressed: () => pop(context),
+        ),
+        20.horizontalSpace,
+        PictureWidget(
+          image: imageurl,
+        ),
+        8.horizontalSpace,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GenText(
+              title.capitalize,
+              weight: FontWeight.w500,
+              color: appColors.black,
+              maxLines: 1,
             ),
-          ),
-        ],
-      ),
-      actions: [
+            GenText(
+              isActive ? 'Online' : 'Offline',
+              size: 13,
+              color:
+                  isActive
+                      ? appColors.success.shade600
+                      : appColors.error.shade600,
+            ),
+          ],
+        ),
+        const Spacer(),
         if (paymentStatus == 'COMPLETED' && serviceStatus == 'ASSIGNED')
           SizedBox(
             width: 35.w,
@@ -437,6 +432,10 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             ),
           ),
         PopupMenuButton<String>(
+          constraints: BoxConstraints(
+            minWidth: 180.w,
+            maxWidth: menuMaxWidth,
+          ),
           icon: Icon(
             Icons.more_vert,
             color: appColors.neutral.shade700,
@@ -449,8 +448,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           itemBuilder:
               (context) => [
                 PopupMenuItem<String>(
-                  value: 'report',
+                  value: 'block',
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.report_outlined,
@@ -458,12 +458,11 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                         size: 20.sp,
                       ),
                       12.horizontalSpace,
-                      SizedBox(
-                        width: 200,
+                      Flexible(
                         child: GenText(
                           'Block $title',
                           color: appColors.neutral.shade900,
-                          maxLines: 1,
+                          maxLines: 3,
                         ),
                       ),
                     ],
@@ -626,16 +625,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     final button = context.findRenderObject()! as RenderBox;
     final overlay =
         Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
-    final position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset(0, 800.h), ancestor: overlay),
-        button.localToGlobal(
-          button.size.bottomRight(Offset.zero),
-          ancestor: overlay,
-        ),
-      ),
-      Offset.zero & overlay.size,
+    final buttonOffset = button.localToGlobal(Offset.zero, ancestor: overlay);
+    final rect = Rect.fromLTWH(
+      buttonOffset.dx,
+      buttonOffset.dy,
+      button.size.width,
+      button.size.height,
     );
+    final position = RelativeRect.fromRect(rect, Offset.zero & overlay.size);
 
     final menuItems = <PopupMenuItem<String>>[
       PopupMenuItem<String>(
@@ -842,13 +839,13 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     if (otherUserId == null) return;
 
     switch (action) {
-      case 'report':
+      case 'block':
         await _showReportDialog(chat.id!, title);
     }
   }
 
   Future<void> _showReportDialog(int chatId, String title) async {
-    final reported = await GeneralDialogs.showCustomDialog<bool>(
+    final blocked = await GeneralDialogs.showCustomDialog<bool>(
       context,
       body: BlocProvider.value(
         value: context.read<ChatDetailBloc>(),
@@ -859,12 +856,12 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
     );
 
-    if (reported ?? false) {
-      unawaited(pop(context));
-
+    if (blocked ?? false) {
       context.read<ChatListBloc>().add(RefreshChatList());
 
       await showSuccessSnackbar(context, 'Chat blocked successfully');
+
+      unawaited(pop(context));
     }
   }
 

@@ -15,6 +15,6 @@ class Col extends StatelessWidget {
 
 EdgeInsets pad({double both = 0, double? horizontal, double? vertical}) =>
     EdgeInsets.symmetric(
-      horizontal: horizontal ?? both,
-      vertical: vertical ?? both,
+      horizontal: (horizontal ?? both).w,
+      vertical: (vertical ?? both).h,
     );
