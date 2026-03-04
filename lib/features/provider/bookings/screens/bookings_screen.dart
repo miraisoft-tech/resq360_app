@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/utils/app_pdf_util.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/core/utils/booking_reciept_pdf_util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';

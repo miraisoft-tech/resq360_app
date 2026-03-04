@@ -4,8 +4,8 @@ import 'package:badges/badges.dart' as badges;
 import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 
 class MainLayoutPage extends StatefulWidget {
@@ -56,7 +56,7 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
 
   Future<void> _requireLogin() async {
     await showErrorSnackbar(context, 'Please log in to continue');
-    await pushScreen(context, const LoginScreen());
+    await pushScreen(context, const SelectAccountTypeScreen());
   }
 
   @override
