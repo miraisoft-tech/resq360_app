@@ -50,16 +50,15 @@ class AppTextUtil {
     return formatter.format(localDate);
   }
 
-  static String formatDateToStringNormal(String? date, [String? format]) {
-    final parsedDate = DateTime.tryParse(date ?? DateTime.now().toString());
-    final formatter = DateFormat(format ?? 'd MMMM, yyyy');
+static String formatDateToStringNormal(String? date, [String? format]) {
+  final parsedDate = DateTime.tryParse(date ?? '');
+  if (parsedDate == null) return 'N/A';
 
-    if (parsedDate == null) return 'N/A';
+  final localDate = parsedDate.toLocal();
+  final formatter = DateFormat(format ?? 'd MMMM, yyyy');
 
-    final localDate = parsedDate.isUtc ? parsedDate.toLocal() : parsedDate;
-
-    return formatter.format(localDate);
-  }
+  return formatter.format(localDate);
+}
 
   static String formatDistance(double meters) {
     if (meters < 1000) {

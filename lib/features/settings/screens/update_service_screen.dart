@@ -163,14 +163,14 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
       DateTime.now().day,
       startTime?.hour ?? 9,
       startTime?.minute ?? 0,
-    );
+    ).toUtc();
     final endDateTime = DateTime(
       DateTime.now().year,
       DateTime.now().month,
       DateTime.now().day,
       endTime?.hour ?? 17,
       endTime?.minute ?? 0,
-    );
+    ).toUtc() ;
 
     final servicesToUpdate =
         selectedServices.entries
