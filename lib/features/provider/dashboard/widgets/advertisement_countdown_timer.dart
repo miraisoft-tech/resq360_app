@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/dashboard/screens/manage_promotion_screen.dart';
 
 class AdvertCountdownTimer extends StatefulWidget {
   const AdvertCountdownTimer({
@@ -62,19 +63,24 @@ class _AdvertCountdownTimerState extends State<AdvertCountdownTimer> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    
-    return Container(
-      padding: pad(horizontal: 10, vertical: 10),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: colors.error.shade50,
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: UrbText(
-        _timeRemaining,
-        color: colors.black,
-        weight: FontWeight.w700,
-        size: 16,
+
+    return GestureDetector(
+      onTap: () async {
+        await pushScreen(context, const PromotionsDashboardScreen());
+      },
+      child: Container(
+        padding: pad(horizontal: 10, vertical: 10),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: colors.error.shade50,
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: UrbText(
+          _timeRemaining,
+          color: colors.black,
+          weight: FontWeight.w700,
+          size: 16,
+        ),
       ),
     );
   }

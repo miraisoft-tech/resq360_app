@@ -308,13 +308,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       30.verticalSpace,
                       BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
                         builder: (context, state) {
-                          if (state is ProviderServicesLoading) {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: colors.primary,
-                              ),
-                            );
-                          }
                           if (state is ProviderBookingsLoaded) {
                             final booking = state.bookings.firstOrNull;
                             final serviceRequestId = booking?.id;
@@ -347,6 +340,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       ),
 
                       BlocBuilder<PromotionBloc, PromotionState>(
+                        buildWhen: (previous, current) {
+                          // Don't rebuild if we had data and are now loading
+                          if (previous is ActivePromotionsFetched &&
+                              current is! ActivePromotionsFetched) {
+                            return false;
+                          }
+                          return true;
+                        },
                         builder: (context, state) {
                           if (state is ActivePromotionsFetched) {
                             final activeAds = state.promotions;
@@ -355,6 +356,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               return Column(
                                 children: [
                                   AdvertCountdownTimer(
+                                    key: ValueKey(activeAds.first.endDate),
                                     endDate: activeAds.first.endDate!,
                                   ),
                                   30.verticalSpace,
