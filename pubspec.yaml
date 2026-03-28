@@ -91,8 +91,8 @@ flutter_native_splash:
   android_12:
     color: "#FFFFFF"
     color_dark: "#FFFFFF"
-    image: assets/logo/logo.png
-    image_dark: assets/logo/logo.png
+    image: assets/logo/resq_logo_splash.png
+    image_dark: assets/logo/resq_logo_splash.png
 
 flutter:
   generate: true
