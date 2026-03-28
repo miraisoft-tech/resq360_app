@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/models/kyc/identity_response.dart';
@@ -6,6 +7,7 @@ import 'package:resq360/core/models/kyc/kyc_response.model.dart';
 import 'package:resq360/core/models/kyc/user_kyc.model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
+import 'package:resq360/core/utils/device_id.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_provider.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
@@ -30,11 +32,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
-      final data = {
-        'email': email,
-        'password': password,
-        'userType': userType,
-      };
+      final data = {'email': email, 'password': password, 'userType': userType};
 
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
       log(url);
@@ -99,9 +97,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       final res = await dio().post<Map<String, dynamic>>(
         url,
         data: data,
-        options: Options(
-          receiveTimeout: const Duration(seconds: 60),
-        ),
+        options: Options(receiveTimeout: const Duration(seconds: 60)),
       );
 
       log(res.statusCode);
@@ -134,9 +130,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> requestPasswordReset({
-    required String email,
-  }) async {
+  Future<bool> requestPasswordReset({required String email}) async {
     try {
       const url = '/auth/forgot-password';
       final savedUserType = await AuthLocalRepo.instance.getUserType();
@@ -162,9 +156,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> validateResetToken({
-    required String token,
-  }) async {
+  Future<bool> validateResetToken({required String token}) async {
     try {
       final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
@@ -184,11 +176,11 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
       switch (res.statusCode) {
         case 201:
-        final otp = await AuthLocalRepo.instance.storeForgotPasswordOtp(
-        otp: token,
-      );
+          final otp = await AuthLocalRepo.instance.storeForgotPasswordOtp(
+            otp: token,
+          );
 
-      log('otp: $otp');
+          log('otp: $otp');
           return true;
         default:
           return false;
@@ -201,9 +193,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> setNewPassword({
-    required String password,
-  }) async {
+  Future<bool> setNewPassword({required String password}) async {
     try {
       const url = '/auth/reset-password';
       final savedUserType = await AuthLocalRepo.instance.getUserType();
@@ -214,11 +204,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       } else {
         log('No token found for password reset.');
       }
-      final data = {
-        'token': token,
-        'password': password,
-        'userType': userType,
-      };
+      final data = {'token': token, 'password': password, 'userType': userType};
 
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
@@ -248,9 +234,7 @@ class ProviderAuthRemoteRepo extends BaseAPI {
 
       final url = '/auth/verify-email/$emailVerificationToken?type=$userType';
 
-      final res = await dio().get<Map<String, dynamic>>(
-        url,
-      );
+      final res = await dio().get<Map<String, dynamic>>(url);
 
       log(res.statusCode);
       log(res.data);
@@ -464,16 +448,9 @@ class ProviderAuthRemoteRepo extends BaseAPI {
   }) async {
     const url = '/kyc/submit/address-information';
     try {
-      final data = {
-        'state': state,
-        'city': city,
-        'address': address,
-      };
+      final data = {'state': state, 'city': city, 'address': address};
 
-      final res = await dio().post<Map<String, dynamic>>(
-        url,
-        data: data,
-      );
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
       log('${res.statusCode}');
       log('${res.data}');
 
@@ -518,40 +495,66 @@ class ProviderAuthRemoteRepo extends BaseAPI {
     }
   }
 
-Future<ApiResult<dynamic>> deleteAccount() async {
-  try {
-    const url = '/user/account';
-    
+  Future<ApiResult<dynamic>> deleteAccount() async {
+    try {
+      const url = '/user/account';
 
-    final res = await dio().delete<Map<String, dynamic>>(
-      url,
-    );
+      final res = await dio().delete<Map<String, dynamic>>(url);
 
-    log(res.statusCode);
-    log(res.data);
+      log(res.statusCode);
+      log(res.data);
 
-    if (res.statusCode == 200 && res.data != null) {
-      final success = res.data!['success'] == true;
-      
-      if (success) {
-        return ApiResult(data: res.data);
-      } else {
-        return ApiResult(
-          error: res.data!['message']?.toString() ?? 'Account deletion failed',
-        );
+      if (res.statusCode == 200 && res.data != null) {
+        final success = res.data!['success'] == true;
+
+        if (success) {
+          return ApiResult(data: res.data);
+        } else {
+          return ApiResult(
+            error:
+                res.data!['message']?.toString() ?? 'Account deletion failed',
+          );
+        }
       }
+
+      return ApiResult(
+        error:
+            res.data?['message']?.toString() ??
+            'An error occurred, please try again!',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e, s) {
+      log(e);
+      log(s);
+      return ApiResult(error: '$e $s');
     }
-    
-    return ApiResult(
-      error: res.data?['message']?.toString() ?? 
-             'An error occurred, please try again!',
-    );
-  } on DioException catch (e) {
-    return handleDioError(e);
-  } on Exception catch (e, s) {
-    log(e);
-    log(s);
-    return ApiResult(error: '$e $s');
   }
-}
+
+  Future<void> registerDeviceToken() async {
+    try {
+      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+
+      if (Platform.isIOS && apnsToken == null) {
+        return;
+      }
+
+      final fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+      if (fcmToken.isEmpty) return;
+
+      final deviceInfo = await AppDeviceIdUtil.getDeviceInfo();
+
+      const url = '/mobile-notifications/device-tokens';
+      final data = {
+        'token': fcmToken,
+        'platform': AppDeviceIdUtil.platform,
+        'deviceInfo': deviceInfo,
+      };
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+      log('Register device token response: ${res.statusCode} ${res.data}');
+    } on Exception catch (e) {
+      log('Error registering device token: $e');
+    }
+  }
 }

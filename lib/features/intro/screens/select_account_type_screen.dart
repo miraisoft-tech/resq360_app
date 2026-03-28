@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/push_notification_service.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
@@ -64,6 +65,10 @@ class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await notificationService.initializeAppNotifications();
+    });
   }
 
   @override
@@ -199,10 +204,7 @@ class _AccountTypeCard extends StatelessWidget {
               width: 15,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: colors.primary.shade500,
-                  width: 1.5,
-                ),
+                border: Border.all(color: colors.primary.shade500, width: 1.5),
                 color: isSelected ? colors.primary.shade500 : colors.whiteColor,
               ),
             ),

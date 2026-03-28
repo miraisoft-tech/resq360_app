@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
@@ -26,7 +27,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     on<ProviderVerifyEmailAddressEvent>(_onVerifyEmailAddress);
     on<ProviderResendVerificationEmailEvent>(_onResendVerificationEmail);
     on<ProvidergetProviderProfile>(_onGetProviderProfile);
-     on<ProviderDeleteAccount>(_onDeleteAccount);
+    on<ProviderDeleteAccount>(_onDeleteAccount);
     on<ProviderLogout>(_onLogout);
     on<ProviderGetStates>(_getLocalStates);
   }
@@ -80,6 +81,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         );
 
         emit(ProviderAuthLoginSuccessState(authData.provider!));
+        unawaited(providerAuthRemoteRepo.registerDeviceToken());
         return;
       }
     } on Exception catch (e) {
@@ -97,9 +99,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         password: localCredentials?.password ?? '',
       );
 
-      await _loadAndSaveProviderProfile(
-        authResponse: result.data!,
-      );
+      await _loadAndSaveProviderProfile(authResponse: result.data!);
     } on Exception catch (e) {
       log(e);
     }
@@ -140,7 +140,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
         email: event.email,
         password: event.password,
       );
-      
+      unawaited(providerAuthRemoteRepo.registerDeviceToken());
     } on Exception catch (e) {
       log('Signup Bloc Error: $e');
       emit(ProviderAuthFailureState(e.toString()));
@@ -272,7 +272,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   ) async {
     emit(ProviderAuthLoadingState());
     try {
-      log( 'Fetching provider profile...');
+      log('Fetching provider profile...');
       final result = await providerAuthRemoteRepo.getProviderProfile();
       if (result.data != null) {
         await AuthLocalRepo.instance.storeUserDetails(
@@ -295,29 +295,30 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
   }
 
   Future<void> _onDeleteAccount(
-  ProviderDeleteAccount event,
-  Emitter<ProviderAuthState> emit,
-) async {
-  emit(ProviderAuthLoadingState());
-  
-  try {
-    final result = await providerAuthRemoteRepo.deleteAccount();
-    
-    if (result.data != null) {
-      final message = result.data?['message'] ?? 'Account deleted successfully';
-      emit(ProviderAccountDeletedState(message.toString()));
-    } else {
-      emit(
-        ProviderAccountDeletionFailedState(
-          result.error ?? 'Failed to delete account',
-        ),
-      );
+    ProviderDeleteAccount event,
+    Emitter<ProviderAuthState> emit,
+  ) async {
+    emit(ProviderAuthLoadingState());
+
+    try {
+      final result = await providerAuthRemoteRepo.deleteAccount();
+
+      if (result.data != null) {
+        final message =
+            result.data?['message'] ?? 'Account deleted successfully';
+        emit(ProviderAccountDeletedState(message.toString()));
+      } else {
+        emit(
+          ProviderAccountDeletionFailedState(
+            result.error ?? 'Failed to delete account',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      log('Delete Account Error: $e');
+      emit(ProviderAccountDeletionFailedState(e.toString()));
     }
-  } on Exception catch (e) {
-    log('Delete Account Error: $e');
-    emit(ProviderAccountDeletionFailedState(e.toString()));
   }
-}
 
   Future<void> _getLocalStates(
     ProviderGetStates event,
@@ -358,7 +359,7 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
     }
   }
 
-    Future<bool> _loadAndSaveProviderProfile({
+  Future<bool> _loadAndSaveProviderProfile({
     required AuthResponse authResponse,
   }) async {
     await AuthLocalRepo.instance.storeAccessToken(
@@ -375,5 +376,4 @@ class ProviderAuthBloc extends Bloc<ProviderAuthEvent, ProviderAuthState> {
 
     return true;
   }
-
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "9477935455",
+    "project_id": "resq360-45c1a",
+    "storage_bucket": "resq360-45c1a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9477935455:android:2f1c8fe6a3cc84eef166ea",
+        "android_client_info": {
+          "package_name": "com.resq360.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvttIE-ZW9DjtmM4UiA6kD5nIi7GEmPtU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
