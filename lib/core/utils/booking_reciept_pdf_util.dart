@@ -30,17 +30,7 @@ class BookingReceiptPdfUtil {
         AppAssets.ASSETS_LOGO_LOGO_PNG,
       )).buffer.asUint8List(),
     );
-
-    final hasAmount = amount.isNotEmpty && amount != 'To be billed';
-
-    // final interRegular = pw.Font.ttf(
-    //   await rootBundle.load('fonts/Inter/Inter-Regular.otf'),
-    // );
-
-    // final interBold = pw.Font.ttf(
-    //   await rootBundle.load('fonts/Inter/Inter-Bold.otf'),
-    // );
-
+    
     final statusColor =
         status.toUpperCase() == 'FAILED' || status.toUpperCase() == 'CANCELLED'
             ? PdfColors.red
@@ -114,17 +104,17 @@ class BookingReceiptPdfUtil {
                             ),
                           ],
                         ),
-                        if (hasAmount) ...[
+                        // if (hasAmount) ...[
                           pw.SizedBox(height: 12),
                           pw.Text(
-                            '₦${AppTextUtil.formatAmount(amount)}',
+                            'NGN ${AppTextUtil.formatAmount(amount)}',
                             style: pw.TextStyle(
                               fontSize: 28,
                               fontWeight: pw.FontWeight.bold,
                               color: statusColor,
                             ),
                           ),
-                        ],
+                        // ],
                       ],
                     ),
                   ),
@@ -153,9 +143,8 @@ class BookingReceiptPdfUtil {
                       _infoRow('Payment Method', paymentMethod),
                       _infoRow(
                         'Amount',
-                        hasAmount
-                            ? '₦${AppTextUtil.formatAmount(amount)}'
-                            : 'To be billed',
+                        'NGN ${AppTextUtil.formatAmount(amount)}'
+                          
                       ),
                     ],
                   ),

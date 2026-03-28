@@ -118,6 +118,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                       _tabController.index == 0
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -132,6 +133,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                       _tabController.index == 1
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -146,6 +148,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                       _tabController.index == 2
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -160,6 +163,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                       _tabController.index == 3
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
             ],

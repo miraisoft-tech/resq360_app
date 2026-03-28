@@ -100,7 +100,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
             labelColor: appColors.primary,
             unselectedLabelColor: appColors.textColor.shade500,
             indicatorSize: TabBarIndicatorSize.tab,
-            padding: EdgeInsets.only(bottom: 10.h),
+            padding: EdgeInsets.only(bottom: 10.h,),
             tabs: [
               SizedBox(
                 width: double.infinity,
@@ -114,6 +114,8 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                       _tabController.index == 0
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                maxLines: 1,
+                  
                 ),
               ),
               SizedBox(
@@ -128,6 +130,8 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                       _tabController.index == 1
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                maxLines: 1,
+                
                 ),
               ),
               SizedBox(
@@ -142,6 +146,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                       _tabController.index == 2
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -156,6 +161,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                       _tabController.index == 3
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
             ],
@@ -481,7 +487,7 @@ class _BookingCardState extends State<BookingCard> {
                               status: status,
                               dateTime: '$date - $end',
                               paymentMethod: method,
-                              amount: 'To be billed',
+                              amount: amount,
                             );
                           },
                         ),
