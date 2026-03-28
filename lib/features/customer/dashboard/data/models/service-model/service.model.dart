@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+
 @immutable
 class Service {
   const Service({
@@ -15,9 +16,10 @@ class Service {
 
   factory Service.fromJson(Map<String, dynamic> json) {
     return Service(
-      id: json['id'] is int
-          ? json['id'] as int
-          : int.tryParse(json['id'].toString()) ?? 0,
+      id:
+          json['id'] is int
+              ? json['id'] as int
+              : int.tryParse(json['id'].toString()) ?? 0,
       name: json['name']?.toString() ?? '',
       image: json['image']?.toString() ?? '',
       imageId: json['imageId']?.toString(),
@@ -40,16 +42,16 @@ class Service {
   final String status;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'image': image,
-        'imageId': imageId,
-        'description': description,
-        'createdBy': createdBy,
-        'createdAt': createdAt,
-        'updatedAt': updatedAt,
-        'status': status,
-      };
+    'id': id,
+    'name': name,
+    'image': image,
+    'imageId': imageId,
+    'description': description,
+    'createdBy': createdBy,
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+    'status': status,
+  };
 
   @override
   bool operator ==(Object other) {
@@ -58,9 +60,8 @@ class Service {
   }
 
   @override
-   int get hashCode => id.hashCode;
+  int get hashCode => id.hashCode;
 }
-
 
 class ServiceProvider {
   ServiceProvider({
@@ -80,12 +81,14 @@ class ServiceProvider {
     required this.totalReviews,
     required this.serviceName,
     required this.providerServiceId,
+    this.fullName,
     this.phoneNumber,
   });
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
     return ServiceProvider(
       id: json['id'] as int,
+      fullName: json['fullName']?.toString() ?? '',
       companyName: json['companyName']?.toString() ?? '',
       activityStatus: json['activityStatus']?.toString(),
       openingHours: json['openingHours']?.toString(),
@@ -114,7 +117,6 @@ class ServiceProvider {
       serviceName: json['serviceName']?.toString(),
       providerServiceId: json['providerServiceId'] as int?,
       phoneNumber: json['phoneNumber'] as String?,
-
     );
   }
 
@@ -135,6 +137,7 @@ class ServiceProvider {
   final String? serviceName;
   final int? providerServiceId;
   final String? phoneNumber;
+  final String? fullName;
 }
 
 class ProviderService {

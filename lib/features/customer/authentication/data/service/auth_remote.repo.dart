@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/models/kyc/identity_response.dart';
@@ -7,6 +8,7 @@ import 'package:resq360/core/models/kyc/user_kyc.model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/core/services/upload_service.dart';
+import 'package:resq360/core/utils/device_id.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/auth_user.model.dart';
 import 'package:resq360/features/customer/authentication/data/models/auth/customer_user_model.dart';
 
@@ -29,11 +31,7 @@ class AuthRemoteRepo extends BaseAPI {
       final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
 
-      final data = {
-        'email': email,
-        'password': password,
-        'userType': userType,
-      };
+      final data = {'email': email, 'password': password, 'userType': userType};
 
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
@@ -43,9 +41,7 @@ class AuthRemoteRepo extends BaseAPI {
       switch (res.statusCode) {
         case 200:
         case 201:
-          final authResponse = AuthResponse.fromJson(
-            res.data!,
-          );
+          final authResponse = AuthResponse.fromJson(res.data!);
           return ApiResult(data: authResponse);
         default:
           return ApiResult(error: '${res.data?['message'] ?? 'Login failed'}');
@@ -66,11 +62,7 @@ class AuthRemoteRepo extends BaseAPI {
     try {
       const url = '/auth/register/user';
 
-      final data = {
-        'fullName': fullname,
-        'email': email,
-        'password': password,
-      };
+      final data = {'fullName': fullname, 'email': email, 'password': password};
 
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
@@ -103,9 +95,7 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<bool> requestPasswordReset({
-    required String email,
-  }) async {
+  Future<bool> requestPasswordReset({required String email}) async {
     try {
       final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
@@ -133,9 +123,7 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<bool>> validateResetToken({
-    required String token,
-  }) async {
+  Future<ApiResult<bool>> validateResetToken({required String token}) async {
     try {
       final savedUserType = await AuthLocalRepo.instance.getUserType();
       final userType = savedUserType ?? 'user';
@@ -163,9 +151,7 @@ class AuthRemoteRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<bool>> setNewPassword({
-    required String password,
-  }) async {
+  Future<ApiResult<bool>> setNewPassword({required String password}) async {
     try {
       const url = '/auth/reset-password';
       final savedUserType = await AuthLocalRepo.instance.getUserType();
@@ -196,7 +182,6 @@ class AuthRemoteRepo extends BaseAPI {
       }
 
       return ApiResult(error: 'An error occurred');
-    
     } on Exception catch (e, s) {
       log(e);
       log(s);
@@ -214,9 +199,7 @@ class AuthRemoteRepo extends BaseAPI {
 
       final url = '/auth/verify-email/$emailVerificationToken?type=$userType';
 
-      final res = await dio().get<Map<String, dynamic>>(
-        url,
-      );
+      final res = await dio().get<Map<String, dynamic>>(url);
 
       // final userCred = await AuthLocalRepo.instance.getLocalCredentials();
       // if (userCred != null) {
@@ -475,16 +458,9 @@ class AuthRemoteRepo extends BaseAPI {
   }) async {
     const url = '/kyc/submit/address-information';
     try {
-      final data = {
-        'state': state,
-        'city': city,
-        'address': address,
-      };
+      final data = {'state': state, 'city': city, 'address': address};
 
-      final res = await dio().post<Map<String, dynamic>>(
-        url,
-        data: data,
-      );
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
       log('${res.statusCode}');
       log('${res.data}');
 
@@ -533,9 +509,7 @@ class AuthRemoteRepo extends BaseAPI {
     try {
       const url = '/user/account';
 
-      final res = await dio().delete<Map<String, dynamic>>(
-        url,
-      );
+      final res = await dio().delete<Map<String, dynamic>>(url);
 
       log(res.statusCode);
       log(res.data);
@@ -564,6 +538,33 @@ class AuthRemoteRepo extends BaseAPI {
       log(e);
       log(s);
       return ApiResult(error: '$e $s');
+    }
+  }
+
+  Future<void> registerDeviceToken() async {
+    try {
+      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+
+      if (Platform.isIOS && apnsToken == null) {
+        return;
+      }
+
+      final fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+      if (fcmToken.isEmpty) return;
+
+      final deviceInfo = await AppDeviceIdUtil.getDeviceInfo();
+
+      const url = '/mobile-notifications/device-tokens';
+      final data = {
+        'token': fcmToken,
+        'platform': AppDeviceIdUtil.platform,
+        'deviceInfo': deviceInfo,
+      };
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+      log('Register device token response: ${res.statusCode} ${res.data}');
+    } on Exception catch (e) {
+      log('Error registering device token: $e');
     }
   }
 }

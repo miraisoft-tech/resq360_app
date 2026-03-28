@@ -32,10 +32,7 @@ class _IntroScreenState extends State<IntroScreen> {
     await AuthLocalRepo.instance.saveIntroCompleted(isIntroCompleted: true);
     if (!mounted) return;
 
-    await replaceScreen(
-      context,
-      const SelectAccountTypeScreen(),
-    );
+    await replaceScreen(context, const SelectAccountTypeScreen());
   }
 
   Future<void> _continue() async {
@@ -49,10 +46,7 @@ class _IntroScreenState extends State<IntroScreen> {
       await AuthLocalRepo.instance.saveIntroCompleted(isIntroCompleted: true);
       if (!mounted) return;
 
-      await replaceScreen(
-        context,
-        const SelectAccountTypeScreen(),
-      );
+      await replaceScreen(context, const SelectAccountTypeScreen());
     }
   }
 
@@ -154,12 +148,7 @@ class _IntroScreenState extends State<IntroScreen> {
               20.verticalSpace,
               Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  DotIndicator(
-                    total: 3,
-                    currentIndex: currentIndex,
-                  ),
-                ],
+                children: [DotIndicator(total: 3, currentIndex: currentIndex)],
               ),
               25.verticalSpace,
               Padding(

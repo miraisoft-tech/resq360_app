@@ -32,12 +32,16 @@ class HeaderWidget extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GenText(
-              'Hello, $name 👋',
-              size: 12,
-              height: 20,
-              weight: FontWeight.w400,
-              color: colors.neutral.shade500,
+            SizedBox(
+              width: 180.w,
+              child: GenText(
+                'Hello, $name 👋',
+                size: 12,
+                height: 20,
+                weight: FontWeight.w400,
+                color: colors.neutral.shade500,
+                maxLines: 1,
+              ),
             ),
             GestureDetector(
               onTap: onTapAddress,
@@ -47,7 +51,7 @@ class HeaderWidget extends StatelessWidget {
                   AppAssets.ASSETS_ICONS_LOCATION_SVG.svg,
                   4.horizontalSpace,
                   SizedBox(
-                    width: 100.w,
+                    width: 110.w,
                     child: Row(
                       children: [
                         Expanded(
@@ -59,7 +63,6 @@ class HeaderWidget extends StatelessWidget {
                             maxLines: 1,
                           ),
                         ),
-                        5.horizontalSpace,
                         Icon(
                           Icons.keyboard_arrow_down,
                           size: 14,
