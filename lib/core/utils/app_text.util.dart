@@ -45,18 +45,17 @@ class AppTextUtil {
 
     if (parsedDate == null) return 'N/A';
 
-    final localDate = parsedDate.isUtc ? parsedDate.toLocal() : parsedDate;
+    final localDate = parsedDate.isUtc ? parsedDate : parsedDate;
 
     return formatter.format(localDate);
   }
 
-  static String formatDateToStringNormal(String? date, [String? format]) {
-    final parsedDate = DateTime.tryParse(date ?? DateTime.now().toString());
-    final formatter = DateFormat(format ?? 'd MMMM, yyyy');
+static String formatDateToStringNormal(String? date, [String? format]) {
+  final parsedDate = DateTime.tryParse(date ?? '');
+  if (parsedDate == null) return 'N/A';
 
-    if (parsedDate == null) return 'N/A';
-
-    final localDate = parsedDate.isUtc ? parsedDate.toLocal() : parsedDate;
+  final localDate = parsedDate.toLocal();
+  final formatter = DateFormat(format ?? 'd MMMM, yyyy');
 
     return formatter.format(localDate);
   }
@@ -97,27 +96,26 @@ class AppTextUtil {
     return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
   }
 
-static String formatTransactionDate(DateTime? date) {
-  if (date == null) return '';
+  static String formatTransactionDate(DateTime? date) {
+    if (date == null) return '';
 
-  final now = DateTime.now();
-  final diff = now.difference(date);
+    final now = DateTime.now();
+    final diff = now.difference(date);
 
-  if (diff.inDays == 0) {
-    return 'Today, ${_formatTime(date.toLocal())}';
+    if (diff.inDays == 0) {
+      return 'Today, ${_formatTime(date.toLocal())}';
+    }
+
+    if (diff.inDays == 1) {
+      return 'Yesterday, ${_formatTime(date.toLocal())}';
+    }
+
+    return DateFormat('MMM d, y - h:mma').format(date.toLocal());
   }
 
-  if (diff.inDays == 1) {
-    return 'Yesterday, ${_formatTime(date.toLocal())}';
+  static String _formatTime(DateTime d) {
+    final hour = d.hour > 12 ? d.hour - 12 : d.hour;
+    final period = d.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:${d.minute.toString().padLeft(2, '0')} $period';
   }
-
-  return DateFormat('MMM d, y - h:mma').format(date.toLocal());
-}
-
-static String _formatTime(DateTime d) {
-  final hour = d.hour > 12 ? d.hour - 12 : d.hour;
-  final period = d.hour >= 12 ? 'PM' : 'AM';
-  return '$hour:${d.minute.toString().padLeft(2, '0')} $period';
-}
-
 }

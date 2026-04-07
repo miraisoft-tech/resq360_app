@@ -91,13 +91,14 @@ class TransactionDetailModal extends StatelessWidget {
                 tx.title,
                 size: 12,
                 color: appColors.textColor.shade400,
+                textAlign: TextAlign.center,
               ),
               4.verticalSpace,
 
               UrbText(
                 '₦${AppTextUtil.formatAmount(tx.uiAmount.toString())}',
                 size: 18,
-                weight: FontWeight.w700,
+                weight: FontWeight.w700,  
                 color: appColors.black,
               ),
               4.verticalSpace,

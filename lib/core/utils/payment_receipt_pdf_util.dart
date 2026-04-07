@@ -117,7 +117,7 @@ class PaymentReceiptPdfUtil {
                         ),
                         pw.SizedBox(height: 12),
                         pw.Text(
-                          '₦${AppTextUtil.formatAmount(amount)}',
+                          'NGN ${AppTextUtil.formatAmount(amount)}',
                           style: pw.TextStyle(
                             fontSize: 28,
                             fontWeight: pw.FontWeight.bold,
@@ -151,7 +151,7 @@ class PaymentReceiptPdfUtil {
                       _infoRow('Payment Method', paymentMethod),
                       _infoRow(
                         'Amount',
-                        '₦${AppTextUtil.formatAmount(amount)}',
+                        'NGN ${AppTextUtil.formatAmount(amount)}',
                       ),
                     ],
                   ),

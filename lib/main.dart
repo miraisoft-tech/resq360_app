@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -38,9 +39,12 @@ import 'package:resq360/features/settings/data/bloc/phone_update_bloc/phone_upda
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/update_profile_bloc.dart/profile_update_bloc.dart';
 import 'package:resq360/features/settings/data/service/ratings_service.dart';
+import 'package:resq360/firebase_options.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   late final AuthBloc globalAuthBloc;
 
@@ -48,7 +52,7 @@ Future<void> main() async {
   BlocRegistry.authBloc = globalAuthBloc;
 
   LocaleSettings.useDeviceLocale();
-  FlutterNativeSplash.preserve(widgetsBinding: WidgetsBinding.instance);
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   if (!BuildConfig.isDev) {
     ErrorWidget.builder = (FlutterErrorDetails details) => Container();
@@ -114,13 +118,13 @@ Future<void> main() async {
           BlocProvider(
             create: (_) => PhoneUpdateBloc(),
           ),
-           BlocProvider(
+          BlocProvider(
             create: (_) => KycBloc(),
           ),
-           BlocProvider(
+          BlocProvider(
             create: (_) => BankBloc(),
           ),
-           BlocProvider(
+          BlocProvider(
             create: (_) => PromotionBloc(),
           ),
         ],

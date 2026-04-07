@@ -337,7 +337,7 @@ class ProviderWalletBalanceCard extends StatelessWidget {
           ),
           4.verticalSpace,
           UrbText(
-            '₦${AppTextUtil.formatAmount(balance.toStringAsFixed(0))}',
+            'NGN${AppTextUtil.formatAmount(balance.toStringAsFixed(0))}',
             color: appColors.whiteColor,
             size: 30,
             height: 32.5,

@@ -46,13 +46,17 @@ class _ServiceProviderDetailsScreenState
 
     unawaited(_loadGuestMode());
 
-    if (widget.provider != null) {
+    if (widget.provider != null || widget.providerId != null) {
       _provider = widget.provider;
       _loadRatings();
-    } else if (widget.providerId != null) {
-      context.read<ProviderBloc>().add(
-        FetchAServiceProvider(providerId: widget.providerId!),
-      );
+
+      if (widget.provider?.id != null || widget.providerId != null) {
+        context.read<ProviderBloc>().add(
+          FetchAServiceProvider(
+            providerId: widget.provider?.id ?? widget.providerId ?? 0,
+          ),
+        );
+      }
     }
   }
 
@@ -288,7 +292,8 @@ class _ServiceProviderDetailsScreenState
                                             CrossAxisAlignment.start,
                                         children: [
                                           UrbText(
-                                            provider.companyName,
+                                            provider.fullName?.capitalize ??
+                                                'N/A',
                                             height: 24.5,
                                             weight: FontWeight.w700,
                                             color: colors.black,
@@ -309,6 +314,15 @@ class _ServiceProviderDetailsScreenState
                                                       is ProviderRatingsLoaded) {
                                                     return Row(
                                                       children: [
+                                                        UrbText(
+                                                          '(${provider.companyName})',
+                                                          size: 12,
+                                                          height: 14.5,
+                                                          weight:
+                                                              FontWeight.w400,
+                                                          color: colors.black,
+                                                        ),
+                                                        4.horizontalSpace,
                                                         const Icon(
                                                           Icons.star,
                                                           size: 16,

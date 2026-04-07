@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/booking_enums.dart';
-import 'package:resq360/core/utils/app_pdf_util.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/core/utils/booking_reciept_pdf_util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
@@ -118,6 +118,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                       _tabController.index == 0
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -132,6 +133,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                       _tabController.index == 1
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -146,6 +148,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                       _tabController.index == 2
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -160,6 +163,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                       _tabController.index == 3
                           ? appColors.primary
                           : appColors.neutral.shade500,
+                  maxLines: 1,
                 ),
               ),
             ],

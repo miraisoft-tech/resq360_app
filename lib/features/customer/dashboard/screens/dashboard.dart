@@ -73,9 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!_isGuest) {
-        context.read<CustomerAuthBloc>().add(
-          const CustomergetUserProfile(),
-        );
+        context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
         final unreadCount =
             await NotificationRepo.instance.getUnreadNotificationCount();
         if (!mounted) return;
@@ -117,11 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(
-                left: 16.w,
-                right: 16.w,
-                top: 10.h,
-              ),
+              padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -148,10 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 await _requireLogin();
                                 return;
                               }
-                              await pushScreen(
-                                context,
-                                const AddressScreen(),
-                              );
+                              await pushScreen(context, const AddressScreen());
                             },
                           );
                         },
@@ -417,9 +408,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               final ads = state.advertisements;
                               await pushScreen(
                                 context,
-                                RecommendedListScreen(
-                                  advertisements: ads,
-                                ),
+                                RecommendedListScreen(advertisements: ads),
                               );
                             }
                           },

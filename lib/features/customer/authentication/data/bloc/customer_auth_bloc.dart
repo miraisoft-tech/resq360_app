@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
@@ -55,9 +57,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         return;
       }
 
-      final ok = await _loadAndSaveUserProfile(
-        authResponse: result.data!,
-      );
+      final ok = await _loadAndSaveUserProfile(authResponse: result.data!);
 
       if (!ok) {
         emit(const CustomerAuthFailure('Failed to load user profile'));
@@ -70,6 +70,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
       );
 
       emit(CustomerAuthLoginSuccess(authData!.user!));
+      unawaited(authRemoteRepo.registerDeviceToken());
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
     }
@@ -85,9 +86,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
         password: localCredentials?.password ?? '',
       );
 
-      await _loadAndSaveUserProfile(
-        authResponse: result.data!,
-      );
+      await _loadAndSaveUserProfile(authResponse: result.data!);
     } on Exception catch (e) {
       log(e);
     }
@@ -120,6 +119,7 @@ class CustomerAuthBloc extends Bloc<CustomerAuthEvent, CustomerAuthState> {
           email: event.email,
           password: event.password,
         );
+        unawaited(authRemoteRepo.registerDeviceToken());
       }
     } on Exception catch (e) {
       emit(CustomerAuthFailure(e.toString()));
