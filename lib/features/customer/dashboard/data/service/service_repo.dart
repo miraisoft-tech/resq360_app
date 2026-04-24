@@ -47,6 +47,33 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
+   Future<ApiResult<Service>> bookServiceRequest({
+    required String providerServiceId,
+  }) async {
+    const url = '/requests/book-request';
+    try {
+      final res = await dio().post<Map<String, dynamic>>(url, queryParameters: {
+        'providerServiceId': providerServiceId,
+      });
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 201 && res.data != null) {
+        final data = Service.fromJson(
+          res.data!['data'] as Map<String, dynamic>,
+        );
+        return ApiResult(data: data);
+      } else {
+        return ApiResult(
+          error: res.data?['message']?.toString() ?? 'Failed to create service',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
   Future<ApiResult<List<Service>>> fetchServices() async {
     const url = '/services?page=1';
     try {

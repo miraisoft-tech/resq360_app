@@ -88,7 +88,7 @@ class _ServiceProviderDetailsScreenState
     final providerServiceId = _provider!.providerServices.first.id;
 
     context.read<ServiceRequestBloc>().add(
-      CreateServiceRequest(providerServiceId: providerServiceId),
+      BookServiceRequest(providerServiceId: providerServiceId),
     );
   }
 
