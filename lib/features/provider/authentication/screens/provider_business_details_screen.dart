@@ -96,10 +96,7 @@ class _ProviderBusinessDetailsScreenState
       );
 
       if (_selectType.value == null) {
-        await showErrorSnackbar(
-          context,
-          'Please select a service category',
-        );
+        await showErrorSnackbar(context, 'Please select a service category');
 
         return;
       }
@@ -149,19 +146,13 @@ class _ProviderBusinessDetailsScreenState
         }
 
         if (state is ProviderAuthSignupSuccessState) {
-          if (context.mounted) {
-            Navigator.pop(context);
-          }
-
           setState(() {
             isFetchingAddress = false;
           });
 
           await pushAndReplaceScreen(
             context: context,
-            ProviderConfirmEmailScreen(
-              email: widget.email,
-            ),
+            ProviderConfirmEmailScreen(email: widget.email),
           );
         }
       },
@@ -184,11 +175,8 @@ class _ProviderBusinessDetailsScreenState
                         setState(() {});
                       },
                       validator:
-                          (value) => AppGenUtil.isValidName(
-                            value,
-                            'business name',
-                            5,
-                          ),
+                          (value) =>
+                              AppGenUtil.isValidName(value, 'business name', 5),
                     ),
                     16.verticalSpace,
                     KFormField(
