@@ -159,6 +159,49 @@ class ChatRepo extends BaseAPI {
     }
   }
 
+  Future<ApiResult<MessageResponse>> sendServiceRequestMessage({
+    required int chatId,
+    required int providerServiceId,
+    required String description,
+  }) async {
+    const url = '/chat/messages/service-request';
+
+    final payload = {
+      'chatId': chatId,
+      'providerServiceId': providerServiceId,
+      'description': description,
+    };
+
+    try {
+      final response = await dio().post<Map<String, dynamic>>(
+        url,
+        data: payload,
+      );
+
+      if (response.statusCode == 201 && response.data != null) {
+        final responseData = response.data!;
+        debugPrint('service-request API response: $responseData');
+
+        final messageData = responseData['data'] as Map<String, dynamic>?;
+        if (messageData == null) {
+          return ApiResult(error: 'Invalid response: missing data field');
+        }
+
+        final message = MessageResponse.fromJson(messageData);
+        return ApiResult(data: message);
+      } else {
+        return ApiResult(
+          error:
+              response.data?['message'].toString() ?? 'Failed to send message',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
   Future<ApiResult<MessageResponse>> sendInvoice({
     required SendInvoice invoiceRequest,
   }) async {

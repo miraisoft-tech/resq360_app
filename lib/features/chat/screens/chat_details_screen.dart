@@ -63,10 +63,9 @@ class ChatDetailScreen extends StatelessWidget {
 
         return BlocProvider(
           create:
-              (_) => ChatDetailBloc(
-                chatId: chatId,
-                currentUserId: userId,
-              )..add(OpenChatDetail(chatId)),
+              (_) =>
+                  ChatDetailBloc(chatId: chatId, currentUserId: userId)
+                    ..add(OpenChatDetail(chatId)),
           child: _ChatDetailView(
             chatId: chatId,
             userType: userType,
@@ -233,9 +232,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                     isActive: isActive,
                   ),
                   const ListDivider(),
-                  Expanded(
-                    child: _buildChatContent(state),
-                  ),
+                  Expanded(child: _buildChatContent(state)),
                   // Provider-only: Show service details link when paid
                   if (isProvider &&
                       canShowServiceDetails &&
@@ -321,14 +318,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: appColors.primary,
-            ),
+            CircularProgressIndicator(color: appColors.primary),
             16.verticalSpace,
-            GenText(
-              'Loading messages...',
-              color: appColors.neutral.shade400,
-            ),
+            GenText('Loading messages...', color: appColors.neutral.shade400),
           ],
         ),
       );
@@ -364,10 +356,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               child: FloatingActionButton.small(
                 onPressed: _scrollToBottom,
                 backgroundColor: appColors.primary,
-                child: Icon(
-                  Icons.arrow_downward,
-                  color: appColors.whiteColor,
-                ),
+                child: Icon(Icons.arrow_downward, color: appColors.whiteColor),
               ),
             ),
         ],
@@ -397,9 +386,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           onPressed: () => pop(context),
         ),
         20.horizontalSpace,
-        PictureWidget(
-          image: imageurl,
-        ),
+        PictureWidget(image: imageurl),
         8.horizontalSpace,
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,14 +422,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             ),
           ),
         PopupMenuButton<String>(
-          constraints: BoxConstraints(
-            minWidth: 180.w,
-            maxWidth: menuMaxWidth,
-          ),
-          icon: Icon(
-            Icons.more_vert,
-            color: appColors.neutral.shade700,
-          ),
+          constraints: BoxConstraints(minWidth: 180.w, maxWidth: menuMaxWidth),
+          icon: Icon(Icons.more_vert, color: appColors.neutral.shade700),
           color: appColors.whiteColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
@@ -478,10 +459,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     );
   }
 
-  void _onChatStateChanged(
-    BuildContext context,
-    ChatDetailState state,
-  ) {
+  void _onChatStateChanged(BuildContext context, ChatDetailState state) {
     if (state is ChatDetailReady) {
       final messages = state.messages;
       final messageCount = messages.length;
@@ -590,9 +568,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
       if (completed ?? false) {
         context.read<CustomerPaymentBloc>().add(
-          CustomerVerifyServiceRequestPaymentEvent(
-            state.payment.reference,
-          ),
+          CustomerVerifyServiceRequestPaymentEvent(state.payment.reference),
         );
       } else {
         await showErrorSnackbar(context, 'Payment cancelled');
@@ -777,10 +753,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         final appColors = context.appColors;
         return AlertDialog(
           backgroundColor: appColors.whiteColor,
-          title: GenText(
-            'Add Caption (Optional)',
-            color: appColors.black,
-          ),
+          title: GenText('Add Caption (Optional)', color: appColors.black),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(
@@ -799,10 +772,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: GenText(
-                'Skip',
-                color: appColors.neutral.shade600,
-              ),
+              child: GenText('Skip', color: appColors.neutral.shade600),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, controller.text.trim()),
@@ -823,9 +793,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       context,
       body: BlocProvider.value(
         value: context.read<ChatDetailBloc>(),
-        child: GenerateInvoiceDialog(
-          chat: chat,
-        ),
+        child: GenerateInvoiceDialog(chat: chat),
       ),
     );
   }
@@ -852,10 +820,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       context,
       body: BlocProvider.value(
         value: context.read<ChatDetailBloc>(),
-        child: ReportChatDialog(
-          chatId: chatId,
-          chatTitle: title,
-        ),
+        child: ReportChatDialog(chatId: chatId, chatTitle: title),
       ),
     );
 
@@ -1044,9 +1009,7 @@ class _MessageList extends StatelessWidget {
         if (isLoadingMore && index == messages.length) {
           return const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -1071,6 +1034,8 @@ class _MessageList extends StatelessWidget {
           ),
         );
       },
+
+      
     );
   }
 
@@ -1142,6 +1107,9 @@ class _MessageList extends StatelessWidget {
           isMine: isMine,
         );
 
+      case 'SYSTEM':
+        return _buildServiceRequestCard(context, message, isMine, time);
+
       default:
         return ChatBubble(
           type: isMine ? MessageType.sent : MessageType.received,
@@ -1194,11 +1162,7 @@ class _MessageList extends StatelessWidget {
                     color: appColors.neutral.shade900,
                   ),
                   2.verticalSpace,
-                  GenText(
-                    time,
-                    size: 12,
-                    color: appColors.neutral.shade500,
-                  ),
+                  GenText(time, size: 12, color: appColors.neutral.shade500),
                 ],
               ),
             ),
@@ -1253,6 +1217,59 @@ class _MessageList extends StatelessWidget {
     }
   }
 
+  Widget _buildServiceRequestCard(
+  BuildContext context,
+  MessageResponse message,
+  bool isMine,
+  String time,
+) {
+  final appColors = context.appColors;
+  final data = message.metadata?.customData ?? {};
+
+  final description = data['description'] ?? message.content ?? '';
+  final serviceId = data['providerServiceId'];
+
+  return Align(
+    alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+    child: Container(
+      padding: EdgeInsets.all(12.w),
+      margin: EdgeInsets.only(
+        left: isMine ? 40.w : 0,
+        right: isMine ? 0 : 40.w,
+      ),
+      decoration: BoxDecoration(
+        color: appColors.primary.shade50,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: appColors.primary.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GenText(
+            'Service Request',
+            weight: FontWeight.w600,
+            color: appColors.primary.shade700,
+          ),
+          6.verticalSpace,
+          GenText(description.toString()),
+          6.verticalSpace,
+          GenText(
+            'Service ID: $serviceId',
+            size: 12,
+            color: appColors.neutral.shade500,
+          ),
+          6.verticalSpace,
+          GenText(
+            time,
+            size: 11,
+            color: appColors.neutral.shade400,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
   Future<void> _handleInvoicePayment(
     BuildContext context,
     MessageResponse message,
@@ -1265,9 +1282,7 @@ class _MessageList extends StatelessWidget {
         onPaymentSelected: (option) async {
           await GeneralDialogs.showCustomDialog<void>(
             context,
-            body: CompletePaymentDialog(
-              amount: amount,
-            ),
+            body: CompletePaymentDialog(amount: amount),
           );
         },
       ),

@@ -4,7 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/__services.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/book_request.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 
 class ServiceRepo extends BaseAPI {
   factory ServiceRepo() {
@@ -47,8 +48,8 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-   Future<ApiResult<Service>> bookServiceRequest({
-    required String providerServiceId,
+   Future<ApiResult<BookRequest>> bookServiceRequest({
+    required int providerServiceId,
   }) async {
     const url = '/requests/book-request';
     try {
@@ -58,7 +59,7 @@ class ServiceRepo extends BaseAPI {
       log('POST $url => ${res.statusCode}');
 
       if (res.statusCode == 201 && res.data != null) {
-        final data = Service.fromJson(
+        final data = BookRequest.fromJson(
           res.data!['data'] as Map<String, dynamic>,
         );
         return ApiResult(data: data);

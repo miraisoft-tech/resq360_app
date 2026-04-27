@@ -28,6 +28,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
        super(ChatDetailInitial()) {
     on<OpenChatDetail>(_onOpenChatDetail);
     on<SendTextMessage>(_onSendMessage);
+    on<SendServiceRequest>(_onSendServiceRequest);
     on<SendInvoiceMessage>(_onSendInvoiceMessage);
     on<RefreshMessages>(_onRefreshMessages);
     on<LoadMoreMessages>(_onLoadMoreMessages);
@@ -315,6 +316,77 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       ),
     );
   }
+
+  Future<void> _onSendServiceRequest(
+  SendServiceRequest event,
+  Emitter<ChatDetailState> emit,
+) async {
+  if (state is! ChatDetailReady) return;
+
+  final current = state as ChatDetailReady;
+
+  final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
+
+  final localMessage = MessageResponse(
+    id: localMessageId,
+    chatId: chatId,
+    senderType: event.userType,
+    senderId: event.senderId,
+    messageType: 'SYSTEM',
+    content: event.description,
+    createdAt: DateTime.now(),
+    metadata: MetadataFactories.custom(
+      type: 'SYSTEM',
+      data: {
+        'providerServiceId': event.providerServiceId,
+        'description': event.description,
+      },
+    ),
+  );
+
+  final newMessages = [localMessage, ...current.messages];
+
+  _cache.updateMessages(chatId: chatId, messages: newMessages);
+
+  emit(current.copyWith(messages: newMessages));
+
+  final result = await _repo.sendServiceRequestMessage(
+    chatId: chatId,
+    providerServiceId: event.providerServiceId,
+    description: event.description,
+  );
+
+  final latestState = state;
+  if (latestState is! ChatDetailReady) return;
+
+  if (result.data == null) {
+    final messagesWithoutLocal =
+        latestState.messages.where((m) => m.id != localMessageId).toList();
+
+    emit(latestState.copyWith(messages: messagesWithoutLocal));
+    return;
+  }
+
+  final confirmedMessage = result.data!;
+  final confirmedId = confirmedMessage.id;
+
+  final updatedMessages =
+      latestState.messages
+          .where((m) => m.id != localMessageId && m.id != confirmedId)
+          .toList();
+
+  final finalMessages = [confirmedMessage, ...updatedMessages]..sort((a, b) {
+    final aTime = a.createdAt ?? DateTime.now();
+    final bTime = b.createdAt ?? DateTime.now();
+    return bTime.compareTo(aTime);
+  });
+
+  _cache.updateMessages(chatId: chatId, messages: finalMessages);
+
+  emit(latestState.copyWith(messages: finalMessages));
+}
+
+
 
   void _onIncomingMessage(
     _IncomingMessage event,

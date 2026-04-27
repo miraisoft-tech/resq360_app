@@ -8,7 +8,7 @@ import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/invoice_confirm.dialog.dart';
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 
 class GenerateInvoiceDialog extends StatefulWidget {
   const GenerateInvoiceDialog({required this.chat, super.key});

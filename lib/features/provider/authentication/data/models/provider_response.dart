@@ -1,4 +1,4 @@
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 
 class ProviderModel {

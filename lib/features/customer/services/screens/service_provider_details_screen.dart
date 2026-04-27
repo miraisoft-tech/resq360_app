@@ -4,11 +4,12 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/gallery_item_model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/provider_review_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
@@ -87,9 +88,12 @@ class _ServiceProviderDetailsScreenState
 
     final providerServiceId = _provider!.providerServices.first.id;
 
-    context.read<ServiceRequestBloc>().add(
+    final result = context.read<ServiceRequestBloc>().add(
       BookServiceRequest(providerServiceId: providerServiceId),
     );
+    // if (result != null) {
+
+    // }
   }
 
   Future<void> _openImagesFullScreen(int indexOfImage) async {
@@ -113,9 +117,7 @@ class _ServiceProviderDetailsScreenState
                       )
                       .toList(),
               titleGallery: null,
-              loadingWidget: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loadingWidget: const Center(child: CircularProgressIndicator()),
               errorWidget: const Center(
                 child: Icon(Icons.broken_image, size: 50),
               ),
@@ -161,9 +163,7 @@ class _ServiceProviderDetailsScreenState
                   onPressed: () => pop(context),
                 ),
               ),
-              body: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              body: const Center(child: CircularProgressIndicator()),
             );
           }
 
@@ -188,10 +188,31 @@ class _ServiceProviderDetailsScreenState
 
               if (state is ServiceRequestCreated) {
                 await pop(context);
+
+                final request = state.request;
+                final userId = await AuthLocalRepo.instance.getCustomerId();
+                if (userId != null) {
+                  context.read<ChatDetailBloc>().add(
+                    SendServiceRequest(
+                      providerServiceId: request.serviceRequestId ?? 0,
+                      description: 'Service Request',
+                      senderId: userId,
+                      userType: 'USER',
+                      chatId: request.id!,
+                    ),
+                  );
+                } else {
+                  await showErrorSnackbar(
+                    context,
+                    'cannot send service request message',
+                  );
+                  log('User ID is null, cannot send service request message');
+                }
+
                 await pushScreen(
                   context,
                   ChatDetailScreen(
-                    chatId: state.chatId,
+                    chatId: state.request.id!,
                     userType: UserType.customer,
                   ),
                 );
@@ -282,9 +303,7 @@ class _ServiceProviderDetailsScreenState
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    PictureWidget(
-                                      image: provider.profileImage,
-                                    ),
+                                    PictureWidget(image: provider.profileImage),
                                     12.horizontalSpace,
                                     Expanded(
                                       child: Column(
@@ -535,9 +554,7 @@ class _ServiceProviderDetailsScreenState
                                             ),
 
                                           ...reviews.map(
-                                            (r) => ProviderReviewCard(
-                                              data: r,
-                                            ),
+                                            (r) => ProviderReviewCard(data: r),
                                           ),
                                         ],
                                       );

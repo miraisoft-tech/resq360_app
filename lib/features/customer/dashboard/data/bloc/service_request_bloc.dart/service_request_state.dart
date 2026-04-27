@@ -14,14 +14,12 @@ class ServiceRequestLoading extends ServiceRequestState {}
 class ServiceRequestCreated extends ServiceRequestState {
 
   const ServiceRequestCreated({
-    required this.chatId,
-    required this.serviceRequestId,
+    required this.request,
   });
-  final int chatId;
-  final int serviceRequestId;
+  final BookRequest request;
 
   @override
-  List<Object?> get props => [chatId, serviceRequestId];
+  List<Object?> get props => [request];
 }
 
 class ServiceRequestError extends ServiceRequestState {

@@ -33,6 +33,18 @@ class SendTextMessage extends ChatDetailEvent {
   List<Object?> get props => [content];
 }
 
+class SendServiceRequest extends ChatDetailEvent {
+  const SendServiceRequest({required this.chatId, required this.providerServiceId, required this.description, required this.senderId, required this.userType});
+  final int chatId;
+  final int providerServiceId;
+  final String description;
+  final int senderId;
+  final String userType;
+
+  @override
+  List<Object?> get props => [chatId, providerServiceId, description, senderId, userType];
+}
+
 class SendInvoiceMessage extends ChatDetailEvent {
   const SendInvoiceMessage(this.invoice);
 
