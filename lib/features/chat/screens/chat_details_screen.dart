@@ -33,11 +33,13 @@ class ChatDetailScreen extends StatelessWidget {
   const ChatDetailScreen({
     required this.chatId,
     required this.userType,
+    this.providerServiceId,
     super.key,
   });
 
   final int chatId;
   final UserType userType;
+  final int? providerServiceId;
 
   Future<int?> _loadCurrentUserId() async {
     if (userType == UserType.customer) {
@@ -70,6 +72,7 @@ class ChatDetailScreen extends StatelessWidget {
             chatId: chatId,
             userType: userType,
             currentUserId: userId,
+            providerServiceId: providerServiceId,
           ),
         );
       },
@@ -82,11 +85,13 @@ class _ChatDetailView extends StatefulWidget {
     required this.chatId,
     required this.userType,
     required this.currentUserId,
+    this.providerServiceId,
   });
 
   final int chatId;
   final UserType userType;
   final int currentUserId;
+  final int? providerServiceId;
 
   @override
   State<_ChatDetailView> createState() => _ChatDetailViewState();
@@ -95,6 +100,8 @@ class _ChatDetailView extends StatefulWidget {
 class _ChatDetailViewState extends State<_ChatDetailView> {
   final ScrollController _scrollController = ScrollController();
   final ChatRepo _chatRepo = ChatRepo();
+
+  bool _pendingServiceRequestFired = false;
 
   bool get isCustomer => widget.userType == UserType.customer;
   bool get isProvider => widget.userType == UserType.provider;
@@ -461,6 +468,20 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
   void _onChatStateChanged(BuildContext context, ChatDetailState state) {
     if (state is ChatDetailReady) {
+      if (!_pendingServiceRequestFired) {
+        _pendingServiceRequestFired = true;
+        final userId = _currentUserId;
+        if (widget.providerServiceId == null) return;
+        context.read<ChatDetailBloc>().add(
+          SendServiceRequest(
+            providerServiceId: widget.providerServiceId!,
+            description: 'Service Request',
+            senderId: userId,
+            userType: _senderType,
+            chatId: widget.chatId,
+          ),
+        );
+      }
       final messages = state.messages;
       final messageCount = messages.length;
 
@@ -1034,8 +1055,6 @@ class _MessageList extends StatelessWidget {
           ),
         );
       },
-
-      
     );
   }
 
@@ -1096,6 +1115,7 @@ class _MessageList extends StatelessWidget {
             type: isMine ? MessageType.sent : MessageType.received,
             message: 'Invalid location data',
             time: time,
+            status: message.status,
           );
         }
 
@@ -1107,7 +1127,7 @@ class _MessageList extends StatelessWidget {
           isMine: isMine,
         );
 
-      case 'SYSTEM':
+      case 'SERVICE_REQUEST':
         return _buildServiceRequestCard(context, message, isMine, time);
 
       default:
@@ -1218,57 +1238,106 @@ class _MessageList extends StatelessWidget {
   }
 
   Widget _buildServiceRequestCard(
-  BuildContext context,
-  MessageResponse message,
-  bool isMine,
-  String time,
-) {
-  final appColors = context.appColors;
-  final data = message.metadata?.customData ?? {};
+    BuildContext context,
+    MessageResponse message,
+    bool isMine,
+    String time,
+  ) {
+    final appColors = context.appColors;
+    final meta = message.metadata;
 
-  final description = data['description'] ?? message.content ?? '';
-  final serviceId = data['providerServiceId'];
+    final serviceName =
+        meta?.customData?['serviceName']?.toString() ??
+        meta?.customData?['serviceCategoryName']?.toString() ??
+        '—';
+    final description = message.content ?? '—'; 
 
-  return Align(
-    alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-    child: Container(
-      padding: EdgeInsets.all(12.w),
-      margin: EdgeInsets.only(
-        left: isMine ? 40.w : 0,
-        right: isMine ? 0 : 40.w,
-      ),
+    return Container(
+      width: double.infinity,
+      padding: pad(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: appColors.primary.shade50,
+        color: appColors.whiteColor,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: appColors.primary.shade200),
+        border: Border.all(color: appColors.textColor.shade100),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GenText(
-            'Service Request',
-            weight: FontWeight.w600,
-            color: appColors.primary.shade700,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UrbText(
+                    'Service Request',
+                    color: appColors.black,
+                    size: 18,
+                    height: 20.5,
+                    weight: FontWeight.w700,
+                  ),
+                  4.verticalSpace,
+                  GenText(
+                    serviceName,
+                    weight: FontWeight.w400,
+                    color: appColors.textColor.shade300,
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UrbText(
+                    'Date',
+                    color: appColors.black,
+                    size: 18,
+                    height: 20.5,
+                    weight: FontWeight.w700,
+                  ),
+                  2.verticalSpace,
+                  GenText(
+                    time,
+                    weight: FontWeight.w400,
+                    color: appColors.textColor.shade300,
+                  ),
+                ],
+              ),
+            ],
           ),
-          6.verticalSpace,
-          GenText(description.toString()),
-          6.verticalSpace,
-          GenText(
-            'Service ID: $serviceId',
-            size: 12,
-            color: appColors.neutral.shade500,
-          ),
-          6.verticalSpace,
-          GenText(
-            time,
-            size: 11,
-            color: appColors.neutral.shade400,
+
+          16.verticalSpace,
+
+          const GenText('Description', weight: FontWeight.w500),
+          2.verticalSpace,
+          GenText(description, size: 12, color: appColors.textColor.shade300),
+
+          16.verticalSpace,
+          Divider(color: appColors.textColor.shade100),
+          12.verticalSpace,
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GenText('Status', color: appColors.textColor.shade400),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: appColors.warning.shade50,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: GenText(
+                  'Pending',
+                  size: 12,
+                  weight: FontWeight.w600,
+                  color: appColors.warning.shade600,
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
   Future<void> _handleInvoicePayment(
     BuildContext context,

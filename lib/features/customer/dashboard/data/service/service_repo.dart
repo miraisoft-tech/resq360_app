@@ -53,7 +53,7 @@ class ServiceRepo extends BaseAPI {
   }) async {
     const url = '/requests/book-request';
     try {
-      final res = await dio().post<Map<String, dynamic>>(url, queryParameters: {
+      final res = await dio().post<Map<String, dynamic>>(url, data: {
         'providerServiceId': providerServiceId,
       });
       log('POST $url => ${res.statusCode}');

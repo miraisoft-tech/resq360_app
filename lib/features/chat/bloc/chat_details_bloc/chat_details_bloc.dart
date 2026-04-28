@@ -336,7 +336,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     content: event.description,
     createdAt: DateTime.now(),
     metadata: MetadataFactories.custom(
-      type: 'SYSTEM',
+      type: 'SERVICE_REQUEST',
       data: {
         'providerServiceId': event.providerServiceId,
         'description': event.description,

@@ -133,11 +133,10 @@ class ChatBubble extends StatelessWidget {
         return const SizedBox(
           width: 12,
           height: 12,
-          child: CircularProgressIndicator(
-            strokeWidth: 1.5,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Color(0xFFE9E9E9),
-            ),
+          child: Icon(  
+            Icons.access_time,
+            size: 12,
+            color: Color(0xFFE9E9E9),
           ),
         );
       case MessageStatus.sent:
@@ -147,10 +146,10 @@ class ChatBubble extends StatelessWidget {
           color: Color(0xFFE9E9E9),
         );
       case MessageStatus.failed:
-        return Icon(
+        return const Icon(
           Icons.error_outline,
           size: 12,
-          color: appColors.error
+          // color: appColors.error
         );
     }
   }

@@ -58,8 +58,7 @@ class ServiceRequestBloc
         emit(ServiceRequestError(error: result.error!));
       } else {
         final chatId = result.data?.id;
-        final serviceRequestId = result.data?.serviceRequestId;
-        if (chatId == null || serviceRequestId == null) {
+        if (chatId == null ) {
           emit(const ServiceRequestError(error: 'Invalid response data'));
           return;
         }

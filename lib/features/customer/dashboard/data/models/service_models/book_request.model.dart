@@ -32,7 +32,7 @@ class BookRequest {
         disputeServiceRequestId: json['disputeServiceRequestId'] as int?,
         isDeleted: json['isDeleted'] as bool?,
         isBlocked: json['isBlocked'] as bool?,
-        blockReason: json['blockReason'] as String,
+        blockReason: json['blockReason'] as String?,
         blockedByParticipantId: json['blockedByParticipantId'],
         createdAt: json['createdAt'] == null ? null : DateTime.parse(json['createdAt'] as String),
         updatedAt: json['updatedAt'] == null ? null : DateTime.parse(json['updatedAt'] as String),

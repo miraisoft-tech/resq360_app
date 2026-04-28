@@ -4,7 +4,6 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/gallery_item_model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/provider_bloc.dart';
@@ -87,13 +86,11 @@ class _ServiceProviderDetailsScreenState
     }
 
     final providerServiceId = _provider!.providerServices.first.id;
-
-    final result = context.read<ServiceRequestBloc>().add(
+      log('Creating service request for providerServiceId: $providerServiceId');
+     context.read<ServiceRequestBloc>().add(
       BookServiceRequest(providerServiceId: providerServiceId),
     );
-    // if (result != null) {
-
-    // }
+  
   }
 
   Future<void> _openImagesFullScreen(int indexOfImage) async {
@@ -187,33 +184,15 @@ class _ServiceProviderDetailsScreenState
               }
 
               if (state is ServiceRequestCreated) {
+                 final providerServiceId = _provider!.providerServices.first.id;
                 await pop(context);
-
-                final request = state.request;
-                final userId = await AuthLocalRepo.instance.getCustomerId();
-                if (userId != null) {
-                  context.read<ChatDetailBloc>().add(
-                    SendServiceRequest(
-                      providerServiceId: request.serviceRequestId ?? 0,
-                      description: 'Service Request',
-                      senderId: userId,
-                      userType: 'USER',
-                      chatId: request.id!,
-                    ),
-                  );
-                } else {
-                  await showErrorSnackbar(
-                    context,
-                    'cannot send service request message',
-                  );
-                  log('User ID is null, cannot send service request message');
-                }
 
                 await pushScreen(
                   context,
                   ChatDetailScreen(
                     chatId: state.request.id!,
                     userType: UserType.customer,
+                    providerServiceId: providerServiceId,
                   ),
                 );
               } else if (state is ServiceRequestError) {

@@ -129,9 +129,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                 builder: (context, state) {
                   if (state is ServiceCatalogLoading) {
                     isProcessing = true;
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
+                    return const Center(child: CircularProgressIndicator());
                   }
 
                   if (state is ServiceCatalogError) {
@@ -160,16 +158,9 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                   if (state is ServicesLoaded) {
                     isProcessing = false;
 
-                    final chatServiceCategoryId = widget.chat.serviceCategoryId;
+                    final services = state.services;
 
-                    final filteredServices =
-                        chatServiceCategoryId == null
-                            ? <Service>[]
-                            : state.services
-                                .where((s) => s.id == chatServiceCategoryId)
-                                .toList();
-
-                    if (filteredServices.isEmpty) {
+                    if (services.isEmpty) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -190,14 +181,13 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                       );
                     }
 
-                    final current = _selectType.value;
-                    if (current == null ||
-                        !filteredServices.any((s) => s.id == current.id)) {
-                      _selectType.value = filteredServices.first;
+                    if (_selectType.value == null ||
+                        !services.any((s) => s.id == _selectType.value!.id)) {
+                      _selectType.value = services.first;
                     }
 
                     return ServiceDropdown(
-                      items: filteredServices,
+                      items: services,
                       controller: _selectType,
                     );
                   }

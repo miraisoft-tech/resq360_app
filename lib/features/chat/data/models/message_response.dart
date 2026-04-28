@@ -1,3 +1,5 @@
+import 'package:resq360/features/settings/data/models/ticket_message.model.dart';
+
 import 'metadata.dart';
 
 /// A single message in a chat
@@ -26,6 +28,7 @@ class MessageResponse {
     this.updatedAt,
     this.metadata,
     this.readReceipts,
+    this.status = MessageStatus.sent,
   });
 
   factory MessageResponse.fromJson(Map<String, dynamic> json) {
@@ -97,6 +100,7 @@ class MessageResponse {
   final DateTime? updatedAt;
   final Metadata? metadata;
   final List<dynamic>? readReceipts;
+  final MessageStatus status;
 
   Map<String, dynamic> toJson() {
     return {
@@ -124,5 +128,34 @@ class MessageResponse {
       'metadata': metadata?.toJson(),
       'readReceipts': readReceipts,
     };
+  }
+
+  MessageResponse copyWith({MessageStatus? status}) {
+    return MessageResponse(
+      id: id,
+      chatId: chatId,
+      serviceRequestId: serviceRequestId,
+      senderType: senderType,
+      senderId: senderId,
+      messageType: messageType,
+      content: content,
+      fileName: fileName,
+      fileUrl: fileUrl,
+      fileSize: fileSize,
+      mimeType: mimeType,
+      isEdited: isEdited,
+      editedAt: editedAt,
+      isDeleted: isDeleted,
+      deletedAt: deletedAt,
+      isDelivered: isDelivered,
+      deliveredAt: deliveredAt,
+      isReported: isReported,
+      reportReason: reportReason,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      metadata: metadata,
+      readReceipts: readReceipts,
+      status: status ?? this.status,
+    );
   }
 }
