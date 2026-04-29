@@ -268,6 +268,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                                         (p) => p.activityStatus == 'online',
                                       )
                                       .toList(),
+                            serviceCategoryId: widget.serviceProviderId
                             ),
                             _ProviderList(
                               providers:
@@ -276,6 +277,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                                         (p) => p.activityStatus == 'offline',
                                       )
                                       .toList(),
+                            serviceCategoryId: widget.serviceProviderId
                             ),
                           ],
                         ),
@@ -294,18 +296,20 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                     return TabBarView(
                       controller: _tabController,
                       children: [
-                        _ProviderList(providers: providers),
+                        _ProviderList(providers: providers, serviceCategoryId: widget.serviceProviderId),
                         _ProviderList(
                           providers:
                               providers
                                   .where((p) => p.activityStatus == 'online')
                                   .toList(),
+                        serviceCategoryId: widget.serviceProviderId
                         ),
                         _ProviderList(
                           providers:
                               providers
                                   .where((p) => p.activityStatus == 'offline')
                                   .toList(),
+                        serviceCategoryId: widget.serviceProviderId
                         ),
                       ],
                     );
@@ -325,10 +329,10 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
 class _ProviderList extends StatelessWidget {
   const _ProviderList({
     required this.providers,
-    this.serviceCategoryId,
+    required this.serviceCategoryId,
   });
   final List<ServiceProvider> providers;
-  final int? serviceCategoryId;
+  final int serviceCategoryId;
 
   @override
   Widget build(BuildContext context) {
