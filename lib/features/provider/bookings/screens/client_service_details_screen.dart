@@ -5,14 +5,14 @@ import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
-import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
-import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 
 class ProviderServiceDetailScreen extends StatefulWidget {
   const ProviderServiceDetailScreen({required this.booking, super.key});
@@ -61,15 +61,16 @@ class _ProviderServiceDetailScreenState
     final clientImage = widget.booking.user?.profileImage;
     final serviceCategoryname = widget.booking.serviceCategory?.name;
     final chatId = widget.booking.chatId;
-    final clientPhoneNumber  = widget.booking.user?.phoneNumber ?? '';
-    final providerPhoneNumber  = widget.booking.assignedProvider?.phoneNumber ?? '';
-    final showAction = widget.booking.status?.toUpperCase()  != BookingEnums.completed.name;
+    final clientPhoneNumber = widget.booking.user?.phoneNumber ?? '';
+    final providerPhoneNumber =
+        widget.booking.assignedProvider?.phoneNumber ?? '';
+    final showAction =
+        widget.booking.status?.toUpperCase() != BookingEnums.completed.name;
 
     return MultiBlocListener(
       listeners: [
         BlocListener<BookingBloc, BookingState>(
           listener: (context, state) async {
-
             if (state is BookingLoading) {
               showLoadingDialog(context);
             }
@@ -107,15 +108,10 @@ class _ProviderServiceDetailScreenState
           ),
         ),
         body: Padding(
-          padding: EdgeInsets.only(
-            left: 16.w,
-            right: 16.w,
-            bottom: 50.h,
-          ),
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 50.h),
           child: Column(
             children: [
-              if(!isProvider)
-              16.verticalSpace,
+              if (!isProvider) 16.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, ratingsState) {
                   var providerRating = '0.0';
@@ -134,15 +130,14 @@ class _ProviderServiceDetailScreenState
                     subtitle: serviceCategoryname ?? '',
                     rating: providerRating,
                     reviewCount: providerReviewCount,
-                    avatar: providerImage ?? '', 
-                    showActions:showAction,
-                     chatId: chatId,
+                    avatar: providerImage ?? '',
+                    showActions: showAction,
+                    chatId: chatId,
                     phoneNumber: providerPhoneNumber,
                   );
                 },
               ),
-              if (isProvider)
-              12.verticalSpace,
+              if (isProvider) 12.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, ratingsState) {
                   var customerRating = '0.0';
@@ -266,22 +261,50 @@ class _ProviderServiceDetailScreenState
                       backgroundColor: appColors.primary.shade50,
                       textColor: appColors.primary.shade500,
                       onPressed: () async {
+                        final serviceRequestId = widget.booking.id;
+                        if (serviceRequestId == null) return;
+
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => const PaymentAppealDialog(),
+                        );
+                        if (confirmed != true) return;
+                        if (!context.mounted) return;
+
+                        showLoadingDialog(context);
+
+                        final result = await SupportRepo.instance.fileDispute(
+                          requestId: serviceRequestId,
+                          reason: 'Service Appeal',
+                          details:
+                              'Customer filed an appeal for service request #$serviceRequestId',
+                        );
+
+                        if (!context.mounted) return;
+                        Navigator.pop(context);
+
+                        if (result.error != null) {
+                          await showErrorSnackbar(context, result.error!);
+                          return;
+                        }
+
+                        final chatId = result.data!;
                         await pushScreen(
                           context,
-                          ContactAdminScreen(
-                            issueType: AdminIssueType.serviceIssue,
-                            serviceCategory:
-                                widget.booking.serviceCategory?.id ?? 0,
-                            relatedServiceProviderId:
-                                widget.booking.assignedProviderId,
+                          ChatDetailScreen(
+                            chatId: chatId,
+                            userType:
+                                widget.booking.userId != null
+                                    ? UserType.customer
+                                    : UserType.provider,
                           ),
                         );
                       },
                     ),
                   ),
                   12.horizontalSpace,
-                  if (widget.booking.status ==BookingEnums.progress.name && isProvider
-                      )
+                  if (widget.booking.status == BookingEnums.progress.name &&
+                      isProvider)
                     Expanded(
                       child: WideButton(
                         label: 'Complete',
@@ -316,7 +339,7 @@ class _ServiceCard extends StatelessWidget {
     required this.rating,
     required this.reviewCount,
     required this.avatar,
-     this.chatId,
+    this.chatId,
     this.phoneNumber,
     this.showActions = false,
   });
@@ -342,27 +365,21 @@ class _ServiceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          PictureWidget(
-            image: avatar,
-          ),
+          PictureWidget(image: avatar),
           12.horizontalSpace,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GenText(
-                  name,
-                  weight: FontWeight.w500,
-                  color: appColors.black,
-                ),
-                if(subtitle.isNotEmpty)...{
-                2.verticalSpace,
-                GenText(
-                  subtitle,
-                  color: appColors.textColor.shade400,
-                  size: 12,
-                  height: 20.5,
-                ),
+                GenText(name, weight: FontWeight.w500, color: appColors.black),
+                if (subtitle.isNotEmpty) ...{
+                  2.verticalSpace,
+                  GenText(
+                    subtitle,
+                    color: appColors.textColor.shade400,
+                    size: 12,
+                    height: 20.5,
+                  ),
                 },
                 2.verticalSpace,
                 Row(
@@ -391,8 +408,7 @@ class _ServiceCard extends StatelessWidget {
               path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
               onTap: () async {
                 if (chatId != null) {
-                await _navigateToChatByServiceRequest(context, chatId!);
-                  
+                  await _navigateToChatByServiceRequest(context, chatId!);
                 }
               },
             ),
@@ -401,8 +417,7 @@ class _ServiceCard extends StatelessWidget {
               path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
               onTap: () async {
                 if (phoneNumber != null) {
-                await DialerUtil.open(phoneNumber!);
-                  
+                  await DialerUtil.open(phoneNumber!);
                 }
               },
               color: appColors.primary.shade500,
@@ -415,34 +430,31 @@ class _ServiceCard extends StatelessWidget {
 }
 
 Future<void> _navigateToChatByServiceRequest(
-    BuildContext context,
-    int serviceRequestId,
-  ) async {
-    try {
-      showLoadingDialog(context);
+  BuildContext context,
+  int serviceRequestId,
+) async {
+  try {
+    showLoadingDialog(context);
 
-      final response = await ChatRepo().getChatByserviceRequestId(
-        serviceRequestId,
-      );
+    final response = await ChatRepo().getChatByserviceRequestId(
+      serviceRequestId,
+    );
 
-      Navigator.pop(context);
+    Navigator.pop(context);
 
-      if (response.data != null) {
-        final chatId = response.data?.id;
-        if (chatId != null) {
-          await pushScreen(
-            context,
-            ChatDetailScreen(
-              chatId: chatId,
-              userType: UserType.customer,
-            ),
-          );
-        }
-      } else {
-        await showErrorSnackbar(context, 'Unable to open chat');
+    if (response.data != null) {
+      final chatId = response.data?.id;
+      if (chatId != null) {
+        await pushScreen(
+          context,
+          ChatDetailScreen(chatId: chatId, userType: UserType.customer),
+        );
       }
-    } on Exception catch (e) {
-      Navigator.pop(context);
-      await showErrorSnackbar(context, 'Failed to load chat: $e');
+    } else {
+      await showErrorSnackbar(context, 'Unable to open chat');
     }
+  } on Exception catch (e) {
+    Navigator.pop(context);
+    await showErrorSnackbar(context, 'Failed to load chat: $e');
   }
+}

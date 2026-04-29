@@ -8,6 +8,36 @@ class SupportRepo extends BaseAPI {
   SupportRepo._internal();
   static final SupportRepo instance = SupportRepo._internal();
 
+  Future<ApiResult<int>> fileDispute({
+  required int requestId,
+  String? reason,
+  String? details,
+}) async {
+  const endpoint = '/requests/dispute';
+
+  try {
+    final res = await dio().post<Map<String, dynamic>>(
+      endpoint,
+      data: {
+        'requestId': requestId,
+        if (reason != null) 'reason': reason,
+        if (details != null) 'details': details,
+      },
+    );
+
+    if (res.statusCode == 201 && res.data != null) {
+      final chatId = res.data!['data']?['chatId'] as int?;
+      if (chatId == null) return ApiResult(error: 'No chatId in response');
+      return ApiResult(data: chatId);
+    }
+
+    return ApiResult(
+      error: res.data?['message'] as String? ?? 'Failed to file dispute',
+    );
+  } on DioException catch (e) {
+    return handleDioError(e);
+  }
+}
 
   Future<ApiResult<Map<String, dynamic>>> createTicket({
     required String subject,

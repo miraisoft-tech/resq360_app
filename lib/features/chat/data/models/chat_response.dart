@@ -21,49 +21,64 @@ class ChatResponse {
     this.serviceCategoryId,
     this.paymentStatus,
     this.image,
-    this.paymentInvoiceId
+    this.paymentInvoiceId,
+    this.disputeStatus,
+    this.serviceRequest,
   });
 
   factory ChatResponse.fromJson(Map<String, dynamic> json) => ChatResponse(
-        id: json['id'] as int?,
-        title: json['title'] as String?,
-        type: json['type'] as String?,
-        isActive: json['isActive'] as bool?,
-        lastMessage: json['lastMessage'] as String?,
-        lastMessageAt: json['lastMessageAt'] == null
+    id: json['id'] as int?,
+    title: json['title'] as String?,
+    type: json['type'] as String?,
+    isActive: json['isActive'] as bool?,
+    lastMessage: json['lastMessage'] as String?,
+    lastMessageAt:
+        json['lastMessageAt'] == null
             ? null
             : DateTime.parse(json['lastMessageAt'] as String),
-        serviceRequestId: json['serviceRequestId'] as int?,
-        createdAt: json['createdAt'] == null
+    serviceRequestId: json['serviceRequestId'] as int?,
+    createdAt:
+        json['createdAt'] == null
             ? null
             : DateTime.parse(json['createdAt'] as String),
-        updatedAt: json['updatedAt'] == null
+    updatedAt:
+        json['updatedAt'] == null
             ? null
             : DateTime.parse(json['updatedAt'] as String),
-        participants: json['participants'] == null
+    participants:
+        json['participants'] == null
             ? []
             : (json['participants'] as List)
                 .map((x) => Participant.fromJson(x as Map<String, dynamic>))
                 .toList(),
-        messages: json['messages'] == null
+    messages:
+        json['messages'] == null
             ? []
             : (json['messages'] as List)
                 .map((x) => MessageResponse.fromJson(x as Map<String, dynamic>))
                 .toList(),
-        serviceRequestStatus: json['serviceRequestStatus'] as String?,
-        serviceName: json['serviceName'] as String?,
-        provider: json['provider'] == null
+    serviceRequestStatus: json['serviceRequestStatus'] as String?,
+    serviceName: json['serviceName'] as String?,
+    provider:
+        json['provider'] == null
             ? null
             : ProviderInfo.fromJson(json['provider'] as Map<String, dynamic>),
-        user: json['user'] == null
+    user:
+        json['user'] == null
             ? null
             : UserInfo.fromJson(json['user'] as Map<String, dynamic>),
-        serviceCategoryId: json['serviceCategoryId'] as int?,
-        paymentStatus: json['paymentStatus'] as String?,
-        image: json['image'] as String?,
-        paymentInvoiceId: json['paymentInvoiceId'] as String?,
-
-      );
+    serviceCategoryId: json['serviceCategoryId'] as int?,
+    paymentStatus: json['paymentStatus'] as String?,
+    image: json['image'] as String?,
+    paymentInvoiceId: json['paymentInvoiceId'] as String?,
+    disputeStatus: json['disputeStatus'] as String?,
+    serviceRequest:
+        json['serviceRequest'] == null
+            ? null
+            : ServiceRequestSummary.fromJson(
+              json['serviceRequest'] as Map<String, dynamic>,
+            ),
+  );
 
   final int? id;
   final String? title;
@@ -82,47 +97,43 @@ class ChatResponse {
   final UserInfo? user;
   final int? serviceCategoryId;
   final String? paymentStatus;
-  final String? image; 
+  final String? image;
   final String? paymentInvoiceId;
+  final String? disputeStatus; // 'DISPUTED', 'RESOLVED'
+  final ServiceRequestSummary? serviceRequest;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'type': type,
-        'isActive': isActive,
-        'lastMessage': lastMessage,
-        'lastMessageAt': lastMessageAt?.toIso8601String(),
-        'serviceRequestId': serviceRequestId,
-        'createdAt': createdAt?.toIso8601String(),
-        'updatedAt': updatedAt?.toIso8601String(),
-        'participants': participants?.map((x) => x.toJson()).toList() ?? [],
-        'messages': messages?.map((x) => x.toJson()).toList() ?? [],
-        'serviceRequestStatus': serviceRequestStatus,
-        'serviceName': serviceName,
-        'provider': provider?.toJson(),
-        'user': user?.toJson(),
-        'serviceCategoryId': serviceCategoryId,
-        'paymentStatus': paymentStatus,
-        'image': image,
-        'paymentInvoiceId': paymentInvoiceId,
-
-      };
+    'id': id,
+    'title': title,
+    'type': type,
+    'isActive': isActive,
+    'lastMessage': lastMessage,
+    'lastMessageAt': lastMessageAt?.toIso8601String(),
+    'serviceRequestId': serviceRequestId,
+    'createdAt': createdAt?.toIso8601String(),
+    'updatedAt': updatedAt?.toIso8601String(),
+    'participants': participants?.map((x) => x.toJson()).toList() ?? [],
+    'messages': messages?.map((x) => x.toJson()).toList() ?? [],
+    'serviceRequestStatus': serviceRequestStatus,
+    'serviceName': serviceName,
+    'provider': provider?.toJson(),
+    'user': user?.toJson(),
+    'serviceCategoryId': serviceCategoryId,
+    'paymentStatus': paymentStatus,
+    'image': image,
+    'paymentInvoiceId': paymentInvoiceId,
+  };
 }
 
 class ProviderInfo {
-  ProviderInfo({
-    this.id,
-    this.fullName,
-    this.profileImage,
-    this.phoneNumber,
-  });
+  ProviderInfo({this.id, this.fullName, this.profileImage, this.phoneNumber});
 
   factory ProviderInfo.fromJson(Map<String, dynamic> json) => ProviderInfo(
-        id: json['id'] as int?,
-        fullName: json['fullName'] as String?,
-        profileImage: json['profileImage'] as String?,
-        phoneNumber: json['phoneNumber'] as String?,
-      );
+    id: json['id'] as int?,
+    fullName: json['fullName'] as String?,
+    profileImage: json['profileImage'] as String?,
+    phoneNumber: json['phoneNumber'] as String?,
+  );
 
   final int? id;
   final String? fullName;
@@ -130,35 +141,51 @@ class ProviderInfo {
   final String? phoneNumber;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'fullName': fullName,
-        'profileImage': profileImage,
-      };
+    'id': id,
+    'fullName': fullName,
+    'profileImage': profileImage,
+  };
 }
 
 class UserInfo {
-  UserInfo({
-    this.id,
-    this.fullName,
-    this.profileImage,
-    this.phoneNumber
-  });
+  UserInfo({this.id, this.fullName, this.profileImage, this.phoneNumber});
 
   factory UserInfo.fromJson(Map<String, dynamic> json) => UserInfo(
-        id:json['id'] as int?,
-        fullName: json['fullName'] as String?,
-        profileImage: json['profileImage'] as String?,
-        phoneNumber: json['phoneNumber'] as String?,
-      );
+    id: json['id'] as int?,
+    fullName: json['fullName'] as String?,
+    profileImage: json['profileImage'] as String?,
+    phoneNumber: json['phoneNumber'] as String?,
+  );
 
   final int? id;
   final String? fullName;
   final String? profileImage;
   final String? phoneNumber;
 
-
   Map<String, dynamic> toJson() => {
-        'fullName': fullName,
-        'profileImage': profileImage,
-      };
+    'fullName': fullName,
+    'profileImage': profileImage,
+  };
+}
+
+class ServiceRequestSummary {
+  ServiceRequestSummary({
+    this.id,
+    this.requestId,
+    this.status,
+    this.description,
+  });
+
+  factory ServiceRequestSummary.fromJson(Map<String, dynamic> json) =>
+      ServiceRequestSummary(
+        id: json['id'] as int?,
+        requestId: json['requestId'] as String?,
+        status: json['status'] as String?,
+        description: json['description'] as String?,
+      );
+
+  final int? id;
+  final String? requestId;
+  final String? status;
+  final String? description;
 }
