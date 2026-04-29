@@ -31,51 +31,26 @@ class _ProviderGenerateInvoiceDialogState
   late final String formattedDate =
       '${parsedDate.month}/${parsedDate.day}/${parsedDate.year}';
 
-  // Future<void> sendInvoice() async {
-  //   final meta = {
-  //     'InvoiceNo': widget.invoice['invoiceNo'],
-  //     'Date': formattedDate,
-  //     'serviceCategory': widget.invoice['serviceCategory'],
-  //     'ClientName': 'John Doe',
-  //     'description': widget.invoice['description'],
-  //     'amount': widget.invoice['price'],
-  //   };
-
-  //   final request = SendMessageRequest(
-  //     chatId: widget.invoice['chatId'] as int,
-  //     messageType: 'SYSTEM',
-  //     content: 'Here is your invoice',
-  //     metadata: meta,
-  //   );
-  //   context.read<ChatBloc>().add(
-  //     SendMessageEvent(messageRequest: request),
-  //   );
-  //   // await GeneralDialogs.showCustomDialog<void>(
-  //   //   context,
-  //   //   body: const PaymentCompleted(),
-  //   // );
-  //   await showSuccessSnackbar(context, 'invoice sent sucessfully');
-  //   log('Sending invoice with metadata: $meta');
-  //   Navigator.of(context).pop();
-  // }
-
   Future<void> sendInvoice() async {
-    log('sent');
-    final request = SendInvoice(
-      chatId: widget.invoice['chatId'] as int,
-      amount: widget.invoice['price'] as int,
-      currency: 'NGN',
-      description: widget.invoice['description'] as String,
-      invoiceId: widget.invoice['invoiceNo'] as String,
-      fileName: '',
-      fileUrl: '',
-      fileSize: 0,
-      mimeType: '',
-      date: DateTime.parse(widget.invoice['date'] as String),
-    );
+    final userId = widget.invoice['userId'] as int?;
+    final providerServiceId = widget.invoice['providerServiceId'] as int?;
+
+    log('userId: $userId, providerServiceId: $providerServiceId');
+    if (userId == null || providerServiceId == null) {
+      await showErrorSnackbar(context, 'Missing invoice data.');
+      return;
+    }
 
     context.read<ChatDetailBloc>().add(
-      SendInvoiceMessage(request),
+      SendServiceRequestInvoice(
+        userId: userId,
+        providerServiceId: providerServiceId,
+        amount: widget.invoice['price'] as int,
+        currency: 'NGN',
+        description: widget.invoice['description'] as String,
+        invoiceId: widget.invoice['invoiceNo'] as String,
+        displayDescription: widget.invoice['description'] as String,
+      ),
     );
 
     Navigator.of(context).pop();
@@ -235,9 +210,7 @@ class _ProviderGenerateInvoiceDialogState
                             Transform.flip(
                               flipY: viewMore,
                               child: AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
-                                  .svgColor(
-                                    color: appColors.primary.shade500,
-                                  ),
+                                  .svgColor(color: appColors.primary.shade500),
                             ),
                           ],
                         ),
@@ -312,9 +285,7 @@ class _ProviderGenerateInvoiceDialogState
                           color: appColors.textColor.shade400,
                         ),
                         GenText(
-                          'NGN${AppTextUtil.formatAmount(
-                            widget.invoice['price'].toString(),
-                          )}',
+                          'NGN${AppTextUtil.formatAmount(widget.invoice['price'].toString())}',
                           size: 16,
                           weight: FontWeight.w700,
                           color: appColors.black,

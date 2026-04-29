@@ -54,6 +54,26 @@ class SendInvoiceMessage extends ChatDetailEvent {
   List<Object?> get props => [invoice];
 }
 
+class SendServiceRequestInvoice extends ChatDetailEvent {
+  const SendServiceRequestInvoice({
+    required this.userId,
+    required this.providerServiceId,
+    required this.amount,
+    required this.currency,
+    required this.description,
+    required this.invoiceId,
+    required this.displayDescription,
+  });
+
+  final int userId;
+  final int providerServiceId;
+  final int amount;
+  final String currency;
+  final String description;
+  final String invoiceId;
+  final String displayDescription;
+}
+
 class SendImageMessage extends ChatDetailEvent {
   const SendImageMessage({
     required this.filePaths,

@@ -39,7 +39,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
         nearYou: _sortByProximity,
       ),
     );
-
+    log('Fetching providers for categoryId: ${widget.serviceProviderId}');
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         _fetchProviders();
@@ -259,6 +259,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                           children: [
                             _ProviderList(
                               providers: providers,
+                              serviceCategoryId: widget.serviceProviderId,
                             ),
                             _ProviderList(
                               providers:
@@ -324,8 +325,10 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
 class _ProviderList extends StatelessWidget {
   const _ProviderList({
     required this.providers,
+    this.serviceCategoryId,
   });
   final List<ServiceProvider> providers;
+  final int? serviceCategoryId;
 
   @override
   Widget build(BuildContext context) {
@@ -381,6 +384,7 @@ class _ProviderList extends StatelessWidget {
                 context,
                 ServiceProviderDetailsScreen(
                   provider: provider,
+                  serviceCategoryId: serviceCategoryId,
                 ),
               );
             },

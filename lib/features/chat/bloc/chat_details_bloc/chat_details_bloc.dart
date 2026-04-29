@@ -8,6 +8,7 @@ import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/data/models/create_request_and_send_invoice.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 
 part 'chat_details_event.dart';
@@ -30,6 +31,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     on<SendTextMessage>(_onSendMessage);
     on<SendServiceRequest>(_onSendServiceRequest);
     on<SendInvoiceMessage>(_onSendInvoiceMessage);
+    on<SendServiceRequestInvoice>(_onSendServiceRequestInvoice);
     on<RefreshMessages>(_onRefreshMessages);
     on<LoadMoreMessages>(_onLoadMoreMessages);
     on<_IncomingMessage>(_onIncomingMessage);
@@ -277,6 +279,62 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       ),
     );
   }
+
+  Future<void> _onSendServiceRequestInvoice(
+  SendServiceRequestInvoice event,
+  Emitter<ChatDetailState> emit,
+) async {
+  final current = state;
+  if (current is! ChatDetailReady) return;
+
+  final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
+  final localMessage = MessageResponse(
+    id: localMessageId,
+    chatId: current.chat.id,
+    senderType: 'PROVIDER',
+    messageType: 'INVOICE',
+    content: event.displayDescription,
+    createdAt: DateTime.now(),
+    metadata: Metadata(
+      type: 'INVOICE',
+      amount: event.amount,
+      currency: event.currency,
+      invoiceId: event.invoiceId,
+      description: event.displayDescription,
+    ),
+  );
+
+  final newMessages = [localMessage, ...current.messages];
+  _cache.updateMessages(chatId: chatId, messages: newMessages);
+  emit(current.copyWith(messages: newMessages));
+
+  final result = await _repo.createRequestAndSendInvoice(
+    request: CreateServiceRequestInvoice(
+      userId: event.userId,
+      providerServiceId: event.providerServiceId,
+      amount: event.amount,
+      currency: event.currency,
+      description: event.description,
+      invoiceId: event.invoiceId,
+    ),
+  );
+
+  log('[INVOICE] createRequestAndSendInvoice result: ${result.data}');
+
+  final latestState = state;
+  if (latestState is! ChatDetailReady) return;
+
+  if (result.data == null) {
+    final cleaned =
+        latestState.messages.where((m) => m.id != localMessageId).toList();
+    emit(latestState.copyWith(messages: cleaned));
+    return;
+  }
+
+  // Keep optimistic message — socket will eventually confirm or refresh will sync
+  // Log the full response shape for future model mapping
+  log('[INVOICE] raw response: ${result.data}');
+}
 
   Future<void> _onSendMessage(
     SendTextMessage event,

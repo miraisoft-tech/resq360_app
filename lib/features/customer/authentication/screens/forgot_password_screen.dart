@@ -45,6 +45,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         }
 
         if (state is CustomerAuthFailure) {
+          //todo: handle error properly late
           await pop(context);
           Future.delayed(const Duration(seconds: 2), () async {
             await showSnackBar(context, 'Error', state.error);

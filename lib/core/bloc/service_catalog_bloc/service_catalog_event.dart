@@ -12,6 +12,10 @@ class FetchServices extends ServiceCatalogEvent {
   const FetchServices();
 }
 
+class FetchServicesForAProvider extends ServiceCatalogEvent {
+  const FetchServicesForAProvider();
+}
+
 class FetchServiceInfo extends ServiceCatalogEvent {
 
   const FetchServiceInfo({required this.categoryId});

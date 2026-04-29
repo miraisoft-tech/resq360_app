@@ -40,7 +40,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       unawaited(initializeLocation());
-      context.read<ServiceCatalogBloc>().add(const FetchServices());
+      context.read<ServiceCatalogBloc>().add(const FetchServicesForAProvider());
       unawaited(fetchCategory());
       dateController.text = '';
       final id = await _loadProviderId();
@@ -173,7 +173,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                             label: 'Retry',
                             onPressed: () {
                               context.read<ServiceCatalogBloc>().add(
-                                const FetchServices(),
+                                const FetchServicesForAProvider(),
                               );
                             },
                           ),
@@ -284,11 +284,19 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                           return;
                         }
                         final rand = Random().nextInt(999);
+                        final user = widget.chat.participants?.firstWhere(
+                          (p) => p.participantType == 'USER',
+                        );
+
+                        final userId = user?.participantId;
+
                         final invoiceNo =
                             "INV-${rand.toString().padLeft(3, '0')}";
                         final invoice = {
                           'invoiceNo': invoiceNo,
                           'chatId': widget.chat.id,
+                          'userId': userId,
+                          'providerServiceId': _selectType.value!.providerServiceId,
                           'serviceCategory': _selectType.value!.name,
                           'location': locationController.text,
                           'price': int.tryParse(priceController.text) ?? 0,

@@ -12,6 +12,7 @@ class Service {
     required this.createdAt,
     required this.updatedAt,
     required this.status,
+    required this.providerServiceId,
   });
 
   factory Service.fromJson(Map<String, dynamic> json) {
@@ -20,6 +21,9 @@ class Service {
           json['id'] is int
               ? json['id'] as int
               : int.tryParse(json['id'].toString()) ?? 0,
+      providerServiceId: json['providerServiceId'] is int
+    ? json['providerServiceId'] as int
+    : int.tryParse(json['providerServiceId']?.toString() ?? ''),
       name: json['name']?.toString() ?? '',
       image: json['image']?.toString() ?? '',
       imageId: json['imageId']?.toString(),
@@ -32,6 +36,7 @@ class Service {
   }
 
   final int id;
+  final int? providerServiceId;
   final String name;
   final String image;
   final String? imageId;
@@ -43,6 +48,7 @@ class Service {
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'providerServiceId': providerServiceId,
     'name': name,
     'image': image,
     'imageId': imageId,

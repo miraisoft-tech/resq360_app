@@ -20,6 +20,7 @@ class ServiceProviderDetailsScreen extends StatefulWidget {
   const ServiceProviderDetailsScreen({
     this.provider,
     this.providerId,
+    this.serviceCategoryId,
     super.key,
   }) : assert(
          provider != null || providerId != null,
@@ -28,6 +29,7 @@ class ServiceProviderDetailsScreen extends StatefulWidget {
 
   final ServiceProvider? provider;
   final int? providerId;
+  final int? serviceCategoryId;
 
   @override
   State<ServiceProviderDetailsScreen> createState() =>
@@ -39,6 +41,7 @@ class _ServiceProviderDetailsScreenState
   int currentIndex = 0;
   ServiceProvider? _provider;
   bool _isGuest = false;
+  int? _selectedProviderServiceId;
 
   @override
   void initState() {
@@ -85,12 +88,31 @@ class _ServiceProviderDetailsScreenState
       return;
     }
 
-    final providerServiceId = _provider!.providerServices.first.id;
-      log('Creating service request for providerServiceId: $providerServiceId');
-     context.read<ServiceRequestBloc>().add(
+    log('Selected categoryId: ${widget.serviceCategoryId}');
+
+    for (final service in _provider!.providerServices) {
+      log(
+        'ID: ${service.id}, Name: ${service.name}, ServiceId: ${service.serviceId}',
+      );
+    }
+    final matchedService = _provider!.providerServices.firstWhere(
+      (service) => service.serviceId == widget.serviceCategoryId,
+      orElse: () {
+        log(
+          'No matching service found for categoryId: ${widget.serviceCategoryId}',
+        );
+        throw Exception('Service not found');
+      },
+    );
+
+    final providerServiceId = matchedService.id;
+    _selectedProviderServiceId = matchedService.id;
+
+    log('Creating service request for providerServiceId: $providerServiceId');
+
+    context.read<ServiceRequestBloc>().add(
       BookServiceRequest(providerServiceId: providerServiceId),
     );
-  
   }
 
   Future<void> _openImagesFullScreen(int indexOfImage) async {
@@ -184,7 +206,6 @@ class _ServiceProviderDetailsScreenState
               }
 
               if (state is ServiceRequestCreated) {
-                 final providerServiceId = _provider!.providerServices.first.id;
                 await pop(context);
 
                 await pushScreen(
@@ -192,7 +213,7 @@ class _ServiceProviderDetailsScreenState
                   ChatDetailScreen(
                     chatId: state.request.id!,
                     userType: UserType.customer,
-                    providerServiceId: providerServiceId,
+                    providerServiceId: _selectedProviderServiceId,
                   ),
                 );
               } else if (state is ServiceRequestError) {

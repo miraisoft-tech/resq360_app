@@ -667,8 +667,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
     ];
 
-    final isPaymentCompleted = chat.paymentStatus?.toUpperCase() == 'COMPLETED';
-    if (isProvider && !isPaymentCompleted) {
+    // final isPaymentCompleted = chat.paymentStatus?.toUpperCase() == 'COMPLETED';
+    if (isProvider) {
       menuItems.add(
         PopupMenuItem<String>(
           value: 'invoice',

@@ -3,6 +3,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/api_response.dart';
 import 'package:resq360/core/services/base_api.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/data/models/create_request_and_send_invoice.dart';
 
 class ChatRepo extends BaseAPI {
   factory ChatRepo() => _instance;
@@ -236,33 +237,27 @@ class ChatRepo extends BaseAPI {
     }
   }
 
-   Future<ApiResult<MessageResponse>> createRequestAndSendInvoice({
-    required SendInvoice invoiceRequest,
+  Future<ApiResult<dynamic>> createRequestAndSendInvoice({
+    required CreateServiceRequestInvoice request,
   }) async {
     const url = '/requests/service-request';
     try {
       final response = await dio().post<Map<String, dynamic>>(
         url,
-        data: invoiceRequest.toJson(),
+        data: request.toJson(),
       );
 
-      if (response.statusCode == 201 && response.data != null) {
-        final responseData = response.data!;
-        debugPrint('Invoice API response: $responseData');
+      log('[INVOICE] createRequestAndSendInvoice response: ${response.data}');
 
-        final messageData = responseData['data'] as Map<String, dynamic>?;
-        if (messageData == null) {
-          return ApiResult(error: 'Invalid response: missing data field');
-        }
-
-        final message = MessageResponse.fromJson(messageData);
-        return ApiResult(data: message);
-      } else {
-        return ApiResult(
-          error:
-              response.data?['message'].toString() ?? 'Failed to send message',
-        );
+      if ((response.statusCode == 201 || response.statusCode == 200) &&
+          response.data != null) {
+        return ApiResult(data: response.data);
       }
+
+      return ApiResult(
+        error:
+            response.data?['message']?.toString() ?? 'Failed to send invoice',
+      );
     } on DioException catch (e) {
       return handleDioError(e);
     } on Exception catch (e) {
