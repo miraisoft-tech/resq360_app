@@ -34,7 +34,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     return BlocListener<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-        if (!mounted) return;
+        if (!context.mounted) return;
+
         if (state is! CustomerAuthLoading) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
@@ -42,26 +43,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         }
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
+          return;
         }
 
         if (state is CustomerAuthFailure) {
-          //todo: handle error properly late
-          await pop(context);
           Future.delayed(const Duration(seconds: 2), () async {
+            if (!context.mounted) return;
             await showSnackBar(context, 'Error', state.error);
           });
           log(state.error);
         }
 
         if (state is CustomerPasswordResetEmailSentState) {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
           await pushScreen(
             context,
-            VerifyResetTokenScreen(
-              email: emailController.text,
-            ),
+            VerifyResetTokenScreen(email: emailController.text),
           );
         }
       },
