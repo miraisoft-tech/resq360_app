@@ -301,6 +301,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       currency: event.invoice.currency,
       invoiceId: event.invoice.invoiceId,
       description: event.invoice.description,
+      date: event.invoice.date?.toIso8601String(),
     ),
   );
 

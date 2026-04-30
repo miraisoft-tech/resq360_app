@@ -2,8 +2,8 @@ import 'dart:convert';
 
 class SendInvoice {
   SendInvoice({
-    this.userId, 
-    this.providerServiceId, 
+    this.userId,
+    this.providerServiceId,
     this.chatId,
     this.amount,
     this.currency,
@@ -13,7 +13,7 @@ class SendInvoice {
     this.fileUrl,
     this.fileSize,
     this.mimeType,
-    this.date
+    this.date,
   });
 
   factory SendInvoice.fromRawJson(String str) =>
@@ -47,6 +47,8 @@ class SendInvoice {
   String toRawJson() => json.encode(toJson());
 
   Map<String, dynamic> toJson() => {
+    'userId': userId,
+    'providerServiceId': providerServiceId,
     'chatId': chatId,
     'amount': amount,
     'currency': currency,

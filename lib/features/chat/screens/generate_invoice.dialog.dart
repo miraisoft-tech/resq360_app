@@ -289,7 +289,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                         );
 
                         final userId = user?.participantId;
-
+                        log('[INVOICE] _selectType.value: ${_selectType.value?.toJson()}');
                         final invoiceNo =
                             "INV-${rand.toString().padLeft(3, '0')}";
                         final invoice = {

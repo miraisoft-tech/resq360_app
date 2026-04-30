@@ -247,7 +247,7 @@ class ChatRepo extends BaseAPI {
         data: request.toJson(),
       );
 
-      log('[INVOICE] createRequestAndSendInvoice response: ${response.data}');
+      log('[INVOICE REPO] createRequestAndSendInvoice response: ${response.data}');
 
       if ((response.statusCode == 201 || response.statusCode == 200) &&
           response.data != null) {
