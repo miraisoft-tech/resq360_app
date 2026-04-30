@@ -43,8 +43,6 @@ class DisputeServiceDetailCard extends StatelessWidget {
             DetailRow(label: 'Provider:', value: chat.provider!.fullName!),
           if (chat.user?.fullName != null)
             DetailRow(label: 'Client:', value: chat.user!.fullName!),
-          if (chat.paymentInvoiceId != null)
-            DetailRow(label: 'Payment:', value: chat.paymentInvoiceId!),
           8.verticalSpace,
           GenText(createdAt, size: 12, color: appColors.textColor.shade300),
         ],

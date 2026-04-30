@@ -147,7 +147,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                           label: 'retry',
                           onPressed: () {
                             context.read<ServiceCatalogBloc>().add(
-                              const FetchServices(),
+                              const FetchServicesForAProvider(),
                             );
                           },
                         ),

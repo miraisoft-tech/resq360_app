@@ -293,14 +293,14 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     chatId: current.chat.id,
     senderType: 'PROVIDER',
     messageType: 'INVOICE',
-    content: event.displayDescription,
+    content: event.invoice.description ?? 'Invoice',
     createdAt: DateTime.now(),
     metadata: Metadata(
       type: 'INVOICE',
-      amount: event.amount,
-      currency: event.currency,
-      invoiceId: event.invoiceId,
-      description: event.displayDescription,
+      amount: event.invoice.amount,
+      currency: event.invoice.currency,
+      invoiceId: event.invoice.invoiceId,
+      description: event.invoice.description,
     ),
   );
 
@@ -309,14 +309,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   emit(current.copyWith(messages: newMessages));
 
   final result = await _repo.createRequestAndSendInvoice(
-    request: CreateServiceRequestInvoice(
-      userId: event.userId,
-      providerServiceId: event.providerServiceId,
-      amount: event.amount,
-      currency: event.currency,
-      description: event.description,
-      invoiceId: event.invoiceId,
-    ),
+    request: event.invoice,
   );
 
   log('[INVOICE] createRequestAndSendInvoice result: ${result.data}');

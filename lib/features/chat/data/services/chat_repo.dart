@@ -238,7 +238,7 @@ class ChatRepo extends BaseAPI {
   }
 
   Future<ApiResult<dynamic>> createRequestAndSendInvoice({
-    required CreateServiceRequestInvoice request,
+    required SendInvoice request,
   }) async {
     const url = '/requests/service-request';
     try {

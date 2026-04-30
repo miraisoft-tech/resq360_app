@@ -24,3 +24,4 @@ class CreateServiceRequestInvoice {
         'invoiceId': invoiceId,
       };
 }
+//todo delete this class later and use SendInvoice instead, since it has all the required fields and more

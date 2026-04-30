@@ -213,6 +213,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           var imageurl = '';
           var paymentStatus = '';
           var serviceStatus = '';
+          var chatType = '';
+          var providerName = '';
+
 
           if (state is ChatDetailReady) {
             final chat = state.chat;
@@ -225,12 +228,15 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             imageurl = chat.image ?? '';
             paymentStatus = chat.paymentStatus ?? '';
             serviceStatus = chat.serviceRequestStatus ?? '';
+            chatType = chat.type ?? '';
+            providerName = chat.provider?.fullName?? '';
           }
 
           final isDisputeClosed =
               state is ChatDetailReady &&
-              state.chat.type == 'DISPUTED' &&
-              state.chat.disputeStatus == 'COMPLETED';
+              state.chat.type == 'DISPUTE' &&
+              (state.chat.disputeStatus == 'CANCELLED' ||
+                  state.chat.disputeStatus == 'COMPLETED');
 
           return Scaffold(
             backgroundColor: appColors.whiteColor,
@@ -244,6 +250,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                     serviceStatus: serviceStatus,
                     paymentStatus: paymentStatus,
                     isActive: isActive,
+                    isDispute: chatType == 'DISPUTE',
+                    providerName: providerName
                   ),
                   const ListDivider(),
                   Expanded(child: _buildChatContent(state)),
@@ -279,23 +287,24 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                         ),
                       ),
                     ),
-                  if (isDisputeClosed) 
-                  5.verticalSpace,
-                  GestureDetector(
-                    onTap: () async {
-                      await pop(context);
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.h),
-                      child: GenText(
-                        'Return to Dashboard',
-                        weight: FontWeight.w500,
-                        color: appColors.primary.shade500,
-                        decoration: TextDecoration.underline,
-                        textAlign: TextAlign.center,
+                  if (isDisputeClosed) ...[
+                    5.verticalSpace,
+                    GestureDetector(
+                      onTap: () async {
+                        await pop(context);
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        child: GenText(
+                          'Return to Dashboard',
+                          weight: FontWeight.w500,
+                          color: appColors.primary.shade500,
+                          decoration: TextDecoration.underline,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                   if (!isDisputeClosed)
                     IgnorePointer(
                       ignoring: state is! ChatDetailReady,
@@ -412,6 +421,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     required String imageurl,
     required String serviceStatus,
     required String paymentStatus,
+    required bool isDispute,
+    required String providerName,
   }) {
     final appColors = context.appColors;
     final screenWidth = MediaQuery.sizeOf(context).width;
@@ -430,9 +441,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 100,
+              width: isDispute ? 160.w : 100,
               child: GenText(
-                title.capitalize,
+                isDispute ? 'You, Admin, $providerName' : title.capitalize,
                 weight: FontWeight.w500,
                 color: appColors.black,
                 maxLines: 1,

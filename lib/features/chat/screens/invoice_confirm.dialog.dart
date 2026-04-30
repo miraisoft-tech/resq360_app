@@ -42,15 +42,18 @@ class _ProviderGenerateInvoiceDialogState
     }
 
     context.read<ChatDetailBloc>().add(
-      SendServiceRequestInvoice(
+    SendServiceRequestInvoice(
+      invoice: SendInvoice(
         userId: userId,
         providerServiceId: providerServiceId,
-        amount: widget.invoice['price'] as int,
+        chatId: widget.invoice['chatId'] as int?,
+        amount: widget.invoice['price'] as int?,
         currency: 'NGN',
-        description: widget.invoice['description'] as String,
-        invoiceId: widget.invoice['invoiceNo'] as String,
-        displayDescription: widget.invoice['description'] as String,
+        description: widget.invoice['description'] as String?,
+        invoiceId: widget.invoice['invoiceNo'] as String?,
+        date: DateTime.tryParse(widget.invoice['date'] as String? ?? ''),
       ),
+    ),
     );
 
     Navigator.of(context).pop();

@@ -82,36 +82,20 @@ class _ServiceProviderDetailsScreenState
     }
   }
 
-  Future<void> _createServiceRequest() async {
-    if (_provider == null || _provider!.providerServices.isEmpty) {
-      log('No provider services available');
-      return;
-    }
+  Future<void> _createServiceRequest({int? overrideServiceId}) async {
+    if (_provider == null || _provider!.providerServices.isEmpty) return;
 
-    log('Selected categoryId: ${widget.serviceCategoryId}');
+    final targetId = overrideServiceId ?? widget.serviceCategoryId;
 
-    for (final service in _provider!.providerServices) {
-      log(
-        'ID: ${service.id}, Name: ${service.name}, ServiceId: ${service.serviceId}',
-      );
-    }
     final matchedService = _provider!.providerServices.firstWhere(
-      (service) => service.serviceId == widget.serviceCategoryId,
-      orElse: () {
-        log(
-          'No matching service found for categoryId: ${widget.serviceCategoryId}',
-        );
-        throw Exception('Service not found');
-      },
+      (service) => service.serviceId == targetId,
+      orElse: () => throw Exception('Service not found'),
     );
 
-    final providerServiceId = matchedService.id;
     _selectedProviderServiceId = matchedService.id;
 
-    log('Creating service request for providerServiceId: $providerServiceId');
-
     context.read<ServiceRequestBloc>().add(
-      BookServiceRequest(providerServiceId: providerServiceId),
+      BookServiceRequest(providerServiceId: matchedService.id),
     );
   }
 
@@ -581,7 +565,15 @@ class _ServiceProviderDetailsScreenState
                             await _requireLogin();
                             return;
                           }
-                          await _createServiceRequest();
+                          if (widget.serviceCategoryId == null) {
+                            final picked = await _pickProviderService(context);
+                            if (picked == null) return;
+                            await _createServiceRequest(
+                              overrideServiceId: picked,
+                            );
+                          } else {
+                            await _createServiceRequest();
+                          }
                         },
                       ),
                     ),
@@ -592,6 +584,54 @@ class _ServiceProviderDetailsScreenState
           );
         },
       ),
+    );
+  }
+
+  Future<int?> _pickProviderService(BuildContext context) async {
+    final provider = _provider;
+    if (provider == null) return null;
+
+    return showModalBottomSheet<int>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final colors = ctx.appColors;
+        return Padding(
+          padding: pad(horizontal: 20, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              UrbText(
+                'Select a Service',
+                size: 18,
+                weight: FontWeight.w700,
+                color: colors.black,
+              ),
+              16.verticalSpace,
+              ...provider.providerServices.map(
+                (ps) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: GenText(ps.name, color: colors.black),
+                  subtitle: GenText(
+                    ps.service.name,
+                    size: 12,
+                    color: colors.textColor.shade400,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: colors.neutral.shade300,
+                  ),
+                  onTap: () => Navigator.pop(ctx, ps.serviceId),
+                ),
+              ),
+              16.verticalSpace,
+            ],
+          ),
+        );
+      },
     );
   }
 }

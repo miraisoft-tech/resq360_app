@@ -55,23 +55,9 @@ class SendInvoiceMessage extends ChatDetailEvent {
 }
 
 class SendServiceRequestInvoice extends ChatDetailEvent {
-  const SendServiceRequestInvoice({
-    required this.userId,
-    required this.providerServiceId,
-    required this.amount,
-    required this.currency,
-    required this.description,
-    required this.invoiceId,
-    required this.displayDescription,
-  });
+  const SendServiceRequestInvoice({required this.invoice});
 
-  final int userId;
-  final int providerServiceId;
-  final int amount;
-  final String currency;
-  final String description;
-  final String invoiceId;
-  final String displayDescription;
+ final SendInvoice invoice;
 }
 
 class SendImageMessage extends ChatDetailEvent {
