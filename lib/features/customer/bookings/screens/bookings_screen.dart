@@ -465,6 +465,7 @@ class _BookingCardState extends State<BookingCard> {
                     label: 'Time Started',
                     value: start,
                   ),
+                  if(end.isNotEmpty && end != '--')
                   _InfoRow(
                     icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
                       color: colors.textColor.shade600,
