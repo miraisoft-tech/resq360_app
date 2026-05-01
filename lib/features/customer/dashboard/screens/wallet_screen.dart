@@ -2,11 +2,15 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/all_transactions_screen.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_confirm.dialog.dart';
@@ -279,9 +283,61 @@ class _WalletScreenState extends State<WalletScreen> {
                                 body: TransactionDetailModal(
                                   onRetry: () {},
                                   onSupport: () async {
+                                    if (tx.category == 'WALLET_FUNDING') {
+                                      // No service request — go straight to contact admin
+                                      await pushScreen(
+                                        context,
+                                        const ContactAdminScreen(),
+                                      );
+                                      return;
+                                    }
+
+                                    if (tx.serviceRequestId == null) {
+                                      await showErrorSnackbar(
+                                        context,
+                                        'No service request linked to this transaction',
+                                      );
+                                      return;
+                                    }
+
+                                    final confirmed = await showDialog<bool>(
+                                      context: context,
+                                      builder:
+                                          (_) => const PaymentAppealDialog(),
+                                    );
+                                    if (confirmed != true) return;
+                                    if (!context.mounted) return;
+
+                                    Navigator.pop(
+                                      context,
+                                    ); // close bottom sheet
+                                    showLoadingDialog(context);
+
+                                    final result = await SupportRepo.instance
+                                        .fileDispute(
+                                          requestId: tx.serviceRequestId!,
+                                          reason: 'Service Appeal',
+                                          details:
+                                              'Customer filed an appeal for transaction #${tx.reference}',
+                                        );
+
+                                    if (!context.mounted) return;
+                                    Navigator.pop(context); // dismiss loading
+
+                                    if (result.error != null) {
+                                      await showErrorSnackbar(
+                                        context,
+                                        result.error!,
+                                      );
+                                      return;
+                                    }
+
                                     await pushScreen(
                                       context,
-                                      const ContactAdminScreen(),
+                                      ChatDetailScreen(
+                                        chatId: result.data!,
+                                        userType: UserType.customer,
+                                      ),
                                     );
                                   },
                                   tx: tx,
