@@ -546,6 +546,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               m.metadata != null,
         );
         setState(() {
+          log('has set canShowServiceDetails');
           canShowServiceDetails = hasPaid && hasInvoice;
         });
       }
@@ -709,8 +710,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
     ];
 
-    // final isPaymentCompleted = chat.paymentStatus?.toUpperCase() == 'COMPLETED';
-    if (isProvider) {
+    final isPaymentStatusEmpty = chat.paymentStatus?.isEmpty;
+    if (isPaymentStatusEmpty == null) return;
+    if (isProvider && isPaymentStatusEmpty) {
       menuItems.add(
         PopupMenuItem<String>(
           value: 'invoice',

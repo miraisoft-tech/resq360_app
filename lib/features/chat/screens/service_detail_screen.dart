@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/models/booking_enums.dart';
+import 'package:resq360/core/utils/dialer_util.dart';
 // import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
@@ -54,6 +55,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final metadata = widget.message.metadata;
     final invoiceId = metadata?.invoiceId ?? 'N/A';
     final price = metadata?.amount ?? 0;
+    final providerPhoneNumber =
+        widget.chat.provider?.phoneNumber ?? '';  
     // final location = widget.message.
 
     return BlocListener<BookingBloc, BookingState>(
@@ -162,8 +165,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     rating: providerRating,
                     reviewCount: providerReviews,
                     avatar:
-                        AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
-                        showActions: true,
+                       widget.chat.provider?.profileImage ?? '' ,
+                      phoneNumber: providerPhoneNumber,
                   );
                 },
               ),
@@ -188,7 +191,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     rating: customerRating,
                     reviewCount: customerReviews,
                     avatar:
-                        AppAssets.ASSETS_IMAGES_GENERIC_ICON_PNG.imageAsset(),
+                        widget.chat.user?.profileImage ?? '',
+                        showActions: true,
+
                   );
                 },
               ),
@@ -344,15 +349,18 @@ class _ServiceCard extends StatelessWidget {
     required this.rating,
     required this.reviewCount,
     required this.avatar,
-    this.showActions = false,
+     this.phoneNumber,
+     this.showActions = false,
   });
 
   final String name;
   final String subtitle;
   final String rating;
   final String reviewCount;
-  final Widget avatar;
+  final String avatar;
   final bool showActions;
+  final String? phoneNumber;
+
 
   @override
   Widget build(BuildContext context) {
@@ -366,7 +374,7 @@ class _ServiceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(radius: 24, child: avatar),
+           PictureWidget(image: avatar),
           12.horizontalSpace,
           Expanded(
             child: Column(
@@ -409,11 +417,15 @@ class _ServiceCard extends StatelessWidget {
           if (showActions) ...[
             8.horizontalSpace,
 
-            SVGButton(path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG, onTap: () {}),
+            // SVGButton(path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG, onTap: () {}),
             8.horizontalSpace,
             SVGButton(
               path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-              onTap: () {},
+              onTap: () async {
+                if (phoneNumber != null) {
+                  await DialerUtil.open(phoneNumber!);
+                }
+              },
               color: appColors.primary.shade500,
             ),
           ],

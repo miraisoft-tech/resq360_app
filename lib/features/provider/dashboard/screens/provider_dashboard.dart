@@ -56,18 +56,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
       _unreadCount = unreadCount;
     });
 
-    context.read<ProviderAuthBloc>().add(
-      const ProvidergetProviderProfile(),
-    );
+    context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
 
     context.read<CustomerAdvertisementBloc>().add(
       CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
     );
 
     context.read<ProviderServiceBloc>().add(
-      ProviderFetchBookings(
-        status: BookingStatus.ongoing.value,
-      ),
+      ProviderFetchBookings(status: BookingStatus.ongoing.value),
     );
   }
 
@@ -78,14 +74,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
         if (state is BookingStarted) {
-          await showSuccessSnackbar(
-            context,
-            'Service started successfully',
-          );
+          await showSuccessSnackbar(context, 'Service started successfully');
           context.read<ProviderServiceBloc>().add(
-            ProviderFetchBookings(
-              status: BookingStatus.ongoing.value,
-            ),
+            ProviderFetchBookings(status: BookingStatus.ongoing.value),
           );
         }
         if (state is BookingError) {
@@ -98,11 +89,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.only(
-                  left: 16.w,
-                  right: 16.w,
-                  top: 10.h,
-                ),
+                padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -162,9 +149,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                     color: colors.neutral.shade300,
                                   ),
                                   borderRadius:
-                                      BorderRadiusDirectional.circular(
-                                        17,
-                                      ),
+                                      BorderRadiusDirectional.circular(17),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(6),
@@ -353,11 +338,19 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             final activeAds = state.promotions;
                             if (activeAds.isNotEmpty &&
                                 activeAds.first.endDate != null) {
+                              final endDate = activeAds.first.endDate!;
+                              final daysSinceEnd =
+                                  DateTime.now().difference(endDate).inDays;
+
+                              if (daysSinceEnd > 7) {
+                                return const SizedBox.shrink();
+                              }
+
                               return Column(
                                 children: [
                                   AdvertCountdownTimer(
-                                    key: ValueKey(activeAds.first.endDate),
-                                    endDate: activeAds.first.endDate!,
+                                    key: ValueKey(endDate),
+                                    endDate: endDate,
                                   ),
                                   30.verticalSpace,
                                 ],
