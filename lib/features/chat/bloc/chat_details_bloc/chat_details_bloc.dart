@@ -8,7 +8,6 @@ import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
-import 'package:resq360/features/chat/data/models/create_request_and_send_invoice.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 
 part 'chat_details_event.dart';
