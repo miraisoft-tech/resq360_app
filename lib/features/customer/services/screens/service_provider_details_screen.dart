@@ -567,6 +567,7 @@ class _ServiceProviderDetailsScreenState
                           }
                           if (widget.serviceCategoryId == null) {
                             final picked = await _pickProviderService(context);
+                            log('Picked service ID: $picked');
                             if (picked == null) return;
                             await _createServiceRequest(
                               overrideServiceId: picked,
