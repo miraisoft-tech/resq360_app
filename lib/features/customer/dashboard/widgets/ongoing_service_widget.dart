@@ -1,17 +1,14 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-// import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
-import 'package:resq360/features/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
+// import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 // import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 
 class OngoingServiceCard extends StatefulWidget {
-  const OngoingServiceCard({
-    required this.booking,
-    super.key,
-  });
+  const OngoingServiceCard({required this.booking, super.key});
 
   final Bookings booking;
 
@@ -135,54 +132,69 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                 ),
               ),
 
-              //  WideButton(
-              //     label: 'Cancel',
-              //     backgroundColor: colors.primary.shade50,
-              //     textColor: colors.primary.shade500,
+              20.horizontalSpace,
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: pad(horizontal: 14, vertical: 10),
+                    backgroundColor: colors.primary.shade500,
+                    foregroundColor: colors.whiteColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+
+                  onPressed: () async {
+                    final serviceRequestId = widget.booking.id;
+                    if (serviceRequestId == null) return;
+                    await pushScreen(
+                      context,
+                      ServiceCancelledScreen(
+                        serviceRequestId: serviceRequestId,
+                      ),
+                    );
+                  },
+                  child: GenText(
+                    'Cancel',
+                    height: 16.5,
+                    color: colors.whiteColor,
+                    weight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              // if (status == BookingStatus.completed.value) ...[
+              // 20.horizontalSpace,
+              // Expanded(
+              //   child: ElevatedButton(
               //     onPressed: () async {
-              //        final serviceRequestId = widget.booking.id;
+              //       final serviceRequestId = widget.booking.id;
               //       if (serviceRequestId == null) return;
+
               //       await pushScreen(
               //         context,
-              //         ServiceCancelledScreen(
+              //         ServiceCompletedScreen(
               //           serviceRequestId: serviceRequestId,
               //         ),
               //       );
               //     },
+              //     style: ElevatedButton.styleFrom(
+              //       padding: pad(horizontal: 14, vertical: 10),
+              //       backgroundColor: colors.primary.shade500,
+              //       foregroundColor: colors.whiteColor,
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(8.r),
+              //       ),
+              //     ),
+              //     child: GenText(
+              //       'Complete',
+              //       height: 16.5,
+              //       color: colors.whiteColor,
+              //       weight: FontWeight.w500,
+              //     ),
               //   ),
-
-              // if (status == BookingStatus.completed.value) ...[
-                20.horizontalSpace,
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final serviceRequestId = widget.booking.id;
-                      if (serviceRequestId == null) return;
-
-                      await pushScreen(
-                        context,
-                        ServiceCompletedScreen(
-                          serviceRequestId: serviceRequestId,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: pad(horizontal: 14, vertical: 10),
-                      backgroundColor: colors.primary.shade500,
-                      foregroundColor: colors.whiteColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: GenText(
-                      'Complete',
-                      height: 16.5,
-                      color: colors.whiteColor,
-                      weight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
+              // ),
+            ],
             // ],
           ),
         ],
@@ -190,26 +202,3 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
     );
   }
 }
-
-// Future<String?> findExistingOpenAppealTicketId() async {
-//   final res = await SupportRepo.instance.getTickets();
-
-//   if (res.error != null && res.error!.isNotEmpty) {
-//     return null;
-//   }
-
-//   final tickets = res.data;
-//   if (tickets == null || tickets.isEmpty) return null;
-
-//   for (final ticket in tickets) {
-//     final isOpen = ticket.status == 'OPEN';
-//     final isAppeal = ticket.subject == 'Service Appeal';
-//     final isGeneralInquiry = ticket.category == 'GENERAL_INQUIRY';
-
-//     if (isOpen && isAppeal && isGeneralInquiry) {
-//       return ticket.ticketId;
-//     }
-//   }
-
-//   return null;
-// }
