@@ -4,11 +4,13 @@ import 'package:resq360/core/models/booking_enums.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 // import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
-import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
-import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   const ServiceDetailScreen({
@@ -57,7 +59,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final price = metadata?.amount ?? 0;
     final providerPhoneNumber =
         widget.chat.provider?.phoneNumber ?? '';  
-    // final location = widget.message.
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
@@ -66,9 +67,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         }
         if (state is BookingStarted) {
           Navigator.pop(context);
-          // if (widget.chat.id != null) {
-          //   context.read<ChatDetailBloc>().add(OpenChatDetail(widget.chat.id!));
-          // }
           await showSuccessSnackbar(context, 'Service has started');
           Navigator.pop(context);
         }
@@ -280,12 +278,39 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       backgroundColor: appColors.primary.shade50,
                       textColor: appColors.primary.shade500,
                       onPressed: () async {
+                        final serviceRequestId = widget.chat.serviceRequestId;
+                        if (serviceRequestId == null) return;
+
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => const PaymentAppealDialog(isProvider: true,),
+                        );
+                        if (confirmed != true) return;
+                        if (!context.mounted) return;
+
+                        showLoadingDialog(context);
+
+                        final result = await SupportRepo.instance.fileDispute(
+                          requestId: serviceRequestId,
+                          reason: 'Service Appeal',
+                          details:
+                              'Provider filed an appeal for service request #$serviceRequestId',
+                        );
+
+                        if (!context.mounted) return;
+                        Navigator.pop(context);
+
+                        if (result.error != null) {
+                          await showErrorSnackbar(context, result.error!);
+                          return;
+                        }
+
+                        final chatId = result.data!;
                         await pushScreen(
                           context,
-                          ContactAdminScreen(
-                            issueType: AdminIssueType.serviceIssue,
-                            serviceCategory: widget.chat.serviceCategoryId,
-                            relatedServiceProviderId: widget.chat.provider?.id,
+                          ChatDetailScreen(
+                            chatId: chatId,
+                            userType: UserType.provider,
                           ),
                         );
                       },
