@@ -283,61 +283,9 @@ class _WalletScreenState extends State<WalletScreen> {
                                 body: TransactionDetailModal(
                                   onRetry: () {},
                                   onSupport: () async {
-                                    if (tx.category == 'WALLET_FUNDING') {
-                                      // No service request — go straight to contact admin
-                                      await pushScreen(
-                                        context,
-                                        const ContactAdminScreen(),
-                                      );
-                                      return;
-                                    }
-
-                                    if (tx.serviceRequestId == null) {
-                                      await showErrorSnackbar(
-                                        context,
-                                        'No service request linked to this transaction',
-                                      );
-                                      return;
-                                    }
-
-                                    final confirmed = await showDialog<bool>(
-                                      context: context,
-                                      builder:
-                                          (_) => const PaymentAppealDialog(),
-                                    );
-                                    if (confirmed != true) return;
-                                    if (!context.mounted) return;
-
-                                    Navigator.pop(
-                                      context,
-                                    ); // close bottom sheet
-                                    showLoadingDialog(context);
-
-                                    final result = await SupportRepo.instance
-                                        .fileDispute(
-                                          requestId: tx.serviceRequestId!,
-                                          reason: 'Service Appeal',
-                                          details:
-                                              'Customer filed an appeal for transaction #${tx.reference}',
-                                        );
-
-                                    if (!context.mounted) return;
-                                    Navigator.pop(context); // dismiss loading
-
-                                    if (result.error != null) {
-                                      await showErrorSnackbar(
-                                        context,
-                                        result.error!,
-                                      );
-                                      return;
-                                    }
-
                                     await pushScreen(
                                       context,
-                                      ChatDetailScreen(
-                                        chatId: result.data!,
-                                        userType: UserType.customer,
-                                      ),
+                                      const ContactAdminScreen(),
                                     );
                                   },
                                   tx: tx,
