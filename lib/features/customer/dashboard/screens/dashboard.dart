@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       await pushScreen(context, const NotificationScreen());
                     },
                   ),
-                  10.horizontalSpace,
+                  5.horizontalSpace,
                 ],
               ),
             ),
@@ -442,10 +442,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           final ads = state.advertisements;
 
                           if (ads.isEmpty) {
-                            return const Center(
-                              child: Text(
+                            return Padding(
+                              padding: pad(horizontal: 16, vertical: 20),
+                              child: const GenText(
                                 'No advertisements available',
-                                style: TextStyle(fontSize: 14),
+                                textAlign: TextAlign.center,
                               ),
                             );
                           }

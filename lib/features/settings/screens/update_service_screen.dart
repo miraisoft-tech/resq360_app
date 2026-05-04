@@ -49,6 +49,19 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
   TimeOfDay? startTime;
   TimeOfDay? endTime;
 
+  String _formatTimeOfDay(TimeOfDay time) {
+    final hour12 = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '${hour12.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} $period';
+  }
+
+  void _setDefaultLocalWorkingHours() {
+    startTime ??= const TimeOfDay(hour: 9, minute: 0);
+    endTime ??= const TimeOfDay(hour: 17, minute: 0);
+    startTimeController.text = _formatTimeOfDay(startTime!);
+    endTimeController.text = _formatTimeOfDay(endTime!);
+  }
+
   void handleToggleDay({required String day, required bool value}) {
     setState(() {
       workingDays[day] = value;
@@ -59,6 +72,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _setDefaultLocalWorkingHours();
     context.read<ServiceCatalogBloc>().add(const FetchServices());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProviderData();
@@ -107,17 +121,9 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
 
       if (provider.openingHours != null) {
         try {
-          final dateTime = DateTime.parse(provider.openingHours!);
-          startTime = TimeOfDay(
-            hour: dateTime.hour,
-            minute: dateTime.minute,
-          );
-
-          final hour12 =
-              startTime!.hourOfPeriod == 0 ? 12 : startTime!.hourOfPeriod;
-          final period = startTime!.period == DayPeriod.am ? 'AM' : 'PM';
-          startTimeController.text =
-              '${hour12.toString().padLeft(2, '0')}:${startTime!.minute.toString().padLeft(2, '0')} $period';
+          final dateTime = DateTime.parse(provider.openingHours!).toLocal();
+          startTime = TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+          startTimeController.text = _formatTimeOfDay(startTime!);
         } on Exception catch (e) {
           log(e.toString());
         }
@@ -125,17 +131,9 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
 
       if (provider.closingHours != null) {
         try {
-          final dateTime = DateTime.parse(provider.closingHours!);
-          endTime = TimeOfDay(
-            hour: dateTime.hour,
-            minute: dateTime.minute,
-          );
-
-          final hour12 =
-              endTime!.hourOfPeriod == 0 ? 12 : endTime!.hourOfPeriod;
-          final period = endTime!.period == DayPeriod.am ? 'AM' : 'PM';
-          endTimeController.text =
-              '${hour12.toString().padLeft(2, '0')}:${endTime!.minute.toString().padLeft(2, '0')} $period';
+          final dateTime = DateTime.parse(provider.closingHours!).toLocal();
+          endTime = TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
+          endTimeController.text = _formatTimeOfDay(endTime!);
         } on Exception catch (e) {
           log(e.toString());
         }
@@ -157,20 +155,22 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
     final selectedDays =
         workingDays.entries.where((e) => e.value).map((e) => e.key).toList();
 
-    final startDateTime = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
-      startTime?.hour ?? 9,
-      startTime?.minute ?? 0,
-    ).toUtc();
-    final endDateTime = DateTime(
-      DateTime.now().year,
-      DateTime.now().month,
-      DateTime.now().day,
-      endTime?.hour ?? 17,
-      endTime?.minute ?? 0,
-    ).toUtc() ;
+    final startDateTime =
+        DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+          startTime?.hour ?? 9,
+          startTime?.minute ?? 0,
+        ).toUtc();
+    final endDateTime =
+        DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+          endTime?.hour ?? 17,
+          endTime?.minute ?? 0,
+        ).toUtc();
 
     final servicesToUpdate =
         selectedServices.entries
@@ -224,10 +224,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen>
     return BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(
       listener: (context, state) async {
         if (state is ProfileUpdateSuccess) {
-          await showSuccessSnackbar(
-            context,
-            'Service updated successfully',
-          );
+          await showSuccessSnackbar(context, 'Service updated successfully');
 
           context.read<ProviderAuthBloc>().add(
             const ProvidergetProviderProfile(),
@@ -528,8 +525,9 @@ class _ServiceDetailSectionState extends State<ServiceDetailSection> {
                                       controller:
                                           minorServiceControllers[service.id]!,
                                       hintText: 'e.g., Jump Start, Tire Change',
-                                      onFieldSubmitted: (_) => _addMinorService(service.id),
-                                      label:  'Add minor services (optional)',
+                                      onFieldSubmitted:
+                                          (_) => _addMinorService(service.id),
+                                      label: 'Add minor services (optional)',
                                     ),
                                   ),
                                   8.horizontalSpace,

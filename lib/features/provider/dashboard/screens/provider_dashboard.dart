@@ -164,7 +164,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         await pushScreen(context, const NotificationScreen());
                       },
                     ),
-                    10.horizontalSpace,
+                    5.horizontalSpace,
                   ],
                 ),
               ),

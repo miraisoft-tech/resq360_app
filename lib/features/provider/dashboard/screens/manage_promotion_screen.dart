@@ -10,7 +10,6 @@ import 'package:resq360/features/provider/dashboard/widgets/promotion_empty_stat
 import 'package:resq360/features/provider/dashboard/widgets/promotion_option_sheet.dart';
 import 'package:resq360/features/provider/dashboard/widgets/promotions_stats_overview.dart';
 
-
 class PromotionsDashboardScreen extends StatefulWidget {
   const PromotionsDashboardScreen({super.key});
 
@@ -22,6 +21,12 @@ class PromotionsDashboardScreen extends StatefulWidget {
 class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
+  bool _isPromotionActiveByDate(Advertisement ad) {
+    final endDate = ad.endDate;
+    if (endDate == null) return false;
+    return !endDate.toUtc().isBefore(DateTime.now().toUtc());
+  }
 
   @override
   void initState() {
@@ -65,10 +70,7 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
           unselectedLabelColor: colors.neutral.shade400,
           indicatorColor: colors.primary.shade500,
           indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'All'),
-          ],
+          tabs: const [Tab(text: 'Active'), Tab(text: 'All')],
         ),
       ),
       body: BlocConsumer<PromotionBloc, PromotionState>(
@@ -100,13 +102,11 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     );
   }
 
-  Widget _buildPromotionsList(
-    PromotionState state, {
-    bool activeOnly = false,
-  }) {
-
+  Widget _buildPromotionsList(PromotionState state, {bool activeOnly = false}) {
     if (state is PromotionLoading) {
-      return Center(child: CircularProgressIndicator(color: context.appColors.primary,));
+      return Center(
+        child: CircularProgressIndicator(color: context.appColors.primary),
+      );
     }
 
     var promotions = <Advertisement>[];
@@ -115,7 +115,7 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
       promotions = state.promotions;
 
       if (activeOnly) {
-        promotions = promotions.where((ad) => ad.isActive ?? false).toList();
+        promotions = promotions.where(_isPromotionActiveByDate).toList();
       }
     }
 
@@ -124,33 +124,34 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     return RefreshIndicator(
       onRefresh: () async => _loadPromotions(),
       color: context.appColors.primary.shade500,
-      child: promotions.isEmpty
-          ? PromotionEmptyState(
-              activeOnly: activeOnly,
-              onCreatePromotion: _navigateToCreatePromotion,
-            )
-          : Column(
-              children: [
-                if (promotions.isNotEmpty)
-                  PromotionStatsOverview(stats: stats),
-                Expanded(
-                  child: ListView.separated(
-                    padding: pad(horizontal: 16, vertical: 16),
-                    itemCount: promotions.length,
-                    separatorBuilder: (_, _) => 16.verticalSpace,
-                    itemBuilder: (context, index) {
-                      return PromotionCard(
-                        promotion: promotions[index],
-                        onViewDetails: () =>
-                            _showPromotionDetails(promotions[index]),
-                        onShowOptions: () =>
-                            _showPromotionOptions(promotions[index]),
-                      );
-                    },
+      child:
+          promotions.isEmpty
+              ? PromotionEmptyState(
+                activeOnly: activeOnly,
+                onCreatePromotion: _navigateToCreatePromotion,
+              )
+              : Column(
+                children: [
+                  if (promotions.isNotEmpty)
+                    PromotionStatsOverview(stats: stats),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: pad(horizontal: 16, vertical: 16),
+                      itemCount: promotions.length,
+                      separatorBuilder: (_, _) => 16.verticalSpace,
+                      itemBuilder: (context, index) {
+                        return PromotionCard(
+                          promotion: promotions[index],
+                          onViewDetails:
+                              () => _showPromotionDetails(promotions[index]),
+                          onShowOptions:
+                              () => _showPromotionOptions(promotions[index]),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
     );
   }
 
@@ -170,39 +171,41 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      builder: (context) => PromotionOptionsSheet(
-        promotion: promotion,
-        onEdit: () => _showEditPromotionSheet(promotion, context.appColors),
-        onDelete: () => _confirmDeletePromotion(promotion, context.appColors),
-      ),
+      builder:
+          (context) => PromotionOptionsSheet(
+            promotion: promotion,
+            onEdit: () => _showEditPromotionSheet(promotion, context.appColors),
+            onDelete:
+                () => _confirmDeletePromotion(promotion, context.appColors),
+          ),
     );
   }
 
-  Future<void> _confirmDeletePromotion(Advertisement promotion, AppColorPalette colors) async {
+  Future<void> _confirmDeletePromotion(
+    Advertisement promotion,
+    AppColorPalette colors,
+  ) async {
     await showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title:  const GenText('Delete Promotion', weight: FontWeight.w700),
-          content: const GenText (
+          title: const GenText('Delete Promotion', weight: FontWeight.w700),
+          content: const GenText(
             'Are you sure you want to delete this promotion? This action cannot be undone.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const GenText('Cancel',),
+              child: const GenText('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                context
-                    .read<PromotionBloc>()
-                    .add(DeletePromotion(promotion.id!));
+                context.read<PromotionBloc>().add(
+                  DeletePromotion(promotion.id!),
+                );
               },
-              child: GenText(
-                'Delete',
-                color: colors.error.shade500,
-              ),
+              child: GenText('Delete', color: colors.error.shade500),
             ),
           ],
         );
@@ -210,7 +213,10 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     );
   }
 
-  Future<void> _showEditPromotionSheet(Advertisement promotion, AppColorPalette colors) async {
+  Future<void> _showEditPromotionSheet(
+    Advertisement promotion,
+    AppColorPalette colors,
+  ) async {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: colors.whiteColor,
@@ -229,11 +235,7 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
 
   Map<String, dynamic> _calculateStats(List<Advertisement> promotions) {
     if (promotions.isEmpty) {
-      return {
-        'totalImpressions': 0,
-        'totalClicks': 0,
-        'avgCTR': 0.0,
-      };
+      return {'totalImpressions': 0, 'totalClicks': 0, 'avgCTR': 0.0};
     }
 
     final totalImpressions = promotions.fold<int>(

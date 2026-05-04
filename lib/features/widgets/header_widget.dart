@@ -24,9 +24,7 @@ class HeaderWidget extends StatelessWidget {
           onTap: () async {
             await pushScreen(context, const SettingsScreen());
           },
-          child: PictureWidget(
-            image: profileImage,
-          ),
+          child: PictureWidget(image: profileImage),
         ),
         10.horizontalSpace,
         Column(

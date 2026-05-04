@@ -48,14 +48,15 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-   Future<ApiResult<BookRequest>> bookServiceRequest({
+  Future<ApiResult<BookRequest>> bookServiceRequest({
     required int providerServiceId,
   }) async {
     const url = '/requests/book-request';
     try {
-      final res = await dio().post<Map<String, dynamic>>(url, data: {
-        'providerServiceId': providerServiceId,
-      });
+      final res = await dio().post<Map<String, dynamic>>(
+        url,
+        data: {'providerServiceId': providerServiceId},
+      );
       log('POST $url => ${res.statusCode}');
 
       if (res.statusCode == 201 && res.data != null) {
@@ -102,7 +103,7 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-   Future<ApiResult<List<Service>>> fetchServicesForAProvider() async {
+  Future<ApiResult<List<Service>>> fetchServicesForAProvider() async {
     const url = '/services/provider';
     try {
       final response = await dio().get<Map<String, dynamic>>(url);
@@ -128,9 +129,6 @@ class ServiceRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
-
-
-  
 
   Future<ApiResult<Service>> fetchServiceInfo(int serviceCategoryId) async {
     final url = '/services/$serviceCategoryId/info';
@@ -165,12 +163,12 @@ class ServiceRepo extends BaseAPI {
   }) async {
     final longitude = await AppLocalPref().getValue(key: DBKeys.longitude);
     final latitude = await AppLocalPref().getValue(key: DBKeys.latitude);
-  if (longitude == null ||
-    latitude == null ||
-    longitude.toString().isEmpty ||
-    latitude.toString().isEmpty) {
-  return ApiResult(error: 'Location data not available');
-}
+    if (longitude == null ||
+        latitude == null ||
+        longitude.toString().isEmpty ||
+        latitude.toString().isEmpty) {
+      return ApiResult(error: 'Location data not available');
+    }
     final url = '/services/$serviceCategoryId/providers';
     try {
       final queryParams = {
@@ -207,21 +205,19 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-    Future<ApiResult<ServiceProvider>> fetchProviderByid({
+  Future<ApiResult<ServiceProvider>> fetchProviderByid({
     required int providerId,
   }) async {
-   
     final url = '/user/provider/$providerId';
     try {
-    
-      final response = await dio().get<Map<String, dynamic>>(
-        url,
-      );
+      final response = await dio().get<Map<String, dynamic>>(url);
       log('GET $url => ${response.statusCode}');
 
       if (response.statusCode == 200 && response.data != null) {
         final json = response.data!;
-        final providers = ServiceProvider.fromJson(json['data'] as Map<String, dynamic>);
+        final providers = ServiceProvider.fromJson(
+          json['data'] as Map<String, dynamic>,
+        );
         return ApiResult(data: providers);
       } else {
         log('Failed to fetch provider: ${response.data}');
@@ -293,10 +289,7 @@ class ServiceRepo extends BaseAPI {
     int limit = 10,
     int page = 1,
   }) async {
-    final queryParams = <String, dynamic>{
-      'limit': limit,
-      'page': page,
-    };
+    final queryParams = <String, dynamic>{'limit': limit, 'page': page};
 
     if (status != null) {
       queryParams['booking_status'] = status;
@@ -391,10 +384,7 @@ class ServiceRepo extends BaseAPI {
   }) async {
     final url = '/services/bookings/$serviceRequestId/complete';
     try {
-      final formData = {
-        'ratings': ratings,
-        'review': review,
-      };
+      final formData = {'ratings': ratings, 'review': review};
       final res = await dio().post<Map<String, dynamic>>(url, data: formData);
       log('POST $url => ${res.statusCode}');
 
@@ -419,9 +409,7 @@ class ServiceRepo extends BaseAPI {
   }) async {
     const url = '/requests/service-request';
 
-    final data = {
-      'providerServiceId': providerServiceId,
-    };
+    final data = {'providerServiceId': providerServiceId};
 
     try {
       final res = await dio().post<Map<String, dynamic>>(url, data: data);
@@ -449,9 +437,7 @@ class ServiceRepo extends BaseAPI {
   }) async {
     final url = '/services/$serviceCategoryId/ping-providers';
     try {
-      final res = await dio().post<Map<String, dynamic>>(
-        url,
-      );
+      final res = await dio().post<Map<String, dynamic>>(url);
       log('POST $url => ${res.statusCode}');
 
       if (res.statusCode == 200) {
