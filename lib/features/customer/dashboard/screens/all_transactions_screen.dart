@@ -1,12 +1,9 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
-import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
-import 'package:resq360/features/chat/screens/support_chat_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
-import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
-import 'package:resq360/features/settings/data/service/support_service.dart';
+import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class AllTransactionsScreen extends StatefulWidget {
@@ -55,63 +52,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     BuildContext context,
     WalletTransaction walletTx,
   ) async {
-    final shouldProceed = await GeneralDialogs.showCustomDialog<bool>(
-      context,
-      body: const PaymentAppealDialog(),
-    );
-
-    if (shouldProceed != true) return;
-
-    final existingTicketId =
-        await SupportRepo.instance.findExistingOpenAppealTicketId();
-
-    if (!context.mounted) {
-      return;
-    }
-
-    if (existingTicketId != null) {
-      if (currentUser != null) {
-        await pushScreen(
-          context,
-          SupportChatScreen(
-            ticketId: existingTicketId,
-          ),
-        );
-      }
-
-      return;
-    }
-
-    final serviceName = walletTx.category;
-    final contactEmail = currentUser.email;
-    final contactPhone = currentUser.phoneNumber;
-
-    final res = await SupportRepo.instance.createTicket(
-      subject: 'Service Appeal',
-      description: 'User opened an appeal for $serviceName service.',
-      category: AdminIssueType.paymentIssue.value,
-      priority: 'LOW',
-      contactEmail: contactEmail.toString(),
-      contactPhone: contactPhone.toString(),
-      serviceCategory: walletTx.serviceRequestId,
-      relatedServiceProviderId: walletTx.providerId,
-    );
-
-    if (!context.mounted) return;
-
-    if (res.error != null) {
-      await showErrorSnackbar(context, res.error!);
-      return;
-    }
-
-    final ticketId = res.data!['data']['ticketId'].toString();
-
-    await pushScreen(
-      context,
-      SupportChatScreen(
-        ticketId: ticketId,
-      ),
-    );
+    await pushScreen(context, const ContactAdminScreen());
   }
 
   @override
@@ -145,9 +86,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
           builder: (context, state) {
             if (state is WalletTransactionsLoading) {
               return Center(
-                child: CircularProgressIndicator(
-                  color: appColors.primary,
-                ),
+                child: CircularProgressIndicator(color: appColors.primary),
               );
             }
 

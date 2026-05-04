@@ -1,7 +1,9 @@
 import 'package:resq360/__lib.dart';
 
 class PaymentAppealDialog extends StatelessWidget {
-  const PaymentAppealDialog({super.key});
+  const PaymentAppealDialog({required this.isProvider, super.key});
+
+  final bool isProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class PaymentAppealDialog extends StatelessWidget {
           ),
           4.verticalSpace,
           UrbText(
-            'You are about to open an appeal. This will start a chat between you, the service provider and the admin.',
+            isProvider? 'You are about to open an appeal. This will start a chat between you, the customer and the admin.': 'You are about to open an appeal. This will start a chat between you, the service provider and the admin.',
             height: 24.5,
             color: appColors.textColor.shade300,
             textAlign: TextAlign.center,

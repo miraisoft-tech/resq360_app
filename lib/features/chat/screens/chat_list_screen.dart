@@ -213,7 +213,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               case 'Unread':
                 return chat.unreadCount > 0;
               case 'Appeal':
-                return chat.title.toLowerCase().contains('appeal');
+                return chat.title.contains('DISPUTE');
               default:
                 return true;
             }

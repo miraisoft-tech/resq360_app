@@ -266,7 +266,7 @@ class _ProviderServiceDetailScreenState
 
                         final confirmed = await showDialog<bool>(
                           context: context,
-                          builder: (_) => const PaymentAppealDialog(),
+                          builder: (_) => const PaymentAppealDialog(isProvider: false,),
                         );
                         if (confirmed != true) return;
                         if (!context.mounted) return;
