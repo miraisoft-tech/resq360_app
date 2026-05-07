@@ -216,7 +216,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           var chatType = '';
           var providerName = '';
 
-
           if (state is ChatDetailReady) {
             final chat = state.chat;
             title = chat.title ?? 'Chat';
@@ -229,7 +228,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             paymentStatus = chat.paymentStatus ?? '';
             serviceStatus = chat.serviceRequestStatus ?? '';
             chatType = chat.type ?? '';
-            providerName = chat.provider?.fullName?? '';
+            providerName = chat.provider?.fullName ?? '';
           }
 
           final isDisputeClosed =
@@ -251,7 +250,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                     paymentStatus: paymentStatus,
                     isActive: isActive,
                     isDispute: chatType == 'DISPUTE',
-                    providerName: providerName
+                    providerName: providerName,
                   ),
                   const ListDivider(),
                   Expanded(child: _buildChatContent(state)),
@@ -712,7 +711,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
     final isPaymentStatusEmpty = chat.paymentStatus?.isEmpty;
     if (isPaymentStatusEmpty == null) return;
-    if (isProvider && isPaymentStatusEmpty) {
+    if (isProvider) {
       menuItems.add(
         PopupMenuItem<String>(
           value: 'invoice',

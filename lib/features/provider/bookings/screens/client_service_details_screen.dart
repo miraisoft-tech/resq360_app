@@ -92,7 +92,7 @@ class _ProviderServiceDetailScreenState
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
           title: UrbText(
-            'Service Detail',
+            'Service Details',
             color: appColors.black,
             weight: FontWeight.w700,
             size: 22,
@@ -230,7 +230,6 @@ class _ProviderServiceDetailScreenState
                       ),
                     ),
 
-                  10.verticalSpace,
                   if (widget.booking.status == BookingEnums.progress.name ||
                       widget.booking.status == BookingEnums.assigned.name)
                     Expanded(
@@ -249,59 +248,62 @@ class _ProviderServiceDetailScreenState
                         },
                       ),
                     ),
-                  12.horizontalSpace,
                 ],
               ),
               12.verticalSpace,
               Row(
                 children: [
-                  Expanded(
-                    child: WideButton(
-                      label: 'Appeal',
-                      backgroundColor: appColors.primary.shade50,
-                      textColor: appColors.primary.shade500,
-                      onPressed: () async {
-                        final serviceRequestId = widget.booking.id;
-                        if (serviceRequestId == null) return;
+                  if (!isProvider)
+                    Expanded(
+                      child: WideButton(
+                        label: 'Appeal',
+                        backgroundColor: appColors.primary.shade50,
+                        textColor: appColors.primary.shade500,
+                        onPressed: () async {
+                          final serviceRequestId = widget.booking.id;
+                          if (serviceRequestId == null) return;
 
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (_) => const PaymentAppealDialog(isProvider: false,),
-                        );
-                        if (confirmed != true) return;
-                        if (!context.mounted) return;
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (_) => const PaymentAppealDialog(
+                                  isProvider: false,
+                                ),
+                          );
+                          if (confirmed != true) return;
+                          if (!context.mounted) return;
 
-                        showLoadingDialog(context);
+                          showLoadingDialog(context);
 
-                        final result = await SupportRepo.instance.fileDispute(
-                          requestId: serviceRequestId,
-                          reason: 'Service Appeal',
-                          details:
-                              'Customer filed an appeal for service request #$serviceRequestId',
-                        );
+                          final result = await SupportRepo.instance.fileDispute(
+                            requestId: serviceRequestId,
+                            reason: 'Service Appeal',
+                            details:
+                                'Customer filed an appeal for service request #$serviceRequestId',
+                          );
 
-                        if (!context.mounted) return;
-                        Navigator.pop(context);
+                          if (!context.mounted) return;
+                          Navigator.pop(context);
 
-                        if (result.error != null) {
-                          await showErrorSnackbar(context, result.error!);
-                          return;
-                        }
+                          if (result.error != null) {
+                            await showErrorSnackbar(context, result.error!);
+                            return;
+                          }
 
-                        final chatId = result.data!;
-                        await pushScreen(
-                          context,
-                          ChatDetailScreen(
-                            chatId: chatId,
-                            userType:
-                                widget.booking.userId != null
-                                    ? UserType.customer
-                                    : UserType.provider,
-                          ),
-                        );
-                      },
+                          final chatId = result.data!;
+                          await pushScreen(
+                            context,
+                            ChatDetailScreen(
+                              chatId: chatId,
+                              userType:
+                                  widget.booking.userId != null
+                                      ? UserType.customer
+                                      : UserType.provider,
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
                   12.horizontalSpace,
                   if (widget.booking.status == BookingEnums.progress.name &&
                       isProvider)

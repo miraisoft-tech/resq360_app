@@ -98,7 +98,7 @@ class TransactionDetailModal extends StatelessWidget {
               UrbText(
                 '₦${AppTextUtil.formatAmount(tx.uiAmount.toString())}',
                 size: 18,
-                weight: FontWeight.w700,  
+                weight: FontWeight.w700,
                 color: appColors.black,
               ),
               4.verticalSpace,
@@ -108,6 +108,8 @@ class TransactionDetailModal extends StatelessWidget {
                 color:
                     tx.status == 'FAILED'
                         ? appColors.error.shade500
+                        : tx.status == 'PENDING'
+                        ? appColors.warning.shade500
                         : appColors.success.shade600,
                 weight: FontWeight.w600,
               ),
@@ -165,10 +167,7 @@ class TransactionDetailModal extends StatelessWidget {
 }
 
 class _TransactionDetailItem extends StatelessWidget {
-  const _TransactionDetailItem({
-    required this.label,
-    required this.value,
-  });
+  const _TransactionDetailItem({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -181,11 +180,7 @@ class _TransactionDetailItem extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         children: [
-          GenText(
-            label,
-            size: 12,
-            color: appColors.textColor.shade400,
-          ),
+          GenText(label, size: 12, color: appColors.textColor.shade400),
           20.horizontalSpace,
           Expanded(
             child: GenText(

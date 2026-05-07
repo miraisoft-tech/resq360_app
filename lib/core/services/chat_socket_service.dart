@@ -43,7 +43,8 @@ class ChatSocketService {
     }
 
     _currentToken = token;
-    const url = 'https://resq360-kspk.onrender.com/chat';
+    const url = 'https://api.resq360.ng/chat';
+    // const url = 'https://resq360-kspk.onrender.com/chat';
 
     _connectionCompleter = Completer<void>();
 

@@ -34,12 +34,14 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     });
   }
 
-    void _fetchRatings() {
+  void _fetchRatings() {
     final providerId = widget.chat.provider?.id;
     final userId = widget.chat.user?.id;
 
     if (providerId != null) {
-      context.read<RatingsBloc>().add(FetchProviderRatingsById(providerId: providerId));
+      context.read<RatingsBloc>().add(
+        FetchProviderRatingsById(providerId: providerId),
+      );
     }
 
     if (userId != null) {
@@ -57,8 +59,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final metadata = widget.message.metadata;
     final invoiceId = metadata?.invoiceId ?? 'N/A';
     final price = metadata?.amount ?? 0;
-    final providerPhoneNumber =
-        widget.chat.provider?.phoneNumber ?? '';  
+    final providerPhoneNumber = widget.chat.provider?.phoneNumber ?? '';
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
@@ -104,11 +105,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           ),
         ),
         body: Padding(
-          padding: EdgeInsets.only(
-            left: 16.w,
-            right: 16.w,
-            bottom: 50.h,
-          ),
+          padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 50.h),
           child: Column(
             children: [
               // Container(
@@ -162,9 +159,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     subtitle: serviceCategory,
                     rating: providerRating,
                     reviewCount: providerReviews,
-                    avatar:
-                       widget.chat.provider?.profileImage ?? '' ,
-                      phoneNumber: providerPhoneNumber,
+                    avatar: widget.chat.provider?.profileImage ?? '',
+                    phoneNumber: providerPhoneNumber,
                   );
                 },
               ),
@@ -188,10 +184,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     subtitle: '',
                     rating: customerRating,
                     reviewCount: customerReviews,
-                    avatar:
-                        widget.chat.user?.profileImage ?? '',
-                        showActions: true,
-
+                    avatar: widget.chat.user?.profileImage ?? '',
+                    showActions: true,
                   );
                 },
               ),
@@ -283,7 +277,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
                         final confirmed = await showDialog<bool>(
                           context: context,
-                          builder: (_) => const PaymentAppealDialog(isProvider: true,),
+                          builder:
+                              (_) =>
+                                  const PaymentAppealDialog(isProvider: true),
                         );
                         if (confirmed != true) return;
                         if (!context.mounted) return;
@@ -345,20 +341,18 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               //         BookingEnums.assigned.name ||
               //     widget.chat.serviceRequestStatus ==
               //         BookingEnums.progress.name)
-                WideButton(
-                  label: 'Cancel',
-                  backgroundColor: appColors.primary.shade50,
-                  textColor: appColors.primary.shade500,
-                  onPressed: () async {
-                    if (serviceRequestId == null) return;
-                    await pushScreen(
-                      context,
-                      ServiceCancelledScreen(
-                        serviceRequestId: serviceRequestId,
-                      ),
-                    );
-                  },
-                ),
+              WideButton(
+                label: 'Cancel',
+                backgroundColor: appColors.primary.shade50,
+                textColor: appColors.primary.shade500,
+                onPressed: () async {
+                  if (serviceRequestId == null) return;
+                  await pushScreen(
+                    context,
+                    ServiceCancelledScreen(serviceRequestId: serviceRequestId),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -374,8 +368,8 @@ class _ServiceCard extends StatelessWidget {
     required this.rating,
     required this.reviewCount,
     required this.avatar,
-     this.phoneNumber,
-     this.showActions = false,
+    this.phoneNumber,
+    this.showActions = false,
   });
 
   final String name;
@@ -385,7 +379,6 @@ class _ServiceCard extends StatelessWidget {
   final String avatar;
   final bool showActions;
   final String? phoneNumber;
-
 
   @override
   Widget build(BuildContext context) {
@@ -399,25 +392,21 @@ class _ServiceCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-           PictureWidget(image: avatar),
+          PictureWidget(image: avatar),
           12.horizontalSpace,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GenText(
-                  name,
-                  weight: FontWeight.w500,
-                  color: appColors.black,
-                ),
-                if(subtitle.isNotEmpty)...{
-                2.verticalSpace,
-                GenText(
-                  subtitle,
-                  color: appColors.textColor.shade400,
-                  size: 12,
-                  height: 20.5,
-                ),
+                GenText(name, weight: FontWeight.w500, color: appColors.black),
+                if (subtitle.isNotEmpty) ...{
+                  2.verticalSpace,
+                  GenText(
+                    subtitle,
+                    color: appColors.textColor.shade400,
+                    size: 12,
+                    height: 20.5,
+                  ),
                 },
                 2.verticalSpace,
                 Row(

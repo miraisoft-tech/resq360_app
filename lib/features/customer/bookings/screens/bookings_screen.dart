@@ -61,9 +61,7 @@ class _BookingsScreenState extends State<BookingsScreen>
         status = 'upcoming';
     }
 
-    bloc.add(
-      FetchCustomerBookings(status: status),
-    );
+    bloc.add(FetchCustomerBookings(status: status));
   }
 
   @override
@@ -210,9 +208,7 @@ class _BookingList extends StatelessWidget {
       builder: (context, state) {
         if (state is CustomerBookingLoading) {
           return Center(
-            child: CircularProgressIndicator(
-              color: appColors.primary,
-            ),
+            child: CircularProgressIndicator(color: appColors.primary),
           );
         }
 
@@ -271,9 +267,7 @@ class _BookingList extends StatelessWidget {
                   onTap: () async {
                     await pushScreen(
                       context,
-                      ProviderServiceDetailScreen(
-                        booking: booking,
-                      ),
+                      ProviderServiceDetailScreen(booking: booking),
                     );
                   },
                 );
@@ -324,10 +318,7 @@ class _BookingCardState extends State<BookingCard> {
         if (chatId != null) {
           await pushScreen(
             context,
-            ChatDetailScreen(
-              chatId: chatId,
-              userType: UserType.customer,
-            ),
+            ChatDetailScreen(chatId: chatId, userType: UserType.customer),
           );
         }
       } else {
@@ -378,9 +369,7 @@ class _BookingCardState extends State<BookingCard> {
             /// --- Header Row
             Row(
               children: [
-                PictureWidget(
-                  image: data.assignedProvider?.profileImage,
-                ),
+                PictureWidget(image: data.assignedProvider?.profileImage),
                 12.horizontalSpace,
                 Expanded(
                   child: Column(
@@ -443,9 +432,7 @@ class _BookingCardState extends State<BookingCard> {
                 ],
               ],
             ),
-            const ListDivider(
-              verticalSpacing: 10,
-            ),
+            const ListDivider(verticalSpacing: 10),
 
             if (expanded)
               Column(
@@ -465,14 +452,14 @@ class _BookingCardState extends State<BookingCard> {
                     label: 'Time Started',
                     value: start,
                   ),
-                  if(end.isNotEmpty && end != '--')
-                  _InfoRow(
-                    icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
-                      color: colors.textColor.shade600,
+                  if (end.isNotEmpty && end != '--')
+                    _InfoRow(
+                      icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
+                        color: colors.textColor.shade600,
+                      ),
+                      label: 'Time Completed',
+                      value: end,
                     ),
-                    label: 'Time Completed',
-                    value: end,
-                  ),
                   8.verticalSpace,
                   GestureDetector(
                     onTap: () async {
@@ -515,9 +502,7 @@ class _BookingCardState extends State<BookingCard> {
                     ),
                   ),
 
-                  const ListDivider(
-                    verticalSpacing: 15,
-                  ),
+                  const ListDivider(verticalSpacing: 15),
                 ],
               ),
             GestureDetector(
@@ -569,11 +554,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           icon,
           8.horizontalSpace,
-          GenText(
-            '$label: $value',
-            size: 13,
-            color: colors.textColor.shade600,
-          ),
+          GenText('$label: $value', size: 13, color: colors.textColor.shade600),
         ],
       ),
     );
