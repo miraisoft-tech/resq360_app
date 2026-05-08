@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
+import 'package:resq360/core/utils/app_constant.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/all_transactions_screen.dart';
@@ -69,7 +70,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                   (_) => PaystackWebViewPage(
                     authorizationUrl: url,
                     reference: reference,
-                    callbackUrl: 'https://example.com/callback',
+                    callbackUrl: AppConstants.paystackCallbackUrl,
                   ),
             ),
           );

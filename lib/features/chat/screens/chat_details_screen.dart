@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/utils/app_constant.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
@@ -624,7 +625,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               (_) => PaystackWebViewPage(
                 authorizationUrl: state.payment.authorizationUrl,
                 reference: state.payment.reference,
-                callbackUrl: 'https://example.com/callback',
+                callbackUrl: AppConstants.paystackCallbackUrl,
               ),
         ),
       );

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/core/utils/app_constant.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/promotion_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
@@ -298,7 +299,7 @@ class _PromoteServiceReviewScreenState
               (_) => PaystackWebViewPage(
                 authorizationUrl: state.payment.authorizationUrl,
                 reference: state.payment.reference,
-                callbackUrl: 'https://example.com/callback',
+                callbackUrl: AppConstants.paystackCallbackUrl,
               ),
         ),
       );
