@@ -31,7 +31,6 @@ import 'package:resq360/features/widgets/chat_bubble.dart';
 import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
-/// Unified chat detail screen for both customer and provider users.
 class ChatDetailScreen extends StatelessWidget {
   const ChatDetailScreen({
     required this.chatId,
@@ -112,18 +111,15 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   String get _senderType => isCustomer ? 'USER' : 'PROVIDER';
   int get _currentUserId => widget.currentUserId;
 
-  // Scroll tracking state (from trip_chat pattern)
   int _previousMessageCount = 0;
   bool _showJumpButton = false;
   bool _hasScrolledToBottomOnce = false;
 
-  // Load more state
   bool _isRequestingMore = false;
   double? _beforeLoadMaxScrollExtent;
   double? _beforeLoadOffset;
   bool _pendingOlderMessagesInsert = false;
 
-  // Provider-specific state
   bool canShowServiceDetails = false;
   bool _isModeratingMessage = false;
 
@@ -202,7 +198,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             Navigator.pop(context, true);
           }
 
-          // Handle action failures
           if (state is ChatDetailActionFailure) {
             await showErrorSnackbar(context, state.error);
           }
@@ -255,7 +250,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   ),
                   const ListDivider(),
                   Expanded(child: _buildChatContent(state)),
-                  // Provider-only: Show service details link when paid
                   if (isProvider &&
                       canShowServiceDetails &&
                       state is ChatDetailReady)
@@ -339,7 +333,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       );
     }
 
-    // Only wrap with BlocListener for customers (payment handling)
     if (isCustomer) {
       return BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
         listener: _handlePaymentState,
@@ -413,7 +406,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     return const SizedBox.shrink();
   }
 
-  // Updated _buildAppBar method for ChatDetailScreen
   Widget _buildAppBar({
     required String title,
     required bool isActive,
@@ -527,16 +519,13 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       final messages = state.messages;
       final messageCount = messages.length;
 
-      // Determine if the last message is from the current user
       final lastMessage = messages.isNotEmpty ? messages.first : null;
       final isLastMessageFromMe =
           lastMessage?.senderId == _currentUserId ||
           lastMessage?.senderType == _senderType;
 
-      // Capture scroll position BEFORE the frame callback (like trip_chat)
       final wasAtBottom = _isAtBottom();
 
-      // Provider-specific: Check if should show service details
       if (isProvider) {
         final hasPaid =
             state.chat.paymentStatus == PaymentStatus.completed.value;
@@ -564,11 +553,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
         if (messageCount > _previousMessageCount) {
           if (!state.isLoadingMore) {
-            // Only scroll if: user sent the message OR was already at bottom
             if (isLastMessageFromMe || wasAtBottom) {
               await _scrollToBottom();
             } else {
-              // Show jump button for incoming messages when not at bottom
               if (mounted) {
                 setState(() => _showJumpButton = true);
               }
@@ -600,23 +587,21 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
   }
 
-  /// Handles customer payment state changes
   Future<void> _handlePaymentState(
     BuildContext context,
     CustomerPaymentState state,
   ) async {
     if (!isCustomer) return;
 
-    // Loading states
     if (state is ServicePaymentLoadingState ||
         state is ServiceRequestPaymentVerifying) {
       showLoadingDialog(context);
       return;
     }
 
-    // Card payment initiated - navigate to webview
+    
     if (state is ServiceRequestPaymentInitiatedState) {
-      Navigator.pop(context); // Close loading dialog
+      Navigator.pop(context); 
 
       final completed = await Navigator.push<bool>(
         context,
