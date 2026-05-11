@@ -434,11 +434,15 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           children: [
             SizedBox(
               width: isDispute ? 160.w : 100,
-              child: GenText(
-                isDispute ? 'You, Admin, $providerName' : title.capitalize,
-                weight: FontWeight.w500,
-                color: appColors.black,
-                maxLines: 1,
+              child: Tooltip(
+                message: isDispute ? 'You, Admin, $providerName' : title.capitalize,
+                verticalOffset: 48,
+                child: GenText(
+                  isDispute ? 'You, Admin, $providerName' : title.capitalize,
+                  weight: FontWeight.w500,
+                  color: appColors.black,
+                  maxLines: 1,
+                ),
               ),
             ),
             GenText(
@@ -462,7 +466,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
             ),
           ),
-        PopupMenuButton<String>(
+          if(!isDispute)        
+          PopupMenuButton<String>(
           constraints: BoxConstraints(minWidth: 180.w, maxWidth: menuMaxWidth),
           icon: Icon(Icons.more_vert, color: appColors.neutral.shade700),
           color: appColors.whiteColor,

@@ -1,4 +1,4 @@
-// i used the docs from the package website and the had no updated th the new version
+// i used the docs from the package website and they had no updated the new version
 // ignore_for_file: deprecated_member_use
 
 import 'dart:async';
@@ -111,8 +111,6 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
               setState(() => _loading = true);
               final urlStr = url.toString();
               log('the url is now: $urlStr');
-
-              // match by origin + path only, ignore query params
               final uri = Uri.tryParse(urlStr);
               final callbackUri = Uri.tryParse(widget.callbackUrl);
 
