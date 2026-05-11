@@ -10,9 +10,9 @@ import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.d
 import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/chat/screens/chat_service_detail_screen.dart';
 import 'package:resq360/features/chat/screens/generate_invoice.dialog.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
-import 'package:resq360/features/chat/screens/service_detail_screen.dart';
 import 'package:resq360/features/chat/widgets/appeal_closed_card.dart';
 import 'package:resq360/features/chat/widgets/chat_document.dart';
 import 'package:resq360/features/chat/widgets/chat_image_bubble.dart';
@@ -212,6 +212,16 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           var chatType = '';
           var providerName = '';
 
+          final canShowServiceDetails =
+              state is ChatDetailReady &&
+              isProvider &&
+              state.chat.paymentStatus == PaymentStatus.completed.value &&
+              state.messages.any(
+                (m) =>
+                    m.messageType == MessageReceivedType.invoice.value &&
+                    m.metadata != null,
+              );
+
           if (state is ChatDetailReady) {
             final chat = state.chat;
             title = chat.title ?? 'Chat';
@@ -251,8 +261,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   const ListDivider(),
                   Expanded(child: _buildChatContent(state)),
                   if (isProvider &&
-                      canShowServiceDetails &&
-                      state is ChatDetailReady)
+                      canShowServiceDetails )
                     GestureDetector(
                       onTap: () async {
                         final serviceMessage = state.messages.firstWhere(
@@ -264,7 +273,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
                         await pushScreen(
                           context,
-                          ServiceDetailScreen(
+                          ChatServiceDetailScreen(
                             chat: state.chat,
                             message: serviceMessage,
                           ),
@@ -435,7 +444,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             SizedBox(
               width: isDispute ? 160.w : 100,
               child: Tooltip(
-                message: isDispute ? 'You, Admin, $providerName' : title.capitalize,
+                message:
+                    isDispute ? 'You, Admin, $providerName' : title.capitalize,
                 verticalOffset: 48,
                 child: GenText(
                   isDispute ? 'You, Admin, $providerName' : title.capitalize,
@@ -466,40 +476,43 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
             ),
           ),
-          if(!isDispute)        
+        if (!isDispute)
           PopupMenuButton<String>(
-          constraints: BoxConstraints(minWidth: 180.w, maxWidth: menuMaxWidth),
-          icon: Icon(Icons.more_vert, color: appColors.neutral.shade700),
-          color: appColors.whiteColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          onSelected: (value) => _handleMenuAction(value, title),
-          itemBuilder:
-              (context) => [
-                PopupMenuItem<String>(
-                  value: 'block',
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.report_outlined,
-                        color: appColors.error.shade600,
-                        size: 20.sp,
-                      ),
-                      12.horizontalSpace,
-                      Flexible(
-                        child: GenText(
-                          'Block $title',
-                          color: appColors.neutral.shade900,
-                          maxLines: 3,
+            constraints: BoxConstraints(
+              minWidth: 180.w,
+              maxWidth: menuMaxWidth,
+            ),
+            icon: Icon(Icons.more_vert, color: appColors.neutral.shade700),
+            color: appColors.whiteColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            onSelected: (value) => _handleMenuAction(value, title),
+            itemBuilder:
+                (context) => [
+                  PopupMenuItem<String>(
+                    value: 'block',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.report_outlined,
+                          color: appColors.error.shade600,
+                          size: 20.sp,
                         ),
-                      ),
-                    ],
+                        12.horizontalSpace,
+                        Flexible(
+                          child: GenText(
+                            'Block $title',
+                            color: appColors.neutral.shade900,
+                            maxLines: 3,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-        ),
+                ],
+          ),
         10.horizontalSpace,
       ],
     );
@@ -531,19 +544,19 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
       final wasAtBottom = _isAtBottom();
 
-      if (isProvider) {
-        final hasPaid =
-            state.chat.paymentStatus == PaymentStatus.completed.value;
-        final hasInvoice = messages.any(
-          (m) =>
-              m.messageType == MessageReceivedType.invoice.value &&
-              m.metadata != null,
-        );
-        setState(() {
-          log('has set canShowServiceDetails');
-          canShowServiceDetails = hasPaid && hasInvoice;
-        });
-      }
+      // if (isProvider) {
+      //   final hasPaid =
+      //       state.chat.paymentStatus == PaymentStatus.completed.value;
+      //   final hasInvoice = messages.any(
+      //     (m) =>
+      //         m.messageType == MessageReceivedType.invoice.value &&
+      //         m.metadata != null,
+      //   );
+      //   setState(() {
+      //     log('has set canShowServiceDetails');
+      //     canShowServiceDetails = hasPaid && hasInvoice;
+      //   });
+      // }
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
@@ -604,9 +617,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       return;
     }
 
-    
     if (state is ServiceRequestPaymentInitiatedState) {
-      Navigator.pop(context); 
+      Navigator.pop(context);
 
       final completed = await Navigator.push<bool>(
         context,

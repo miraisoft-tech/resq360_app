@@ -272,7 +272,7 @@ class _BookingList extends StatelessWidget {
                   onTap: () async {
                     await pushScreen(
                       context,
-                      ProviderServiceDetailScreen(
+                      ClientServiceDetailScreen(
                         booking: booking,
                       ),
                     );

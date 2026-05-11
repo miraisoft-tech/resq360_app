@@ -8,10 +8,10 @@ import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
+import 'package:resq360/features/customer/bookings/screens/provider_service_details.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class BookingsScreen extends StatefulWidget {

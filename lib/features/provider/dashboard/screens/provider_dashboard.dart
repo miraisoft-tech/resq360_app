@@ -306,7 +306,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                     onTap: () async {
                                       await pushScreen(
                                         context,
-                                        ProviderServiceDetailScreen(
+                                        ClientServiceDetailScreen(
                                           booking: booking,
                                         ),
                                       );

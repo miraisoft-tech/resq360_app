@@ -7,6 +7,7 @@ import 'package:resq360/core/services/notification_service.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
+import 'package:resq360/features/customer/bookings/screens/provider_service_details.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
 import 'package:resq360/features/customer/dashboard/screens/advertisement_screen.dart';
@@ -20,7 +21,6 @@ import 'package:resq360/features/customer/services/screens/service_providers_scr
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
-import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/widgets/header_widget.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
