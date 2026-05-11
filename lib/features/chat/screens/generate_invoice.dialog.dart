@@ -7,6 +7,7 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/data/models/invoice_form_data.dart';
 import 'package:resq360/features/chat/screens/invoice_confirm.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 
@@ -283,26 +284,37 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                           );
                           return;
                         }
+
                         final rand = Random().nextInt(999);
                         final user = widget.chat.participants?.firstWhere(
                           (p) => p.participantType == 'USER',
                         );
+                        final providerServiceId =
+                            _selectType.value!.providerServiceId;
 
-                        final userId = user?.participantId;
-                        log('[INVOICE] _selectType.value: ${_selectType.value?.toJson()}');
-                        final invoiceNo =
-                            "INV-${rand.toString().padLeft(3, '0')}";
-                        final invoice = {
-                          'invoiceNo': invoiceNo,
-                          'chatId': widget.chat.id,
-                          'userId': userId,
-                          'providerServiceId': _selectType.value!.providerServiceId,
-                          'serviceCategory': _selectType.value!.name,
-                          'location': locationController.text,
-                          'price': int.tryParse(priceController.text) ?? 0,
-                          'description': serviceController.text,
-                          'date': _selectedDate.value!.toIso8601String(),
-                        };
+                        log(
+                          '[INVOICE] _selectType.value: ${_selectType.value?.toJson()}',
+                        );
+
+                        if (providerServiceId == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Selected service has no ID.',
+                          );
+                          return;
+                        }
+
+                        final invoice = InvoiceFormData(
+                          invoiceNo: 'INV-${rand.toString().padLeft(3, '0')}',
+                          chatId: widget.chat.id,
+                          userId: user?.participantId,
+                          providerServiceId: providerServiceId,
+                          serviceCategory: _selectType.value!.name,
+                          location: locationController.text,
+                          price: int.tryParse(priceController.text) ?? 0,
+                          description: serviceController.text,
+                          date: _selectedDate.value!,
+                        );
 
                         await GeneralDialogs.showCustomDialog<void>(
                           context,

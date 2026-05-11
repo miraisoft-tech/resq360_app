@@ -255,13 +255,17 @@ class _ProviderChatInvoiceCardWidgetState
                         GenText(
                           'Date',
                           weight: FontWeight.w500,
-                          color: appColors.success.shade700,
+                          color:  widget.paymentStatus == PaymentStatus.completed
+                              ? appColors.textColor.shade400
+                              : Colors.white,
                         ),
                         2.verticalSpace,
                         GenText(
                           AppTextUtil.formatDateToString(widget.metadata.date!),
                           size: 12,
-                          color: context.appColors.textColor.shade300,
+                          color:  widget.paymentStatus == PaymentStatus.completed
+                              ? appColors.textColor.shade300
+                              : Colors.white,
                         ),
                         10.verticalSpace,
                       ],
