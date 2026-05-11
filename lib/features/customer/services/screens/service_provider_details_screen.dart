@@ -385,9 +385,7 @@ class _ServiceProviderDetailsScreenState
                                                   ),
                                               2.horizontalSpace,
                                               GenText(
-                                                provider.distance != null
-                                                    ? '${(provider.distance! / 1000).toStringAsFixed(1)} km'
-                                                    : 'N/A',
+                                                '${provider.distanceKM} km',
                                                 size: 12,
                                                 color: colors.neutral.shade300,
                                               ),

@@ -20,6 +20,7 @@ class RecommendedCard extends StatelessWidget {
 
     final rating = advertisement.provider?.averageRating ?? 0;
     final reviewCount = advertisement.provider?.totalReviews ?? 0;
+    final location = advertisement.provider!.providerServices?.first.service?.distanceKM ?? 'N/A';
 
     return Container(
       padding: pad(horizontal: 5, vertical: 14),
@@ -93,7 +94,7 @@ class RecommendedCard extends StatelessWidget {
                       color: colors.neutral.shade300,
                     ),
                     2.horizontalSpace,
-                    GenText('N/A', size: 12, color: colors.neutral.shade300),
+                    GenText('$location km', size: 12, color: colors.neutral.shade300),
                   ],
                 ),
                 8.verticalSpace,

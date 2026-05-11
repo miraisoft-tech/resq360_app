@@ -409,7 +409,7 @@ class _ProviderCard extends StatelessWidget {
     final colors = context.appColors;
 
     final isOnline = provider.activityStatus?.toLowerCase() == 'online';
-    final distanceInMeters = provider.distance ?? 0.0;
+    final distanceInKm = provider.distanceKM ?? 0.0;
 
     return GestureDetector(
       onTap: onTap,
@@ -473,7 +473,7 @@ class _ProviderCard extends StatelessWidget {
                             ),
                             2.horizontalSpace,
                             GenText(
-                              AppTextUtil.formatDistance(distanceInMeters),
+                             distanceInKm.toString(),
                               size: 12,
                               color: colors.neutral.shade300,
                             ),

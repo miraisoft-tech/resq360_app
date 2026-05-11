@@ -13,6 +13,8 @@ class Service {
     required this.updatedAt,
     required this.status,
     required this.providerServiceId,
+    this.distanceM,
+    this.distanceKM,
   });
 
   factory Service.fromJson(Map<String, dynamic> json) {
@@ -21,9 +23,10 @@ class Service {
           json['id'] is int
               ? json['id'] as int
               : int.tryParse(json['id'].toString()) ?? 0,
-      providerServiceId: json['providerServiceId'] is int
-    ? json['providerServiceId'] as int
-    : int.tryParse(json['providerServiceId']?.toString() ?? ''),
+      providerServiceId:
+          json['providerServiceId'] is int
+              ? json['providerServiceId'] as int
+              : int.tryParse(json['providerServiceId']?.toString() ?? ''),
       name: json['name']?.toString() ?? '',
       image: json['image']?.toString() ?? '',
       imageId: json['imageId']?.toString(),
@@ -32,6 +35,8 @@ class Service {
       createdAt: json['createdAt']?.toString() ?? '',
       updatedAt: json['updatedAt']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
+      distanceKM: json['distanceKm'] as num?,
+      distanceM: json['distanceM'] as num?,
     );
   }
 
@@ -45,6 +50,8 @@ class Service {
   final String createdAt;
   final String updatedAt;
   final String status;
+  final num? distanceM;
+  final num? distanceKM;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -57,6 +64,8 @@ class Service {
     'createdAt': createdAt,
     'updatedAt': updatedAt,
     'status': status,
+    'distanceM': distanceM,
+    'distanceKM': distanceKM,
   };
 
   @override
@@ -125,8 +134,8 @@ class ServiceProvider {
       serviceName: json['serviceName']?.toString(),
       providerServiceId: json['providerServiceId'] as int?,
       phoneNumber: json['phoneNumber'] as String?,
-      distanceKM: json['distanceKM'] as num?,
-      distanceM: json['distanceM'] as num?,
+      distanceKM: json['distanceKm'] as num?,
+      distanceM: json['distanceM']  as num?,
     );
   }
 

@@ -1,7 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/models/booking_enums.dart';
-import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
 // import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
@@ -416,13 +415,13 @@ class _ServiceCard extends StatelessWidget {
                     height: 20.5,
                   ),
                 },
-                if (showActions)
-                  GenText(
-                    '${AppTextUtil.formatDistance(2)} away',
-                    size: 12,
-                    color: appColors.neutral.shade300,
-                  ),
-                2.verticalSpace,
+                // if (showActions)
+                //   GenText(
+                //     '${AppTextUtil.formatDistance(2)} away',
+                //     size: 12,
+                //     color: appColors.neutral.shade300,
+                //   ),
+                // 2.verticalSpace,
                 Row(
                   children: [
                     const Icon(Icons.star, color: Colors.amber, size: 16),
