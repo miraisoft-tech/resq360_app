@@ -661,8 +661,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
   }
 
-  // Replace the attachment menu handlers in _ChatDetailViewState
-
   Future<void> _showAttachmentMenu(
     BuildContext context,
     ChatResponse chat,
@@ -712,8 +710,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
     ];
 
-    final isPaymentStatusEmpty = chat.paymentStatus?.isEmpty;
-    if (isPaymentStatusEmpty == null) return;
     if (isProvider) {
       menuItems.add(
         PopupMenuItem<String>(
@@ -871,7 +867,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
     final chat = currentState.chat;
 
-    // Determine the other user's ID and name
     final otherUserId = isCustomer ? chat.provider?.id : chat.user?.id;
 
     if (otherUserId == null) return;

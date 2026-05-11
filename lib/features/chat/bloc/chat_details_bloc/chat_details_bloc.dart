@@ -53,10 +53,9 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     Emitter<ChatDetailState> emit,
   ) async {
     try {
-      // Check cache first - show cached data immediately if available
+     
       final cachedData = _cache.getCachedData(event.chatId);
       if (cachedData != null) {
-        // Emit cached data immediately (no loading state)
         emit(
           ChatDetailReady(
             chat: cachedData.chat,
@@ -67,14 +66,14 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
           ),
         );
 
-        // Connect socket
+       
         await _connectSocket();
 
         await _refreshInBackground(event.chatId, emit);
         return;
       }
 
-      // No cache - show loading and fetch fresh data
+   
       emit(ChatDetailLoading());
 
       final chatResult = await _repo.getChatById(event.chatId);
@@ -98,7 +97,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final chat = chatResult.data!;
       final messagesData = messagesResult.data!;
 
-      // Cache the data
+    
       _cache.cacheData(
         chatId: event.chatId,
         chat: chat,
@@ -122,7 +121,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     }
   }
 
-  /// Refresh data in background without showing loading state
+  
   Future<void> _refreshInBackground(
     int chatId,
     Emitter<ChatDetailState> emit,
@@ -136,7 +135,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final chat = chatResult.data!;
       final messagesData = messagesResult.data!;
 
-      // Update cache
       _cache.cacheData(
         chatId: chatId,
         chat: chat,
@@ -146,17 +144,16 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
         hasMoreMessages: messagesData.page < messagesData.totalPages,
       );
 
-      // Only update if still in ready state
+     
       if (state is ChatDetailReady) {
         final current = state as ChatDetailReady;
 
-        // Check if messages changed
         final hasNewerMessages =
             messagesData.messages.isNotEmpty &&
             current.messages.isNotEmpty &&
             messagesData.messages.first.id != current.messages.first.id;
 
-        // Check if chat data changed (e.g., paymentStatus)
+        
         final chatDataChanged =
             current.chat.paymentStatus != chat.paymentStatus;
 
@@ -226,7 +223,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final newMessages = [localMessage, ...current.messages];
 
-    // Update cache
     _cache.updateMessages(chatId: chatId, messages: newMessages);
 
     emit(
@@ -239,12 +235,12 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       invoiceRequest: event.invoice,
     );
 
-    // Get the CURRENT state after API call (not the old captured state)
+    
     final latestState = state;
     if (latestState is! ChatDetailReady) return;
 
     if (result.data == null) {
-      // Remove the local message on failure
+    
       final messagesWithoutLocal =
           latestState.messages.where((m) => m.id != localMessageId).toList();
       emit(
@@ -255,8 +251,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       return;
     }
 
-    // Replace local message with confirmed message from server
-    // Also remove any duplicate that might have come from socket
+   
     final confirmedId = result.data!.id;
     final confirmedMessages =
         latestState.messages
@@ -266,10 +261,10 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     final finalMessages = [result.data!, ...confirmedMessages]..sort((a, b) {
       final aTime = a.createdAt ?? DateTime.now();
       final bTime = b.createdAt ?? DateTime.now();
-      return bTime.compareTo(aTime); // Descending: newest first
+      return bTime.compareTo(aTime);
     });
 
-    // Update cache with confirmed message
+    
     _cache.updateMessages(chatId: chatId, messages: finalMessages);
 
     emit(
@@ -324,8 +319,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     return;
   }
 
-  // Keep optimistic message — socket will eventually confirm or refresh will sync
-  // Log the full response shape for future model mapping
   log('[INVOICE] raw response: ${result.data}');
 }
 
@@ -350,7 +343,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final newMessages = [localMessage, ...current.messages];
 
-    // Update cache
     _cache.updateMessages(chatId: chatId, messages: newMessages);
 
     emit(
@@ -447,20 +439,16 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final current = state as ChatDetailReady;
 
-    // Check if message already exists (avoid duplicates)
     final messageExists = current.messages.any(
       (m) => m.id == event.message.id,
     );
     if (messageExists) return;
 
-    // Add new message and sort by createdAt descending (newest first)
     final newMessages = [event.message, ...current.messages]..sort((a, b) {
       final aTime = a.createdAt ?? DateTime.now();
       final bTime = b.createdAt ?? DateTime.now();
-      return bTime.compareTo(aTime); // Descending: newest first
+      return bTime.compareTo(aTime);
     });
-
-    // Update cache with new messages
     _cache.updateMessages(chatId: chatId, messages: newMessages);
 
     emit(
@@ -483,7 +471,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final messagesData = result.data!;
 
-    // Update cache
     _cache.updateMessages(
       chatId: chatId,
       messages: messagesData.messages,
@@ -524,10 +511,8 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final messagesData = result.data!;
 
-    // Append older messages to the end of the list
     final allMessages = [...current.messages, ...messagesData.messages];
 
-    // Update cache
     _cache.updateMessages(
       chatId: chatId,
       messages: allMessages,
@@ -570,8 +555,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       emit(ChatDetailActionFailure(error: e.toString()));
     }
   }
-
-  /// Save current state to cache before closing
+  
   void _saveToCache() {
     if (state is ChatDetailReady) {
       final current = state as ChatDetailReady;
