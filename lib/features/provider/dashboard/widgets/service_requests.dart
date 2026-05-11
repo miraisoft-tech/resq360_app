@@ -76,7 +76,7 @@ class _ServiceRequestsState extends State<ServiceRequests> {
                 (booking) => _RequestTile(
                   name: booking.user?.fullName ?? 'Unknown User',
                   service: booking.serviceCategory?.name ?? 'Unknown Service',
-                  // distance: '1.0 km Away',
+                  distance: '1.0 km Away',
                   user: booking.user, chatId: booking.chatId,
                 ),
               ),

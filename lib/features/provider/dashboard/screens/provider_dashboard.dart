@@ -17,9 +17,9 @@ import 'package:resq360/features/provider/dashboard/screens/promote_service_scre
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/advertisement_countdown_timer.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
-import 'package:resq360/features/provider/dashboard/widgets/provider_ongoing_service.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_stats_card.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_todo.dart';
+import 'package:resq360/features/provider/dashboard/widgets/provider_upcoming_service.dart';
 import 'package:resq360/features/provider/dashboard/widgets/service_requests.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
@@ -63,7 +63,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     );
 
     context.read<ProviderServiceBloc>().add(
-      ProviderFetchBookings(status: BookingStatus.ongoing.value),
+      ProviderFetchBookings(status: BookingStatus.upcoming.value),
     );
   }
 
@@ -76,7 +76,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
         if (state is BookingStarted) {
           await showSuccessSnackbar(context, 'Service started successfully');
           context.read<ProviderServiceBloc>().add(
-            ProviderFetchBookings(status: BookingStatus.ongoing.value),
+            ProviderFetchBookings(status: BookingStatus.upcoming.value),
           );
         }
         if (state is BookingError) {
@@ -177,7 +177,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
 
                     context.read<ProviderServiceBloc>().add(
                       ProviderFetchBookings(
-                        status: BookingStatus.ongoing.value,
+                        status: BookingStatus.upcoming.value,
                       ),
                     );
                     context.read<CustomerAdvertisementBloc>().add(
@@ -311,7 +311,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                         ),
                                       );
                                     },
-                                    child: ProviderOngoingService(
+                                    child: ProviderUpcomingService(
                                       booking: booking,
                                     ),
                                   ),

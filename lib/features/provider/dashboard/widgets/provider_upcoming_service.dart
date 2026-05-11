@@ -4,14 +4,14 @@ import 'package:resq360/core/models/booking_enums.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 
-class ProviderOngoingService extends StatefulWidget {
-  const ProviderOngoingService({required this.booking, super.key});
+class ProviderUpcomingService extends StatefulWidget {
+  const ProviderUpcomingService({required this.booking, super.key});
   final Bookings booking;
   @override
-  State<ProviderOngoingService> createState() => _ProviderOngoingServiceState();
+  State<ProviderUpcomingService> createState() => _ProviderUpcomingServiceState();
 }
 
-class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
+class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -26,7 +26,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
       child: Col(
         children: [
           UrbText(
-            'Ongoing Service',
+            'upcoming Service',
             size: 18,
             weight: FontWeight.w700,
             color: colors.black,
@@ -158,11 +158,11 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                                     },
                             style: ButtonStyle(
                               backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                    (states) {
-                                      return colors.primary.shade500;
-                                    },
-                                  ),
+                                  WidgetStateProperty.resolveWith<Color>((
+                                    states,
+                                  ) {
+                                    return colors.primary.shade500;
+                                  }),
                               foregroundColor: WidgetStateProperty.all(
                                 colors.whiteColor,
                               ),
