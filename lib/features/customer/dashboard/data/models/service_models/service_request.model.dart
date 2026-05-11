@@ -89,6 +89,8 @@ class ServiceProvider {
     required this.providerServiceId,
     this.fullName,
     this.phoneNumber,
+    this.distanceM,
+    this.distanceKM,
   });
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
@@ -123,6 +125,8 @@ class ServiceProvider {
       serviceName: json['serviceName']?.toString(),
       providerServiceId: json['providerServiceId'] as int?,
       phoneNumber: json['phoneNumber'] as String?,
+      distanceKM: json['distanceKM'] as num?,
+      distanceM: json['distanceM'] as num?,
     );
   }
 
@@ -144,6 +148,8 @@ class ServiceProvider {
   final int? providerServiceId;
   final String? phoneNumber;
   final String? fullName;
+  final num? distanceM;
+  final num? distanceKM;
 }
 
 class ProviderService {
