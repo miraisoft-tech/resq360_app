@@ -353,10 +353,6 @@ class _BookingCardState extends State<BookingCard> {
     final end = data.completedAt?.formatTime ?? '--';
 
     final status = data.status?.capitalize ?? 'Unknown';
-    final canShow =
-        data.status == 'COMPLETED' ||
-        data.status == 'CANCELLED' ||
-        data.status == 'ASSIGNED';
 
     final method = data.paymentMethod ?? 'Unknown';
 
@@ -375,7 +371,6 @@ class _BookingCardState extends State<BookingCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// --- Header Row
             Row(
               children: [
                 PictureWidget(
@@ -401,7 +396,6 @@ class _BookingCardState extends State<BookingCard> {
                       ),
                       Row(
                         children: [
-                          if (canShow) ...{
                             AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
                             4.horizontalSpace,
                             GenText(
@@ -411,7 +405,6 @@ class _BookingCardState extends State<BookingCard> {
                               weight: FontWeight.w400,
                               color: colors.black,
                             ),
-                          },
                         ],
                       ),
                     ],
@@ -510,7 +503,6 @@ class _BookingCardState extends State<BookingCard> {
                   const ListDivider(verticalSpacing: 15),
                 ],
               ),
-            if (canShow)
               GestureDetector(
                 onTap: expandCard,
                 child: Row(
@@ -538,8 +530,6 @@ class _BookingCardState extends State<BookingCard> {
     );
   }
 }
-
-/// --- Booking Info Row
 class _InfoRow extends StatelessWidget {
   const _InfoRow({
     required this.icon,

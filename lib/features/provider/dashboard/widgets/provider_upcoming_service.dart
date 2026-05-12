@@ -89,7 +89,9 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                               2.horizontalSpace,
                               Expanded(
                                 child: GenText(
-                                  'Unknown location',
+                                  widget.booking.distanceKM != null
+                                      ? '${widget.booking.distanceKM!.toStringAsFixed(2)} km away'
+                                      : 'Distance unknown',
                                   height: 24.5,
                                   weight: FontWeight.w400,
                                   color: colors.neutral.shade400,
