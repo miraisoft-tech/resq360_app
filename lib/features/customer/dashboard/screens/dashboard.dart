@@ -57,16 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initDashboard() async {
     final isGuest = await AuthLocalRepo.instance.getGuestMode();
-    // if (!_isGuest) {
-    //   final unreadCount =
-    //       await NotificationRepo.instance.getUnreadNotificationCount();
-    //   if (!mounted) return;
-    //   setState(() {
-    //     _unreadCount = unreadCount;
-    //   });
-    // }
 
     if (!mounted) return;
+
     setState(() {
       _isGuest = isGuest;
     });
@@ -74,12 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!_isGuest) {
         context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
-        final unreadCount =
-            await NotificationRepo.instance.getUnreadNotificationCount();
-        if (!mounted) return;
-        setState(() {
-          _unreadCount = unreadCount;
-        });
+
+        context.read<CustomerBookingBloc>().add(
+          FetchCustomerBookings(status: BookingStatus.ongoing.value),
+        );
       }
 
       context.read<ServiceCatalogBloc>().add(const FetchServices());
@@ -93,9 +84,14 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       if (!_isGuest) {
-        context.read<CustomerBookingBloc>().add(
-          FetchCustomerBookings(status: BookingStatus.ongoing.value),
-        );
+        final unreadCount =
+            await NotificationRepo.instance.getUnreadNotificationCount();
+
+        if (!mounted) return;
+
+        setState(() {
+          _unreadCount = unreadCount;
+        });
       }
     });
   }
@@ -199,29 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: RefreshIndicator(
                 color: colors.primary,
                 onRefresh: () async {
-                  if (!_isGuest) {
-                    context.read<CustomerAuthBloc>().add(
-                      const CustomergetUserProfile(),
-                    );
-                  }
-
-                  context.read<ServiceCatalogBloc>().add(const FetchServices());
-                  context.read<CustomerAdvertisementBloc>().add(
-                    const FetchProviderAdvertisements(),
-                  );
-
-                  context.read<CustomerAdvertisementBloc>().add(
-                    CustomerFetchAdvertisement(
-                      creatorType: CreatorType.admin.name,
-                    ),
-                  );
-                  if (!_isGuest) {
-                    context.read<CustomerBookingBloc>().add(
-                      FetchCustomerBookings(
-                        status: BookingStatus.ongoing.value,
-                      ),
-                    );
-                  }
+                  await _initDashboard();
                 },
                 child: ListView(
                   padding: EdgeInsets.only(

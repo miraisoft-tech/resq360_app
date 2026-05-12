@@ -48,14 +48,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   }
 
   Future<void> _initDashboard() async {
-    final unreadCount =
-        await NotificationRepo.instance.getUnreadNotificationCount();
-
-    if (!mounted) return;
-    setState(() {
-      _unreadCount = unreadCount;
-    });
-
     context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
 
     context.read<CustomerAdvertisementBloc>().add(
@@ -65,6 +57,15 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     context.read<ProviderServiceBloc>().add(
       ProviderFetchBookings(status: BookingStatus.upcoming.value),
     );
+
+    final unreadCount =
+        await NotificationRepo.instance.getUnreadNotificationCount();
+
+    if (!mounted) return;
+
+    setState(() {
+      _unreadCount = unreadCount;
+    });
   }
 
   @override
@@ -171,20 +172,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    context.read<ProviderAuthBloc>().add(
-                      const ProvidergetProviderProfile(),
-                    );
-
-                    context.read<ProviderServiceBloc>().add(
-                      ProviderFetchBookings(
-                        status: BookingStatus.upcoming.value,
-                      ),
-                    );
-                    context.read<CustomerAdvertisementBloc>().add(
-                      CustomerFetchAdvertisement(
-                        creatorType: CreatorType.admin.name,
-                      ),
-                    );
+                    await _initDashboard();
                   },
 
                   color: colors.primary.shade500,
