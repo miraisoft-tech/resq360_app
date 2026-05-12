@@ -29,9 +29,7 @@ class ProviderServiceBloc
       emit(ProviderBookingsLoaded(result.data!));
     } else {
       emit(
-        ProviderServicesError(
-          error: result.error ?? 'Failed to book service',
-        ),
+        ProviderServicesError(error: result.error ?? 'Failed to book service'),
       );
     }
   }
@@ -97,7 +95,7 @@ class ProviderServiceBloc
         review: event.review,
       );
 
-      if (!result.isSuccess) {
+      if (result.error?.isNotEmpty ?? false) {
         emit(
           ProviderServicesError(
             error: result.error ?? 'Failed to complete booking',

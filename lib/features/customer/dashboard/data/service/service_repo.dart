@@ -377,7 +377,7 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
-  Future<ApiResult<void>> completeServiceBooking(
+  Future<ApiResult<bool>> completeServiceBooking(
     int serviceRequestId, {
     required int ratings,
     required String review,
@@ -389,12 +389,13 @@ class ServiceRepo extends BaseAPI {
       log('POST $url => ${res.statusCode}');
 
       if (res.statusCode == 200) {
-        return ApiResult();
+        return ApiResult(data: true);
       } else {
         return ApiResult(
           error:
               res.data?['message']?.toString() ??
               'Failed to complete service booking',
+          data: false
         );
       }
     } on DioException catch (e) {

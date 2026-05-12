@@ -273,6 +273,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                           ChatServiceDetailScreen(
                             chat: state.chat,
                             message: serviceMessage,
+                            userType: widget.userType,
                           ),
                         );
                       },
