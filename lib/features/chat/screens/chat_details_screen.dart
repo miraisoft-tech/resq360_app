@@ -214,8 +214,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
           final canShowServiceDetails =
               state is ChatDetailReady &&
-              isProvider &&
-              state.chat.paymentStatus == PaymentStatus.completed.value &&
               state.messages.any(
                 (m) =>
                     m.messageType == MessageReceivedType.invoice.value &&
@@ -260,8 +258,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   ),
                   const ListDivider(),
                   Expanded(child: _buildChatContent(state)),
-                  if (isProvider &&
-                      canShowServiceDetails )
+                  if ( canShowServiceDetails )
                     GestureDetector(
                       onTap: () async {
                         final serviceMessage = state.messages.firstWhere(
