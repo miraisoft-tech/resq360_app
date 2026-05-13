@@ -58,8 +58,6 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    final companyName = widget.chat.provider?.fullName ?? '';
-
     final clientName = widget.chat.user?.fullName ?? '';
 
     final serviceRequestId = widget.chat.serviceRequestId;
@@ -146,27 +144,29 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
 
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, state) {
-                  var providerRating = '0.0';
-
-                  var providerReviews = '(0 reviews)';
-
-                  if (state is ProviderRatingsLoaded) {
-                    providerRating =
-                        state.ratings.averageRatings?.toStringAsFixed(1) ??
-                        '0.0';
-
-                    providerReviews =
-                        '(${state.ratings.totalReviews ?? 0} reviews)';
+                  if (state is! RatingsLoaded) {
+                    return const SizedBox();
                   }
 
+                  final loaded = state;
+
+                  final providerRating =
+                      loaded.providerRatings?.averageRatings?.toStringAsFixed(
+                        1,
+                      ) ??
+                      '0.0';
+
+                  final providerReviews =
+                      '(${loaded.providerRatings?.totalReviews ?? 0} reviews)';
+
                   return _ServiceCard(
-                    name: companyName,
+                    name: providerName,
                     subtitle: serviceCategory,
                     rating: providerRating,
                     reviewCount: providerReviews,
                     avatar: widget.chat.provider?.profileImage ?? '',
                     phoneNumber: providerPhoneNumber,
-                    showActions: !isCompleted,
+                    showActions: true,
                   );
                 },
               ),
@@ -175,20 +175,15 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
 
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, state) {
-                  var customerRating = '0.0';
-
-                  var customerReviews = '(0 reviews)';
-
-                  if (state is CustomerRatingsLoaded) {
-                    customerRating =
-                        state.ratings.averageRatings?.toStringAsFixed(1) ??
-                        '0.0';
-
-                    final count = state.ratings.totalReviews ?? 0;
-
-                    customerReviews =
-                        count == 1 ? '($count review)' : '($count reviews)';
-                  }
+                  final loaded =
+                      state is RatingsLoaded ? state : const RatingsLoaded();
+                  final customerRating =
+                      loaded.customerRatings?.averageRatings?.toStringAsFixed(
+                        1,
+                      ) ??
+                      '0.0';
+                  final customerReviews =
+                      '(${loaded.customerRatings?.totalReviews ?? 0} reviews)';
 
                   return _ServiceCard(
                     name: clientName,
@@ -196,7 +191,7 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
                     rating: customerRating,
                     reviewCount: customerReviews,
                     avatar: widget.chat.user?.profileImage ?? '',
-                    showActions: !isCompleted,
+                    showActions: true,
                   );
                 },
               ),
@@ -308,7 +303,6 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
                     ),
                   ],
 
-                  // ✅ COMPLETED STATE
                   if (isCompleted) ...[
                     Expanded(
                       child: WideButton(
@@ -321,27 +315,29 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
                       ),
                     ),
                     12.horizontalSpace,
-                    Expanded(
-                      child: WideButton(
-                        label: 'Rate',
-                        backgroundColor: appColors.primary.shade500,
-                        textColor: appColors.whiteColor,
-                        onPressed: () async {
-                          if (serviceRequestId == null || providerId == null) {
-                            return;
-                          }
+                    if (!_isProvider)
+                      Expanded(
+                        child: WideButton(
+                          label: 'Rate',
+                          backgroundColor: appColors.primary.shade500,
+                          textColor: appColors.whiteColor,
+                          onPressed: () async {
+                            if (serviceRequestId == null ||
+                                providerId == null) {
+                              return;
+                            }
 
-                          await pushScreen(
-                            context,
-                            RateProviderScreen(
-                              serviceRequestId: serviceRequestId,
-                              providerId: providerId,
-                              providerName: providerName,
-                            ),
-                          );
-                        },
+                            await pushScreen(
+                              context,
+                              RateProviderScreen(
+                                serviceRequestId: serviceRequestId,
+                                providerId: providerId,
+                                providerName: providerName,
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
                   ],
                 ],
               ),

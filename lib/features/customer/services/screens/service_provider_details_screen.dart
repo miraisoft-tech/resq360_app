@@ -314,7 +314,7 @@ class _ServiceProviderDetailsScreenState
                                                   ratingState,
                                                 ) {
                                                   if (ratingState
-                                                      is ProviderRatingsLoaded) {
+                                                      is RatingsLoaded) {
                                                     return Row(
                                                       children: [
                                                         UrbText(
@@ -510,9 +510,9 @@ class _ServiceProviderDetailsScreenState
                                       );
                                     }
 
-                                    if (ratingState is ProviderRatingsLoaded) {
-                                      final ratings = ratingState.ratings;
-                                      final reviews = ratings.reviews ?? [];
+                                    if (ratingState is RatingsLoaded) {
+                                      final ratings = ratingState.providerRatings;
+                                      final reviews = ratings?.reviews ?? [];
 
                                       return Column(
                                         crossAxisAlignment:
@@ -520,11 +520,11 @@ class _ServiceProviderDetailsScreenState
                                         children: [
                                           ReviewSummaryCard(
                                             averageRating:
-                                                ratings.averageRatings
+                                                ratings?.averageRatings
                                                     ?.toDouble() ??
                                                 0,
                                             totalReviews:
-                                                ratings.totalReviews ?? 0,
+                                                ratings?.totalReviews ?? 0,
                                           ),
 
                                           16.verticalSpace,

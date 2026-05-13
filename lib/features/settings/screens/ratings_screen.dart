@@ -59,8 +59,8 @@ class _RatingScreenState extends State<RatingScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is ProviderRatingsLoaded) {
-            final reviews = state.ratings.reviews ?? [];
+          if (state is RatingsLoaded) {
+            final reviews = state.providerRatings?.reviews ?? [];
 
             if (reviews.isEmpty) {
               return EmptyScreenWidget(
@@ -75,9 +75,9 @@ class _RatingScreenState extends State<RatingScreen> {
               child: ListView(
                 children: [
                   RatingSummaryWidget<ProviderReview>(
-                    average: state.ratings.averageRatings ?? 0,
-                    totalReviews: state.ratings.totalReviews ?? 0,
-                    reviews: state.ratings.reviews ?? [],
+                    average: state.providerRatings?.averageRatings ?? 0,
+                    totalReviews: state.providerRatings?.totalReviews ?? 0,
+                    reviews: state.providerRatings?.reviews ?? [],
                     extractRating: (review) => review.overallRating ?? 0,
                   ),
 
@@ -108,8 +108,8 @@ class _RatingScreenState extends State<RatingScreen> {
           }
 
           // ---------------- CUSTOMER ----------------
-          if (state is CustomerRatingsLoaded) {
-            final reviews = state.ratings.reviews ?? [];
+          if (state is RatingsLoaded) {
+            final reviews = state.customerRatings?.reviews ?? [];
 
             if (reviews.isEmpty) {
               return EmptyScreenWidget(
@@ -118,15 +118,15 @@ class _RatingScreenState extends State<RatingScreen> {
                 subMessage: '',
               );
             }
-            log(state.ratings.averageRatings);
+            log(state.customerRatings?.averageRatings);
             return Padding(
               padding: pad(horizontal: 20, vertical: 16),
               child: ListView(
                 children: [
                   RatingSummaryWidget<CustomerReview>(
-                    average: state.ratings.averageRatings ?? 0,
-                    totalReviews: state.ratings.totalReviews ?? 0,
-                    reviews: state.ratings.reviews ?? [],
+                    average: state.customerRatings?.averageRatings ?? 0,
+                    totalReviews: state.customerRatings?.totalReviews ?? 0,
+                    reviews: state.customerRatings?.reviews ?? [],
                     extractRating: (review) => review.overallRating ?? 0,
                   ),
 

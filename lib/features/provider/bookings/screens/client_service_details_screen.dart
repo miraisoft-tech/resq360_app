@@ -1,10 +1,14 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/models/booking_enums.dart';
-import 'package:resq360/features/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
+import 'package:resq360/features/provider/bookings/screens/client_service_completed_screen.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/service_details_shared.dart';
 
 class ClientServiceDetailScreen extends StatefulWidget {
@@ -55,9 +59,14 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
     final clientPhoneNumber = widget.booking.user?.phoneNumber ?? '';
     final providerPhoneNumber =
         widget.booking.assignedProvider?.phoneNumber ?? '';
-    final showActions =
-        widget.booking.status?.toUpperCase() != BookingEnums.completed.name;
     final status = widget.booking.status;
+
+    final isAssigned =
+        status?.toUpperCase() == BookingEnums.assigned.name.toUpperCase();
+    final isProgress =
+        status?.toUpperCase() == BookingEnums.progress.name.toUpperCase();
+    final isCompleted =
+        status?.toUpperCase() == BookingEnums.completed.name.toUpperCase();
 
     return MultiBlocListener(
       listeners: [
@@ -71,6 +80,14 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
               await pop(context);
               await showSuccessSnackbar(context, 'Service has started');
               await pop(context);
+            }
+
+            if (state is BookingCompleted) {
+              await pop(context);
+              await showSuccessSnackbar(
+                context,
+                'Service has been marked as completed',
+              );
             }
 
             if (state is BookingError) {
@@ -105,17 +122,18 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
             children: [
               12.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
-                builder: (context, ratingsState) {
-                  var providerRating = '0.0';
-                  var providerReviewCount = '(0 reviews)';
+                builder: (context, state) {
+                  final loaded =
+                      state is RatingsLoaded ? state : const RatingsLoaded();
 
-                  if (ratingsState is ProviderRatingsLoaded) {
-                    final ratings = ratingsState.ratings;
-                    providerRating =
-                        ratings.averageRatings?.toStringAsFixed(1) ?? '0.0';
-                    providerReviewCount =
-                        '(${ratings.totalReviews ?? 0} reviews)';
-                  }
+                  final providerRating =
+                      loaded.providerRatings?.averageRatings?.toStringAsFixed(
+                        1,
+                      ) ??
+                      '0.0';
+
+                  final providerReviewCount =
+                      '(${loaded.providerRatings?.totalReviews ?? 0} reviews)';
 
                   return ServicePersonCard(
                     name: providerName,
@@ -130,20 +148,16 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
               ),
               12.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
-                builder: (context, ratingsState) {
-                  var customerRating = '0.0';
-                  var customerReviewCount = '(0 reviews)';
-
-                  if (ratingsState is CustomerRatingsLoaded) {
-                    final ratings = ratingsState.ratings;
-                    final totalReviews = ratings.totalReviews ?? 0;
-                    customerRating =
-                        ratings.averageRatings?.toStringAsFixed(1) ?? '0.0';
-                    customerReviewCount =
-                        totalReviews > 1
-                            ? '($totalReviews reviews)'
-                            : '($totalReviews review)';
-                  }
+                builder: (context, state) {
+                  final loaded =
+                      state is RatingsLoaded ? state : const RatingsLoaded();
+                  final customerRating =
+                      loaded.customerRatings?.averageRatings?.toStringAsFixed(
+                        1,
+                      ) ??
+                      '0.0';
+                  final customerReviewCount =
+                      '(${loaded.customerRatings?.totalReviews ?? 0} reviews)';
 
                   return ServicePersonCard(
                     name: clientName,
@@ -160,9 +174,9 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
               16.verticalSpace,
               ServiceDetailInvoiceCard(invoiceNum: invoiceNum, amount: amount),
               const Spacer(),
-              if (showActions)
-                Row(
-                  children: [
+              Row(
+                children: [
+                  if (!isCompleted) ...[
                     Expanded(
                       child: WideButton(
                         label: 'Cancel',
@@ -182,14 +196,11 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
                     12.horizontalSpace,
                     Expanded(
                       child: WideButton(
-                        label:
-                            status == BookingEnums.assigned.name
-                                ? 'Start Service'
-                                : 'Complete',
+                        label: isAssigned ? 'Start Service' : 'Complete',
                         backgroundColor: appColors.primary.shade500,
                         textColor: appColors.whiteColor,
                         onPressed: () async {
-                          if (status == BookingEnums.assigned.name) {
+                          if (isAssigned) {
                             if (serviceRequestId != null) {
                               context.read<BookingBloc>().add(
                                 StartBooking(
@@ -197,12 +208,12 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
                                 ),
                               );
                             }
-                          } else if (status == BookingEnums.progress.name) {
-                            if (widget.booking.id != null) {
+                          } else if (isProgress) {
+                            if (serviceRequestId != null) {
                               await pushScreen(
                                 context,
-                                ServiceCompletedScreen(
-                                  serviceRequestId: widget.booking.id!,
+                                ClientServiceCompletedScreen(
+                                  serviceRequestId: serviceRequestId,
                                 ),
                               );
                             }
@@ -211,11 +222,72 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
                       ),
                     ),
                   ],
-                ),
+                  if (isCompleted) ...[
+                    Expanded(
+                      child: WideButton(
+                        label: 'Appeal',
+                        backgroundColor: appColors.primary.shade50,
+                        textColor: appColors.primary.shade500,
+                        onPressed: () async {
+                          await _handleAppeal(context, serviceRequestId);
+                        },
+                      ),
+                    ),
+                    12.horizontalSpace,
+                    Expanded(
+                      child: WideButton(
+                        label: 'Rate Client',
+                        backgroundColor: appColors.primary.shade500,
+                        textColor: appColors.whiteColor,
+                        onPressed: () async {
+                          // wire to provider's rate client screen
+                        },
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _handleAppeal(
+    BuildContext context,
+    int? serviceRequestId,
+  ) async {
+    if (serviceRequestId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const PaymentAppealDialog(isProvider: true),
+    );
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    showLoadingDialog(context);
+
+    final result = await SupportRepo.instance.fileDispute(
+      requestId: serviceRequestId,
+      reason: 'Service Appeal',
+      details:
+          'Provider filed an appeal for service request #$serviceRequestId',
+    );
+
+    if (!context.mounted) return;
+    Navigator.pop(context);
+
+    if (result.error != null) {
+      await showErrorSnackbar(context, result.error!);
+      return;
+    }
+
+    final chatId = result.data!;
+    await pushScreen(
+      context,
+      ChatDetailScreen(chatId: chatId, userType: UserType.provider),
     );
   }
 }
