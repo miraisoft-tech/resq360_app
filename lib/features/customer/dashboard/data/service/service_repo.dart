@@ -405,6 +405,37 @@ class ServiceRepo extends BaseAPI {
     }
   }
 
+    Future<ApiResult<String>> updateRequestStatus({
+    required int requestId,
+    required String status,
+    String? reason,
+  }) async {
+    final endpoint = '/requests/$requestId/status';
+
+    final data = {
+      'status': status,
+      if (reason != null) 'reason': reason,
+    };
+
+    try {
+      final res = await dio().patch<Map<String, dynamic>>(
+        endpoint,
+        data: data,
+      );
+
+      if (res.statusCode == 200 && res.data != null) {
+        final updatedStatus = res.data!['data']?['status'] as String? ?? status;
+        return ApiResult(data: updatedStatus);
+      }
+
+      return ApiResult(
+        error: res.data?['message'] as String? ?? 'Failed to update request status',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    }
+  }
+
   Future<ApiResult<Map<String, dynamic>>> createServiceRequest({
     required int providerServiceId,
   }) async {
