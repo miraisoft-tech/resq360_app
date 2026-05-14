@@ -13,6 +13,7 @@ import 'package:resq360/features/provider/authentication/data/models/provider_re
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
+import 'package:resq360/features/provider/dashboard/data/bloc/provider_stats_bloc/provider_stats_bloc.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/advertisement_countdown_timer.dart';
@@ -57,6 +58,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     context.read<ProviderServiceBloc>().add(
       ProviderFetchBookings(status: BookingStatus.upcoming.value),
     );
+
+    context.read<ProviderStatsBloc>().add(const FetchProviderStats());
 
     final unreadCount =
         await NotificationRepo.instance.getUnreadNotificationCount();
@@ -187,26 +190,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          BlocBuilder<
-                            ProviderServiceBloc,
-                            ProviderServiceState
-                          >(
+                          BlocBuilder<ProviderStatsBloc, ProviderStatsState>(
                             builder: (context, state) {
-                              if (state is ProviderServicesError) {
-                                const ProviderStatsCard(
-                                  title: 'Engagement',
-                                  value: '-',
-                                  icon:
-                                      AppAssets
-                                          .ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
-                                );
-                              }
-
-                              if (state is ProviderBookingsLoaded) {
-                                final bookings = state.bookings;
+                              if (state is ProviderStatsLoaded) {
                                 return ProviderStatsCard(
                                   title: 'Engagement',
-                                  value: bookings.length.toString(),
+                                  value: (state.stats.completedServicesCount ?? 0).toString(),
                                   icon:
                                       AppAssets
                                           .ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
@@ -222,17 +211,19 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           ),
 
                           16.horizontalSpace,
-                          BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+                          BlocBuilder<ProviderStatsBloc, ProviderStatsState>(
                             builder: (context, state) {
-                              final revenue =
-                                  state is ProviderProfileLoadedState
-                                      ? state.user.wallet?.availableBalance
-                                              ?.toString() ??
-                                          '-'
-                                      : '-';
-                              return ProviderStatsCard(
+                              if (state is ProviderStatsLoaded) {
+                                final revenue = state.stats.totalRevenue?.toString() ?? '-';
+                                return ProviderStatsCard(
+                                  title: 'Revenue',
+                                  value: '₦${AppTextUtil.formatAmount(revenue)}',
+                                  icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
+                                );
+                              }
+                              return const ProviderStatsCard(
                                 title: 'Revenue',
-                                value: '₦${AppTextUtil.formatAmount(revenue)}',
+                                value: '-',
                                 icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
                               );
                             },

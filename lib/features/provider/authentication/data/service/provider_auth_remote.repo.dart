@@ -11,6 +11,7 @@ import 'package:resq360/core/utils/device_id.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/auth_provider.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_stats.model.dart';
 import 'package:resq360/features/settings/data/service/gallery_service.dart';
 
 class ProviderAuthRemoteRepo extends BaseAPI {
@@ -494,6 +495,32 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       return ApiResult(error: e.toString());
     }
   }
+
+  Future<ApiResult<ProviderStats>> getProviderStats() async {
+    const url = '/user/provider/stats';
+
+    try {
+      final res = await dio().get<Map<String, dynamic>>(url);
+
+      log(res.data);
+      if (res.statusCode == 200) {
+        final providerStats = ProviderStats.fromJson(res.data!);
+        return ApiResult(data: providerStats);
+      } else {
+        final error = res.data?['message'];
+        log(error);
+        return ApiResult(
+          error: res.data!['message']?.toString() ?? "failed to get Provider's stats",
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      log(e);
+      return ApiResult(error: e.toString());
+    }
+  }
+
 
   Future<ApiResult<dynamic>> deleteAccount() async {
     try {
