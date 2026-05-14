@@ -25,6 +25,7 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     FetchCustomerRatings event,
     Emitter<RatingsState> emit,
   ) async {
+    emit(RatingsLoading());
     final result = await _repo.customerGetRatings();
     final ratings = result.data;
 
@@ -39,6 +40,7 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     FetchProviderRatings event,
     Emitter<RatingsState> emit,
   ) async {
+    emit(RatingsLoading());
     final result = await _repo.providerGetRatings();
     final ratings = result.data;
 

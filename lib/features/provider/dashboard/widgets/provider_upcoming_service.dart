@@ -8,7 +8,8 @@ class ProviderUpcomingService extends StatefulWidget {
   const ProviderUpcomingService({required this.booking, super.key});
   final Bookings booking;
   @override
-  State<ProviderUpcomingService> createState() => _ProviderUpcomingServiceState();
+  State<ProviderUpcomingService> createState() =>
+      _ProviderUpcomingServiceState();
 }
 
 class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
@@ -16,6 +17,9 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final serviceRequestId = widget.booking.id;
+    final isAssigned =
+        widget.booking.status?.toUpperCase() ==
+        BookingEnums.assigned.name.toUpperCase();
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
@@ -148,7 +152,8 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                             onPressed:
                                 state is BookingLoading
                                     ? null
-                                    : () {
+                                    : isAssigned
+                                    ? () {
                                       log(serviceRequestId);
                                       if (serviceRequestId != null) {
                                         context.read<BookingBloc>().add(
@@ -157,7 +162,8 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                                           ),
                                         );
                                       }
-                                    },
+                                    }
+                                    : null,
                             style: ButtonStyle(
                               backgroundColor:
                                   WidgetStateProperty.resolveWith<Color>((
@@ -185,7 +191,9 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                                       ),
                                     )
                                     : GenText(
-                                      'Start Service',
+                                      isAssigned
+                                          ? 'Start Service'
+                                          : 'In Progress',
                                       height: 16.5,
                                       color: colors.whiteColor,
                                       weight: FontWeight.w500,

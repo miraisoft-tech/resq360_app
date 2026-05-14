@@ -47,18 +47,13 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-    final providerName = widget.booking.assignedProvider?.fullName ?? '';
     final clientName = widget.booking.user?.fullName ?? '';
     final serviceRequestId = widget.booking.id;
     final amount = widget.booking.amount ?? '';
     final invoiceNum = widget.booking.invoiceId ?? '';
-    final providerImage = widget.booking.assignedProvider?.profileImage;
     final clientImage = widget.booking.user?.profileImage;
-    final serviceCategoryName = widget.booking.serviceCategory?.name;
     final chatId = widget.booking.chatId;
     final clientPhoneNumber = widget.booking.user?.phoneNumber ?? '';
-    final providerPhoneNumber =
-        widget.booking.assignedProvider?.phoneNumber ?? '';
     final status = widget.booking.status;
 
     final isAssigned =
@@ -120,32 +115,6 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
           padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 50.h),
           child: Column(
             children: [
-              12.verticalSpace,
-              BlocBuilder<RatingsBloc, RatingsState>(
-                builder: (context, state) {
-                  final loaded =
-                      state is RatingsLoaded ? state : const RatingsLoaded();
-
-                  final providerRating =
-                      loaded.providerRatings?.averageRatings?.toStringAsFixed(
-                        1,
-                      ) ??
-                      '0.0';
-
-                  final providerReviewCount =
-                      '(${loaded.providerRatings?.totalReviews ?? 0} reviews)';
-
-                  return ServicePersonCard(
-                    name: providerName,
-                    subtitle: serviceCategoryName ?? '',
-                    rating: providerRating,
-                    reviewCount: providerReviewCount,
-                    avatar: providerImage ?? '',
-                    chatId: chatId,
-                    phoneNumber: providerPhoneNumber,
-                  );
-                },
-              ),
               12.verticalSpace,
               BlocBuilder<RatingsBloc, RatingsState>(
                 builder: (context, state) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/settings/data/bloc/ratings_bloc/ratings_bloc.dart';
 import 'package:resq360/features/settings/data/models/customer_ratings_model.dart';
 import 'package:resq360/features/settings/data/models/provider_ratings.dart';
@@ -39,11 +40,7 @@ class _RatingScreenState extends State<RatingScreen> {
       appBar: AppBar(
         backgroundColor: appColors.whiteColor,
         forceMaterialTransparency: true,
-        title: const GenText(
-          'Rating',
-          size: 18,
-          weight: FontWeight.w700,
-        ),
+        title: const GenText('Rating', size: 18, weight: FontWeight.w700),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: appColors.black),
@@ -60,105 +57,101 @@ class _RatingScreenState extends State<RatingScreen> {
           }
 
           if (state is RatingsLoaded) {
-            final reviews = state.providerRatings?.reviews ?? [];
+            if (widget.isProvider) {
+              final reviews = state.providerRatings?.reviews ?? [];
 
-            if (reviews.isEmpty) {
-              return EmptyScreenWidget(
-                image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
-                message: 'You do not have any review',
-                subMessage: '',
+              if (reviews.isEmpty) {
+                return EmptyScreenWidget(
+                  image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
+                  message: 'You do not have any review',
+                  subMessage: '',
+                );
+              }
+
+              return Padding(
+                padding: pad(horizontal: 20, vertical: 16),
+                child: ListView(
+                  children: [
+                    RatingSummaryWidget<ProviderReview>(
+                      average: state.providerRatings?.averageRatings ?? 0,
+                      totalReviews: state.providerRatings?.totalReviews ?? 0,
+                      reviews: state.providerRatings?.reviews ?? [],
+                      extractRating: (review) => review.overallRating ?? 0,
+                    ),
+
+                    20.verticalSpace,
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: reviews.length,
+                      separatorBuilder: (_, _) => 14.verticalSpace,
+                      itemBuilder: (context, index) {
+                        final r = reviews[index];
+                        return ReviewCardShared(
+                          name: r.user?.fullName ?? 'N/A',
+                          avatar: r.user?.profileImage ?? '',
+                          category:
+                              r.serviceRequest?.serviceCategory?.name ??
+                              'General',
+                          date: AppTextUtil.formatDateToStringNormal(
+                            DateTime.tryParse(r.ratingDate ?? '').toString(),
+                          ),
+                          rating: r.overallRating ?? 0,
+                          feedback: r.feedback ?? '',
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              final reviews = state.customerRatings?.reviews ?? [];
+
+              if (reviews.isEmpty) {
+                return EmptyScreenWidget(
+                  image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
+                  message: 'You do not have any review',
+                  subMessage: '',
+                );
+              }
+
+              return Padding(
+                padding: pad(horizontal: 20, vertical: 16),
+                child: ListView(
+                  children: [
+                    RatingSummaryWidget<CustomerReview>(
+                      average: state.customerRatings?.averageRatings ?? 0,
+                      totalReviews: state.customerRatings?.totalReviews ?? 0,
+                      reviews: state.customerRatings?.reviews ?? [],
+                      extractRating: (review) => review.overallRating ?? 0,
+                    ),
+
+                    20.verticalSpace,
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: reviews.length,
+                      separatorBuilder: (_, _) => 14.verticalSpace,
+                      itemBuilder: (context, index) {
+                        final r = reviews[index];
+                        return ReviewCardShared(
+                          name: r.provider?.fullName ?? 'N/A',
+                          avatar: r.provider?.profileImage ?? '',
+                          category:
+                              r.serviceRequest?.serviceCategory?.name ??
+                              'General',
+                          date: AppTextUtil.formatDateToStringNormal(
+                            DateTime.tryParse(r.ratingDate ?? '').toString(),
+                          ),
+                          rating: r.overallRating ?? 0,
+                          feedback: r.feedback ?? '',
+                        );
+                      },
+                    ),
+                  ],
+                ),
               );
             }
-
-            return Padding(
-              padding: pad(horizontal: 20, vertical: 16),
-              child: ListView(
-                children: [
-                  RatingSummaryWidget<ProviderReview>(
-                    average: state.providerRatings?.averageRatings ?? 0,
-                    totalReviews: state.providerRatings?.totalReviews ?? 0,
-                    reviews: state.providerRatings?.reviews ?? [],
-                    extractRating: (review) => review.overallRating ?? 0,
-                  ),
-
-                  20.verticalSpace,
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: reviews.length,
-                    separatorBuilder: (_, _) => 14.verticalSpace,
-                    itemBuilder: (context, index) {
-                      return ReviewCardShared<ProviderReview>(
-                        item: reviews[index],
-                        getName: (r) => r.user?.fullName ?? 'N/A',
-                        getAvatar: (r) => r.user?.profileImage ?? '',
-                        getCategory:
-                            (r) =>
-                                r.serviceRequest?.serviceCategory?.name ??
-                                'General',
-                        getDate: (r) => r.ratingDate ?? 'N/A',
-                        getRating: (r) => r.overallRating ?? 0,
-                        getFeedback: (r) => r.feedback ?? '',
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          }
-
-          // ---------------- CUSTOMER ----------------
-          if (state is RatingsLoaded) {
-            final reviews = state.customerRatings?.reviews ?? [];
-
-            if (reviews.isEmpty) {
-              return EmptyScreenWidget(
-                image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
-                message: 'You do not have any review',
-                subMessage: '',
-              );
-            }
-            log(state.customerRatings?.averageRatings);
-            return Padding(
-              padding: pad(horizontal: 20, vertical: 16),
-              child: ListView(
-                children: [
-                  RatingSummaryWidget<CustomerReview>(
-                    average: state.customerRatings?.averageRatings ?? 0,
-                    totalReviews: state.customerRatings?.totalReviews ?? 0,
-                    reviews: state.customerRatings?.reviews ?? [],
-                    extractRating: (review) => review.overallRating ?? 0,
-                  ),
-
-                  20.verticalSpace,
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: reviews.length,
-                    separatorBuilder: (_, _) => 14.verticalSpace,
-                    itemBuilder: (context, index) {
-                      return ReviewCardShared<CustomerReview>(
-                        item: reviews[index],
-                        getName: (r) => r.provider?.fullName ?? 'N/A',
-                        getAvatar: (r) => r.provider?.profileImage ?? '',
-                        getCategory:
-                            (r) =>
-                                r.serviceRequest?.serviceCategory?.name ??
-                                'General',
-                        getDate:
-                            (r) =>
-                                DateTime.tryParse(
-                                  r.ratingDate ?? '',
-                                )?.formatDate ??
-                                'N/A',
-                        getRating: (r) => r.overallRating ?? 0,
-                        getFeedback: (r) => r.feedback ?? '',
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
           }
 
           return const SizedBox.shrink();
@@ -250,11 +243,7 @@ class RatingSummaryWidget<T> extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      GenText(
-                        '$star',
-                        size: 13,
-                        color: colors.black,
-                      ),
+                      GenText('$star', size: 13, color: colors.black),
                       4.horizontalSpace,
                       const Icon(Icons.star, size: 14, color: Colors.orange),
                       6.horizontalSpace,

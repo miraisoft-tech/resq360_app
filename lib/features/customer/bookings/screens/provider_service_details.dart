@@ -161,28 +161,23 @@ class _ProviderServiceDetailScreenState
                     12.horizontalSpace,
                     Expanded(
                       child: WideButton(
-                        label: isAssigned ? 'Start Service' : 'Cancel',
+                        label: isAssigned ? 'Awaiting Provider' : 'Cancel',
                         backgroundColor: appColors.primary.shade500,
                         textColor: appColors.whiteColor,
-                        onPressed: () async {
-                          if (isAssigned) {
-                            if (serviceRequestId != null) {
-                              context.read<BookingBloc>().add(
-                                StartBooking(
-                                  serviceRequestId: serviceRequestId,
-                                ),
-                              );
-                            }
-                          } else if (isProgress) {
-                            if (serviceRequestId == null) return;
-                            await pushScreen(
-                              context,
-                              CancelClientServiceScreen(
-                                serviceRequestId: serviceRequestId,
-                              ),
-                            );
-                          }
-                        },
+                        onPressed:
+                            isAssigned
+                                ? null
+                                : () async {
+                                  if (isProgress) {
+                                    if (serviceRequestId == null) return;
+                                    await pushScreen(
+                                      context,
+                                      CancelClientServiceScreen(
+                                        serviceRequestId: serviceRequestId,
+                                      ),
+                                    );
+                                  }
+                                },
                       ),
                     ),
                   ],

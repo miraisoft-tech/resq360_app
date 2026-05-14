@@ -27,7 +27,6 @@ class ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
     final isReceived = type == MessageType.received;
-    print(status);
 
     return Align(
       alignment: isReceived ? Alignment.centerLeft : Alignment.centerRight,

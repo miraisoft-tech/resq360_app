@@ -143,9 +143,12 @@ class ServicePersonCard extends StatelessWidget {
             SVGButton(
               path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
               onTap: () async {
-                if (chatId != null) {
-                  await navigateToChatByServiceRequest(context, chatId!);
+                if (phoneNumber != null) {
+                  await DialerUtil.openSms(phoneNumber!);
                 }
+                // if (chatId != null) {
+                //   await navigateToChatByServiceRequest(context, chatId!);
+                // }
               },
             ),
             8.horizontalSpace,
