@@ -1,8 +1,4 @@
-enum MessageStatus {
-  sending,
-  sent,
-  failed,
-}
+enum MessageStatus { sending, sent, delivered, read, failed }
 
 class TicketMessage {
   TicketMessage({
@@ -53,10 +49,8 @@ class TicketMessage {
   final MessageStatus status;
   final String? localId;
 
-  
   bool get isLocal => id == -1;
 
-  
   TicketMessage copyWith({
     int? id,
     String? message,

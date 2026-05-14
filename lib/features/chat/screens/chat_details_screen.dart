@@ -258,7 +258,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   ),
                   const ListDivider(),
                   Expanded(child: _buildChatContent(state)),
-                  if ( canShowServiceDetails )
+                  if (canShowServiceDetails)
                     GestureDetector(
                       onTap: () async {
                         final serviceMessage = state.messages.firstWhere(
@@ -1130,6 +1130,7 @@ class _MessageList extends StatelessWidget {
             imageUrls: files,
             time: time,
             isMine: isMine,
+            status: message.status,
           );
         }
 
@@ -1138,6 +1139,7 @@ class _MessageList extends StatelessWidget {
           time: time,
           isMine: isMine,
           caption: message.content != 'Image' ? message.content : null,
+          status: message.status,
         );
 
       case 'DOCUMENT':
@@ -1148,6 +1150,7 @@ class _MessageList extends StatelessWidget {
           time: time,
           isMine: isMine,
           mimeType: message.mimeType,
+          status: message.status,
         );
 
       case 'LOCATION':
@@ -1169,6 +1172,7 @@ class _MessageList extends StatelessWidget {
           address: message.metadata?.address ?? 'Unknown location',
           time: time,
           isMine: isMine,
+          status: message.status,
         );
 
       case 'SERVICE_REQUEST':
@@ -1179,6 +1183,7 @@ class _MessageList extends StatelessWidget {
           type: isMine ? MessageType.sent : MessageType.received,
           message: message.content ?? '',
           time: time,
+          status: message.status,
         );
     }
   }

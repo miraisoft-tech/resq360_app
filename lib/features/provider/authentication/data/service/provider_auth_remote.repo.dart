@@ -503,8 +503,10 @@ class ProviderAuthRemoteRepo extends BaseAPI {
       final res = await dio().get<Map<String, dynamic>>(url);
 
       log(res.data);
-      if (res.statusCode == 200) {
-        final providerStats = ProviderStats.fromJson(res.data!);
+      if (res.statusCode == 200 && res.data?['success'] == true) {
+        final providerStats = ProviderStats.fromJson(
+          res.data!['data'] as Map<String, dynamic>,
+        );
         return ApiResult(data: providerStats);
       } else {
         final error = res.data?['message'];

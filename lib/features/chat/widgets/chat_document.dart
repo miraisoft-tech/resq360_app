@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/theme/app_color_theme.dart';
+import 'package:resq360/features/settings/data/models/ticket_message.model.dart';
 
 class ChatDocumentBubble extends StatefulWidget {
   const ChatDocumentBubble({
@@ -13,6 +15,7 @@ class ChatDocumentBubble extends StatefulWidget {
     required this.time,
     required this.isMine,
     this.mimeType,
+    this.status = MessageStatus.sent,
     super.key,
   });
 
@@ -22,6 +25,7 @@ class ChatDocumentBubble extends StatefulWidget {
   final String time;
   final bool isMine;
   final String? mimeType;
+  final MessageStatus status;
 
   @override
   State<ChatDocumentBubble> createState() => _ChatDocumentBubbleState();
@@ -49,9 +53,7 @@ class _ChatDocumentBubbleState extends State<ChatDocumentBubble> {
                   ? appColors.primary.shade50
                   : appColors.neutral.shade100,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: appColors.neutral.shade200,
-          ),
+          border: Border.all(color: appColors.neutral.shade200),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,11 +128,7 @@ class _ChatDocumentBubbleState extends State<ChatDocumentBubble> {
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.download,
-                          size: 16.sp,
-                          color: Colors.white,
-                        ),
+                        Icon(Icons.download, size: 16.sp, color: Colors.white),
                         4.horizontalSpace,
                         const GenText(
                           'Open',
@@ -147,6 +145,10 @@ class _ChatDocumentBubbleState extends State<ChatDocumentBubble> {
                   size: 11,
                   color: appColors.neutral.shade500,
                 ),
+                if (widget.isMine) ...[
+                  SizedBox(width: 4.w),
+                  _buildStatusIcon(appColors),
+                ],
               ],
             ),
           ],
@@ -237,6 +239,29 @@ class _ChatDocumentBubbleState extends State<ChatDocumentBubble> {
       if (mounted) {
         setState(() => _isDownloading = false);
       }
+    }
+  }
+
+  Widget _buildStatusIcon(AppColorPalette appColors) {
+    switch (widget.status) {
+      case MessageStatus.sending:
+        return Icon(
+          Icons.access_time,
+          size: 12,
+          color: appColors.neutral.shade400,
+        );
+      case MessageStatus.sent:
+        return Icon(Icons.check, size: 12, color: appColors.neutral.shade400);
+      case MessageStatus.delivered:
+        return Icon(
+          Icons.done_all,
+          size: 12,
+          color: appColors.neutral.shade400,
+        );
+      case MessageStatus.read:
+        return Icon(Icons.done_all, size: 12, color: appColors.primary);
+      case MessageStatus.failed:
+        return Icon(Icons.error_outline, size: 12, color: appColors.error);
     }
   }
 }

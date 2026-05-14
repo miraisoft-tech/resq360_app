@@ -1,6 +1,5 @@
 part of 'chat_details_bloc.dart';
 
-
 sealed class ChatDetailsEvent extends Equatable {
   const ChatDetailsEvent();
 
@@ -34,7 +33,13 @@ class SendTextMessage extends ChatDetailEvent {
 }
 
 class SendServiceRequest extends ChatDetailEvent {
-  const SendServiceRequest({required this.chatId, required this.providerServiceId, required this.description, required this.senderId, required this.userType});
+  const SendServiceRequest({
+    required this.chatId,
+    required this.providerServiceId,
+    required this.description,
+    required this.senderId,
+    required this.userType,
+  });
   final int chatId;
   final int providerServiceId;
   final String description;
@@ -42,7 +47,13 @@ class SendServiceRequest extends ChatDetailEvent {
   final String userType;
 
   @override
-  List<Object?> get props => [chatId, providerServiceId, description, senderId, userType];
+  List<Object?> get props => [
+    chatId,
+    providerServiceId,
+    description,
+    senderId,
+    userType,
+  ];
 }
 
 class SendInvoiceMessage extends ChatDetailEvent {
@@ -57,7 +68,7 @@ class SendInvoiceMessage extends ChatDetailEvent {
 class SendServiceRequestInvoice extends ChatDetailEvent {
   const SendServiceRequestInvoice({required this.invoice});
 
- final SendInvoice invoice;
+  final SendInvoice invoice;
 }
 
 class SendImageMessage extends ChatDetailEvent {
@@ -76,6 +87,7 @@ class SendImageMessage extends ChatDetailEvent {
   @override
   List<Object?> get props => [filePaths, senderId, userType, caption];
 }
+
 class SendDocumentMessage extends ChatDetailEvent {
   const SendDocumentMessage({
     required this.filePath,
@@ -119,14 +131,33 @@ class _IncomingMessage extends ChatDetailEvent {
   final MessageResponse message;
 }
 
+/// A single message was marked as delivered by the recipient.
+class _MessageDelivered extends ChatDetailEvent {
+  const _MessageDelivered(this.messageId);
+  final int messageId;
+}
 
+/// All messages in this chat were marked as delivered.
+class _AllMessagesDelivered extends ChatDetailEvent {
+  const _AllMessagesDelivered(this.chatId);
+  final int chatId;
+}
+
+/// A single message was marked as read by the recipient.
+class _MessageRead extends ChatDetailEvent {
+  const _MessageRead(this.messageId);
+  final int messageId;
+}
+
+/// All messages in this chat were marked as read.
+class _AllMessagesRead extends ChatDetailEvent {
+  const _AllMessagesRead(this.chatId);
+  final int chatId;
+}
 
 /// Event to report a chat with a specific reason
 final class ReportChat extends ChatDetailEvent {
-  const ReportChat({
-    required this.chatId,
-    required this.reason,
-  });
+  const ReportChat({required this.chatId, required this.reason});
 
   final int chatId;
   final String reason;
@@ -134,6 +165,7 @@ final class ReportChat extends ChatDetailEvent {
   @override
   List<Object?> get props => [chatId, reason];
 }
+
 final class BlockUser extends ChatDetailEvent {
   const BlockUser({
     required this.userId,
@@ -151,10 +183,7 @@ final class BlockUser extends ChatDetailEvent {
 
 /// Event to unblock a user
 final class UnblockUser extends ChatDetailEvent {
-  const UnblockUser({
-    required this.userId,
-    required this.userType,
-  });
+  const UnblockUser({required this.userId, required this.userType});
 
   final int userId;
   final String userType;

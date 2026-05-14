@@ -32,6 +32,28 @@ class MessageResponse {
   });
 
   factory MessageResponse.fromJson(Map<String, dynamic> json) {
+    final isDelivered = json['isDelivered'] as bool? ?? false;
+    final readReceipts = json['readReceipts'] as List<dynamic>?;
+    final hasBeenRead = readReceipts != null && readReceipts.isNotEmpty;
+
+    MessageStatus parsedStatus;
+    final rawStatus = json['status'] as String?;
+    switch (rawStatus?.toUpperCase()) {
+      case 'READ':
+        parsedStatus = MessageStatus.read;
+      case 'DELIVERED':
+        parsedStatus = MessageStatus.delivered;
+      default:
+        // Derive from flags if server didn't send explicit status
+        if (hasBeenRead) {
+          parsedStatus = MessageStatus.read;
+        } else if (isDelivered) {
+          parsedStatus = MessageStatus.delivered;
+        } else {
+          parsedStatus = MessageStatus.sent;
+        }
+    }
+
     return MessageResponse(
       id: json['id'] as int?,
       chatId: json['chatId'] as int?,
@@ -54,7 +76,7 @@ class MessageResponse {
           json['deletedAt'] == null
               ? null
               : DateTime.parse(json['deletedAt'] as String),
-      isDelivered: json['isDelivered'] as bool?,
+      isDelivered: isDelivered,
       deliveredAt:
           json['deliveredAt'] == null
               ? null
@@ -73,7 +95,8 @@ class MessageResponse {
           json['metadata'] == null
               ? null
               : Metadata.fromJson(json['metadata'] as Map<String, dynamic>),
-      readReceipts: json['readReceipts'] as List<dynamic>?,
+      readReceipts: readReceipts,
+      status: parsedStatus,
     );
   }
 
@@ -130,7 +153,12 @@ class MessageResponse {
     };
   }
 
-  MessageResponse copyWith({MessageStatus? status}) {
+  MessageResponse copyWith({
+    bool? isDelivered,
+    DateTime? deliveredAt,
+    List<dynamic>? readReceipts,
+    MessageStatus? status,
+  }) {
     return MessageResponse(
       id: id,
       chatId: chatId,
@@ -147,14 +175,14 @@ class MessageResponse {
       editedAt: editedAt,
       isDeleted: isDeleted,
       deletedAt: deletedAt,
-      isDelivered: isDelivered,
-      deliveredAt: deliveredAt,
+      isDelivered: isDelivered ?? this.isDelivered,
+      deliveredAt: deliveredAt ?? this.deliveredAt,
       isReported: isReported,
       reportReason: reportReason,
       createdAt: createdAt,
       updatedAt: updatedAt,
       metadata: metadata,
-      readReceipts: readReceipts,
+      readReceipts: readReceipts ?? this.readReceipts,
       status: status ?? this.status,
     );
   }

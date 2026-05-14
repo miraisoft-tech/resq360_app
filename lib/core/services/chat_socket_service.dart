@@ -22,10 +22,20 @@ class ChatSocketService {
       StreamController<Map<String, dynamic>>.broadcast();
   final _messageReadController =
       StreamController<Map<String, dynamic>>.broadcast();
+  final _messageDeliveredController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _allDeliveredController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _allReadController = StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<MessageResponse> get messageStream => _messageController.stream;
   Stream<Map<String, dynamic>> get messageReadStream =>
       _messageReadController.stream;
+  Stream<Map<String, dynamic>> get messageDeliveredStream =>
+      _messageDeliveredController.stream;
+  Stream<Map<String, dynamic>> get allDeliveredStream =>
+      _allDeliveredController.stream;
+  Stream<Map<String, dynamic>> get allReadStream => _allReadController.stream;
 
   bool get isConnected => _socket?.connected ?? false;
 
@@ -151,6 +161,33 @@ class ChatSocketService {
     _socket?.emit('send-message', payload.toJson());
   }
 
+  /// Mark a single message as delivered.
+  void markDelivered({required int messageId, required int chatId}) {
+    if (!isConnected) return;
+    _socket?.emit('message-delivered', {
+      'messageId': messageId,
+      'chatId': chatId,
+    });
+  }
+
+  /// Mark all undelivered messages in a chat as delivered.
+  void markAllDelivered(int chatId) {
+    if (!isConnected) return;
+    _socket?.emit('mark-all-delivered', {'chatId': chatId});
+  }
+
+  /// Mark a single message as read.
+  void markAsRead({required int messageId, required int chatId}) {
+    if (!isConnected) return;
+    _socket?.emit('mark-as-read', {'messageId': messageId, 'chatId': chatId});
+  }
+
+  /// Mark all messages in a chat as read (call when user opens the chat).
+  void markAllRead(int chatId) {
+    if (!isConnected) return;
+    _socket?.emit('mark-all-read', {'chatId': chatId});
+  }
+
   void _handleChatNotification(dynamic data) {
     final notification = data as Map<String, dynamic>;
     final type = notification['type'] as String?;
@@ -175,10 +212,29 @@ class ChatSocketService {
       case 'USER_LEFT':
         _userLeftController.add(notification['data'] as Map<String, dynamic>);
 
+      case 'MESSAGE_DELIVERED':
+        _messageDeliveredController.add(
+          notification['data'] as Map<String, dynamic>,
+        );
+
+      case 'MESSAGES_ALL_DELIVERED':
+        final payload = <String, dynamic>{
+          'chatId': notification['chatId'],
+          ...notification['data'] as Map<String, dynamic>,
+        };
+        _allDeliveredController.add(payload);
+
       case 'MESSAGE_READ':
         _messageReadController.add(
           notification['data'] as Map<String, dynamic>,
         );
+
+      case 'MESSAGES_ALL_READ':
+        final payload = <String, dynamic>{
+          'chatId': notification['chatId'],
+          ...notification['data'] as Map<String, dynamic>,
+        };
+        _allReadController.add(payload);
 
       default:
         log('Unknown type: $type');
@@ -210,5 +266,8 @@ class ChatSocketService {
     await _userJoinedController.close();
     await _userLeftController.close();
     await _messageReadController.close();
+    await _messageDeliveredController.close();
+    await _allDeliveredController.close();
+    await _allReadController.close();
   }
 }

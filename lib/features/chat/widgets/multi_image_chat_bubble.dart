@@ -1,18 +1,22 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/theme/app_color_theme.dart';
 import 'package:resq360/features/chat/widgets/chat_image_loader.dart';
 import 'package:resq360/features/chat/widgets/full_gallery_viewer.dart';
+import 'package:resq360/features/settings/data/models/ticket_message.model.dart';
 
 class ChatMultiImageBubble extends StatelessWidget {
   const ChatMultiImageBubble({
     required this.imageUrls,
     required this.time,
     required this.isMine,
+    this.status = MessageStatus.sent,
     super.key,
   });
 
   final List<String> imageUrls;
   final String time;
   final bool isMine;
+  final MessageStatus status;
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +63,19 @@ class ChatMultiImageBubble extends StatelessWidget {
               ),
             ),
             6.verticalSpace,
-            GenText(
-              time,
-              size: 12,
-              color: isMine ? appColors.whiteColor : null,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GenText(
+                  time,
+                  size: 12,
+                  color: isMine ? appColors.whiteColor : null,
+                ),
+                if (isMine) ...[
+                  SizedBox(width: 4.w),
+                  _buildStatusIcon(appColors),
+                ],
+              ],
             ),
           ],
         ),
@@ -79,11 +92,7 @@ class ChatMultiImageBubble extends StatelessWidget {
       borderRadius: BorderRadius.circular(radius),
       child: Stack(
         children: [
-          ChatImageLoader(
-            source: url,
-            width: 120,
-            height: 120,
-          ),
+          ChatImageLoader(source: url, width: 120, height: 120),
           if (darken)
             Container(
               width: 120,
@@ -96,9 +105,33 @@ class ChatMultiImageBubble extends StatelessWidget {
   }
 
   Future<void> _openGallery(BuildContext context) async {
-    await pushScreen(
-      context,
-      FullGalleryViewer(images: imageUrls),
-    );
+    await pushScreen(context, FullGalleryViewer(images: imageUrls));
+  }
+
+  Widget _buildStatusIcon(AppColorPalette appColors) {
+    switch (status) {
+      case MessageStatus.sending:
+        return Icon(
+          Icons.access_time,
+          size: 12,
+          color: appColors.whiteColor.withValues(alpha: 0.7),
+        );
+      case MessageStatus.sent:
+        return Icon(Icons.check, size: 12, color: appColors.whiteColor);
+      case MessageStatus.delivered:
+        return Icon(Icons.done_all, size: 12, color: appColors.whiteColor);
+      case MessageStatus.read:
+        return const Icon(
+          Icons.done_all,
+          size: 12,
+          color: Colors.lightBlueAccent,
+        );
+      case MessageStatus.failed:
+        return const Icon(
+          Icons.error_outline,
+          size: 12,
+          color: Colors.redAccent,
+        );
+    }
   }
 }
