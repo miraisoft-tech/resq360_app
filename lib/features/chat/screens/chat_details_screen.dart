@@ -1265,7 +1265,7 @@ class _MessageList extends StatelessWidget {
             ),
           );
         },
-        status: chat.paymentStatus ?? 'PENDING',
+        status: message.metadata?.paymentStatus ?? 'PENDING',
       );
     } else {
       return ProviderChatInvoiceCardWidget(
@@ -1273,7 +1273,7 @@ class _MessageList extends StatelessWidget {
         message: message,
         chat: chat,
         paymentStatus:
-            chat.paymentStatus == PaymentStatus.completed.value
+            message.metadata?.paymentStatus == PaymentStatus.completed.value
                 ? PaymentStatus.completed
                 : PaymentStatus.pending,
         onTapPay: () => _handleInvoicePayment(context, message),
