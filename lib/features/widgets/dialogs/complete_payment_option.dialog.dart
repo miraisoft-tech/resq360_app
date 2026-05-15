@@ -277,7 +277,7 @@ class _ClientPaymentConfirmDialogState
                   12.horizontalSpace,
                   Expanded(
                     child: WideButton(
-                      label: 'Pay ₦${widget.amount}',
+                      label: 'Pay ₦${AppTextUtil.formatAmount(widget.amount.toString())}',
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () {

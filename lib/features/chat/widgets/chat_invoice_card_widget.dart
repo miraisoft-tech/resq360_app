@@ -184,7 +184,7 @@ class _ChatInvoiceCardWidgetState extends State<ChatInvoiceCardWidget> {
                   GenText(
                     AppTextUtil.formatDateToString(widget.metadata.date!,),
                     size: 12,
-                    color: appColors.success.shade700
+                    color: context.appColors.textColor.shade300,
                   ),
                   10.verticalSpace,
                 ],

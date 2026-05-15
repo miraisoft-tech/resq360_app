@@ -648,7 +648,30 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
       await GeneralDialogs.showCustomDialog<void>(
         context,
-        body: const PaymentCompleted(),
+        body: PaymentCompleted(
+          onViewDetails: () async {
+            final chatDetailState = context.read<ChatDetailBloc>().state;
+            if (chatDetailState is ChatDetailReady &&
+                chatDetailState.messages.isNotEmpty) {
+              final serviceMessage = chatDetailState.messages.firstWhere(
+                (m) =>
+                    m.messageType == MessageReceivedType.invoice.value &&
+                    m.metadata != null,
+              );
+              await pushScreen(
+                context,
+                ChatServiceDetailScreen(
+                  chat: chatDetailState.chat,
+                  message: serviceMessage,
+                  userType: widget.userType,
+                ),
+              );
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            }
+          },
+        ),
       );
       return;
     }

@@ -218,8 +218,18 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                       final picked = await showDatePicker(
                         context: context,
                         initialDate: value ?? now,
-                        firstDate: DateTime(now.year - 1),
-                        lastDate: DateTime(now.year + 2),
+                        firstDate: now,
+                        lastDate: DateTime(now.year + 1),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: ColorScheme.light(
+                                primary: appColors.primary.shade500,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
 
                       if (picked != null) {
