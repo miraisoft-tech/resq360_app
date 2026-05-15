@@ -85,6 +85,8 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     RateProviderEvent event,
     Emitter<RatingsState> emit,
   ) async {
+    emit(RatingsLoading());
+
     final result = await _repo.rateProvider(
       serviceRequestId: event.serviceRequestId,
       ratings: event.ratings,
