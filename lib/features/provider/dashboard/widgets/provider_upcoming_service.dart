@@ -4,18 +4,22 @@ import 'package:resq360/core/models/booking_enums.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
 
-class ProviderOngoingService extends StatefulWidget {
-  const ProviderOngoingService({required this.booking, super.key});
+class ProviderUpcomingService extends StatefulWidget {
+  const ProviderUpcomingService({required this.booking, super.key});
   final Bookings booking;
   @override
-  State<ProviderOngoingService> createState() => _ProviderOngoingServiceState();
+  State<ProviderUpcomingService> createState() =>
+      _ProviderUpcomingServiceState();
 }
 
-class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
+class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final serviceRequestId = widget.booking.id;
+    final isAssigned =
+        widget.booking.status?.toUpperCase() ==
+        BookingEnums.assigned.name.toUpperCase();
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
@@ -26,7 +30,7 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
       child: Col(
         children: [
           UrbText(
-            'Ongoing Service',
+            'upcoming Service',
             size: 18,
             weight: FontWeight.w700,
             color: colors.black,
@@ -89,7 +93,9 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                               2.horizontalSpace,
                               Expanded(
                                 child: GenText(
-                                  'Unknown location',
+                                  widget.booking.distanceKM != null
+                                      ? '${widget.booking.distanceKM!.toStringAsFixed(2)} km away'
+                                      : 'Distance unknown',
                                   height: 24.5,
                                   weight: FontWeight.w400,
                                   color: colors.neutral.shade400,
@@ -146,7 +152,8 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                             onPressed:
                                 state is BookingLoading
                                     ? null
-                                    : () {
+                                    : isAssigned
+                                    ? () {
                                       log(serviceRequestId);
                                       if (serviceRequestId != null) {
                                         context.read<BookingBloc>().add(
@@ -155,14 +162,15 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                                           ),
                                         );
                                       }
-                                    },
+                                    }
+                                    : null,
                             style: ButtonStyle(
                               backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>(
-                                    (states) {
-                                      return colors.primary.shade500;
-                                    },
-                                  ),
+                                  WidgetStateProperty.resolveWith<Color>((
+                                    states,
+                                  ) {
+                                    return colors.primary.shade500;
+                                  }),
                               foregroundColor: WidgetStateProperty.all(
                                 colors.whiteColor,
                               ),
@@ -183,7 +191,9 @@ class _ProviderOngoingServiceState extends State<ProviderOngoingService> {
                                       ),
                                     )
                                     : GenText(
-                                      'Start Service',
+                                      isAssigned
+                                          ? 'Start Service'
+                                          : 'In Progress',
                                       height: 16.5,
                                       color: colors.whiteColor,
                                       weight: FontWeight.w500,

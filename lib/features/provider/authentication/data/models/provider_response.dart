@@ -1,4 +1,4 @@
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 
 class ProviderModel {
@@ -28,7 +28,7 @@ class ProviderModel {
     this.address,
     this.providerServices,
     this.averageRating,
-    this.totalReviews
+    this.totalReviews,
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
@@ -53,15 +53,15 @@ class ProviderModel {
       currentLatitude: (json['currentLatitude'] as num?)?.toDouble(),
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
+      averageRating: json['averageRating'] as num?,
+      totalReviews: json['totalReviews'] as num?,
       kycVerification:
-    json['kYCVerification'] is Map<String, dynamic>
-        ? KYCVerification.fromJson(
-            json['kYCVerification'] as Map<String, dynamic>,
-          )
-        : null,
-        images: (json['images'] as List<dynamic>?)
-            ?.map((e) => e)
-            .toList(),
+          json['kYCVerification'] is Map<String, dynamic>
+              ? KYCVerification.fromJson(
+                json['kYCVerification'] as Map<String, dynamic>,
+              )
+              : null,
+      images: (json['images'] as List<dynamic>?)?.map((e) => e).toList(),
       wallet:
           json['wallet'] is Map<String, dynamic>
               ? Wallet.fromJson(json['wallet'] as Map<String, dynamic>)
@@ -100,8 +100,8 @@ class ProviderModel {
   final List<dynamic>? images;
   final Wallet? wallet;
   final Address? address;
-  final int? averageRating;
-  final int? totalReviews;
+  final num? averageRating;
+  final num? totalReviews;
 
   final List<ProviderService>? providerServices;
 
@@ -130,8 +130,8 @@ class ProviderModel {
     'wallet': wallet?.toJson(),
     'address': address?.toJson(),
     'ProviderService': providerServices?.map((e) => e.toJson()).toList(),
-    'averageRating':averageRating,
-    'totalReviews': totalReviews
+    'averageRating': averageRating,
+    'totalReviews': totalReviews,
   };
 }
 
@@ -181,12 +181,12 @@ class ProviderService {
       id: json['id'] as int?,
       name: json['name'] as String?,
       isActive: json['isActive'] as bool? ?? false,
-      service: json['service'] is Map<String, dynamic>
-          ? Service.fromJson(json['service'] as Map<String, dynamic>)
-          : null,
-      minorServices: (json['minorServices'] as List?)
-          ?.map((e) => e.toString())
-          .toList(),
+      service:
+          json['service'] is Map<String, dynamic>
+              ? Service.fromJson(json['service'] as Map<String, dynamic>)
+              : null,
+      minorServices:
+          (json['minorServices'] as List?)?.map((e) => e.toString()).toList(),
     );
   }
 
@@ -197,15 +197,13 @@ class ProviderService {
   final List<String>? minorServices;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'isActive': isActive,
-        'service': service?.toJson(),
-        'minorServices': minorServices,
-      };
+    'id': id,
+    'name': name,
+    'isActive': isActive,
+    'service': service?.toJson(),
+    'minorServices': minorServices,
+  };
 }
-
-
 
 class KYCVerification {
   KYCVerification({
@@ -312,36 +310,36 @@ class KYCVerification {
   final int? providerId;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'subjectType': subjectType,
-        'subjectId': subjectId,
-        'documentType': documentType,
-        'documentImageUrl': documentImageUrl,
-        'selfieImageUrl': selfieImageUrl,
-        'selfieImageId': selfieImageId,
-        'fullName': fullName,
-        'dateOfBirth': dateOfBirth,
-        'expiryDate': expiryDate,
-        'issueDate': issueDate,
-        'issuer': issuer,
-        'nationality': nationality,
-        'state': state,
-        'address': address,
-        'city': city,
-        'companyName': companyName,
-        'registrationNumber': registrationNumber,
-        'gender': gender,
-        'status': status,
-        'verificationNotes': verificationNotes,
-        'approvedKycs': approvedKycs,
-        'verifiedAt': verifiedAt,
-        'verifiedBy': verifiedBy,
-        'expiresAt': expiresAt,
-        'submittedAt': submittedAt,
-        'updatedAt': updatedAt,
-        'addressJobId': addressJobId,
-        'addressJobNextCheck': addressJobNextCheck,
-        'userId': userId,
-        'providerId': providerId,
-      };
+    'id': id,
+    'subjectType': subjectType,
+    'subjectId': subjectId,
+    'documentType': documentType,
+    'documentImageUrl': documentImageUrl,
+    'selfieImageUrl': selfieImageUrl,
+    'selfieImageId': selfieImageId,
+    'fullName': fullName,
+    'dateOfBirth': dateOfBirth,
+    'expiryDate': expiryDate,
+    'issueDate': issueDate,
+    'issuer': issuer,
+    'nationality': nationality,
+    'state': state,
+    'address': address,
+    'city': city,
+    'companyName': companyName,
+    'registrationNumber': registrationNumber,
+    'gender': gender,
+    'status': status,
+    'verificationNotes': verificationNotes,
+    'approvedKycs': approvedKycs,
+    'verifiedAt': verifiedAt,
+    'verifiedBy': verifiedBy,
+    'expiresAt': expiresAt,
+    'submittedAt': submittedAt,
+    'updatedAt': updatedAt,
+    'addressJobId': addressJobId,
+    'addressJobNextCheck': addressJobNextCheck,
+    'userId': userId,
+    'providerId': providerId,
+  };
 }

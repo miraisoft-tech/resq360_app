@@ -73,10 +73,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
           backgroundColor: context.appColors.whiteColor,
           title: const GenText('Complete Payment'),
           actions: [
-            TextButton(
-              onPressed: _finish,
-              child: const GenText('Done'),
-            ),
+            TextButton(onPressed: _finish, child: const GenText('Done')),
             if (_loading)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -102,9 +99,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
                 mediaPlaybackRequiresUserGesture: false,
               ),
               android: AndroidInAppWebViewOptions(),
-              ios: IOSInAppWebViewOptions(
-                allowsInlineMediaPlayback: true,
-              ),
+              ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
             ),
             pullToRefreshController: pullToRefreshController,
 
@@ -114,19 +109,20 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
 
             onLoadStart: (_, url) {
               setState(() => _loading = true);
-              log('the url is now: $url');
-              if (url.toString().startsWith(widget.callbackUrl)) {
-                _finish();
-              }
-              if (url.toString().contains(
-                    'domain=resq360.com',
-                  ) ||
-                  url.toString().contains(
-                    'https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
-                  ) ||
-                  url.toString().contains(
-                    'https://www.searchhounds.com/favicon.svg',
-                  )) {
+              final urlStr = url.toString();
+              log('the url is now: $urlStr');
+
+              // match by origin + path only, ignore query params
+              final uri = Uri.tryParse(urlStr);
+              final callbackUri = Uri.tryParse(widget.callbackUrl);
+
+              final isCallback =
+                  uri != null &&
+                  callbackUri != null &&
+                  uri.host == callbackUri.host &&
+                  uri.path == callbackUri.path;
+
+              if (isCallback || urlStr.startsWith(widget.callbackUrl)) {
                 _finish();
               }
             },
@@ -140,10 +136,16 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
 
             shouldOverrideUrlLoading: (_, nav) async {
               final url = nav.request.url.toString();
+              final uri = Uri.tryParse(url);
+              final callbackUri = Uri.tryParse(widget.callbackUrl);
 
-              if (url.contains(
-                'https://www.searchhounds.com/articles/real-estate-market-trends-what-buyers-and-sellers.html?psystem=PW&domain=resq360.com',
-              )) {
+              final isCallback =
+                  uri != null &&
+                  callbackUri != null &&
+                  uri.host == callbackUri.host &&
+                  uri.path == callbackUri.path;
+
+              if (isCallback) {
                 _finish();
                 return NavigationActionPolicy.CANCEL;
               }
@@ -151,11 +153,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
               return NavigationActionPolicy.ALLOW;
             },
 
-            onReceivedError: (
-              _,
-              _,
-              _,
-            ) async {
+            onReceivedError: (_, _, _) async {
               await pullToRefreshController.endRefreshing();
             },
           ),

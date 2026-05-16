@@ -1,22 +1,18 @@
+import 'package:resq360/__lib.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 
-/// A simple in-memory cache for chat data to avoid reloading on every screen visit.
-/// Cache entries expire after [_cacheExpiry] duration.
 class ChatCacheService {
   ChatCacheService._();
   static final ChatCacheService instance = ChatCacheService._();
 
   final Map<int, CachedChatData> _cache = {};
 
-  /// Cache expiry duration - cached data older than this will be refreshed
   static const Duration _cacheExpiry = Duration(minutes: 5);
 
-  /// Check if we have valid cached data for a chat
   bool hasCachedData(int chatId) {
     final cached = _cache[chatId];
     if (cached == null) return false;
 
-    // Check if cache has expired
     final age = DateTime.now().difference(cached.cachedAt);
     if (age > _cacheExpiry) {
       _cache.remove(chatId);
@@ -26,13 +22,11 @@ class ChatCacheService {
     return true;
   }
 
-  /// Get cached data for a chat
   CachedChatData? getCachedData(int chatId) {
     if (!hasCachedData(chatId)) return null;
     return _cache[chatId];
   }
 
-  /// Store chat data in cache
   void cacheData({
     required int chatId,
     required ChatResponse chat,
@@ -51,7 +45,6 @@ class ChatCacheService {
     );
   }
 
-  /// Update only the messages in cache (when new messages arrive)
   void updateMessages({
     required int chatId,
     required List<MessageResponse> messages,
@@ -72,13 +65,13 @@ class ChatCacheService {
     );
   }
 
-  /// Clear cache for a specific chat
   void clearChat(int chatId) {
     _cache.remove(chatId);
   }
 
-  /// Clear all cached data
+  
   void clearAll() {
+    log('Clearing all chat cache data');
     _cache.clear();
   }
 }

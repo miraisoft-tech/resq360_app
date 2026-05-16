@@ -20,6 +20,7 @@ class RecommendedCard extends StatelessWidget {
 
     final rating = advertisement.provider?.averageRating ?? 0;
     final reviewCount = advertisement.provider?.totalReviews ?? 0;
+    final location = advertisement.provider!.providerServices?.first.service?.distanceKM ?? 'N/A';
 
     return Container(
       padding: pad(horizontal: 5, vertical: 14),
@@ -32,9 +33,7 @@ class RecommendedCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PictureWidget(
-            image: image,
-          ),
+          PictureWidget(image: image),
           10.horizontalSpace,
           Expanded(
             child: Column(
@@ -90,16 +89,12 @@ class RecommendedCard extends StatelessWidget {
                       size: 12,
                       color: colors.neutral.shade300,
                     ),
-                    // 10.horizontalSpace,
-                    // AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                    //   color: colors.neutral.shade300,
-                    // ),
-                    // 2.horizontalSpace,
-                    // GenText(
-                    //   distance,
-                    //   size: 12,
-                    //   color: colors.neutral.shade300,
-                    // ),
+                    10.horizontalSpace,
+                    AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
+                      color: colors.neutral.shade300,
+                    ),
+                    2.horizontalSpace,
+                    GenText('$location km', size: 12, color: colors.neutral.shade300),
                   ],
                 ),
                 8.verticalSpace,

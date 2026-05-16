@@ -15,3 +15,12 @@ class CreateServiceRequest extends ServiceRequestEvent {
   @override
   List<Object?> get props => [providerServiceId];
 }
+
+class BookServiceRequest extends ServiceRequestEvent {
+
+  const BookServiceRequest({required this.providerServiceId});
+  final int providerServiceId;
+
+  @override
+  List<Object?> get props => [providerServiceId];
+}

@@ -159,6 +159,49 @@ class ChatRepo extends BaseAPI {
     }
   }
 
+  Future<ApiResult<MessageResponse>> sendServiceRequestMessage({
+    required int chatId,
+    required int providerServiceId,
+    required String description,
+  }) async {
+    const url = '/chat/messages/service-request';
+
+    final payload = {
+      'chatId': chatId,
+      'providerServiceId': providerServiceId,
+      'description': description,
+    };
+
+    try {
+      final response = await dio().post<Map<String, dynamic>>(
+        url,
+        data: payload,
+      );
+
+      if (response.statusCode == 201 && response.data != null) {
+        final responseData = response.data!;
+        debugPrint('service-request API response: $responseData');
+
+        final messageData = responseData['data'] as Map<String, dynamic>?;
+        if (messageData == null) {
+          return ApiResult(error: 'Invalid response: missing data field');
+        }
+
+        final message = MessageResponse.fromJson(messageData);
+        return ApiResult(data: message);
+      } else {
+        return ApiResult(
+          error:
+              response.data?['message'].toString() ?? 'Failed to send message',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
   Future<ApiResult<MessageResponse>> sendInvoice({
     required SendInvoice invoiceRequest,
   }) async {
@@ -186,6 +229,34 @@ class ChatRepo extends BaseAPI {
               response.data?['message'].toString() ?? 'Failed to send message',
         );
       }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<dynamic>> createRequestAndSendInvoice({
+    required SendInvoice request,
+  }) async {
+    const url = '/requests/service-request';
+    try {
+      final response = await dio().post<Map<String, dynamic>>(
+        url,
+        data: request.toJson(),
+      );
+
+      log('[INVOICE REPO] createRequestAndSendInvoice response: ${response.data}');
+
+      if ((response.statusCode == 201 || response.statusCode == 200) &&
+          response.data != null) {
+        return ApiResult(data: response.data);
+      }
+
+      return ApiResult(
+        error:
+            response.data?['message']?.toString() ?? 'Failed to send invoice',
+      );
     } on DioException catch (e) {
       return handleDioError(e);
     } on Exception catch (e) {

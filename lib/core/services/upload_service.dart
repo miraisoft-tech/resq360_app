@@ -21,7 +21,10 @@ class UploadService extends BaseAPI {
         'file': await MultipartFile.fromFile(filePath),
       });
 
-      final res = await dio().post<Map<String, dynamic>>(url, data: formData);
+      final res = await dio().post<Map<String, dynamic>>(url, data: formData, options: Options(
+        sendTimeout: const Duration(seconds: 120),
+        receiveTimeout: const Duration(seconds: 120),
+      ));
 
       log('${res.statusCode}');
       log('${res.data}');

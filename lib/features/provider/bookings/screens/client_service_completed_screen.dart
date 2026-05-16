@@ -233,7 +233,7 @@ class ProviderThankYouModal extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           GenText(
-            'You earned a good review, get ready for more clients.',
+            "You've completed a service, get ready for more clients.",
             color: appColors.neutral.shade500,
             height: 32.5,
             weight: FontWeight.w400,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/utils/app_constant.dart';
 import 'package:resq360/core/utils/app_file_picker.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
@@ -9,13 +10,15 @@ import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.d
 import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/chat/screens/chat_service_detail_screen.dart';
 import 'package:resq360/features/chat/screens/generate_invoice.dialog.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
-import 'package:resq360/features/chat/screens/service_detail_screen.dart';
+import 'package:resq360/features/chat/widgets/appeal_closed_card.dart';
 import 'package:resq360/features/chat/widgets/chat_document.dart';
 import 'package:resq360/features/chat/widgets/chat_image_bubble.dart';
 import 'package:resq360/features/chat/widgets/chat_invoice_card_widget.dart';
 import 'package:resq360/features/chat/widgets/chat_location_bubble.dart';
+import 'package:resq360/features/chat/widgets/dispute_service_details_card.dart';
 import 'package:resq360/features/chat/widgets/multi_image_chat_bubble.dart';
 import 'package:resq360/features/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/chat/widgets/report_chat_dialog.dart';
@@ -28,16 +31,17 @@ import 'package:resq360/features/widgets/chat_bubble.dart';
 import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
-/// Unified chat detail screen for both customer and provider users.
 class ChatDetailScreen extends StatelessWidget {
   const ChatDetailScreen({
     required this.chatId,
     required this.userType,
+    this.providerServiceId,
     super.key,
   });
 
   final int chatId;
   final UserType userType;
+  final int? providerServiceId;
 
   Future<int?> _loadCurrentUserId() async {
     if (userType == UserType.customer) {
@@ -63,14 +67,14 @@ class ChatDetailScreen extends StatelessWidget {
 
         return BlocProvider(
           create:
-              (_) => ChatDetailBloc(
-                chatId: chatId,
-                currentUserId: userId,
-              )..add(OpenChatDetail(chatId)),
+              (_) =>
+                  ChatDetailBloc(chatId: chatId, currentUserId: userId)
+                    ..add(OpenChatDetail(chatId)),
           child: _ChatDetailView(
             chatId: chatId,
             userType: userType,
             currentUserId: userId,
+            providerServiceId: providerServiceId,
           ),
         );
       },
@@ -83,11 +87,13 @@ class _ChatDetailView extends StatefulWidget {
     required this.chatId,
     required this.userType,
     required this.currentUserId,
+    this.providerServiceId,
   });
 
   final int chatId;
   final UserType userType;
   final int currentUserId;
+  final int? providerServiceId;
 
   @override
   State<_ChatDetailView> createState() => _ChatDetailViewState();
@@ -97,24 +103,23 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   final ScrollController _scrollController = ScrollController();
   final ChatRepo _chatRepo = ChatRepo();
 
+  bool _pendingServiceRequestFired = false;
+
   bool get isCustomer => widget.userType == UserType.customer;
   bool get isProvider => widget.userType == UserType.provider;
 
   String get _senderType => isCustomer ? 'USER' : 'PROVIDER';
   int get _currentUserId => widget.currentUserId;
 
-  // Scroll tracking state (from trip_chat pattern)
   int _previousMessageCount = 0;
   bool _showJumpButton = false;
   bool _hasScrolledToBottomOnce = false;
 
-  // Load more state
   bool _isRequestingMore = false;
   double? _beforeLoadMaxScrollExtent;
   double? _beforeLoadOffset;
   bool _pendingOlderMessagesInsert = false;
 
-  // Provider-specific state
   bool canShowServiceDetails = false;
   bool _isModeratingMessage = false;
 
@@ -193,7 +198,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             Navigator.pop(context, true);
           }
 
-          // Handle action failures
           if (state is ChatDetailActionFailure) {
             await showErrorSnackbar(context, state.error);
           }
@@ -205,6 +209,16 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           var imageurl = '';
           var paymentStatus = '';
           var serviceStatus = '';
+          var chatType = '';
+          var providerName = '';
+
+          final canShowServiceDetails =
+              state is ChatDetailReady &&
+              state.messages.any(
+                (m) =>
+                    m.messageType == MessageReceivedType.invoice.value &&
+                    m.metadata != null,
+              );
 
           if (state is ChatDetailReady) {
             final chat = state.chat;
@@ -217,7 +231,15 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             imageurl = chat.image ?? '';
             paymentStatus = chat.paymentStatus ?? '';
             serviceStatus = chat.serviceRequestStatus ?? '';
+            chatType = chat.type ?? '';
+            providerName = chat.provider?.fullName ?? '';
           }
+
+          final isDisputeClosed =
+              state is ChatDetailReady &&
+              state.chat.type == 'DISPUTE' &&
+              (state.chat.disputeStatus == 'CANCELLED' ||
+                  state.chat.disputeStatus == 'COMPLETED');
 
           return Scaffold(
             backgroundColor: appColors.whiteColor,
@@ -231,15 +253,12 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                     serviceStatus: serviceStatus,
                     paymentStatus: paymentStatus,
                     isActive: isActive,
+                    isDispute: chatType == 'DISPUTE',
+                    providerName: providerName,
                   ),
                   const ListDivider(),
-                  Expanded(
-                    child: _buildChatContent(state),
-                  ),
-                  // Provider-only: Show service details link when paid
-                  if (isProvider &&
-                      canShowServiceDetails &&
-                      state is ChatDetailReady)
+                  Expanded(child: _buildChatContent(state)),
+                  if (canShowServiceDetails)
                     GestureDetector(
                       onTap: () async {
                         final serviceMessage = state.messages.firstWhere(
@@ -251,9 +270,10 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
                         await pushScreen(
                           context,
-                          ServiceDetailScreen(
+                          ChatServiceDetailScreen(
                             chat: state.chat,
                             message: serviceMessage,
+                            userType: widget.userType,
                           ),
                         );
                       },
@@ -268,32 +288,50 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                         ),
                       ),
                     ),
-                  5.verticalSpace,
-                  IgnorePointer(
-                    ignoring: state is! ChatDetailReady,
-                    child: Opacity(
-                      opacity: state is ChatDetailReady ? 1.0 : 0.5,
-                      child: ChatBoxWidget(
-                        onAttachment: (ctx) {
-                          if (state is ChatDetailReady) {
-                            unawaited(_showAttachmentMenu(ctx, state.chat));
-                          }
-                        },
-                        onSend: (text) {
-                          final userId = _currentUserId;
-                          final currentState =
-                              context.read<ChatDetailBloc>().state;
-
-                          if (text.trim().isNotEmpty &&
-                              currentState is ChatDetailReady) {
-                            context.read<ChatDetailBloc>().add(
-                              SendTextMessage(text, userId, _senderType),
-                            );
-                          }
-                        },
+                  if (isDisputeClosed) ...[
+                    5.verticalSpace,
+                    GestureDetector(
+                      onTap: () async {
+                        await pop(context);
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.h),
+                        child: GenText(
+                          'Return to Dashboard',
+                          weight: FontWeight.w500,
+                          color: appColors.primary.shade500,
+                          decoration: TextDecoration.underline,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
+                  if (!isDisputeClosed)
+                    IgnorePointer(
+                      ignoring: state is! ChatDetailReady,
+                      child: Opacity(
+                        opacity: state is ChatDetailReady ? 1.0 : 0.5,
+                        child: ChatBoxWidget(
+                          onAttachment: (ctx) {
+                            if (state is ChatDetailReady) {
+                              unawaited(_showAttachmentMenu(ctx, state.chat));
+                            }
+                          },
+                          onSend: (text) {
+                            final userId = _currentUserId;
+                            final currentState =
+                                context.read<ChatDetailBloc>().state;
+
+                            if (text.trim().isNotEmpty &&
+                                currentState is ChatDetailReady) {
+                              context.read<ChatDetailBloc>().add(
+                                SendTextMessage(text, userId, _senderType),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -302,7 +340,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       );
     }
 
-    // Only wrap with BlocListener for customers (payment handling)
     if (isCustomer) {
       return BlocListener<CustomerPaymentBloc, CustomerPaymentState>(
         listener: _handlePaymentState,
@@ -321,14 +358,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: appColors.primary,
-            ),
+            CircularProgressIndicator(color: appColors.primary),
             16.verticalSpace,
-            GenText(
-              'Loading messages...',
-              color: appColors.neutral.shade400,
-            ),
+            GenText('Loading messages...', color: appColors.neutral.shade400),
           ],
         ),
       );
@@ -357,6 +389,13 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
             onMessageLongPress:
                 (message) => _onMessageLongPress(message, state.chat),
           ),
+          if (state.chat.type == 'DISPUTE')
+            Positioned(
+              top: 0,
+              left: 16.w,
+              right: 16.w,
+              child: DisputeServiceDetailCard(chat: state.chat),
+            ),
           if (_showJumpButton)
             Positioned(
               bottom: 16,
@@ -364,10 +403,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               child: FloatingActionButton.small(
                 onPressed: _scrollToBottom,
                 backgroundColor: appColors.primary,
-                child: Icon(
-                  Icons.arrow_downward,
-                  color: appColors.whiteColor,
-                ),
+                child: Icon(Icons.arrow_downward, color: appColors.whiteColor),
               ),
             ),
         ],
@@ -377,7 +413,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     return const SizedBox.shrink();
   }
 
-  // Updated _buildAppBar method for ChatDetailScreen
   Widget _buildAppBar({
     required String title,
     required bool isActive,
@@ -385,6 +420,8 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     required String imageurl,
     required String serviceStatus,
     required String paymentStatus,
+    required bool isDispute,
+    required String providerName,
   }) {
     final appColors = context.appColors;
     final screenWidth = MediaQuery.sizeOf(context).width;
@@ -397,20 +434,23 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           onPressed: () => pop(context),
         ),
         20.horizontalSpace,
-        PictureWidget(
-          image: imageurl,
-        ),
+        PictureWidget(image: imageurl),
         8.horizontalSpace,
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 200,
-              child: GenText(
-                title.capitalize,
-                weight: FontWeight.w500,
-                color: appColors.black,
-                maxLines: 1,
+              width: isDispute ? 160.w : 100,
+              child: Tooltip(
+                message:
+                    isDispute ? 'You, Admin, $providerName' : title.capitalize,
+                verticalOffset: 48,
+                child: GenText(
+                  isDispute ? 'You, Admin, $providerName' : title.capitalize,
+                  weight: FontWeight.w500,
+                  color: appColors.black,
+                  maxLines: 1,
+                ),
               ),
             ),
             GenText(
@@ -434,80 +474,87 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               icon: AppAssets.ASSETS_ICONS_PHONE_ICON_SVG.svg,
             ),
           ),
-        PopupMenuButton<String>(
-          constraints: BoxConstraints(
-            minWidth: 180.w,
-            maxWidth: menuMaxWidth,
-          ),
-          icon: Icon(
-            Icons.more_vert,
-            color: appColors.neutral.shade700,
-          ),
-          color: appColors.whiteColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          onSelected: (value) => _handleMenuAction(value, title),
-          itemBuilder:
-              (context) => [
-                PopupMenuItem<String>(
-                  value: 'block',
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.report_outlined,
-                        color: appColors.error.shade600,
-                        size: 20.sp,
-                      ),
-                      12.horizontalSpace,
-                      Flexible(
-                        child: GenText(
-                          'Block $title',
-                          color: appColors.neutral.shade900,
-                          maxLines: 3,
+        if (!isDispute)
+          PopupMenuButton<String>(
+            constraints: BoxConstraints(
+              minWidth: 180.w,
+              maxWidth: menuMaxWidth,
+            ),
+            icon: Icon(Icons.more_vert, color: appColors.neutral.shade700),
+            color: appColors.whiteColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            onSelected: (value) => _handleMenuAction(value, title),
+            itemBuilder:
+                (context) => [
+                  PopupMenuItem<String>(
+                    value: 'block',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.report_outlined,
+                          color: appColors.error.shade600,
+                          size: 20.sp,
                         ),
-                      ),
-                    ],
+                        12.horizontalSpace,
+                        Flexible(
+                          child: GenText(
+                            'Block $title',
+                            color: appColors.neutral.shade900,
+                            maxLines: 3,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-        ),
+                ],
+          ),
         10.horizontalSpace,
       ],
     );
   }
 
-  void _onChatStateChanged(
-    BuildContext context,
-    ChatDetailState state,
-  ) {
+  void _onChatStateChanged(BuildContext context, ChatDetailState state) {
     if (state is ChatDetailReady) {
+      if (!_pendingServiceRequestFired) {
+        _pendingServiceRequestFired = true;
+        final userId = _currentUserId;
+        if (widget.providerServiceId == null) return;
+        context.read<ChatDetailBloc>().add(
+          SendServiceRequest(
+            providerServiceId: widget.providerServiceId!,
+            description: 'Service Request',
+            senderId: userId,
+            userType: _senderType,
+            chatId: widget.chatId,
+          ),
+        );
+      }
       final messages = state.messages;
       final messageCount = messages.length;
 
-      // Determine if the last message is from the current user
       final lastMessage = messages.isNotEmpty ? messages.first : null;
       final isLastMessageFromMe =
           lastMessage?.senderId == _currentUserId ||
           lastMessage?.senderType == _senderType;
 
-      // Capture scroll position BEFORE the frame callback (like trip_chat)
       final wasAtBottom = _isAtBottom();
 
-      // Provider-specific: Check if should show service details
-      if (isProvider) {
-        final hasPaid =
-            state.chat.paymentStatus == PaymentStatus.completed.value;
-        final hasInvoice = messages.any(
-          (m) =>
-              m.messageType == MessageReceivedType.invoice.value &&
-              m.metadata != null,
-        );
-        setState(() {
-          canShowServiceDetails = hasPaid && hasInvoice;
-        });
-      }
+      // if (isProvider) {
+      //   final hasPaid =
+      //       state.chat.paymentStatus == PaymentStatus.completed.value;
+      //   final hasInvoice = messages.any(
+      //     (m) =>
+      //         m.messageType == MessageReceivedType.invoice.value &&
+      //         m.metadata != null,
+      //   );
+      //   setState(() {
+      //     log('has set canShowServiceDetails');
+      //     canShowServiceDetails = hasPaid && hasInvoice;
+      //   });
+      // }
 
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
@@ -522,11 +569,9 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
         if (messageCount > _previousMessageCount) {
           if (!state.isLoadingMore) {
-            // Only scroll if: user sent the message OR was already at bottom
             if (isLastMessageFromMe || wasAtBottom) {
               await _scrollToBottom();
             } else {
-              // Show jump button for incoming messages when not at bottom
               if (mounted) {
                 setState(() => _showJumpButton = true);
               }
@@ -558,23 +603,20 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
   }
 
-  /// Handles customer payment state changes
   Future<void> _handlePaymentState(
     BuildContext context,
     CustomerPaymentState state,
   ) async {
     if (!isCustomer) return;
 
-    // Loading states
     if (state is ServicePaymentLoadingState ||
         state is ServiceRequestPaymentVerifying) {
       showLoadingDialog(context);
       return;
     }
 
-    // Card payment initiated - navigate to webview
     if (state is ServiceRequestPaymentInitiatedState) {
-      Navigator.pop(context); // Close loading dialog
+      Navigator.pop(context);
 
       final completed = await Navigator.push<bool>(
         context,
@@ -583,16 +625,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               (_) => PaystackWebViewPage(
                 authorizationUrl: state.payment.authorizationUrl,
                 reference: state.payment.reference,
-                callbackUrl: 'https://example.com/callback',
+                callbackUrl: AppConstants.paystackCallbackUrl,
               ),
         ),
       );
 
       if (completed ?? false) {
         context.read<CustomerPaymentBloc>().add(
-          CustomerVerifyServiceRequestPaymentEvent(
-            state.payment.reference,
-          ),
+          CustomerVerifyServiceRequestPaymentEvent(state.payment.reference),
         );
       } else {
         await showErrorSnackbar(context, 'Payment cancelled');
@@ -608,7 +648,30 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
       await GeneralDialogs.showCustomDialog<void>(
         context,
-        body: const PaymentCompleted(),
+        body: PaymentCompleted(
+          onViewDetails: () async {
+            final chatDetailState = context.read<ChatDetailBloc>().state;
+            if (chatDetailState is ChatDetailReady &&
+                chatDetailState.messages.isNotEmpty) {
+              final serviceMessage = chatDetailState.messages.firstWhere(
+                (m) =>
+                    m.messageType == MessageReceivedType.invoice.value &&
+                    m.metadata != null,
+              );
+              await pushScreen(
+                context,
+                ChatServiceDetailScreen(
+                  chat: chatDetailState.chat,
+                  message: serviceMessage,
+                  userType: widget.userType,
+                ),
+              );
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            }
+          },
+        ),
       );
       return;
     }
@@ -618,8 +681,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       await showErrorSnackbar(context, state.error);
     }
   }
-
-  // Replace the attachment menu handlers in _ChatDetailViewState
 
   Future<void> _showAttachmentMenu(
     BuildContext context,
@@ -670,8 +731,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       ),
     ];
 
-    final isPaymentCompleted = chat.paymentStatus?.toUpperCase() == 'COMPLETED';
-    if (isProvider && !isPaymentCompleted) {
+    if (isProvider) {
       menuItems.add(
         PopupMenuItem<String>(
           value: 'invoice',
@@ -777,10 +837,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         final appColors = context.appColors;
         return AlertDialog(
           backgroundColor: appColors.whiteColor,
-          title: GenText(
-            'Add Caption (Optional)',
-            color: appColors.black,
-          ),
+          title: GenText('Add Caption (Optional)', color: appColors.black),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(
@@ -799,10 +856,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: GenText(
-                'Skip',
-                color: appColors.neutral.shade600,
-              ),
+              child: GenText('Skip', color: appColors.neutral.shade600),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, controller.text.trim()),
@@ -823,9 +877,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       context,
       body: BlocProvider.value(
         value: context.read<ChatDetailBloc>(),
-        child: GenerateInvoiceDialog(
-          chat: chat,
-        ),
+        child: GenerateInvoiceDialog(chat: chat),
       ),
     );
   }
@@ -836,7 +888,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
     final chat = currentState.chat;
 
-    // Determine the other user's ID and name
     final otherUserId = isCustomer ? chat.provider?.id : chat.user?.id;
 
     if (otherUserId == null) return;
@@ -852,10 +903,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
       context,
       body: BlocProvider.value(
         value: context.read<ChatDetailBloc>(),
-        child: ReportChatDialog(
-          chatId: chatId,
-          chatTitle: title,
-        ),
+        child: ReportChatDialog(chatId: chatId, chatTitle: title),
       ),
     );
 
@@ -1044,9 +1092,7 @@ class _MessageList extends StatelessWidget {
         if (isLoadingMore && index == messages.length) {
           return const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -1067,7 +1113,7 @@ class _MessageList extends StatelessWidget {
                 (!isMine && message.id != null && onMessageLongPress != null)
                     ? () => unawaited(onMessageLongPress!(message))
                     : null,
-            child: _buildMessageWidget(context, message, isMine, time),
+            child: _buildMessageWidget(context, message, chat, isMine, time),
           ),
         );
       },
@@ -1077,6 +1123,7 @@ class _MessageList extends StatelessWidget {
   Widget _buildMessageWidget(
     BuildContext context,
     MessageResponse message,
+    ChatResponse chat,
     bool isMine,
     String time,
   ) {
@@ -1091,6 +1138,10 @@ class _MessageList extends StatelessWidget {
       return _buildInvoiceCard(context, message);
     }
 
+    if (chat.disputeStatus == 'COMPLETED') {
+      return AppealClosedCard(message: message, chat: chat);
+    }
+
     switch (metaType) {
       case 'IMAGE':
         final files =
@@ -1102,6 +1153,7 @@ class _MessageList extends StatelessWidget {
             imageUrls: files,
             time: time,
             isMine: isMine,
+            status: message.status,
           );
         }
 
@@ -1110,6 +1162,7 @@ class _MessageList extends StatelessWidget {
           time: time,
           isMine: isMine,
           caption: message.content != 'Image' ? message.content : null,
+          status: message.status,
         );
 
       case 'DOCUMENT':
@@ -1120,6 +1173,7 @@ class _MessageList extends StatelessWidget {
           time: time,
           isMine: isMine,
           mimeType: message.mimeType,
+          status: message.status,
         );
 
       case 'LOCATION':
@@ -1131,6 +1185,7 @@ class _MessageList extends StatelessWidget {
             type: isMine ? MessageType.sent : MessageType.received,
             message: 'Invalid location data',
             time: time,
+            status: message.status,
           );
         }
 
@@ -1140,13 +1195,18 @@ class _MessageList extends StatelessWidget {
           address: message.metadata?.address ?? 'Unknown location',
           time: time,
           isMine: isMine,
+          status: message.status,
         );
+
+      case 'SERVICE_REQUEST':
+        return _buildServiceRequestCard(context, message, isMine, time);
 
       default:
         return ChatBubble(
           type: isMine ? MessageType.sent : MessageType.received,
           message: message.content ?? '',
           time: time,
+          status: message.status,
         );
     }
   }
@@ -1194,11 +1254,7 @@ class _MessageList extends StatelessWidget {
                     color: appColors.neutral.shade900,
                   ),
                   2.verticalSpace,
-                  GenText(
-                    time,
-                    size: 12,
-                    color: appColors.neutral.shade500,
-                  ),
+                  GenText(time, size: 12, color: appColors.neutral.shade500),
                 ],
               ),
             ),
@@ -1237,7 +1293,7 @@ class _MessageList extends StatelessWidget {
             ),
           );
         },
-        status: chat.paymentStatus ?? 'PENDING',
+        status: message.metadata?.paymentStatus ?? 'PENDING',
       );
     } else {
       return ProviderChatInvoiceCardWidget(
@@ -1245,12 +1301,114 @@ class _MessageList extends StatelessWidget {
         message: message,
         chat: chat,
         paymentStatus:
-            chat.paymentStatus == PaymentStatus.completed.value
+            message.metadata?.paymentStatus == PaymentStatus.completed.value
                 ? PaymentStatus.completed
                 : PaymentStatus.pending,
         onTapPay: () => _handleInvoicePayment(context, message),
       );
     }
+  }
+
+  Widget _buildServiceRequestCard(
+    BuildContext context,
+    MessageResponse message,
+    bool isMine,
+    String time,
+  ) {
+    final appColors = context.appColors;
+    final meta = message.metadata;
+
+    final serviceName =
+        meta?.customData?['serviceName']?.toString() ??
+        meta?.customData?['serviceCategoryName']?.toString() ??
+        '—';
+    final description = message.content ?? '—';
+
+    return Container(
+      width: double.infinity,
+      padding: pad(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: appColors.whiteColor,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: appColors.textColor.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UrbText(
+                    'Service Request',
+                    color: appColors.black,
+                    size: 18,
+                    height: 20.5,
+                    weight: FontWeight.w700,
+                  ),
+                  4.verticalSpace,
+                  GenText(
+                    serviceName,
+                    weight: FontWeight.w400,
+                    color: appColors.textColor.shade300,
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UrbText(
+                    'Date',
+                    color: appColors.black,
+                    size: 18,
+                    height: 20.5,
+                    weight: FontWeight.w700,
+                  ),
+                  2.verticalSpace,
+                  GenText(
+                    time,
+                    weight: FontWeight.w400,
+                    color: appColors.textColor.shade300,
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          16.verticalSpace,
+
+          const GenText('Description', weight: FontWeight.w500),
+          2.verticalSpace,
+          GenText(description, size: 12, color: appColors.textColor.shade300),
+
+          16.verticalSpace,
+          Divider(color: appColors.textColor.shade100),
+          12.verticalSpace,
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GenText('Status', color: appColors.textColor.shade400),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: appColors.warning.shade50,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: GenText(
+                  'Pending',
+                  size: 12,
+                  weight: FontWeight.w600,
+                  color: appColors.warning.shade600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleInvoicePayment(
@@ -1265,9 +1423,7 @@ class _MessageList extends StatelessWidget {
         onPaymentSelected: (option) async {
           await GeneralDialogs.showCustomDialog<void>(
             context,
-            body: CompletePaymentDialog(
-              amount: amount,
-            ),
+            body: CompletePaymentDialog(amount: amount),
           );
         },
       ),

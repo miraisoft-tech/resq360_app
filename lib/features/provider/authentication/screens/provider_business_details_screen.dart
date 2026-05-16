@@ -6,7 +6,7 @@ import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/core/utils/validators.dart';
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/data/models/address.model.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_confirm_email_screen.dart';
@@ -96,10 +96,7 @@ class _ProviderBusinessDetailsScreenState
       );
 
       if (_selectType.value == null) {
-        await showErrorSnackbar(
-          context,
-          'Please select a service category',
-        );
+        await showErrorSnackbar(context, 'Please select a service category');
 
         return;
       }
@@ -149,19 +146,13 @@ class _ProviderBusinessDetailsScreenState
         }
 
         if (state is ProviderAuthSignupSuccessState) {
-          if (context.mounted) {
-            Navigator.pop(context);
-          }
-
           setState(() {
             isFetchingAddress = false;
           });
 
           await pushAndReplaceScreen(
             context: context,
-            ProviderConfirmEmailScreen(
-              email: widget.email,
-            ),
+            ProviderConfirmEmailScreen(email: widget.email),
           );
         }
       },
@@ -184,11 +175,8 @@ class _ProviderBusinessDetailsScreenState
                         setState(() {});
                       },
                       validator:
-                          (value) => AppGenUtil.isValidName(
-                            value,
-                            'business name',
-                            5,
-                          ),
+                          (value) =>
+                              AppGenUtil.isValidName(value, 'business name', 5),
                     ),
                     16.verticalSpace,
                     KFormField(

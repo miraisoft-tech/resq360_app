@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 import 'package:resq360/features/customer/dashboard/data/service/service_repo.dart';
 
 part 'service_catalog_event.dart';
@@ -11,6 +11,7 @@ class ServiceCatalogBloc extends Bloc<ServiceCatalogEvent, ServiceCatalogState> 
 
   ServiceCatalogBloc({required this.serviceRepo}) : super(ServiceCatalogInitial()) {
     on<FetchServices>(_onFetchServices);
+    on<FetchServicesForAProvider>(_onFetchServicesForAProvider);
     on<FetchServiceInfo>(_onFetchServiceInfo);
     on<CreateService>(_onCreateService);
   }
@@ -23,6 +24,27 @@ class ServiceCatalogBloc extends Bloc<ServiceCatalogEvent, ServiceCatalogState> 
     emit(ServiceCatalogLoading());
     try {
       final result = await serviceRepo.fetchServices();
+      if (result.data != null) {
+        emit(ServicesLoaded(services: result.data!));
+      } else {
+        emit(
+          ServiceCatalogError(
+            error: result.error ?? 'Failed to load services',
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      emit(ServiceCatalogError(error: e.toString()));
+    }
+  }
+
+   Future<void> _onFetchServicesForAProvider(
+    FetchServicesForAProvider event,
+    Emitter<ServiceCatalogState> emit,
+  ) async {
+    emit(ServiceCatalogLoading());
+    try {
+      final result = await serviceRepo.fetchServicesForAProvider();
       if (result.data != null) {
         emit(ServicesLoaded(services: result.data!));
       } else {

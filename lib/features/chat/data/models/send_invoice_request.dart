@@ -2,6 +2,8 @@ import 'dart:convert';
 
 class SendInvoice {
   SendInvoice({
+    this.userId,
+    this.providerServiceId,
     this.chatId,
     this.amount,
     this.currency,
@@ -11,13 +13,15 @@ class SendInvoice {
     this.fileUrl,
     this.fileSize,
     this.mimeType,
-    this.date
+    this.date,
   });
 
   factory SendInvoice.fromRawJson(String str) =>
       SendInvoice.fromJson(json.decode(str) as Map<String, dynamic>);
 
   factory SendInvoice.fromJson(Map<String, dynamic> json) => SendInvoice(
+    userId: json['userId'] as int?,
+    providerServiceId: json['providerServiceId'] as int?,
     chatId: json['chatId'] as int?,
     amount: json['amount'] as int?,
     currency: json['currency'] as String?,
@@ -27,7 +31,7 @@ class SendInvoice {
     fileUrl: json['fileUrl'] as String?,
     fileSize: json['fileSize'] as int?,
     mimeType: json['mimeType'] as String?,
-    date: json['date'] as DateTime?,
+    date: json['date'] != null ? DateTime.parse(json['date'] as String) : null,
   );
   final int? chatId;
   final int? amount;
@@ -39,10 +43,14 @@ class SendInvoice {
   final int? fileSize;
   final String? mimeType;
   final DateTime? date;
+  final int? userId;
+  final int? providerServiceId;
 
   String toRawJson() => json.encode(toJson());
 
   Map<String, dynamic> toJson() => {
+    'userId': userId,
+    'providerServiceId': providerServiceId,
     'chatId': chatId,
     'amount': amount,
     'currency': currency,

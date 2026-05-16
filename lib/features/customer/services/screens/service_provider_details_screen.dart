@@ -8,7 +8,7 @@ import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/providers_bloc/provider_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_request_bloc.dart/service_request_bloc.dart';
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 import 'package:resq360/features/customer/dashboard/widgets/chip_widget.dart';
 import 'package:resq360/features/customer/dashboard/widgets/provider_review_card.dart';
 import 'package:resq360/features/customer/dashboard/widgets/review_summary_card.dart';
@@ -20,6 +20,7 @@ class ServiceProviderDetailsScreen extends StatefulWidget {
   const ServiceProviderDetailsScreen({
     this.provider,
     this.providerId,
+    this.serviceCategoryId,
     super.key,
   }) : assert(
          provider != null || providerId != null,
@@ -28,6 +29,7 @@ class ServiceProviderDetailsScreen extends StatefulWidget {
 
   final ServiceProvider? provider;
   final int? providerId;
+  final int? serviceCategoryId;
 
   @override
   State<ServiceProviderDetailsScreen> createState() =>
@@ -39,6 +41,7 @@ class _ServiceProviderDetailsScreenState
   int currentIndex = 0;
   ServiceProvider? _provider;
   bool _isGuest = false;
+  int? _selectedProviderServiceId;
 
   @override
   void initState() {
@@ -79,16 +82,20 @@ class _ServiceProviderDetailsScreenState
     }
   }
 
-  Future<void> _createServiceRequest() async {
-    if (_provider == null || _provider!.providerServices.isEmpty) {
-      log('No provider services available');
-      return;
-    }
+  Future<void> _createServiceRequest({int? overrideServiceId}) async {
+    if (_provider == null || _provider!.providerServices.isEmpty) return;
 
-    final providerServiceId = _provider!.providerServices.first.id;
+    final targetId = overrideServiceId ?? widget.serviceCategoryId;
+
+    final matchedService = _provider!.providerServices.firstWhere(
+      (service) => service.serviceId == targetId,
+      orElse: () => throw Exception('Service not found'),
+    );
+
+    _selectedProviderServiceId = matchedService.id;
 
     context.read<ServiceRequestBloc>().add(
-      CreateServiceRequest(providerServiceId: providerServiceId),
+      BookServiceRequest(providerServiceId: matchedService.id),
     );
   }
 
@@ -113,9 +120,7 @@ class _ServiceProviderDetailsScreenState
                       )
                       .toList(),
               titleGallery: null,
-              loadingWidget: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              loadingWidget: const Center(child: CircularProgressIndicator()),
               errorWidget: const Center(
                 child: Icon(Icons.broken_image, size: 50),
               ),
@@ -161,9 +166,7 @@ class _ServiceProviderDetailsScreenState
                   onPressed: () => pop(context),
                 ),
               ),
-              body: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              body: const Center(child: CircularProgressIndicator()),
             );
           }
 
@@ -188,11 +191,13 @@ class _ServiceProviderDetailsScreenState
 
               if (state is ServiceRequestCreated) {
                 await pop(context);
+
                 await pushScreen(
                   context,
                   ChatDetailScreen(
-                    chatId: state.chatId,
+                    chatId: state.request.id!,
                     userType: UserType.customer,
+                    providerServiceId: _selectedProviderServiceId,
                   ),
                 );
               } else if (state is ServiceRequestError) {
@@ -282,9 +287,7 @@ class _ServiceProviderDetailsScreenState
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    PictureWidget(
-                                      image: provider.profileImage,
-                                    ),
+                                    PictureWidget(image: provider.profileImage),
                                     12.horizontalSpace,
                                     Expanded(
                                       child: Column(
@@ -311,7 +314,7 @@ class _ServiceProviderDetailsScreenState
                                                   ratingState,
                                                 ) {
                                                   if (ratingState
-                                                      is ProviderRatingsLoaded) {
+                                                      is RatingsLoaded) {
                                                     return Row(
                                                       children: [
                                                         UrbText(
@@ -382,9 +385,7 @@ class _ServiceProviderDetailsScreenState
                                                   ),
                                               2.horizontalSpace,
                                               GenText(
-                                                provider.distance != null
-                                                    ? '${(provider.distance! / 1000).toStringAsFixed(1)} km'
-                                                    : 'N/A',
+                                                '${provider.distanceKM} km',
                                                 size: 12,
                                                 color: colors.neutral.shade300,
                                               ),
@@ -509,9 +510,9 @@ class _ServiceProviderDetailsScreenState
                                       );
                                     }
 
-                                    if (ratingState is ProviderRatingsLoaded) {
-                                      final ratings = ratingState.ratings;
-                                      final reviews = ratings.reviews ?? [];
+                                    if (ratingState is RatingsLoaded) {
+                                      final ratings = ratingState.providerRatings;
+                                      final reviews = ratings?.reviews ?? [];
 
                                       return Column(
                                         crossAxisAlignment:
@@ -519,11 +520,11 @@ class _ServiceProviderDetailsScreenState
                                         children: [
                                           ReviewSummaryCard(
                                             averageRating:
-                                                ratings.averageRatings
+                                                ratings?.averageRatings
                                                     ?.toDouble() ??
                                                 0,
                                             totalReviews:
-                                                ratings.totalReviews ?? 0,
+                                                ratings?.totalReviews ?? 0,
                                           ),
 
                                           16.verticalSpace,
@@ -535,9 +536,7 @@ class _ServiceProviderDetailsScreenState
                                             ),
 
                                           ...reviews.map(
-                                            (r) => ProviderReviewCard(
-                                              data: r,
-                                            ),
+                                            (r) => ProviderReviewCard(data: r),
                                           ),
                                         ],
                                       );
@@ -564,7 +563,16 @@ class _ServiceProviderDetailsScreenState
                             await _requireLogin();
                             return;
                           }
-                          await _createServiceRequest();
+                          if (widget.serviceCategoryId == null) {
+                            final picked = await _pickProviderService(context);
+                            log('Picked service ID: $picked');
+                            if (picked == null) return;
+                            await _createServiceRequest(
+                              overrideServiceId: picked,
+                            );
+                          } else {
+                            await _createServiceRequest();
+                          }
                         },
                       ),
                     ),
@@ -575,6 +583,54 @@ class _ServiceProviderDetailsScreenState
           );
         },
       ),
+    );
+  }
+
+  Future<int?> _pickProviderService(BuildContext context) async {
+    final provider = _provider;
+    if (provider == null) return null;
+
+    return showModalBottomSheet<int>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final colors = ctx.appColors;
+        return Padding(
+          padding: pad(horizontal: 20, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              UrbText(
+                'Select a Service',
+                size: 18,
+                weight: FontWeight.w700,
+                color: colors.black,
+              ),
+              16.verticalSpace,
+              ...provider.providerServices.map(
+                (ps) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: GenText(ps.name, color: colors.black),
+                  subtitle: GenText(
+                    ps.service.name,
+                    size: 12,
+                    color: colors.textColor.shade400,
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: colors.neutral.shade300,
+                  ),
+                  onTap: () => Navigator.pop(ctx, ps.serviceId),
+                ),
+              ),
+              16.verticalSpace,
+            ],
+          ),
+        );
+      },
     );
   }
 }

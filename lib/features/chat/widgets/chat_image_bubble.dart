@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/chat/widgets/chat_image_loader.dart';
 import 'package:resq360/features/chat/widgets/full_image_viewer.dart';
+import 'package:resq360/features/settings/data/models/ticket_message.model.dart';
 
 class ChatImageBubble extends StatelessWidget {
   const ChatImageBubble({
@@ -8,6 +9,7 @@ class ChatImageBubble extends StatelessWidget {
     required this.time,
     required this.isMine,
     this.caption,
+    this.status = MessageStatus.sent,
     super.key,
   });
 
@@ -15,6 +17,7 @@ class ChatImageBubble extends StatelessWidget {
   final String time;
   final bool isMine;
   final String? caption;
+  final MessageStatus status;
 
   @override
   Widget build(BuildContext context) {
@@ -60,10 +63,15 @@ class ChatImageBubble extends StatelessWidget {
                             color: Colors.black54,
                             borderRadius: BorderRadius.circular(12.r),
                           ),
-                          child: GenText(
-                            time,
-                            size: 11,
-                            color: Colors.white,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GenText(time, size: 11, color: Colors.white),
+                              if (isMine) ...[
+                                SizedBox(width: 4.w),
+                                _buildStatusIcon(),
+                              ],
+                            ],
                           ),
                         ),
                       ),
@@ -84,10 +92,7 @@ class ChatImageBubble extends StatelessWidget {
                           : appColors.neutral.shade100,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: GenText(
-                  caption!,
-                  color: appColors.black,
-                ),
+                child: GenText(caption!, color: appColors.black),
               ),
             ],
           ],
@@ -97,9 +102,29 @@ class ChatImageBubble extends StatelessWidget {
   }
 
   Future<void> _showFullImage(BuildContext context) async {
-    await pushScreen(
-      context,
-      FullImageViewer(imageUrl: imageUrl),
-    );
+    await pushScreen(context, FullImageViewer(imageUrl: imageUrl));
+  }
+
+  Widget _buildStatusIcon() {
+    switch (status) {
+      case MessageStatus.sending:
+        return const Icon(Icons.access_time, size: 12, color: Colors.white70);
+      case MessageStatus.sent:
+        return const Icon(Icons.check, size: 12, color: Colors.white);
+      case MessageStatus.delivered:
+        return const Icon(Icons.done_all, size: 12, color: Colors.white);
+      case MessageStatus.read:
+        return const Icon(
+          Icons.done_all,
+          size: 12,
+          color: Colors.lightBlueAccent,
+        );
+      case MessageStatus.failed:
+        return const Icon(
+          Icons.error_outline,
+          size: 12,
+          color: Colors.redAccent,
+        );
+    }
   }
 }

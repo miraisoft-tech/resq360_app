@@ -25,7 +25,7 @@ class ToDoSection extends StatelessWidget {
         provider.openingHours == null || provider.closingHours == null;
 
     final kycStatus = provider.kycStatus?.toUpperCase();
-    // final kycMissingOrFailed = kycStatus == null || kycStatus == 'FAILED';
+
     final kycPending = kycStatus == 'PENDING';
     final kycApproved = kycStatus == 'APPROVED' || provider.isKYCVerified;
 
@@ -137,10 +137,7 @@ class ToDoSection extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () async {
-              await pushScreen(
-                context,
-                const SettingsScreen(),
-              ); 
+              await pushScreen(context, const SettingsScreen());
             },
             child: GenText(
               'Complete KYC Verification',

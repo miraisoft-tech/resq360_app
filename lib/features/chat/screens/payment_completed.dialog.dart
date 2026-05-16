@@ -1,7 +1,8 @@
 import 'package:resq360/__lib.dart';
 
 class PaymentCompleted extends StatelessWidget {
-  const PaymentCompleted({ super.key});
+  const PaymentCompleted({ super.key, this.onViewDetails});
+  final void Function()? onViewDetails;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -53,9 +54,7 @@ class PaymentCompleted extends StatelessWidget {
                       label: 'View details',
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
-                      onPressed: () async {
-                        Navigator.of(context).pop();
-                      },
+                      onPressed: onViewDetails
                     ),
                   ),
                 ],

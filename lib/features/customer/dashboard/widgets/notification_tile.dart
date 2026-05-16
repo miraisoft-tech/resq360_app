@@ -19,10 +19,11 @@ Future<void> _handleNotificationTap(
   BuildContext context,
   NotificationModel notification,
 ) async {
-  context.read<NotificationBloc>().add(
-    MarkNotificationsAsRead(ids: [notification.id]),
-  );
-
+  if (notification.isUnread) {
+    context.read<NotificationBloc>().add(
+      MarkNotificationsAsRead(ids: [notification.id]),
+    );
+  }
   if (notification.category == 'SERVICE_COMPLETION') {
     final serviceRequestId = notification.serviceRequestId;
     final providerId = notification.providerId;

@@ -7,8 +7,9 @@ import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/data/models/invoice_form_data.dart';
 import 'package:resq360/features/chat/screens/invoice_confirm.dialog.dart';
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 
 class GenerateInvoiceDialog extends StatefulWidget {
   const GenerateInvoiceDialog({required this.chat, super.key});
@@ -40,7 +41,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       unawaited(initializeLocation());
-      context.read<ServiceCatalogBloc>().add(const FetchServices());
+      context.read<ServiceCatalogBloc>().add(const FetchServicesForAProvider());
       unawaited(fetchCategory());
       dateController.text = '';
       final id = await _loadProviderId();
@@ -129,9 +130,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                 builder: (context, state) {
                   if (state is ServiceCatalogLoading) {
                     isProcessing = true;
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
+                    return const Center(child: CircularProgressIndicator());
                   }
 
                   if (state is ServiceCatalogError) {
@@ -149,7 +148,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                           label: 'retry',
                           onPressed: () {
                             context.read<ServiceCatalogBloc>().add(
-                              const FetchServices(),
+                              const FetchServicesForAProvider(),
                             );
                           },
                         ),
@@ -160,16 +159,9 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                   if (state is ServicesLoaded) {
                     isProcessing = false;
 
-                    final chatServiceCategoryId = widget.chat.serviceCategoryId;
+                    final services = state.services;
 
-                    final filteredServices =
-                        chatServiceCategoryId == null
-                            ? <Service>[]
-                            : state.services
-                                .where((s) => s.id == chatServiceCategoryId)
-                                .toList();
-
-                    if (filteredServices.isEmpty) {
+                    if (services.isEmpty) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -182,7 +174,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                             label: 'Retry',
                             onPressed: () {
                               context.read<ServiceCatalogBloc>().add(
-                                const FetchServices(),
+                                const FetchServicesForAProvider(),
                               );
                             },
                           ),
@@ -190,14 +182,13 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                       );
                     }
 
-                    final current = _selectType.value;
-                    if (current == null ||
-                        !filteredServices.any((s) => s.id == current.id)) {
-                      _selectType.value = filteredServices.first;
+                    if (_selectType.value == null ||
+                        !services.any((s) => s.id == _selectType.value!.id)) {
+                      _selectType.value = services.first;
                     }
 
                     return ServiceDropdown(
-                      items: filteredServices,
+                      items: services,
                       controller: _selectType,
                     );
                   }
@@ -227,8 +218,18 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                       final picked = await showDatePicker(
                         context: context,
                         initialDate: value ?? now,
-                        firstDate: DateTime(now.year - 1),
-                        lastDate: DateTime(now.year + 2),
+                        firstDate: now,
+                        lastDate: DateTime(now.year + 1),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: ColorScheme.light(
+                                primary: appColors.primary.shade500,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
                       );
 
                       if (picked != null) {
@@ -293,18 +294,37 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
                           );
                           return;
                         }
+
                         final rand = Random().nextInt(999);
-                        final invoiceNo =
-                            "INV-${rand.toString().padLeft(3, '0')}";
-                        final invoice = {
-                          'invoiceNo': invoiceNo,
-                          'chatId': widget.chat.id,
-                          'serviceCategory': _selectType.value!.name,
-                          'location': locationController.text,
-                          'price': int.tryParse(priceController.text) ?? 0,
-                          'description': serviceController.text,
-                          'date': _selectedDate.value!.toIso8601String(),
-                        };
+                        final user = widget.chat.participants?.firstWhere(
+                          (p) => p.participantType == 'USER',
+                        );
+                        final providerServiceId =
+                            _selectType.value!.providerServiceId;
+
+                        log(
+                          '[INVOICE] _selectType.value: ${_selectType.value?.toJson()}',
+                        );
+
+                        if (providerServiceId == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Selected service has no ID.',
+                          );
+                          return;
+                        }
+
+                        final invoice = InvoiceFormData(
+                          invoiceNo: 'INV-${rand.toString().padLeft(3, '0')}',
+                          chatId: widget.chat.id,
+                          userId: user?.participantId,
+                          providerServiceId: providerServiceId,
+                          serviceCategory: _selectType.value!.name,
+                          location: locationController.text,
+                          price: int.tryParse(priceController.text) ?? 0,
+                          description: serviceController.text,
+                          date: _selectedDate.value!,
+                        );
 
                         await GeneralDialogs.showCustomDialog<void>(
                           context,

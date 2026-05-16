@@ -13,4 +13,14 @@ class DialerUtil {
       log('cannot launch');
     }
   }
+
+  static Future<void> openSms(String phoneNumber) async {
+    final uri = Uri(scheme: 'sms', path: phoneNumber);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      log('cannot launch');
+    }
+  }
 }

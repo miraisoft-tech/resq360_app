@@ -218,38 +218,54 @@ class _ProviderChatInvoiceCardWidgetState
                       GenText(
                         'Service Type',
                         weight: FontWeight.w500,
-                        color: appColors.success.shade700,
+                        color:
+                            widget.paymentStatus == PaymentStatus.completed
+                                ? appColors.success.shade700
+                                : Colors.white,
                       ),
                       2.verticalSpace,
                       GenText(
                         widget.chat.serviceName ?? '-',
                         size: 12,
-                        color: context.appColors.textColor.shade300,
+                        color:
+                            widget.paymentStatus == PaymentStatus.completed
+                                ? appColors.textColor.shade300
+                                : Colors.white,
                       ),
                       10.verticalSpace,
                       GenText(
                         'Description',
                         weight: FontWeight.w500,
-                        color: appColors.success.shade700,
+                        color:
+                            widget.paymentStatus == PaymentStatus.completed
+                                ? appColors.success.shade700
+                                : Colors.white,
                       ),
                       2.verticalSpace,
                       GenText(
                         widget.metadata.description ?? '-',
                         size: 12,
-                        color: context.appColors.textColor.shade300,
+                        color:
+                            widget.paymentStatus == PaymentStatus.completed
+                                ? appColors.textColor.shade300
+                                : Colors.white,
                       ),
                       if (widget.metadata.date != null) ...[
-                         10.verticalSpace,
+                        10.verticalSpace,
                         GenText(
                           'Date',
                           weight: FontWeight.w500,
-                          color: appColors.success.shade700
+                          color:  widget.paymentStatus == PaymentStatus.completed
+                              ? appColors.textColor.shade400
+                              : Colors.white,
                         ),
                         2.verticalSpace,
                         GenText(
-                          AppTextUtil.formatDateToString(widget.metadata.date!,),
+                          AppTextUtil.formatDateToString(widget.metadata.date!),
                           size: 12,
-                          color: context.appColors.textColor.shade300,
+                          color:  widget.paymentStatus == PaymentStatus.completed
+                              ? appColors.textColor.shade300
+                              : Colors.white,
                         ),
                         10.verticalSpace,
                       ],
@@ -283,9 +299,7 @@ class _ProviderChatInvoiceCardWidgetState
                               : Colors.white,
                     ),
                     GenText(
-                      'NGN${AppTextUtil.formatAmount(
-                        widget.metadata.amount?.toString() ?? '0',
-                      )}',
+                      'NGN${AppTextUtil.formatAmount(widget.metadata.amount?.toString() ?? '0')}',
                       size: 16,
                       weight: FontWeight.w700,
                       color:

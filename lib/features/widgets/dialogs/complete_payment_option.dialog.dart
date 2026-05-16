@@ -208,10 +208,10 @@ class _ClientPaymentConfirmDialogState
 
     return Padding(
       padding: EdgeInsets.only(top: 220.h, bottom: 160.h),
-      child: Material(
-        color: Colors.transparent,
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: pad(horizontal: 20),
         child: Container(
-          margin: pad(horizontal: 20, vertical: 100),
           padding: pad(horizontal: 25, vertical: 25),
           decoration: BoxDecoration(
             color: appColors.whiteColor,
@@ -277,7 +277,7 @@ class _ClientPaymentConfirmDialogState
                   12.horizontalSpace,
                   Expanded(
                     child: WideButton(
-                      label: 'Pay ₦${widget.amount}',
+                      label: 'Pay ₦${AppTextUtil.formatAmount(widget.amount.toString())}',
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () {

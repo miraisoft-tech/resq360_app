@@ -10,6 +10,7 @@ class Metadata {
     this.latitude,
     this.longitude,
     this.address,
+    this.paymentStatus,
     this.customData,
   });
 
@@ -28,6 +29,7 @@ class Metadata {
       latitude: _parseDouble(json['latitude']),
       longitude: _parseDouble(json['longitude']),
       address: json['address'] as String?,
+      paymentStatus: json['paymentStatus'] as String?,
       
       customData: Map<String, dynamic>.from(json),
     );
@@ -52,6 +54,7 @@ class Metadata {
   final double? latitude;
   final double? longitude;
   final String? address;
+  final String? paymentStatus; 
 
   final Map<String, dynamic>? customData;
 
@@ -67,6 +70,7 @@ class Metadata {
     if (latitude != null) json['latitude'] = latitude;
     if (longitude != null) json['longitude'] = longitude;
     if (address != null) json['address'] = address;
+    if (paymentStatus != null) json['paymentStatus'] = paymentStatus;
     
     if (customData != null) {
       customData!.forEach((key, value) {

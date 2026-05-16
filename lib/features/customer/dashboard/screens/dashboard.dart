@@ -7,6 +7,7 @@ import 'package:resq360/core/services/notification_service.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
+import 'package:resq360/features/customer/bookings/screens/provider_service_details.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/advertisement_bloc/customer_advertisement_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/creator_type.enum.dart';
 import 'package:resq360/features/customer/dashboard/screens/advertisement_screen.dart';
@@ -20,7 +21,6 @@ import 'package:resq360/features/customer/services/screens/service_providers_scr
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
-import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/widgets/header_widget.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
@@ -57,16 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initDashboard() async {
     final isGuest = await AuthLocalRepo.instance.getGuestMode();
-    // if (!_isGuest) {
-    //   final unreadCount =
-    //       await NotificationRepo.instance.getUnreadNotificationCount();
-    //   if (!mounted) return;
-    //   setState(() {
-    //     _unreadCount = unreadCount;
-    //   });
-    // }
 
     if (!mounted) return;
+
     setState(() {
       _isGuest = isGuest;
     });
@@ -74,12 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!_isGuest) {
         context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
-        final unreadCount =
-            await NotificationRepo.instance.getUnreadNotificationCount();
-        if (!mounted) return;
-        setState(() {
-          _unreadCount = unreadCount;
-        });
+
+        context.read<CustomerBookingBloc>().add(
+          FetchCustomerBookings(status: BookingStatus.ongoing.value),
+        );
       }
 
       context.read<ServiceCatalogBloc>().add(const FetchServices());
@@ -93,9 +84,14 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       if (!_isGuest) {
-        context.read<CustomerBookingBloc>().add(
-          FetchCustomerBookings(status: BookingStatus.ongoing.value),
-        );
+        final unreadCount =
+            await NotificationRepo.instance.getUnreadNotificationCount();
+
+        if (!mounted) return;
+
+        setState(() {
+          _unreadCount = unreadCount;
+        });
       }
     });
   }
@@ -191,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       await pushScreen(context, const NotificationScreen());
                     },
                   ),
-                  10.horizontalSpace,
+                  5.horizontalSpace,
                 ],
               ),
             ),
@@ -199,29 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: RefreshIndicator(
                 color: colors.primary,
                 onRefresh: () async {
-                  if (!_isGuest) {
-                    context.read<CustomerAuthBloc>().add(
-                      const CustomergetUserProfile(),
-                    );
-                  }
-
-                  context.read<ServiceCatalogBloc>().add(const FetchServices());
-                  context.read<CustomerAdvertisementBloc>().add(
-                    const FetchProviderAdvertisements(),
-                  );
-
-                  context.read<CustomerAdvertisementBloc>().add(
-                    CustomerFetchAdvertisement(
-                      creatorType: CreatorType.admin.name,
-                    ),
-                  );
-                  if (!_isGuest) {
-                    context.read<CustomerBookingBloc>().add(
-                      FetchCustomerBookings(
-                        status: BookingStatus.ongoing.value,
-                      ),
-                    );
-                  }
+                  await _initDashboard();
                 },
                 child: ListView(
                   padding: EdgeInsets.only(
@@ -442,10 +416,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           final ads = state.advertisements;
 
                           if (ads.isEmpty) {
-                            return const Center(
-                              child: Text(
+                            return Padding(
+                              padding: pad(horizontal: 16, vertical: 20),
+                              child: const GenText(
                                 'No advertisements available',
-                                style: TextStyle(fontSize: 14),
+                                textAlign: TextAlign.center,
                               ),
                             );
                           }

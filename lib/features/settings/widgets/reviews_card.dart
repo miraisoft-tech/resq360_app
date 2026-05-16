@@ -1,26 +1,22 @@
 import 'package:resq360/__lib.dart';
 
-class ReviewCardShared<T> extends StatelessWidget {
+class ReviewCardShared extends StatelessWidget {
   const ReviewCardShared({
-    required this.item,
-    required this.getName,
-    required this.getAvatar,
-    required this.getCategory,
-    required this.getDate,
-    required this.getRating,
-    required this.getFeedback,
+    required this.name,
+    required this.avatar,
+    required this.category,
+    required this.date,
+    required this.rating,
+    required this.feedback,
     super.key,
-
   });
 
-  final T item;
-
-  final String Function(T) getName;
-  final String Function(T) getAvatar;
-  final String Function(T) getCategory;
-  final String Function(T) getDate;
-  final int Function(T) getRating;
-  final String Function(T) getFeedback;
+  final String name;
+  final String avatar;
+  final String category;
+  final String date;
+  final int rating;
+  final String feedback;
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +32,9 @@ class ReviewCardShared<T> extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
-              CircleAvatar(
-                radius: 25.r,
-                backgroundImage: NetworkImage(getAvatar(item)),
-              ),
+              CircleAvatar(radius: 25.r, backgroundImage: NetworkImage(avatar)),
 
               12.horizontalSpace,
 
@@ -50,16 +42,12 @@ class ReviewCardShared<T> extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GenText(
-                      getName(item),
-                      size: 15,
-                      weight: FontWeight.w600,
-                    ),
+                    GenText(name, size: 15, weight: FontWeight.w600),
 
                     5.verticalSpace,
 
                     GenText(
-                      getCategory(item),
+                      category,
                       size: 12,
                       color: colors.textColor.shade300,
                     ),
@@ -73,7 +61,7 @@ class ReviewCardShared<T> extends StatelessWidget {
                         ),
                         5.horizontalSpace,
                         GenText(
-                          getDate(item),
+                          date,
                           size: 12,
                           color: colors.textColor.shade400,
                         ),
@@ -88,9 +76,10 @@ class ReviewCardShared<T> extends StatelessWidget {
                   5,
                   (i) => Icon(
                     Icons.star,
-                    color: i < getRating(item)
-                        ? colors.primary.shade500
-                        : colors.textColor.shade100,
+                    color:
+                        i < rating
+                            ? colors.primary.shade500
+                            : colors.textColor.shade100,
                     size: 15,
                   ),
                 ),
@@ -101,7 +90,7 @@ class ReviewCardShared<T> extends StatelessWidget {
           12.verticalSpace,
 
           GenText(
-            getFeedback(item),
+            feedback,
             size: 12,
             color: colors.textColor.shade400,
             height: 19,

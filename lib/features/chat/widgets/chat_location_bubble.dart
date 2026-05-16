@@ -1,4 +1,6 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/theme/app_color_theme.dart';
+import 'package:resq360/features/settings/data/models/ticket_message.model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ChatLocationBubble extends StatelessWidget {
@@ -8,6 +10,7 @@ class ChatLocationBubble extends StatelessWidget {
     required this.address,
     required this.time,
     required this.isMine,
+    this.status = MessageStatus.sent,
     super.key,
   });
 
@@ -16,6 +19,7 @@ class ChatLocationBubble extends StatelessWidget {
   final String address;
   final String time;
   final bool isMine;
+  final MessageStatus status;
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +40,7 @@ class ChatLocationBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isMine ? appColors.primary : appColors.neutral.shade100,
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: appColors.neutral.shade200,
-                ),
+                border: Border.all(color: appColors.neutral.shade200),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,6 +152,7 @@ class ChatLocationBubble extends StatelessWidget {
                               size: 11,
                               color: isMine ? appColors.whiteColor : null,
                             ),
+                            if (isMine) _buildStatusIcon(appColors),
                           ],
                         ),
                       ],
@@ -194,6 +197,33 @@ class ChatLocationBubble extends StatelessWidget {
       }
     } on Exception catch (e) {
       log('Error launching maps: $e');
+    }
+  }
+
+  Widget _buildStatusIcon(AppColorPalette appColors) {
+    switch (status) {
+      case MessageStatus.sending:
+        return Icon(
+          Icons.access_time,
+          size: 12,
+          color: appColors.whiteColor.withValues(alpha: 0.7),
+        );
+      case MessageStatus.sent:
+        return Icon(
+          Icons.check,
+          size: 12,
+          color: isMine ? appColors.whiteColor : appColors.neutral.shade400,
+        );
+      case MessageStatus.delivered:
+        return Icon(
+          Icons.done_all,
+          size: 12,
+          color: isMine ? appColors.whiteColor : appColors.neutral.shade400,
+        );
+      case MessageStatus.read:
+        return Icon(Icons.done_all, size: 12, color: appColors.primary);
+      case MessageStatus.failed:
+        return Icon(Icons.error_outline, size: 12, color: appColors.error);
     }
   }
 }

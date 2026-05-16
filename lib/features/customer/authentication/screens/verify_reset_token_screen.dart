@@ -11,10 +11,7 @@ import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class VerifyResetTokenScreen extends StatefulWidget {
-  const VerifyResetTokenScreen({
-    required this.email,
-    super.key,
-  });
+  const VerifyResetTokenScreen({required this.email, super.key});
 
   final String email;
 
@@ -48,13 +45,12 @@ class _VerifyResetTokenScreenState extends State<VerifyResetTokenScreen> {
       _tokenController.clear();
     }
     context.read<CustomerAuthBloc>().add(
-      CustomerRequestPasswordResetEvent(
-        email: widget.email.trim(),
-      ),
+      CustomerRequestPasswordResetEvent(email: widget.email.trim()),
     );
   }
 
   Future<void> onVerify() async {
+    log('TOKEN: ${_tokenController.text}');
     if (_tokenController.text.length < 6) {
       await showErrorSnackbar(context, 'Reset code must be 6 digits');
       return;
@@ -71,20 +67,22 @@ class _VerifyResetTokenScreenState extends State<VerifyResetTokenScreen> {
 
     return BlocConsumer<CustomerAuthBloc, CustomerAuthState>(
       listener: (context, state) async {
-        if (!mounted) return;
+        if (!context.mounted) return;
+
         if (state is! CustomerAuthLoading) {
           if (Navigator.of(context, rootNavigator: true).canPop()) {
             Navigator.of(context, rootNavigator: true).pop();
           }
         }
+
         if (state is CustomerAuthLoading) {
           showLoadingDialog(context);
           return;
         }
 
         if (state is CustomerAuthFailure) {
-          await pop(context);
           Future.delayed(const Duration(seconds: 2), () async {
+            if (!context.mounted) return;
             await showSnackBar(context, 'Error', state.error);
           });
         }
@@ -94,14 +92,13 @@ class _VerifyResetTokenScreenState extends State<VerifyResetTokenScreen> {
           controller
             ..endTime =
                 DateTime.now()
-                    .add(const Duration(seconds: 1 * 60))
+                    .add(const Duration(seconds: 60))
                     .millisecondsSinceEpoch
             ..start();
-
           setState(() {});
         }
 
-        if (state is CustomerResetTokenValidatedState && context.mounted) {
+        if (state is CustomerResetTokenValidatedState) {
           await replaceScreen(context, const ResetPasswordScreen());
         }
       },

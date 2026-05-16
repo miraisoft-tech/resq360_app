@@ -41,10 +41,10 @@ class _CustomerDetailsScreenState extends State<CustomerDetailsScreen> {
 
     return BlocBuilder<RatingsBloc, RatingsState>(
       builder: (context, state) {
-        if (state is CustomerRatingsLoaded) {
-          averageRating = state.ratings.averageRatings?.toDouble() ?? 0.0;
-          totalReviews = state.ratings.reviews?.length ?? 0;
-          reviews = state.ratings.reviews ?? [];
+        if (state is RatingsLoaded) {
+          averageRating = state.customerRatings?.averageRatings?.toDouble() ?? 0.0;
+          totalReviews = state.customerRatings?.reviews?.length ?? 0;
+          reviews = state.customerRatings?.reviews ?? [];
         }
         return Scaffold(
           backgroundColor: appColors.whiteColor,

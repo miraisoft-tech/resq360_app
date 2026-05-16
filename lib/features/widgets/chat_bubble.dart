@@ -84,18 +84,13 @@ class ChatBubble extends StatelessWidget {
               children: [
                 TextButton.icon(
                   onPressed: onRetry,
-                  icon: Icon(
-                    Icons.refresh,
-                    size: 16,
-                    color: appColors.error,
-                  ),
-                  label: GenText(
-                    'Retry',
-                    size: 12,
-                    color: appColors.error,
-                  ),
+                  icon: Icon(Icons.refresh, size: 16, color: appColors.error),
+                  label: GenText('Retry', size: 12, color: appColors.error),
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -114,7 +109,10 @@ class ChatBubble extends StatelessWidget {
                     color: appColors.textColor.shade400,
                   ),
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -130,28 +128,23 @@ class ChatBubble extends StatelessWidget {
   Widget _buildStatusIcon(AppColorPalette appColors) {
     switch (status) {
       case MessageStatus.sending:
-        return const SizedBox(
+        return SizedBox(
           width: 12,
           height: 12,
-          child: CircularProgressIndicator(
-            strokeWidth: 1.5,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Color(0xFFE9E9E9),
-            ),
+          child: Icon(
+            Icons.access_time,
+            size: 12,
+            color: appColors.whiteColor.withValues(alpha: 0.7),
           ),
         );
       case MessageStatus.sent:
-        return const Icon(
-          Icons.check,
-          size: 12,
-          color: Color(0xFFE9E9E9),
-        );
+        return Icon(Icons.check, size: 12, color: appColors.whiteColor);
+      case MessageStatus.delivered:
+        return Icon(Icons.done_all, size: 12, color: appColors.whiteColor);
+      case MessageStatus.read:
+        return Icon(Icons.done_all, size: 12, color: appColors.whiteColor);
       case MessageStatus.failed:
-        return Icon(
-          Icons.error_outline,
-          size: 12,
-          color: appColors.error
-        );
+        return Icon(Icons.error_outline, size: 12, color: appColors.error);
     }
   }
 }

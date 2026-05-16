@@ -13,13 +13,14 @@ import 'package:resq360/features/provider/authentication/data/models/provider_re
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
+import 'package:resq360/features/provider/dashboard/data/bloc/provider_stats_bloc/provider_stats_bloc.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/advertisement_countdown_timer.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
-import 'package:resq360/features/provider/dashboard/widgets/provider_ongoing_service.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_stats_card.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_todo.dart';
+import 'package:resq360/features/provider/dashboard/widgets/provider_upcoming_service.dart';
 import 'package:resq360/features/provider/dashboard/widgets/service_requests.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
@@ -48,27 +49,26 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   }
 
   Future<void> _initDashboard() async {
-    final unreadCount =
-        await NotificationRepo.instance.getUnreadNotificationCount();
-
-    if (!mounted) return;
-    setState(() {
-      _unreadCount = unreadCount;
-    });
-
-    context.read<ProviderAuthBloc>().add(
-      const ProvidergetProviderProfile(),
-    );
+    context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
 
     context.read<CustomerAdvertisementBloc>().add(
       CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
     );
 
     context.read<ProviderServiceBloc>().add(
-      ProviderFetchBookings(
-        status: BookingStatus.ongoing.value,
-      ),
+      ProviderFetchBookings(status: BookingStatus.upcoming.value),
     );
+
+    context.read<ProviderStatsBloc>().add(const FetchProviderStats());
+
+    final unreadCount =
+        await NotificationRepo.instance.getUnreadNotificationCount();
+
+    if (!mounted) return;
+
+    setState(() {
+      _unreadCount = unreadCount;
+    });
   }
 
   @override
@@ -78,14 +78,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
         if (state is BookingStarted) {
-          await showSuccessSnackbar(
-            context,
-            'Service started successfully',
-          );
+          await showSuccessSnackbar(context, 'Service started successfully');
           context.read<ProviderServiceBloc>().add(
-            ProviderFetchBookings(
-              status: BookingStatus.ongoing.value,
-            ),
+            ProviderFetchBookings(status: BookingStatus.upcoming.value),
           );
         }
         if (state is BookingError) {
@@ -98,11 +93,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.only(
-                  left: 16.w,
-                  right: 16.w,
-                  top: 10.h,
-                ),
+                padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -162,9 +153,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                     color: colors.neutral.shade300,
                                   ),
                                   borderRadius:
-                                      BorderRadiusDirectional.circular(
-                                        17,
-                                      ),
+                                      BorderRadiusDirectional.circular(17),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(6),
@@ -179,27 +168,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         await pushScreen(context, const NotificationScreen());
                       },
                     ),
-                    10.horizontalSpace,
+                    5.horizontalSpace,
                   ],
                 ),
               ),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    context.read<ProviderAuthBloc>().add(
-                      const ProvidergetProviderProfile(),
-                    );
-
-                    context.read<ProviderServiceBloc>().add(
-                      ProviderFetchBookings(
-                        status: BookingStatus.ongoing.value,
-                      ),
-                    );
-                    context.read<CustomerAdvertisementBloc>().add(
-                      CustomerFetchAdvertisement(
-                        creatorType: CreatorType.admin.name,
-                      ),
-                    );
+                    await _initDashboard();
                   },
 
                   color: colors.primary.shade500,
@@ -214,26 +190,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          BlocBuilder<
-                            ProviderServiceBloc,
-                            ProviderServiceState
-                          >(
+                          BlocBuilder<ProviderStatsBloc, ProviderStatsState>(
                             builder: (context, state) {
-                              if (state is ProviderServicesError) {
-                                const ProviderStatsCard(
-                                  title: 'Engagement',
-                                  value: '-',
-                                  icon:
-                                      AppAssets
-                                          .ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
-                                );
-                              }
-
-                              if (state is ProviderBookingsLoaded) {
-                                final bookings = state.bookings;
+                              if (state is ProviderStatsLoaded) {
                                 return ProviderStatsCard(
                                   title: 'Engagement',
-                                  value: bookings.length.toString(),
+                                  value: (state.stats.completedServicesCount ?? 0).toString(),
                                   icon:
                                       AppAssets
                                           .ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
@@ -249,17 +211,19 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           ),
 
                           16.horizontalSpace,
-                          BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+                          BlocBuilder<ProviderStatsBloc, ProviderStatsState>(
                             builder: (context, state) {
-                              final revenue =
-                                  state is ProviderProfileLoadedState
-                                      ? state.user.wallet?.availableBalance
-                                              ?.toString() ??
-                                          '-'
-                                      : '-';
-                              return ProviderStatsCard(
+                              if (state is ProviderStatsLoaded) {
+                                final revenue = state.stats.totalRevenue?.toString() ?? '-';
+                                return ProviderStatsCard(
+                                  title: 'Revenue',
+                                  value: '₦${AppTextUtil.formatAmount(revenue)}',
+                                  icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
+                                );
+                              }
+                              return const ProviderStatsCard(
                                 title: 'Revenue',
-                                value: '₦${AppTextUtil.formatAmount(revenue)}',
+                                value: '-',
                                 icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
                               );
                             },
@@ -321,12 +285,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                     onTap: () async {
                                       await pushScreen(
                                         context,
-                                        ProviderServiceDetailScreen(
+                                        ClientServiceDetailScreen(
                                           booking: booking,
                                         ),
                                       );
                                     },
-                                    child: ProviderOngoingService(
+                                    child: ProviderUpcomingService(
                                       booking: booking,
                                     ),
                                   ),
@@ -353,11 +317,19 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             final activeAds = state.promotions;
                             if (activeAds.isNotEmpty &&
                                 activeAds.first.endDate != null) {
+                              final endDate = activeAds.first.endDate!;
+                              final daysSinceEnd =
+                                  DateTime.now().difference(endDate).inDays;
+
+                              if (daysSinceEnd > 7) {
+                                return const SizedBox.shrink();
+                              }
+
                               return Column(
                                 children: [
                                   AdvertCountdownTimer(
-                                    key: ValueKey(activeAds.first.endDate),
-                                    endDate: activeAds.first.endDate!,
+                                    key: ValueKey(endDate),
+                                    endDate: endDate,
                                   ),
                                   30.verticalSpace,
                                 ],

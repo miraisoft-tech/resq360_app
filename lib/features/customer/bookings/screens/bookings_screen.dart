@@ -8,10 +8,10 @@ import 'package:resq360/core/utils/dialer_util.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
+import 'package:resq360/features/customer/bookings/screens/provider_service_details.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 
 class BookingsScreen extends StatefulWidget {
@@ -61,9 +61,7 @@ class _BookingsScreenState extends State<BookingsScreen>
         status = 'upcoming';
     }
 
-    bloc.add(
-      FetchCustomerBookings(status: status),
-    );
+    bloc.add(FetchCustomerBookings(status: status));
   }
 
   @override
@@ -210,9 +208,7 @@ class _BookingList extends StatelessWidget {
       builder: (context, state) {
         if (state is CustomerBookingLoading) {
           return Center(
-            child: CircularProgressIndicator(
-              color: appColors.primary,
-            ),
+            child: CircularProgressIndicator(color: appColors.primary),
           );
         }
 
@@ -271,9 +267,7 @@ class _BookingList extends StatelessWidget {
                   onTap: () async {
                     await pushScreen(
                       context,
-                      ProviderServiceDetailScreen(
-                        booking: booking,
-                      ),
+                      ProviderServiceDetailScreen(booking: booking),
                     );
                   },
                 );
@@ -324,10 +318,7 @@ class _BookingCardState extends State<BookingCard> {
         if (chatId != null) {
           await pushScreen(
             context,
-            ChatDetailScreen(
-              chatId: chatId,
-              userType: UserType.customer,
-            ),
+            ChatDetailScreen(chatId: chatId, userType: UserType.customer),
           );
         }
       } else {
@@ -378,9 +369,7 @@ class _BookingCardState extends State<BookingCard> {
             /// --- Header Row
             Row(
               children: [
-                PictureWidget(
-                  image: data.assignedProvider?.profileImage,
-                ),
+                PictureWidget(image: data.assignedProvider?.profileImage),
                 12.horizontalSpace,
                 Expanded(
                   child: Column(
@@ -443,9 +432,7 @@ class _BookingCardState extends State<BookingCard> {
                 ],
               ],
             ),
-            const ListDivider(
-              verticalSpacing: 10,
-            ),
+            const ListDivider(verticalSpacing: 10),
 
             if (expanded)
               Column(
@@ -465,13 +452,14 @@ class _BookingCardState extends State<BookingCard> {
                     label: 'Time Started',
                     value: start,
                   ),
-                  _InfoRow(
-                    icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
-                      color: colors.textColor.shade600,
+                  if (end.isNotEmpty && end != '--')
+                    _InfoRow(
+                      icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
+                        color: colors.textColor.shade600,
+                      ),
+                      label: 'Time Completed',
+                      value: end,
                     ),
-                    label: 'Time Completed',
-                    value: end,
-                  ),
                   8.verticalSpace,
                   GestureDetector(
                     onTap: () async {
@@ -514,9 +502,7 @@ class _BookingCardState extends State<BookingCard> {
                     ),
                   ),
 
-                  const ListDivider(
-                    verticalSpacing: 15,
-                  ),
+                  const ListDivider(verticalSpacing: 15),
                 ],
               ),
             GestureDetector(
@@ -568,11 +554,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           icon,
           8.horizontalSpace,
-          GenText(
-            '$label: $value',
-            size: 13,
-            color: colors.textColor.shade600,
-          ),
+          GenText('$label: $value', size: 13, color: colors.textColor.shade600),
         ],
       ),
     );

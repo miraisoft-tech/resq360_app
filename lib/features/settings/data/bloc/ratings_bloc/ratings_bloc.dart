@@ -8,7 +8,7 @@ part 'ratings_event.dart';
 part 'ratings_state.dart';
 
 class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
-  RatingsBloc(this._repo) : super(RatingsInitial()) {
+  RatingsBloc(this._repo) : super(const RatingsLoaded()) {
     on<FetchCustomerRatings>(_onFetchCustomerRatings);
     on<FetchProviderRatings>(_onFetchProviderRatings);
     on<FetchProviderRatingsById>(_onFetchProviderRatingsById);
@@ -18,17 +18,19 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
 
   final RatingsRepo _repo;
 
+  RatingsLoaded get _current =>
+      state is RatingsLoaded ? state as RatingsLoaded : const RatingsLoaded();
+
   Future<void> _onFetchCustomerRatings(
     FetchCustomerRatings event,
     Emitter<RatingsState> emit,
   ) async {
     emit(RatingsLoading());
-
     final result = await _repo.customerGetRatings();
     final ratings = result.data;
 
     if (ratings != null) {
-      emit(CustomerRatingsLoaded(ratings));
+      emit(_current.copyWith(customerRatings: ratings));
     } else {
       emit(RatingsError(result.error ?? 'Failed to load customer ratings'));
     }
@@ -39,12 +41,11 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     Emitter<RatingsState> emit,
   ) async {
     emit(RatingsLoading());
-
     final result = await _repo.providerGetRatings();
     final ratings = result.data;
 
     if (ratings != null) {
-      emit(ProviderRatingsLoaded(ratings));
+      emit(_current.copyWith(providerRatings: ratings));
     } else {
       emit(RatingsError(result.error ?? 'Failed to load provider ratings'));
     }
@@ -54,14 +55,13 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     FetchProviderRatingsById event,
     Emitter<RatingsState> emit,
   ) async {
-    emit(RatingsLoading());
-
     final result = await _repo.providerGetRatingsById(
       providerId: event.providerId,
     );
     final ratings = result.data;
+
     if (ratings != null) {
-      emit(ProviderRatingsLoaded(ratings));
+      emit(_current.copyWith(providerRatings: ratings));
     } else {
       emit(RatingsError(result.error ?? 'Failed to load provider ratings'));
     }
@@ -71,14 +71,13 @@ class RatingsBloc extends Bloc<RatingsEvent, RatingsState> {
     FetchCustomerRatingsById event,
     Emitter<RatingsState> emit,
   ) async {
-    emit(RatingsLoading());
-
     final result = await _repo.customerGetRatingsById(userId: event.userId);
     final ratings = result.data;
+
     if (ratings != null) {
-      emit(CustomerRatingsLoaded(ratings));
+      emit(_current.copyWith(customerRatings: ratings));
     } else {
-      emit(RatingsError(result.error ?? 'Failed to load provider ratings'));
+      emit(RatingsError(result.error ?? 'Failed to load customer ratings'));
     }
   }
 

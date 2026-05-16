@@ -1,17 +1,15 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
-// import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
-import 'package:resq360/features/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
+import 'package:resq360/features/chat/screens/service_cancelled_screen.dart';
+// import 'package:resq360/features/chat/screens/service_completed_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
 // import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
-import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
-import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
-
+import 'package:resq360/features/settings/data/service/support_service.dart';
 class OngoingServiceCard extends StatefulWidget {
-  const OngoingServiceCard({
-    required this.booking,
-    super.key,
-  });
+  const OngoingServiceCard({required this.booking, super.key});
 
   final Bookings booking;
 
@@ -30,6 +28,8 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
     final serviceName = widget.booking.serviceCategory?.name ?? 'Service';
 
     final status = widget.booking.status ?? 'PENDING';
+    final serviceRequestId = widget.booking.id;
+
 
     return Container(
       padding: pad(horizontal: 14, vertical: 14),
@@ -115,17 +115,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                   ),
-                  onPressed: () async {
-                    await pushScreen(
-                      context,
-                      ContactAdminScreen(
-                        issueType: AdminIssueType.serviceIssue,
-                        serviceCategory: widget.booking.serviceCategory?.id,
-                        relatedServiceProviderId:
-                            widget.booking.assignedProvider?.id,
-                      ),
-                    );
-                  },
+                  onPressed: () => _handleAppeal(context, serviceRequestId),
                   child: GenText(
                     'Appeal',
                     height: 16.5,
@@ -135,81 +125,117 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                 ),
               ),
 
-              //  WideButton(
-              //     label: 'Cancel',
-              //     backgroundColor: colors.primary.shade50,
-              //     textColor: colors.primary.shade500,
+              20.horizontalSpace,
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: pad(horizontal: 14, vertical: 10),
+                    backgroundColor: colors.primary.shade500,
+                    foregroundColor: colors.whiteColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+
+                  onPressed: () async {
+                    final serviceRequestId = widget.booking.id;
+                    if (serviceRequestId == null) return;
+                    await pushScreen(
+                      context,
+                      ServiceCancelledScreen(
+                        serviceRequestId: serviceRequestId,
+                      ),
+                    );
+                  },
+                  child: GenText(
+                    'Cancel',
+                    height: 16.5,
+                    color: colors.whiteColor,
+                    weight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              // if (status == BookingStatus.completed.value) ...[
+              // 20.horizontalSpace,
+              // Expanded(
+              //   child: ElevatedButton(
               //     onPressed: () async {
-              //        final serviceRequestId = widget.booking.id;
+              //       final serviceRequestId = widget.booking.id;
               //       if (serviceRequestId == null) return;
+
               //       await pushScreen(
               //         context,
-              //         ServiceCancelledScreen(
+              //         ServiceCompletedScreen(
               //           serviceRequestId: serviceRequestId,
               //         ),
               //       );
               //     },
+              //     style: ElevatedButton.styleFrom(
+              //       padding: pad(horizontal: 14, vertical: 10),
+              //       backgroundColor: colors.primary.shade500,
+              //       foregroundColor: colors.whiteColor,
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(8.r),
+              //       ),
+              //     ),
+              //     child: GenText(
+              //       'Complete',
+              //       height: 16.5,
+              //       color: colors.whiteColor,
+              //       weight: FontWeight.w500,
+              //     ),
               //   ),
-
-              // if (status == BookingStatus.completed.value) ...[
-                20.horizontalSpace,
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final serviceRequestId = widget.booking.id;
-                      if (serviceRequestId == null) return;
-
-                      await pushScreen(
-                        context,
-                        ServiceCompletedScreen(
-                          serviceRequestId: serviceRequestId,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: pad(horizontal: 14, vertical: 10),
-                      backgroundColor: colors.primary.shade500,
-                      foregroundColor: colors.whiteColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-                    child: GenText(
-                      'Complete',
-                      height: 16.5,
-                      color: colors.whiteColor,
-                      weight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
+              // ),
+            ],
             // ],
           ),
         ],
       ),
     );
   }
+
+   Future<void> _handleAppeal(
+    BuildContext context,
+    int? serviceRequestId,
+  ) async {
+    if (serviceRequestId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const PaymentAppealDialog(isProvider: false),
+    );
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    showLoadingDialog(context);
+
+    final result = await SupportRepo.instance.fileDispute(
+      requestId: serviceRequestId,
+      reason: 'Service Appeal',
+      details:
+          'Customer filed an appeal for service request #$serviceRequestId',
+    );
+
+    if (!context.mounted) return;
+    Navigator.pop(context);
+
+    if (result.error != null) {
+      await showErrorSnackbar(context, result.error!);
+      return;
+    }
+
+    final chatId = result.data!;
+    await pushScreen(
+      context,
+      ChatDetailScreen(
+        chatId: chatId,
+        userType:
+            widget.booking.userId != null
+                ? UserType.customer
+                : UserType.provider,
+      ),
+    );
+  }
+
 }
-
-// Future<String?> findExistingOpenAppealTicketId() async {
-//   final res = await SupportRepo.instance.getTickets();
-
-//   if (res.error != null && res.error!.isNotEmpty) {
-//     return null;
-//   }
-
-//   final tickets = res.data;
-//   if (tickets == null || tickets.isEmpty) return null;
-
-//   for (final ticket in tickets) {
-//     final isOpen = ticket.status == 'OPEN';
-//     final isAppeal = ticket.subject == 'Service Appeal';
-//     final isGeneralInquiry = ticket.category == 'GENERAL_INQUIRY';
-
-//     if (isOpen && isAppeal && isGeneralInquiry) {
-//       return ticket.ticketId;
-//     }
-//   }
-
-//   return null;
-// }

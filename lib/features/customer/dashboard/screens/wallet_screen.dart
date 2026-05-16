@@ -1,6 +1,7 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/bloc/wallet_transaction_bloc/wallet_transaction_bloc.dart';
+import 'package:resq360/core/utils/app_constant.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/all_transactions_screen.dart';
@@ -8,6 +9,7 @@ import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dar
 import 'package:resq360/features/customer/dashboard/screens/transaction_detail.modal.dart';
 import 'package:resq360/features/customer/dashboard/widgets/wallet_transaction_tile.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
+import 'package:resq360/features/widgets/add_funds.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_completed.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/fund_wallet_confirm.dialog.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
@@ -71,7 +73,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   (_) => PaystackWebViewPage(
                     authorizationUrl: url,
                     reference: reference,
-                    callbackUrl: 'https://example.com/callback',
+                    callbackUrl: AppConstants.paystackCallbackUrl,
                   ),
             ),
           );
@@ -166,19 +168,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         onAddFunds: () async {
                           await GeneralDialogs.showCustomDialog<void>(
                             context,
-                            body: const FundWalletConfirmDialog(
-                              // amount: 20000,
-                            ),
-                            //  FundMethodDialog(
-                            //   onPaymentSelected: (PaymentMethod p1) async {
-                            //     await GeneralDialogs.showCustomDialog<void>(
-                            //       context,
-                            //       body: const FundWalletConfirmDialog(
-                            //         // amount: 20000,
-                            //       ),
-                            //     );
-                            //   },
-                            // ),
+                            body: const FundWalletConfirmDialog(),
                           );
                         },
                       );
@@ -296,35 +286,6 @@ class _WalletScreenState extends State<WalletScreen> {
                     return const SizedBox.shrink();
                   },
                 ),
-
-                // if (transactions.isEmpty)
-                //   const EmptyScreenWidget(
-                //     imagePath: AppAssets.ASSETS_IMAGES_EMPTY_WALLET_PNG,
-                //     message: 'No Transactions Yet',
-                //     subMessage:
-                //         'Your wallet history will appear here after yourfirst payment or credit',
-                //   )
-                // else
-                //   ListView.separated(
-                //     shrinkWrap: true,
-                //     itemBuilder: (context, index) {
-                //       final tx = transactions[index];
-                //       return WalletTransactionTile(
-                //         tx: tx,
-                //         onTap: () async {
-                //           await GeneralDialogs.showCustomBottomSheet(
-                //             context,
-                //             body: TransactionDetailModal(
-                //               onRetry: () {},
-                //               onSupport: () {},
-                //             ),
-                //           );
-                //         },
-                //       );
-                //     },
-                //     separatorBuilder: (context, index) => 16.verticalSpace,
-                //     itemCount: transactions.length,
-                //   ),
               ],
             ),
           ),
@@ -381,26 +342,7 @@ class WalletBalanceCard extends StatelessWidget {
             weight: FontWeight.w700,
           ),
           16.verticalSpace,
-          SizedBox(
-            height: 32.h,
-            child: ElevatedButton.icon(
-              onPressed: onAddFunds,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: appColors.whiteColor,
-                padding: pad(vertical: 10, horizontal: 17),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-              ),
-              icon: Icon(Icons.add, color: appColors.primary.shade500),
-              label: GenText(
-                'Add Funds',
-                height: 16.5,
-                color: appColors.primary.shade500,
-                weight: FontWeight.w600,
-              ),
-            ),
-          ),
+          AddFunds(onPressed: onAddFunds),
         ],
       ),
     );

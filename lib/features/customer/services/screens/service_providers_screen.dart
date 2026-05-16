@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
-import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/service_provider_bloc/service_provider_bloc.dart';
-import 'package:resq360/features/customer/dashboard/data/models/service-model/service.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 import 'package:resq360/features/customer/services/screens/service_provider_details_screen.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 
@@ -39,7 +38,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
         nearYou: _sortByProximity,
       ),
     );
-
+    log('Fetching providers for categoryId: ${widget.serviceProviderId}');
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         _fetchProviders();
@@ -259,6 +258,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                           children: [
                             _ProviderList(
                               providers: providers,
+                              serviceCategoryId: widget.serviceProviderId,
                             ),
                             _ProviderList(
                               providers:
@@ -267,6 +267,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                                         (p) => p.activityStatus == 'online',
                                       )
                                       .toList(),
+                            serviceCategoryId: widget.serviceProviderId
                             ),
                             _ProviderList(
                               providers:
@@ -275,6 +276,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                                         (p) => p.activityStatus == 'offline',
                                       )
                                       .toList(),
+                            serviceCategoryId: widget.serviceProviderId
                             ),
                           ],
                         ),
@@ -293,18 +295,20 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                     return TabBarView(
                       controller: _tabController,
                       children: [
-                        _ProviderList(providers: providers),
+                        _ProviderList(providers: providers, serviceCategoryId: widget.serviceProviderId),
                         _ProviderList(
                           providers:
                               providers
                                   .where((p) => p.activityStatus == 'online')
                                   .toList(),
+                        serviceCategoryId: widget.serviceProviderId
                         ),
                         _ProviderList(
                           providers:
                               providers
                                   .where((p) => p.activityStatus == 'offline')
                                   .toList(),
+                        serviceCategoryId: widget.serviceProviderId
                         ),
                       ],
                     );
@@ -324,8 +328,10 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
 class _ProviderList extends StatelessWidget {
   const _ProviderList({
     required this.providers,
+    required this.serviceCategoryId,
   });
   final List<ServiceProvider> providers;
+  final int serviceCategoryId;
 
   @override
   Widget build(BuildContext context) {
@@ -381,6 +387,7 @@ class _ProviderList extends StatelessWidget {
                 context,
                 ServiceProviderDetailsScreen(
                   provider: provider,
+                  serviceCategoryId: serviceCategoryId,
                 ),
               );
             },
@@ -401,7 +408,7 @@ class _ProviderCard extends StatelessWidget {
     final colors = context.appColors;
 
     final isOnline = provider.activityStatus?.toLowerCase() == 'online';
-    final distanceInMeters = provider.distance ?? 0.0;
+    final distanceInKm = provider.distanceKM ?? 0.0;
 
     return GestureDetector(
       onTap: onTap,
@@ -465,7 +472,7 @@ class _ProviderCard extends StatelessWidget {
                             ),
                             2.horizontalSpace,
                             GenText(
-                              AppTextUtil.formatDistance(distanceInMeters),
+                             distanceInKm.toString(),
                               size: 12,
                               color: colors.neutral.shade300,
                             ),

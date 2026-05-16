@@ -13,7 +13,7 @@ class ProviderRatings {
 
   factory ProviderRatings.fromJson(Map<String, dynamic> json) =>
       ProviderRatings(
-        averageRatings: json['averageRatings'] as int?,
+        averageRatings: json['averageRating'] as num?,
         totalReviews: json['totalReviews'] as int?,
         reviews: json['reviews'] == null
             ? <ProviderReview>[]
@@ -21,7 +21,7 @@ class ProviderRatings {
                 .map((x) => ProviderReview.fromJson(x as Map<String, dynamic>))
                 .toList(),
       );
-  final int? averageRatings;
+  final num? averageRatings;
   final int? totalReviews;
   final List<ProviderReview>? reviews;
 

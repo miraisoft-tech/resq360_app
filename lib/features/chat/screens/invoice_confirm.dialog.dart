@@ -2,6 +2,7 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/data/models/invoice_form_data.dart';
 
 class ProviderInvoiceConfirmDialog extends StatefulWidget {
   const ProviderInvoiceConfirmDialog({
@@ -10,7 +11,7 @@ class ProviderInvoiceConfirmDialog extends StatefulWidget {
     super.key,
   });
 
-  final Map<String, dynamic> invoice;
+  final InvoiceFormData invoice;
   final ChatResponse chat;
 
   @override
@@ -21,61 +22,35 @@ class ProviderInvoiceConfirmDialog extends StatefulWidget {
 class _ProviderGenerateInvoiceDialogState
     extends State<ProviderInvoiceConfirmDialog> {
   bool viewMore = false;
-  final now = DateTime.now();
 
-  late final DateTime parsedDate =
-      widget.invoice['date'] != null
-          ? DateTime.parse(widget.invoice['date'] as String)
-          : now;
-
-  late final String formattedDate =
-      '${parsedDate.month}/${parsedDate.day}/${parsedDate.year}';
-
-  // Future<void> sendInvoice() async {
-  //   final meta = {
-  //     'InvoiceNo': widget.invoice['invoiceNo'],
-  //     'Date': formattedDate,
-  //     'serviceCategory': widget.invoice['serviceCategory'],
-  //     'ClientName': 'John Doe',
-  //     'description': widget.invoice['description'],
-  //     'amount': widget.invoice['price'],
-  //   };
-
-  //   final request = SendMessageRequest(
-  //     chatId: widget.invoice['chatId'] as int,
-  //     messageType: 'SYSTEM',
-  //     content: 'Here is your invoice',
-  //     metadata: meta,
-  //   );
-  //   context.read<ChatBloc>().add(
-  //     SendMessageEvent(messageRequest: request),
-  //   );
-  //   // await GeneralDialogs.showCustomDialog<void>(
-  //   //   context,
-  //   //   body: const PaymentCompleted(),
-  //   // );
-  //   await showSuccessSnackbar(context, 'invoice sent sucessfully');
-  //   log('Sending invoice with metadata: $meta');
-  //   Navigator.of(context).pop();
-  // }
+  late final String formattedDate = () {
+    final d = widget.invoice.date;
+    return '${d.month}/${d.day}/${d.year}';
+  }();
 
   Future<void> sendInvoice() async {
-    log('sent');
-    final request = SendInvoice(
-      chatId: widget.invoice['chatId'] as int,
-      amount: widget.invoice['price'] as int,
-      currency: 'NGN',
-      description: widget.invoice['description'] as String,
-      invoiceId: widget.invoice['invoiceNo'] as String,
-      fileName: '',
-      fileUrl: '',
-      fileSize: 0,
-      mimeType: '',
-      date: DateTime.parse(widget.invoice['date'] as String),
-    );
+    final userId = widget.invoice.userId;
+    final providerServiceId = widget.invoice.providerServiceId;
+
+    log('userId: $userId, providerServiceId: $providerServiceId');
+    if (userId == null) {
+      await showErrorSnackbar(context, 'Missing invoice data.');
+      return;
+    }
 
     context.read<ChatDetailBloc>().add(
-      SendInvoiceMessage(request),
+      SendServiceRequestInvoice(
+        invoice: SendInvoice(
+          userId: userId,
+          providerServiceId: providerServiceId,
+          chatId: widget.invoice.chatId,
+          amount: widget.invoice.price,
+          currency: 'NGN',
+          description: widget.invoice.description,
+          invoiceId: widget.invoice.invoiceNo,
+          date: widget.invoice.date,
+        ),
+      ),
     );
 
     Navigator.of(context).pop();
@@ -148,7 +123,7 @@ class _ProviderGenerateInvoiceDialogState
                             ),
                             4.verticalSpace,
                             GenText(
-                              widget.invoice['invoiceNo'].toString(),
+                              widget.invoice.invoiceNo,
                               weight: FontWeight.w400,
                               color: appColors.textColor.shade300,
                             ),
@@ -188,7 +163,7 @@ class _ProviderGenerateInvoiceDialogState
                             ),
                             2.verticalSpace,
                             GenText(
-                              widget.invoice['serviceCategory'].toString(),
+                              widget.invoice.serviceCategory,
                               size: 12,
                               weight: FontWeight.w400,
                               color: appColors.textColor.shade300,
@@ -235,9 +210,7 @@ class _ProviderGenerateInvoiceDialogState
                             Transform.flip(
                               flipY: viewMore,
                               child: AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG
-                                  .svgColor(
-                                    color: appColors.primary.shade500,
-                                  ),
+                                  .svgColor(color: appColors.primary.shade500),
                             ),
                           ],
                         ),
@@ -257,7 +230,7 @@ class _ProviderGenerateInvoiceDialogState
                               ),
                               2.verticalSpace,
                               GenText(
-                                widget.invoice['serviceCategory'].toString(),
+                                widget.invoice.serviceCategory,
                                 size: 12,
                                 weight: FontWeight.w400,
                                 color: appColors.textColor.shade300,
@@ -275,7 +248,7 @@ class _ProviderGenerateInvoiceDialogState
                               ),
                               2.verticalSpace,
                               GenText(
-                                widget.invoice['description'].toString(),
+                                widget.invoice.description,
                                 size: 12,
                                 weight: FontWeight.w400,
                                 color: appColors.textColor.shade300,
@@ -293,7 +266,7 @@ class _ProviderGenerateInvoiceDialogState
                               ),
                               2.verticalSpace,
                               GenText(
-                                widget.invoice['location'].toString(),
+                                widget.invoice.location,
                                 size: 12,
                                 weight: FontWeight.w400,
                                 color: appColors.textColor.shade300,
@@ -312,9 +285,7 @@ class _ProviderGenerateInvoiceDialogState
                           color: appColors.textColor.shade400,
                         ),
                         GenText(
-                          'NGN${AppTextUtil.formatAmount(
-                            widget.invoice['price'].toString(),
-                          )}',
+                          'NGN${AppTextUtil.formatAmount(widget.invoice.price.toString())}',
                           size: 16,
                           weight: FontWeight.w700,
                           color: appColors.black,
@@ -332,9 +303,7 @@ class _ProviderGenerateInvoiceDialogState
                       label: 'Edit Invoice',
                       backgroundColor: appColors.primary.shade50,
                       textColor: appColors.primary.shade500,
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ),
                   12.horizontalSpace,

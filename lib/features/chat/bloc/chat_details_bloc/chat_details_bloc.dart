@@ -9,6 +9,7 @@ import 'package:resq360/core/services/upload_service.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/settings/data/models/ticket_message.model.dart';
 
 part 'chat_details_event.dart';
 part 'chat_details_state.dart';
@@ -28,10 +29,16 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
        super(ChatDetailInitial()) {
     on<OpenChatDetail>(_onOpenChatDetail);
     on<SendTextMessage>(_onSendMessage);
+    on<SendServiceRequest>(_onSendServiceRequest);
     on<SendInvoiceMessage>(_onSendInvoiceMessage);
+    on<SendServiceRequestInvoice>(_onSendServiceRequestInvoice);
     on<RefreshMessages>(_onRefreshMessages);
     on<LoadMoreMessages>(_onLoadMoreMessages);
     on<_IncomingMessage>(_onIncomingMessage);
+    on<_MessageDelivered>(_onMessageDelivered);
+    on<_AllMessagesDelivered>(_onAllMessagesDelivered);
+    on<_MessageRead>(_onMessageRead);
+    on<_AllMessagesRead>(_onAllMessagesRead);
     on<SendImageMessage>(_onSendImageMessage);
     on<SendDocumentMessage>(_onSendDocumentMessage);
     on<SendLocationMessage>(_onSendLocationMessage);
@@ -44,17 +51,15 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   final ChatRepo _repo;
   final ChatSocketService _socket;
   final ChatCacheService _cache;
-  StreamSubscription<dynamic>? _socketSub;
+  final List<StreamSubscription<dynamic>> _socketSubs = [];
 
   Future<void> _onOpenChatDetail(
     OpenChatDetail event,
     Emitter<ChatDetailState> emit,
   ) async {
     try {
-      // Check cache first - show cached data immediately if available
       final cachedData = _cache.getCachedData(event.chatId);
       if (cachedData != null) {
-        // Emit cached data immediately (no loading state)
         emit(
           ChatDetailReady(
             chat: cachedData.chat,
@@ -65,14 +70,12 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
           ),
         );
 
-        // Connect socket
         await _connectSocket();
 
         await _refreshInBackground(event.chatId, emit);
         return;
       }
 
-      // No cache - show loading and fetch fresh data
       emit(ChatDetailLoading());
 
       final chatResult = await _repo.getChatById(event.chatId);
@@ -96,7 +99,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final chat = chatResult.data!;
       final messagesData = messagesResult.data!;
 
-      // Cache the data
       _cache.cacheData(
         chatId: event.chatId,
         chat: chat,
@@ -120,7 +122,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     }
   }
 
-  /// Refresh data in background without showing loading state
   Future<void> _refreshInBackground(
     int chatId,
     Emitter<ChatDetailState> emit,
@@ -134,7 +135,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       final chat = chatResult.data!;
       final messagesData = messagesResult.data!;
 
-      // Update cache
       _cache.cacheData(
         chatId: chatId,
         chat: chat,
@@ -144,31 +144,18 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
         hasMoreMessages: messagesData.page < messagesData.totalPages,
       );
 
-      // Only update if still in ready state
       if (state is ChatDetailReady) {
         final current = state as ChatDetailReady;
 
-        // Check if messages changed
-        final hasNewerMessages =
-            messagesData.messages.isNotEmpty &&
-            current.messages.isNotEmpty &&
-            messagesData.messages.first.id != current.messages.first.id;
-
-        // Check if chat data changed (e.g., paymentStatus)
-        final chatDataChanged =
-            current.chat.paymentStatus != chat.paymentStatus;
-
-        if (hasNewerMessages || chatDataChanged) {
-          emit(
-            current.copyWith(
-              chat: chat,
-              messages: messagesData.messages,
-              currentPage: messagesData.page,
-              totalPages: messagesData.totalPages,
-              hasMoreMessages: messagesData.page < messagesData.totalPages,
-            ),
-          );
-        }
+        emit(
+          current.copyWith(
+            chat: chat,
+            messages: messagesData.messages,
+            currentPage: messagesData.page,
+            totalPages: messagesData.totalPages,
+            hasMoreMessages: messagesData.page < messagesData.totalPages,
+          ),
+        );
       }
     } on Exception catch (e) {
       log('Background refresh failed: $e');
@@ -181,18 +168,62 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
       unawaited(_socket.joinChat(chatId));
 
-      await _socketSub?.cancel();
-      _socketSub = _socket.messageStream.listen(
-        (msg) {
-          final isForThisChat = msg.chatId == chatId;
-          final isFromCurrentUser =
-              currentUserId != null && (msg.senderId == currentUserId);
+      // Mark all messages as read when opening the chat
+      _socket.markAllRead(chatId);
 
-          if (isForThisChat && !isFromCurrentUser) {
-            add(_IncomingMessage(msg));
-          }
-        },
-      );
+      for (final sub in _socketSubs) {
+        await sub.cancel();
+      }
+      _socketSubs
+        ..clear()
+        ..add(
+          _socket.messageStream.listen((msg) {
+            final isForThisChat = msg.chatId == chatId;
+            final isFromCurrentUser =
+                currentUserId != null && (msg.senderId == currentUserId);
+
+            if (isForThisChat) {
+              add(_IncomingMessage(msg));
+
+              // Auto-mark incoming messages as read since the chat is open
+              if (!isFromCurrentUser && msg.id != null) {
+                _socket.markAsRead(messageId: msg.id!, chatId: chatId);
+              }
+            }
+          }),
+        )
+        ..add(
+          _socket.messageDeliveredStream.listen((data) {
+            final messageId = data['messageId'] as int?;
+            if (messageId != null) {
+              add(_MessageDelivered(messageId));
+            }
+          }),
+        )
+        ..add(
+          _socket.allDeliveredStream.listen((data) {
+            final deliveredChatId = data['chatId'] as int?;
+            if (deliveredChatId == chatId) {
+              add(_AllMessagesDelivered(chatId));
+            }
+          }),
+        )
+        ..add(
+          _socket.messageReadStream.listen((data) {
+            final messageId = data['messageId'] as int?;
+            if (messageId != null) {
+              add(_MessageRead(messageId));
+            }
+          }),
+        )
+        ..add(
+          _socket.allReadStream.listen((data) {
+            final readChatId = data['chatId'] as int?;
+            if (readChatId == chatId) {
+              add(_AllMessagesRead(chatId));
+            }
+          }),
+        );
     } on Exception catch (e) {
       log('Socket connection error: $e');
     }
@@ -224,37 +255,22 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final newMessages = [localMessage, ...current.messages];
 
-    // Update cache
     _cache.updateMessages(chatId: chatId, messages: newMessages);
 
-    emit(
-      current.copyWith(
-        messages: newMessages,
-      ),
-    );
+    emit(current.copyWith(messages: newMessages));
 
-    final result = await _repo.sendInvoice(
-      invoiceRequest: event.invoice,
-    );
+    final result = await _repo.sendInvoice(invoiceRequest: event.invoice);
 
-    // Get the CURRENT state after API call (not the old captured state)
     final latestState = state;
     if (latestState is! ChatDetailReady) return;
 
     if (result.data == null) {
-      // Remove the local message on failure
       final messagesWithoutLocal =
           latestState.messages.where((m) => m.id != localMessageId).toList();
-      emit(
-        latestState.copyWith(
-          messages: messagesWithoutLocal,
-        ),
-      );
+      emit(latestState.copyWith(messages: messagesWithoutLocal));
       return;
     }
 
-    // Replace local message with confirmed message from server
-    // Also remove any duplicate that might have come from socket
     final confirmedId = result.data!.id;
     final confirmedMessages =
         latestState.messages
@@ -264,17 +280,60 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     final finalMessages = [result.data!, ...confirmedMessages]..sort((a, b) {
       final aTime = a.createdAt ?? DateTime.now();
       final bTime = b.createdAt ?? DateTime.now();
-      return bTime.compareTo(aTime); // Descending: newest first
+      return bTime.compareTo(aTime);
     });
 
-    // Update cache with confirmed message
     _cache.updateMessages(chatId: chatId, messages: finalMessages);
 
-    emit(
-      latestState.copyWith(
-        messages: finalMessages,
+    emit(latestState.copyWith(messages: finalMessages));
+  }
+
+  Future<void> _onSendServiceRequestInvoice(
+    SendServiceRequestInvoice event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    final current = state;
+    if (current is! ChatDetailReady) return;
+
+    final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
+    final localMessage = MessageResponse(
+      id: localMessageId,
+      chatId: current.chat.id,
+      senderType: 'PROVIDER',
+      messageType: 'INVOICE',
+      content: event.invoice.description ?? 'Invoice',
+      createdAt: DateTime.now(),
+      metadata: Metadata(
+        type: 'INVOICE',
+        amount: event.invoice.amount,
+        currency: event.invoice.currency,
+        invoiceId: event.invoice.invoiceId,
+        description: event.invoice.description,
+        date: event.invoice.date?.toIso8601String(),
       ),
     );
+
+    final newMessages = [localMessage, ...current.messages];
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+    emit(current.copyWith(messages: newMessages));
+
+    final result = await _repo.createRequestAndSendInvoice(
+      request: event.invoice,
+    );
+
+    log('[INVOICE] createRequestAndSendInvoice result: ${result.data}');
+
+    final latestState = state;
+    if (latestState is! ChatDetailReady) return;
+
+    if (result.data == null) {
+      final cleaned =
+          latestState.messages.where((m) => m.id != localMessageId).toList();
+      emit(latestState.copyWith(messages: cleaned));
+      return;
+    }
+
+    log('[INVOICE] raw response: ${result.data}');
   }
 
   Future<void> _onSendMessage(
@@ -298,14 +357,9 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final newMessages = [localMessage, ...current.messages];
 
-    // Update cache
     _cache.updateMessages(chatId: chatId, messages: newMessages);
 
-    emit(
-      current.copyWith(
-        messages: newMessages,
-      ),
-    );
+    emit(current.copyWith(messages: newMessages));
 
     _socket.sendMessage(
       SendMessageRequest(
@@ -316,6 +370,75 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     );
   }
 
+  Future<void> _onSendServiceRequest(
+    SendServiceRequest event,
+    Emitter<ChatDetailState> emit,
+  ) async {
+    if (state is! ChatDetailReady) return;
+
+    final current = state as ChatDetailReady;
+
+    final localMessageId = DateTime.now().millisecondsSinceEpoch * -1;
+
+    final localMessage = MessageResponse(
+      id: localMessageId,
+      chatId: chatId,
+      senderType: event.userType,
+      senderId: event.senderId,
+      messageType: 'SYSTEM',
+      content: event.description,
+      createdAt: DateTime.now(),
+      metadata: MetadataFactories.custom(
+        type: 'SERVICE_REQUEST',
+        data: {
+          'providerServiceId': event.providerServiceId,
+          'description': event.description,
+        },
+      ),
+    );
+
+    final newMessages = [localMessage, ...current.messages];
+
+    _cache.updateMessages(chatId: chatId, messages: newMessages);
+
+    emit(current.copyWith(messages: newMessages));
+
+    final result = await _repo.sendServiceRequestMessage(
+      chatId: chatId,
+      providerServiceId: event.providerServiceId,
+      description: event.description,
+    );
+
+    final latestState = state;
+    if (latestState is! ChatDetailReady) return;
+
+    if (result.data == null) {
+      final messagesWithoutLocal =
+          latestState.messages.where((m) => m.id != localMessageId).toList();
+
+      emit(latestState.copyWith(messages: messagesWithoutLocal));
+      return;
+    }
+
+    final confirmedMessage = result.data!;
+    final confirmedId = confirmedMessage.id;
+
+    final updatedMessages =
+        latestState.messages
+            .where((m) => m.id != localMessageId && m.id != confirmedId)
+            .toList();
+
+    final finalMessages = [confirmedMessage, ...updatedMessages]..sort((a, b) {
+      final aTime = a.createdAt ?? DateTime.now();
+      final bTime = b.createdAt ?? DateTime.now();
+      return bTime.compareTo(aTime);
+    });
+
+    _cache.updateMessages(chatId: chatId, messages: finalMessages);
+
+    emit(latestState.copyWith(messages: finalMessages));
+  }
+
   void _onIncomingMessage(
     _IncomingMessage event,
     Emitter<ChatDetailState> emit,
@@ -324,27 +447,125 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final current = state as ChatDetailReady;
 
-    // Check if message already exists (avoid duplicates)
-    final messageExists = current.messages.any(
-      (m) => m.id == event.message.id,
-    );
+    final messageExists = current.messages.any((m) => m.id == event.message.id);
     if (messageExists) return;
 
-    // Add new message and sort by createdAt descending (newest first)
+    // Replace optimistic local message with server-confirmed one for sender.
+    final isFromCurrentUser =
+        currentUserId != null && event.message.senderId == currentUserId;
+    if (isFromCurrentUser) {
+      final pendingLocalIndex = current.messages.indexWhere(
+        (m) =>
+            (m.id ?? 0) < 0 &&
+            m.senderId == event.message.senderId &&
+            m.messageType == event.message.messageType &&
+            (m.content ?? '') == (event.message.content ?? ''),
+      );
+
+      if (pendingLocalIndex != -1) {
+        final reconciledMessages =
+            [...current.messages]
+              ..removeAt(pendingLocalIndex)
+              ..insert(0, event.message)
+              ..sort((a, b) {
+                final aTime = a.createdAt ?? DateTime.now();
+                final bTime = b.createdAt ?? DateTime.now();
+                return bTime.compareTo(aTime);
+              });
+
+        _cache.updateMessages(chatId: chatId, messages: reconciledMessages);
+        emit(current.copyWith(messages: reconciledMessages));
+        return;
+      }
+    }
+
     final newMessages = [event.message, ...current.messages]..sort((a, b) {
       final aTime = a.createdAt ?? DateTime.now();
       final bTime = b.createdAt ?? DateTime.now();
-      return bTime.compareTo(aTime); // Descending: newest first
+      return bTime.compareTo(aTime);
     });
-
-    // Update cache with new messages
     _cache.updateMessages(chatId: chatId, messages: newMessages);
 
-    emit(
-      current.copyWith(
-        messages: newMessages,
-      ),
-    );
+    emit(current.copyWith(messages: newMessages));
+  }
+
+  void _onMessageDelivered(
+    _MessageDelivered event,
+    Emitter<ChatDetailState> emit,
+  ) {
+    if (state is! ChatDetailReady) return;
+    final current = state as ChatDetailReady;
+
+    final updated =
+        current.messages.map((m) {
+          if (m.id == event.messageId && m.status == MessageStatus.sent) {
+            return m.copyWith(
+              status: MessageStatus.delivered,
+              isDelivered: true,
+            );
+          }
+          return m;
+        }).toList();
+
+    _cache.updateMessages(chatId: chatId, messages: updated);
+    emit(current.copyWith(messages: updated));
+  }
+
+  void _onAllMessagesDelivered(
+    _AllMessagesDelivered event,
+    Emitter<ChatDetailState> emit,
+  ) {
+    if (state is! ChatDetailReady) return;
+    final current = state as ChatDetailReady;
+
+    final updated =
+        current.messages.map((m) {
+          if (m.status == MessageStatus.sent) {
+            return m.copyWith(
+              status: MessageStatus.delivered,
+              isDelivered: true,
+            );
+          }
+          return m;
+        }).toList();
+
+    _cache.updateMessages(chatId: chatId, messages: updated);
+    emit(current.copyWith(messages: updated));
+  }
+
+  void _onMessageRead(_MessageRead event, Emitter<ChatDetailState> emit) {
+    if (state is! ChatDetailReady) return;
+    final current = state as ChatDetailReady;
+
+    final updated =
+        current.messages.map((m) {
+          if (m.id == event.messageId && m.status != MessageStatus.read) {
+            return m.copyWith(status: MessageStatus.read);
+          }
+          return m;
+        }).toList();
+
+    _cache.updateMessages(chatId: chatId, messages: updated);
+    emit(current.copyWith(messages: updated));
+  }
+
+  void _onAllMessagesRead(
+    _AllMessagesRead event,
+    Emitter<ChatDetailState> emit,
+  ) {
+    if (state is! ChatDetailReady) return;
+    final current = state as ChatDetailReady;
+
+    final updated =
+        current.messages.map((m) {
+          if (m.status != MessageStatus.read) {
+            return m.copyWith(status: MessageStatus.read);
+          }
+          return m;
+        }).toList();
+
+    _cache.updateMessages(chatId: chatId, messages: updated);
+    emit(current.copyWith(messages: updated));
   }
 
   Future<void> _onRefreshMessages(
@@ -360,7 +581,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final messagesData = result.data!;
 
-    // Update cache
     _cache.updateMessages(
       chatId: chatId,
       messages: messagesData.messages,
@@ -401,10 +621,8 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
 
     final messagesData = result.data!;
 
-    // Append older messages to the end of the list
     final allMessages = [...current.messages, ...messagesData.messages];
 
-    // Update cache
     _cache.updateMessages(
       chatId: chatId,
       messages: allMessages,
@@ -448,7 +666,6 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
     }
   }
 
-  /// Save current state to cache before closing
   void _saveToCache() {
     if (state is ChatDetailReady) {
       final current = state as ChatDetailReady;
@@ -466,7 +683,10 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
   @override
   Future<void> close() async {
     _saveToCache();
-    await _socketSub?.cancel();
+    for (final sub in _socketSubs) {
+      await sub.cancel();
+    }
+    _socketSubs.clear();
     return super.close();
   }
 
@@ -490,9 +710,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       fileUrl: event.filePaths.first,
       metadata: MetadataFactories.custom(
         type: 'IMAGE',
-        data: {
-          'files': event.filePaths,
-        },
+        data: {'files': event.filePaths},
       ),
     );
 
@@ -530,10 +748,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
         fileName: firstFile.path.split('/').last,
         fileSize: double.parse(fileSizeMB.toStringAsFixed(2)),
         mimeType: _getMimeType(firstFile.path),
-        metadata: {
-          'type': 'IMAGE',
-          'files': uploadedUrls,
-        },
+        metadata: {'type': 'IMAGE', 'files': uploadedUrls},
       ),
     );
 
@@ -554,9 +769,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
               fileUrl: uploadedUrls.first,
               metadata: MetadataFactories.custom(
                 type: 'IMAGE',
-                data: {
-                  'files': uploadedUrls,
-                },
+                data: {'files': uploadedUrls},
               ),
             );
           }
@@ -589,10 +802,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       createdAt: DateTime.now(),
       fileName: fileName,
       fileUrl: event.filePath,
-      metadata: MetadataFactories.custom(
-        type: 'DOCUMENT',
-        data: {},
-      ),
+      metadata: MetadataFactories.custom(type: 'DOCUMENT', data: {}),
     );
 
     final newMessages = [localMessage, ...current.messages];
@@ -629,9 +839,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
         fileUrl: upload.url,
         fileSize: double.parse(fileSizeInMB),
         mimeType: mimeType,
-        metadata: {
-          'type': 'DOCUMENT',
-        },
+        metadata: {'type': 'DOCUMENT'},
       ),
     );
 

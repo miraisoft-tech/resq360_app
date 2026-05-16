@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
 import 'package:resq360/core/theme/static_colors.dart';
+import 'package:resq360/core/utils/app_constant.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/promotion_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
@@ -28,6 +29,8 @@ class PromoteServiceReviewScreen extends StatefulWidget {
 
 class _PromoteServiceReviewScreenState
     extends State<PromoteServiceReviewScreen> {
+  bool _isLoadingDialogVisible = false;
+
   @override
   void initState() {
     super.initState();
@@ -89,9 +92,7 @@ class _PromoteServiceReviewScreenState
                   decoration: BoxDecoration(
                     color: appColors.whiteColor,
                     borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                      color: appColors.textColor.shade100,
-                    ),
+                    border: Border.all(color: appColors.textColor.shade100),
                   ),
                   child: Col(
                     children: [
@@ -282,17 +283,14 @@ class _PromoteServiceReviewScreenState
     if (!mounted) return;
 
     if (state is PromotionLoading || state is PromotionPaymentVerifying) {
-      if (mounted) showLoadingDialog(context);
+      _showLoadingDialog(context);
       return;
     }
 
-    if (state is PromotionPriceFetched) {
-      if (mounted) await pop(context);
-    }
+    await _hideLoadingDialog(context);
+
     if (state is PromotionPaymentInitiated) {
       if (!mounted) return;
-
-      Navigator.pop(context);
 
       final completed = await Navigator.push<bool>(
         context,
@@ -301,7 +299,7 @@ class _PromoteServiceReviewScreenState
               (_) => PaystackWebViewPage(
                 authorizationUrl: state.payment.authorizationUrl,
                 reference: state.payment.reference,
-                callbackUrl: 'https://example.com/callback',
+                callbackUrl: AppConstants.paystackCallbackUrl,
               ),
         ),
       );
@@ -318,8 +316,6 @@ class _PromoteServiceReviewScreenState
 
     if (state is PromotionCreated) {
       if (!mounted) return;
-
-      await pop(context);
 
       if (!mounted) return;
 
@@ -338,10 +334,38 @@ class _PromoteServiceReviewScreenState
 
     if (state is PromotionError) {
       if (mounted) {
-        await pop(context);
         await showErrorSnackbar(context, state.error);
         context.read<PromotionBloc>().add(FetchPromotionPrice());
       }
+    }
+  }
+
+  void _showLoadingDialog(BuildContext context) {
+    if (!mounted || _isLoadingDialogVisible) return;
+
+    _isLoadingDialogVisible = true;
+
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierColor: const Color.fromRGBO(173, 173, 173, 0.23),
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(child: ActivityDialogWidget());
+        },
+      ).whenComplete(() {
+        _isLoadingDialogVisible = false;
+      }),
+    );
+  }
+
+  Future<void> _hideLoadingDialog(BuildContext context) async {
+    if (!mounted || !_isLoadingDialogVisible) return;
+
+    final navigator = Navigator.of(context, rootNavigator: true);
+    if (navigator.canPop()) {
+      navigator.pop();
+      await Future<void>.delayed(Duration.zero);
     }
   }
 
@@ -386,7 +410,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
     final remaining = widget.walletBalance - fee;
 
     return Padding(
-      padding: EdgeInsets.only(top: 220.h, bottom: 320.h),
+      padding: EdgeInsets.only(top: 200.h, bottom: 200.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -532,13 +556,31 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
-                        Navigator.pop(context);
+                        final promotionBloc = context.read<PromotionBloc>();
+                        final isWalletPayment =
+                            widget.paymentType == PaymentMethod.wallet.name;
 
-                        if (widget.paymentType == PaymentMethod.wallet.name) {
-                          await _payWithWallet();
-                        } else {
-                          await _payWithCard();
+                        if (isWalletPayment &&
+                            widget.walletBalance < widget.total) {
+                          await showErrorSnackbar(
+                            context,
+                            'Insufficient balance',
+                          );
+                          return;
                         }
+
+                        await Navigator.of(
+                          context,
+                          rootNavigator: true,
+                        ).maybePop();
+                        await Future<void>.delayed(Duration.zero);
+
+                        if (isWalletPayment) {
+                          _payWithWallet(promotionBloc);
+                          return;
+                        }
+
+                        _payWithCard(promotionBloc);
                       },
                     ),
                   ),
@@ -551,16 +593,8 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
     );
   }
 
-  Future<void> _payWithWallet() async {
-    final balance = widget.walletBalance;
-    final total = widget.total;
-
-    if (balance < total) {
-      await showErrorSnackbar(context, 'Insufficient balance');
-      return;
-    }
-
-    context.read<PromotionBloc>().add(
+  void _payWithWallet(PromotionBloc promotionBloc) {
+    promotionBloc.add(
       CreatePromotion(
         discountPercentage: int.parse(widget.discount),
         durationInMilliSeconds: widget.duration.milliseconds,
@@ -570,8 +604,8 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
     );
   }
 
-  Future<void> _payWithCard() async {
-    context.read<PromotionBloc>().add(
+  void _payWithCard(PromotionBloc promotionBloc) {
+    promotionBloc.add(
       CreatePromotion(
         discountPercentage: int.parse(widget.discount),
         durationInMilliSeconds: widget.duration.milliseconds,

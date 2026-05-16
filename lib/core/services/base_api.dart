@@ -15,8 +15,8 @@ class BaseAPI {
 
   static String get baseUrl =>
       BuildConfig.isDev
-          ? 'https://resq360-kspk.onrender.com/'
-          : 'https://resq360-kspk.onrender.com/';
+          ? 'https://api.resq360.ng/'
+          : 'https://api.resq360.ng/';
 
   Dio dio({
     String? contentType,
