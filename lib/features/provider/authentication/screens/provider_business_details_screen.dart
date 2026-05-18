@@ -187,12 +187,15 @@ class _ProviderBusinessDetailsScreenState
                       onChanged: (a) {
                         setState(() {});
                       },
-                      validator:
-                          (value) => AppGenUtil.isValidName(
-                            value,
-                            'business address',
-                            5,
-                          ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Business address is required';
+                        }
+                        if (value.length < 5) {
+                          return 'Business address must be at least 5 characters';
+                        }
+                        return null;
+                      },
                     ),
                     16.verticalSpace,
                     BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
