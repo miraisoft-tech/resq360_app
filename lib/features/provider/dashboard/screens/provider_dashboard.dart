@@ -195,7 +195,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               if (state is ProviderStatsLoaded) {
                                 return ProviderStatsCard(
                                   title: 'Engagement',
-                                  value: (state.stats.completedServicesCount ?? 0).toString(),
+                                  value:
+                                      (state.stats.completedServicesCount ?? 0)
+                                          .toString(),
                                   icon:
                                       AppAssets
                                           .ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
@@ -214,10 +216,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           BlocBuilder<ProviderStatsBloc, ProviderStatsState>(
                             builder: (context, state) {
                               if (state is ProviderStatsLoaded) {
-                                final revenue = state.stats.totalRevenue?.toString() ?? '-';
+                                final revenue =
+                                    state.stats.totalRevenue?.toString() ?? '-';
                                 return ProviderStatsCard(
                                   title: 'Revenue',
-                                  value: '₦${AppTextUtil.formatAmount(revenue)}',
+                                  value:
+                                      '₦${AppTextUtil.formatAmount(revenue)}',
                                   icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
                                 );
                               }
@@ -314,27 +318,45 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         },
                         builder: (context, state) {
                           if (state is ActivePromotionsFetched) {
-                            final activeAds = state.promotions;
-                            if (activeAds.isNotEmpty &&
-                                activeAds.first.endDate != null) {
-                              final endDate = activeAds.first.endDate!;
-                              final daysSinceEnd =
-                                  DateTime.now().difference(endDate).inDays;
+                            final activeAds =
+                                state.promotions.where((ad) {
+                                  final endDate = ad.endDate;
+                                  if (endDate == null) return false;
 
-                              if (daysSinceEnd > 7) {
-                                return const SizedBox.shrink();
-                              }
+                                  return !endDate.toUtc().isBefore(
+                                    DateTime.now().toUtc(),
+                                  );
+                                }).toList();
 
-                              return Column(
-                                children: [
-                                  AdvertCountdownTimer(
-                                    key: ValueKey(endDate),
-                                    endDate: endDate,
-                                  ),
-                                  30.verticalSpace,
-                                ],
-                              );
+                            if (activeAds.isEmpty) {
+                              return const SizedBox.shrink();
                             }
+                            return Column(
+                              children: List.generate(activeAds.length, (
+                                index,
+                              ) {
+                                final promotion = activeAds[index];
+                                final endDate = promotion.endDate!;
+
+                                return GestureDetector(
+                                  onTap: () async {
+                                    await pushScreen(
+                                      context,
+                                      const PromoteServiceScreen(),
+                                    );
+                                  },
+                                  child: Column(
+                                    children: [
+                                      AdvertCountdownTimer(
+                                        key: ValueKey(endDate),
+                                        endDate: endDate,
+                                      ),
+                                      30.verticalSpace,
+                                    ],
+                                  ),
+                                );
+                              }),
+                            );
                           }
                           return const SizedBox.shrink();
                         },
