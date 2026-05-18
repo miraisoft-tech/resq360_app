@@ -14,13 +14,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   bool isFormValid = false;
 
+  final currentPasswordController = TextEditingController();
+  final newPasswordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
+  @override
+  void dispose() {
+    currentPasswordController.dispose();
+    newPasswordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
-
-    final currentPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
@@ -54,10 +62,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 current is ProfileUpdateInitial,
         listener: (context, state) async {
           if (state is PasswordUpdateError) {
-            await showErrorSnackbar(
-              context,
-              state.message,
-            );
+            await showErrorSnackbar(context, state.message);
           }
 
           if (state is PasswordUpdateSuccess) {
@@ -107,12 +112,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       label: 'Confirm New Password',
                       controller: confirmPasswordController,
                       hintText: 'Confirm Your New Password',
+                      onChanged: (a) {
+                        setState(() {});
+                      },
                       validator: (value) {
-                        final confirmPass =
-                            confirmPasswordController.text.trim();
-                        final newPass = newPasswordController.text.trim();
-
-                        if (confirmPass != newPass) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your new password';
+                        }
+                        if (value != newPasswordController.text) {
                           return 'Passwords do not match';
                         }
                         return null;

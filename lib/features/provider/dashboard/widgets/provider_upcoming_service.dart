@@ -30,7 +30,7 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
       child: Col(
         children: [
           UrbText(
-            'upcoming Service',
+            'Upcoming Service',
             size: 18,
             weight: FontWeight.w700,
             color: colors.black,
@@ -45,14 +45,6 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Align(
-                //   alignment: Alignment.topRight,
-                //   child: Icon(
-                //     Icons.close,
-                //     color: colors.textColor.shade400,
-                //     size: 20,
-                //   ),
-                // ),
                 Row(
                   children: [
                     PictureWidget(
@@ -63,25 +55,20 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          Wrap(
                             children: [
-                              Expanded(
-                                child: GenText(
-                                  widget.booking.user?.fullName ??
-                                      'Unknown User',
-                                  height: 24.5,
-                                  weight: FontWeight.w500,
-                                  maxLines: 1,
-                                ),
+                              GenText(
+                                widget.booking.user?.fullName ?? 'Unknown User',
+                                height: 24.5,
+                                weight: FontWeight.w500,
+                                maxLines: 1,
                               ),
-                              Expanded(
-                                child: GenText(
-                                  ' (${widget.booking.serviceCategory?.name ?? 'Service'})',
-                                  height: 24.5,
-                                  weight: FontWeight.w400,
-                                  color: colors.neutral.shade400,
-                                  maxLines: 1,
-                                ),
+                              5.w.horizontalSpace,
+                              GenText(
+                                '(${widget.booking.serviceCategory?.name ?? 'Service'})',
+                                height: 24.5,
+                                weight: FontWeight.w400,
+                                color: colors.neutral.shade400,
                               ),
                             ],
                           ),
@@ -142,6 +129,7 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                         ),
                       ),
                     ),
+                    10.w.horizontalSpace,
                     if (widget.booking.status?.toUpperCase() ==
                         BookingEnums.progress.name)
                       20.horizontalSpace,

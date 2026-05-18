@@ -257,7 +257,12 @@ class _BookingList extends StatelessWidget {
               );
             },
             child: ListView.separated(
-              padding: pad(vertical: 16, horizontal: 16),
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                top: 16.h,
+                bottom: 100.h,
+              ),
               itemCount: bookings.length,
               separatorBuilder: (_, _) => 16.verticalSpace,
               itemBuilder: (_, index) {

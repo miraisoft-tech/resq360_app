@@ -24,7 +24,7 @@ class KFormField extends StatefulWidget {
     this.onEditingComplete,
     this.onFieldSubmitted,
     this.type = InputType.primary,
-    super.key, 
+    super.key,
   });
   final bool button;
   final InputType type;
@@ -132,6 +132,7 @@ class _KFormFieldState extends State<KFormField> {
                   isDense: true,
                   filled: true,
                   fillColor: colors.whiteColor,
+                  errorMaxLines: 2,
                   errorStyle: TextStyle(
                     fontFamily: 'sfpro',
                     fontWeight: FontWeight.w400,

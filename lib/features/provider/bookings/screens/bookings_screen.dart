@@ -100,7 +100,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
             labelColor: appColors.primary,
             unselectedLabelColor: appColors.textColor.shade500,
             indicatorSize: TabBarIndicatorSize.tab,
-            padding: EdgeInsets.only(bottom: 10.h,),
+            padding: EdgeInsets.only(bottom: 10.h),
             tabs: [
               SizedBox(
                 width: double.infinity,
@@ -114,8 +114,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                       _tabController.index == 0
                           ? appColors.primary
                           : appColors.neutral.shade500,
-                maxLines: 1,
-                  
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -130,8 +129,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                       _tabController.index == 1
                           ? appColors.primary
                           : appColors.neutral.shade500,
-                maxLines: 1,
-                
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -146,7 +144,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                       _tabController.index == 2
                           ? appColors.primary
                           : appColors.neutral.shade500,
-                maxLines: 1,
+                  maxLines: 1,
                 ),
               ),
               SizedBox(
@@ -207,9 +205,7 @@ class _BookingList extends StatelessWidget {
       builder: (context, state) {
         if (state is ProviderServicesLoading) {
           return Center(
-            child: CircularProgressIndicator(
-              color: appColors.primary,
-            ),
+            child: CircularProgressIndicator(color: appColors.primary),
           );
         }
 
@@ -230,9 +226,7 @@ class _BookingList extends StatelessWidget {
                     label: 'Retry',
                     onPressed: () {
                       context.read<ProviderServiceBloc>().add(
-                        ProviderFetchBookings(
-                          status: _mapTypeToStatus(),
-                        ),
+                        ProviderFetchBookings(status: _mapTypeToStatus()),
                       );
                     },
                   ),
@@ -255,14 +249,17 @@ class _BookingList extends StatelessWidget {
           return RefreshIndicator(
             onRefresh: () async {
               context.read<ProviderServiceBloc>().add(
-                ProviderFetchBookings(
-                  status: _mapTypeToStatus(),
-                ),
+                ProviderFetchBookings(status: _mapTypeToStatus()),
               );
             },
             color: appColors.primary,
             child: ListView.separated(
-              padding: pad(vertical: 16, horizontal: 16),
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                top: 16.h,
+                bottom: 100.h,
+              ),
               itemCount: bookings.length,
               separatorBuilder: (_, _) => 16.verticalSpace,
               itemBuilder: (_, index) {
@@ -272,9 +269,7 @@ class _BookingList extends StatelessWidget {
                   onTap: () async {
                     await pushScreen(
                       context,
-                      ClientServiceDetailScreen(
-                        booking: booking,
-                      ),
+                      ClientServiceDetailScreen(booking: booking),
                     );
                   },
                 );
@@ -325,10 +320,7 @@ class _BookingCardState extends State<BookingCard> {
         if (chatId != null) {
           await pushScreen(
             context,
-            ChatDetailScreen(
-              chatId: chatId,
-              userType: UserType.provider,
-            ),
+            ChatDetailScreen(chatId: chatId, userType: UserType.provider),
           );
         }
       } else {
@@ -373,9 +365,7 @@ class _BookingCardState extends State<BookingCard> {
           children: [
             Row(
               children: [
-                PictureWidget(
-                  image: data.user!.profileImage,
-                ),
+                PictureWidget(image: data.user!.profileImage),
                 12.horizontalSpace,
                 Expanded(
                   child: Column(
@@ -396,15 +386,15 @@ class _BookingCardState extends State<BookingCard> {
                       ),
                       Row(
                         children: [
-                            AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
-                            4.horizontalSpace,
-                            GenText(
-                              'NGN${AppTextUtil.formatAmount(amount)}',
-                              size: 12,
-                              height: 20.5,
-                              weight: FontWeight.w400,
-                              color: colors.black,
-                            ),
+                          AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
+                          4.horizontalSpace,
+                          GenText(
+                            'NGN${AppTextUtil.formatAmount(amount)}',
+                            size: 12,
+                            height: 20.5,
+                            weight: FontWeight.w400,
+                            color: colors.black,
+                          ),
                         ],
                       ),
                     ],
@@ -503,33 +493,34 @@ class _BookingCardState extends State<BookingCard> {
                   const ListDivider(verticalSpacing: 15),
                 ],
               ),
-              GestureDetector(
-                onTap: expandCard,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GenText(
-                      expanded ? 'View Less' : 'View More',
-                      weight: FontWeight.w500,
+            GestureDetector(
+              onTap: expandCard,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GenText(
+                    expanded ? 'View Less' : 'View More',
+                    weight: FontWeight.w500,
+                    color: colors.primary.shade500,
+                  ),
+                  4.horizontalSpace,
+                  Transform.rotate(
+                    angle: expanded ? 3.14 : 0,
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
                       color: colors.primary.shade500,
                     ),
-                    4.horizontalSpace,
-                    Transform.rotate(
-                      angle: expanded ? 3.14 : 0,
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: colors.primary.shade500,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
 class _InfoRow extends StatelessWidget {
   const _InfoRow({
     required this.icon,
@@ -550,11 +541,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           icon,
           8.horizontalSpace,
-          GenText(
-            '$label: $value',
-            size: 13,
-            color: colors.textColor.shade600,
-          ),
+          GenText('$label: $value', size: 13, color: colors.textColor.shade600),
         ],
       ),
     );

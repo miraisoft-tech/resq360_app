@@ -26,7 +26,13 @@ class ProviderServiceBloc
 
     final result = await serviceRepo.getServiceBookings(status: event.status);
     if (result.data != null) {
-      emit(ProviderBookingsLoaded(result.data!));
+      final bookings =
+          result.data!..sort((a, b) {
+            final aDate = a.createdAt ?? DateTime(0);
+            final bDate = b.createdAt ?? DateTime(0);
+            return bDate.compareTo(aDate);
+          });
+      emit(ProviderBookingsLoaded(bookings));
     } else {
       emit(
         ProviderServicesError(error: result.error ?? 'Failed to book service'),

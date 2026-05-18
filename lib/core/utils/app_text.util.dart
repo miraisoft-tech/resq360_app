@@ -50,12 +50,12 @@ class AppTextUtil {
     return formatter.format(localDate);
   }
 
-static String formatDateToStringNormal(String? date, [String? format]) {
-  final parsedDate = DateTime.tryParse(date ?? '');
-  if (parsedDate == null) return 'N/A';
+  static String formatDateToStringNormal(String? date, [String? format]) {
+    final parsedDate = DateTime.tryParse(date ?? '');
+    if (parsedDate == null) return 'N/A';
 
-  final localDate = parsedDate.toLocal();
-  final formatter = DateFormat(format ?? 'd MMMM, yyyy');
+    final localDate = parsedDate.toLocal();
+    final formatter = DateFormat(format ?? 'd MMMM, yyyy');
 
     return formatter.format(localDate);
   }
@@ -75,9 +75,7 @@ static String formatDateToStringNormal(String? date, [String? format]) {
   // CHAT
 
   static String formatChatTime(DateTime dt) {
-    return DateFormat('hh:mm a').format(
-      dt,
-    );
+    return DateFormat('hh:mm a').format(dt);
   }
 
   static String formatChatListTime(DateTime incomingDate) {
@@ -88,9 +86,7 @@ static String formatDateToStringNormal(String? date, [String? format]) {
     if (dateTime.year == now.year &&
         dateTime.month == now.month &&
         dateTime.day == now.day) {
-      return DateFormat('hh:mm a').format(
-        dateTime,
-      );
+      return DateFormat('hh:mm a').format(dateTime);
     }
 
     return '${dateTime.month}/${dateTime.day}/${dateTime.year}';

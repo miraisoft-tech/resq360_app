@@ -542,20 +542,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
       final wasAtBottom = _isAtBottom();
 
-      // if (isProvider) {
-      //   final hasPaid =
-      //       state.chat.paymentStatus == PaymentStatus.completed.value;
-      //   final hasInvoice = messages.any(
-      //     (m) =>
-      //         m.messageType == MessageReceivedType.invoice.value &&
-      //         m.metadata != null,
-      //   );
-      //   setState(() {
-      //     log('has set canShowServiceDetails');
-      //     canShowServiceDetails = hasPaid && hasInvoice;
-      //   });
-      // }
-
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
 
@@ -776,8 +762,6 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
     final userId = _currentUserId;
 
-    // final caption = await _showCaptionDialog(context);
-
     final filePaths = files.map((f) => f.path).toList();
 
     if (context.mounted) {
@@ -786,7 +770,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
           filePaths: filePaths,
           senderId: userId,
           userType: _senderType,
-          caption: 'Samples',
+          caption: '\u{1F4F7} Image',
         ),
       );
     }

@@ -69,9 +69,7 @@ class _AddressScreenState extends State<AddressScreen> {
       if (state is ProviderProfileLoadedState) {
         final addr = state.user.address;
         if (addr != null) {
-          _savedLocations = [
-            convertProviderAddressToLocation(addr),
-          ];
+          _savedLocations = [convertProviderAddressToLocation(addr)];
         }
       }
     }

@@ -3,7 +3,7 @@
 // ignore_for_file: unawaited_futures
 
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/utils/validators.dart';
+import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
 import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
 import 'package:resq360/features/widgets/dialogs/step.modal.dart';
@@ -66,10 +66,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   await pop(context);
 
                   if (context.mounted) {
-                    await replaceScreen(
-                      context,
-                      const LoginScreen(),
-                    );
+                    await replaceScreen(context, const LoginScreen());
                   }
                 },
               ),
@@ -93,7 +90,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
-                validator: Validators.validatePassword,
+                validator: AppGenUtil.isValidPassword,
               ),
               16.verticalSpace,
               KFormField(
@@ -104,9 +101,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 onChanged: (a) {
                   setState(() {});
                 },
-                validator:
-                    (value) =>
-                        Validators.validateNotEmpty(value, 'confirm password'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please confirm your new password';
+                  }
+                  if (value != passwordController.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                },
               ),
               60.verticalSpace,
               BlocBuilder<CustomerAuthBloc, CustomerAuthState>(

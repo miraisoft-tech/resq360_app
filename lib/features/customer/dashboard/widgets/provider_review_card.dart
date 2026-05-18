@@ -1,4 +1,5 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/settings/data/models/provider_ratings.dart';
 
 class ProviderReviewCard extends StatelessWidget {
@@ -21,7 +22,7 @@ class ProviderReviewCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              PictureWidget(image:data.user?.profileImage),
+              PictureWidget(image: data.user?.profileImage),
               10.horizontalSpace,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,7 +46,9 @@ class ProviderReviewCard extends StatelessWidget {
               ),
               const Spacer(),
               GenText(
-                data.ratingDate.toString(),
+                AppTextUtil.formatDateToStringNormal(
+                  data.ratingDate.toString(),
+                ),
                 size: 12,
                 color: colors.textColor.shade500,
               ),

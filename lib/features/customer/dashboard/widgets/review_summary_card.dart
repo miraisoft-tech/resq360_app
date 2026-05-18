@@ -19,16 +19,6 @@ class ReviewSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    //  final total = totalReviews == 0 ? 1 : totalReviews;
-    // final starPercents = List<double>.generate(
-    //   5,
-    //   (i) {
-    //     final star = 5 - i;
-    //     final count = starCounts?[star] ?? 0;
-    //     return count / total;
-    //   },
-    // );
-
     return SizedBox(
       width: double.infinity,
       child: Row(
@@ -62,14 +52,6 @@ class ReviewSummaryCard extends StatelessWidget {
           ),
 
           15.horizontalSpace,
-
-          // Expanded(
-          //   child: Column(
-          //     children: starPercents
-          //         .map((value) => _buildProgress(colors, value))
-          //         .toList(),
-          //   ),
-          // )
         ],
       ),
     );
