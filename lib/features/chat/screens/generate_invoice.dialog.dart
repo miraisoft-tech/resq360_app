@@ -251,7 +251,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
               ),
               14.verticalSpace,
               KFormField(
-                label: 'Service Description(Optional)',
+                label: 'Service Description',
                 hintText: 'Type service description here...',
                 controller: serviceController,
                 keyboardType: TextInputType.text,
