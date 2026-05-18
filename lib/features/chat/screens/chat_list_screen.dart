@@ -11,10 +11,7 @@ import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
 
 /// Unified chat list screen for both customer and provider users.
 class ChatListScreen extends StatefulWidget {
-  const ChatListScreen({
-    required this.userType,
-    super.key,
-  });
+  const ChatListScreen({required this.userType, super.key});
 
   final UserType userType;
 
@@ -50,9 +47,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
       body: SafeArea(
         child: Padding(
-          padding: pad(
-            horizontal: 16,
-          ),
+          padding: pad(horizontal: 16),
           child: RefreshIndicator(
             color: appColors.primary,
             onRefresh: _onRefresh,
@@ -154,10 +149,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
                       return ListView.separated(
                         itemCount: chats.length,
+                        padding: EdgeInsets.only(bottom: 100.h),
                         separatorBuilder:
-                            (_, _) => const ListDivider(
-                              verticalSpacing: 0,
-                            ),
+                            (_, _) => const ListDivider(verticalSpacing: 0),
                         itemBuilder: (context, index) {
                           final chat = chats[index];
 
