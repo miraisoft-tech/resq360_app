@@ -26,17 +26,34 @@ class ProviderServiceBloc
 
     final result = await serviceRepo.getServiceBookings(status: event.status);
     if (result.data != null) {
-      final bookings =
-          result.data!..sort((a, b) {
-            final aDate = a.createdAt ?? DateTime(0);
-            final bDate = b.createdAt ?? DateTime(0);
-            return bDate.compareTo(aDate);
-          });
+      final bookings = _sortBookings(result.data ?? [], event.status);
       emit(ProviderBookingsLoaded(bookings));
     } else {
       emit(
         ProviderServicesError(error: result.error ?? 'Failed to book service'),
       );
+    }
+  }
+
+  List<Bookings> _sortBookings(List<Bookings> bookings, String? status) {
+    return bookings
+      ..sort((a, b) {
+        final aDate = _bookingSortDate(a, status);
+        final bDate = _bookingSortDate(b, status);
+        return bDate.compareTo(aDate);
+      });
+  }
+
+  DateTime _bookingSortDate(Bookings booking, String? status) {
+    switch (status) {
+      case 'completed':
+        return booking.completedAt ?? booking.updatedAt ?? booking.createdAt ?? DateTime(0);
+      case 'ongoing':
+        return booking.providerStartedAt ?? booking.expectedStartDate ?? booking.updatedAt ?? booking.createdAt ?? DateTime(0);
+      case 'cancelled':
+        return booking.updatedAt ?? booking.createdAt ?? DateTime(0);
+      default:
+        return booking.createdAt ?? booking.expectedStartDate ?? booking.updatedAt ?? DateTime(0);
     }
   }
 

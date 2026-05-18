@@ -45,16 +45,12 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
     switch (index) {
       case 0:
         status = 'upcoming';
-
       case 1:
         status = 'ongoing';
-
       case 2:
         status = 'completed';
-
       case 3:
         status = 'cancelled';
-
       default:
         status = 'upcoming';
     }
