@@ -11,7 +11,7 @@ import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/chat_service_detail_screen.dart';
-import 'package:resq360/features/chat/screens/generate_invoice.dialog.dart';
+import 'package:resq360/features/chat/screens/generate_invoice.bottomsheet.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/chat/widgets/appeal_closed_card.dart';
 import 'package:resq360/features/chat/widgets/chat_document.dart';
@@ -857,11 +857,14 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   }
 
   Future<void> _onInvoiceTap(BuildContext context, ChatResponse chat) async {
-    await GeneralDialogs.showCustomDialog<void>(
-      context,
-      body: BlocProvider.value(
-        value: context.read<ChatDetailBloc>(),
-        child: GenerateInvoiceDialog(chat: chat),
+    final chatDetailBloc = context.read<ChatDetailBloc>();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => GenerateInvoiceBottomSheet(
+        chat: chat,
+        chatDetailBloc: chatDetailBloc,
       ),
     );
   }

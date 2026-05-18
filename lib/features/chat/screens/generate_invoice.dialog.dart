@@ -11,16 +11,16 @@ import 'package:resq360/features/chat/data/models/invoice_form_data.dart';
 import 'package:resq360/features/chat/screens/invoice_confirm.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 
-class GenerateInvoiceDialog extends StatefulWidget {
-  const GenerateInvoiceDialog({required this.chat, super.key});
+class GenerateInvoiceBottomSheet extends StatefulWidget {
+  const GenerateInvoiceBottomSheet({required this.chat, super.key});
 
   final ChatResponse chat;
 
   @override
-  State<GenerateInvoiceDialog> createState() => _GenerateInvoiceDialogState();
+  State<GenerateInvoiceBottomSheet> createState() => _GenerateInvoiceBottomSheetState();
 }
 
-class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
+class _GenerateInvoiceBottomSheetState extends State<GenerateInvoiceBottomSheet> {
   final ValueNotifier<Service?> _selectType = ValueNotifier(null);
   final ValueNotifier<DateTime?> _selectedDate = ValueNotifier(null);
   final TextEditingController dateController = TextEditingController();
@@ -93,20 +93,20 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
-    return Padding(
-      padding: EdgeInsets.only(top: 180.h, bottom: 90.h),
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          margin: pad(horizontal: 30),
-          padding: pad(horizontal: 20, vertical: 20),
-          decoration: BoxDecoration(
-            color: appColors.whiteColor,
-            borderRadius: BorderRadius.circular(12.r),
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: pad(horizontal: 20, vertical: 20),
+        decoration: BoxDecoration(
+          color: appColors.whiteColor,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
           ),
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
+        ),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -344,8 +344,7 @@ class _GenerateInvoiceDialogState extends State<GenerateInvoiceDialog> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
