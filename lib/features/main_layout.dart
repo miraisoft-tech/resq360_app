@@ -23,7 +23,7 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
   bool _ownsDashboardVM = false;
 
   DateTime currentBackPressTime = DateTime.now();
- 
+
   Future<bool> onWillPop() async {
     if (dashboardVM.currentIndex == 0) {
       final now = DateTime.now();
@@ -85,37 +85,32 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
 
           return Scaffold(
             key: mainLayoutScaffoldKey,
-            body: Stack(
-              fit: StackFit.expand,
+            body: Column(
               children: [
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  left: 0,
-                  bottom: 40.h,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    child: navItems[selectedIndex].body,
+                Expanded(child: navItems[selectedIndex].body),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 8.h,
                   ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: pad(horizontal: 8),
-                    height: (75 + 20).h,
-                    decoration: BoxDecoration(
-                      color: appColors.whiteColor,
-                      borderRadius: const BorderRadius.all(Radius.circular(6)),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.1),
-                          blurRadius: 64,
-                          offset: Offset(0, -3),
-                        ),
-                      ],
+                  decoration: BoxDecoration(
+                    color: appColors.whiteColor,
+                    border: Border(
+                      top: BorderSide(
+                        color: appColors.neutral.shade100,
+                        width: 0.6,
+                      ),
                     ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.1),
+                        blurRadius: 64,
+                        offset: Offset(0, -3),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    top: false,
                     child: Row(
                       children: List.generate(navItems.length, (index) {
                         final item = navItems[index];
@@ -133,8 +128,8 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                               dashboardVM.onChanged(index);
                             },
                             child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
-                                15.verticalSpace,
                                 badges.Badge(
                                   position: badges.BadgePosition.topEnd(),
                                   showBadge: false,
@@ -158,6 +153,8 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                                     isSelected
                                         ? item.selectedImgPath
                                         : item.unselectedImgPath,
+                                    height: 24,
+                                    width: 24,
                                     colorFilter: ColorFilter.mode(
                                       isSelected
                                           ? appColors.primary.shade500
