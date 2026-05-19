@@ -26,6 +26,7 @@ import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
 import 'package:resq360/features/widgets/header_widget.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -203,12 +204,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                           .ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
                                 );
                               }
-                              return const ProviderStatsCard(
-                                title: 'Engagement',
-                                value: '-',
-                                icon:
-                                    AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
-                              );
+                              return const SkeletonStatsCard();
                             },
                           ),
 
@@ -225,11 +221,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                   icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
                                 );
                               }
-                              return const ProviderStatsCard(
-                                title: 'Revenue',
-                                value: '-',
-                                icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
-                              );
+                              return const SkeletonStatsCard();
                             },
                           ),
                         ],
@@ -302,6 +294,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                 ],
                               );
                             }
+                          }
+                          if (state is ProviderServicesLoading) {
+                            return  Column(
+                              children: [
+                                const SkeletonBookingCard(),
+                                20.verticalSpace,
+                              ],
+                            );
                           }
                           return const SizedBox.shrink();
                         },

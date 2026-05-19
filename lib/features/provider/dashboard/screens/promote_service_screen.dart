@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/features/provider/dashboard/models/duration.enum.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_review.dart';
@@ -89,7 +90,10 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                       label: 'Discount Rate',
                       hintText: 'Enter a Discount Rate',
                       controller: discountController,
-                      keyboardType: TextInputType.text,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                      ],
                       onChanged: (a) {
                         setState(() {});
                       },

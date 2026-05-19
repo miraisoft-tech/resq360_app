@@ -24,6 +24,7 @@ import 'package:resq360/features/provider/bookings/data/models/booking_enums.dar
 import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/widgets/header_widget.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -239,10 +240,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
                       builder: (context, state) {
                         if (state is CustomerBookingLoading) {
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: colors.primary,
-                            ),
+                          return Padding(
+                            padding: pad(vertical: 16),
+                            child: const SkeletonBookingCard(),
                           );
                         }
 
@@ -320,9 +320,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
                       builder: (context, state) {
                         if (state is ServiceCatalogLoading) {
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: colors.primary,
+                          return SizedBox(
+                            height: 130,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 3,
+                              separatorBuilder: (_, _) => 12.horizontalSpace,
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.grey[100],
+                                  ),
+                                  child: const SkeletonLoader(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    borderRadius: 12,
+                                  ),
+                                );
+                              },
                             ),
                           );
                         }
@@ -405,10 +422,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     >(
                       builder: (context, state) {
                         if (state is CustomerAdvertisementLoading) {
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: context.appColors.primary,
-                            ),
+                          return Padding(
+                            padding: pad(vertical: 16),
+                            child: const SkeletonPromotionCard(),
                           );
                         }
 
