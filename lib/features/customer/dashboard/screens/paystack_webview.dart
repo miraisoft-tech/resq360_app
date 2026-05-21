@@ -70,6 +70,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
       },
       child: Scaffold(
         appBar: AppBar(
+          forceMaterialTransparency: true,
           backgroundColor: context.appColors.whiteColor,
           title: const GenText('Complete Payment'),
           actions: [

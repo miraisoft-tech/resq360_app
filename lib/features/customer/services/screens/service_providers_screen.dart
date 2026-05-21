@@ -100,6 +100,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     return Scaffold(
       backgroundColor: colors.whiteColor,
       appBar: AppBar(
+          forceMaterialTransparency: true,
         backgroundColor: colors.whiteColor,
         elevation: 0,
         leading: IconButton(

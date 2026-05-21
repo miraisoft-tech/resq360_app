@@ -91,6 +91,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
       child: Scaffold(
         backgroundColor: colors.whiteColor,
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               Padding(
@@ -296,7 +297,7 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             }
                           }
                           if (state is ProviderServicesLoading) {
-                            return  Column(
+                            return Column(
                               children: [
                                 const SkeletonBookingCard(),
                                 20.verticalSpace,

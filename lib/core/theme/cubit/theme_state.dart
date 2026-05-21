@@ -1,7 +1,6 @@
 part of 'theme_cubit.dart';
 
 class ThemeState {
-
   const ThemeState({
     required this.mode,
     required this.brightness,
@@ -18,9 +17,7 @@ class ThemeState {
       brightness: Brightness.light,
       colorPalette: colors,
       textTheme: textTheme,
-      themeData: ThemeData.light().copyWith(
-        extensions: [colors, textTheme],
-      ),
+      themeData: ThemeData.light().copyWith(extensions: [colors, textTheme]),
     );
   }
   final ThemeMode mode;

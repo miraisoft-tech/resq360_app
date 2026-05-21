@@ -46,6 +46,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       backgroundColor: appColors.whiteColor,
 
       body: SafeArea(
+        bottom: false,
         child: Padding(
           padding: pad(horizontal: 16),
           child: RefreshIndicator(

@@ -99,9 +99,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
 
           await GeneralDialogs.showCustomDialog<void>(
             context,
-            body: FundWalletCompleted(
-              amount: state.verification.amount,
-            ),
+            body: FundWalletCompleted(amount: state.verification.amount),
           );
           context.read<WalletBloc>().add(FetchWalletInfo());
           context.read<WalletTransactionsBloc>().add(FetchWalletTransactions());
@@ -114,6 +112,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
       child: Scaffold(
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
+          forceMaterialTransparency: true,
           elevation: 0,
           backgroundColor: appColors.whiteColor,
           leading: IconButton(
@@ -177,7 +176,7 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                         onWithdraw: () async {
                           await pushScreen(
                             context,
-                            ProviderWithdrawScreen(balance: balance.toString(),),
+                            ProviderWithdrawScreen(balance: balance.toString()),
                           );
                         },
                       );
@@ -194,20 +193,20 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                       size: 18,
                       weight: FontWeight.w700,
                       color: appColors.black,
-                    ), 
-                     GestureDetector(
+                    ),
+                    GestureDetector(
                       onTap: () async {
                         await pushScreen(
                           context,
                           const AllTransactionsScreen(),
                         );
                       },
-                   child: GenText(
-                      'View All',
-                      size: 12,
-                      weight: FontWeight.w400,
-                      color: appColors.primary.shade500,
-                    ),
+                      child: GenText(
+                        'View All',
+                        size: 12,
+                        weight: FontWeight.w400,
+                        color: appColors.primary.shade500,
+                      ),
                     ),
                   ],
                 ),
@@ -278,13 +277,13 @@ class _ProviderWalletScreenState extends State<ProviderWalletScreen> {
                     }
 
                     return ErrorMessageAndButton(
-                        error: 'An error occured',
-                        onPressed: () {
-                          context.read<WalletTransactionsBloc>().add(
-                            FetchWalletTransactions(),
-                          );
-                        },
-                      );
+                      error: 'An error occured',
+                      onPressed: () {
+                        context.read<WalletTransactionsBloc>().add(
+                          FetchWalletTransactions(),
+                        );
+                      },
+                    );
                   },
                 ),
               ],
@@ -349,7 +348,7 @@ class ProviderWalletBalanceCard extends StatelessWidget {
             children: [
               Expanded(
                 child: SizedBox(
-                  height: 32.h,
+                  height: 36.h,
                   child: ElevatedButton.icon(
                     onPressed: onAddFunds,
                     style: ElevatedButton.styleFrom(
@@ -362,7 +361,7 @@ class ProviderWalletBalanceCard extends StatelessWidget {
                     icon: Icon(Icons.add, color: appColors.primary.shade500),
                     label: GenText(
                       'Add Funds',
-                      height: 16.5,
+                      height: 14.5,
                       color: appColors.primary.shade500,
                       weight: FontWeight.w600,
                     ),
@@ -372,7 +371,7 @@ class ProviderWalletBalanceCard extends StatelessWidget {
               16.horizontalSpace,
               Expanded(
                 child: SizedBox(
-                  height: 32.h,
+                  height: 36.h,
                   child: ElevatedButton.icon(
                     onPressed: onWithdraw,
                     style: ElevatedButton.styleFrom(

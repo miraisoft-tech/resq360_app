@@ -39,10 +39,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _offset = 0;
     context.read<NotificationBloc>().add(FetchUnreadCount());
     context.read<NotificationBloc>().add(
-      FetchRecentNotifications(
-        offset: _offset,
-        limit: _limit,
-      ),
+      FetchRecentNotifications(offset: _offset, limit: _limit),
     );
   }
 
@@ -59,11 +56,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _offset += _limit;
 
     context.read<NotificationBloc>().add(
-      FetchRecentNotifications(
-        offset: _offset,
-        limit: _limit,
-        loadMore: true,
-      ),
+      FetchRecentNotifications(offset: _offset, limit: _limit, loadMore: true),
     );
   }
 
@@ -72,10 +65,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _isLoadingMore = false;
 
     context.read<NotificationBloc>().add(
-      FetchRecentNotifications(
-        offset: _offset,
-        limit: _limit,
-      ),
+      FetchRecentNotifications(offset: _offset, limit: _limit),
     );
 
     await Future<void>.delayed(const Duration(milliseconds: 300));
@@ -94,6 +84,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+        forceMaterialTransparency: true,
         elevation: 0,
         title: UrbText(
           'Notifications',
@@ -105,7 +96,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         centerTitle: true,
         backgroundColor: appColors.whiteColor,
         foregroundColor: appColors.black,
-        forceMaterialTransparency: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: appColors.black),
           onPressed: () => Navigator.pop(context),
@@ -121,8 +111,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
           if (state is NotificationActionSuccess) {
             context.read<NotificationBloc>().add(
-                  const FetchRecentNotifications(),
-                );
+              const FetchRecentNotifications(),
+            );
             unawaited(showSuccessSnackbar(context, state.message));
           }
 
@@ -153,7 +143,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
             if (_cached.isEmpty && _hasLoadedOnce) {
               return EmptyScreenWidget(
                 image:
-                    AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG.imageAsset(),
+                    AppAssets.ASSETS_IMAGES_NOTIFICATIONS_EMPTY_PNG
+                        .imageAsset(),
                 message: 'No Notifications Yet',
                 subMessage:
                     "You'll see updates about your bookings and payments here.",
@@ -168,8 +159,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
               error: state.message,
               onPressed: () {
                 context.read<NotificationBloc>().add(
-                      const FetchRecentNotifications(),
-                    );
+                  const FetchRecentNotifications(),
+                );
               },
             );
           }
@@ -207,9 +198,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                     10.verticalSpace,
                   ],
-                  ...group.value.map(
-                    (n) => NotificationTile(notification: n),
-                  ),
+                  ...group.value.map((n) => NotificationTile(notification: n)),
                   20.verticalSpace,
                 ],
               ),

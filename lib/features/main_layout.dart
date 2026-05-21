@@ -90,8 +90,8 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                 Expanded(child: navItems[selectedIndex].body),
                 Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 8.h,
+                    horizontal: 15.w,
+                    vertical: 15.h,
                   ),
                   decoration: BoxDecoration(
                     color: appColors.whiteColor,
@@ -111,6 +111,8 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                   ),
                   child: SafeArea(
                     top: false,
+                    bottom: false,
+                    minimum: EdgeInsets.only(bottom: 25.h),
                     child: Row(
                       children: List.generate(navItems.length, (index) {
                         final item = navItems[index];

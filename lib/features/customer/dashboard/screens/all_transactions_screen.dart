@@ -62,6 +62,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+          forceMaterialTransparency: true,
         elevation: 0,
         backgroundColor: appColors.whiteColor,
         leading: IconButton(

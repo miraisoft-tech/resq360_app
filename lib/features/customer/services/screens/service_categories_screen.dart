@@ -52,6 +52,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
         child: Scaffold(
           backgroundColor: colors.whiteColor,
           appBar: AppBar(
+            forceMaterialTransparency: true,
             elevation: 0,
             backgroundColor: colors.whiteColor,
             leading:
@@ -149,7 +150,7 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
                                 )
                                 : GridView.builder(
                                   itemCount: filteredServices.length,
-
+                                  padding: EdgeInsets.zero,
                                   gridDelegate:
                                       const SliverGridDelegateWithFixedCrossAxisCount(
                                         crossAxisCount: 3,

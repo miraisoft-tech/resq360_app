@@ -117,9 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     final isProvider = dashboardViewModel.userType == UserType.provider;
@@ -129,12 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: AppAssets.ASSETS_ICONS_SETTINGS_RATINGS_SVG.svg,
         title: 'Rating',
         onTap: () async {
-          await pushScreen(
-            context,
-            RatingScreen(
-              isProvider: isProvider,
-            ),
-          );
+          await pushScreen(context, RatingScreen(isProvider: isProvider));
         },
       ),
       SettingsItem(
@@ -189,9 +182,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         onTap: () async {
           await pushScreen(
             context,
-            const ContactAdminScreen(
-              issueType: AdminIssueType.complaint,
-            ),
+            const ContactAdminScreen(issueType: AdminIssueType.complaint),
           );
         },
       ),
@@ -290,9 +281,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (email != null) {
             await pushScreen(
               context,
-              const ContactAdminScreen(
-                issueType: AdminIssueType.complaint,
-              ),
+              const ContactAdminScreen(issueType: AdminIssueType.complaint),
             );
           }
         },
@@ -302,15 +291,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
           color: appColors.primary,
           onRefresh: _refreshProfile,
           child: ListView(
-            padding: EdgeInsets.only(
-              left: 16.w,
-              right: 16.w,
-              bottom: 100.h,
-            ),
+            padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 100.h),
             children: [
               UrbText(
                 'Settings',
@@ -529,10 +515,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.security,
-                      color: appColors.textColor.shade200,
-                    ),
+                    Icon(Icons.security, color: appColors.textColor.shade200),
                     10.horizontalSpace,
                     GenText(
                       'Account & Security',
@@ -548,10 +531,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               20.verticalSpace,
-              Divider(
-                height: 5,
-                color: appColors.textColor.shade100,
-              ),
+              Divider(height: 5, color: appColors.textColor.shade100),
               20.verticalSpace,
               GestureDetector(
                 onTap: () async {
@@ -562,10 +542,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.logout,
-                      color: appColors.error.shade500,
-                    ),
+                    Icon(Icons.logout, color: appColors.error.shade500),
                     10.horizontalSpace,
                     GenText(
                       'Log out',
@@ -611,10 +588,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               //   ),
               // ),
               20.verticalSpace,
-              Divider(
-                height: 5,
-                color: appColors.textColor.shade100,
-              ),
+              Divider(height: 5, color: appColors.textColor.shade100),
               20.verticalSpace,
               Padding(
                 padding: pad(vertical: 20),

@@ -11,6 +11,7 @@ class FullImageViewer extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+          forceMaterialTransparency: true,
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
       ),

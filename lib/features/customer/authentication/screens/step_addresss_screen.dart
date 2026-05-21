@@ -209,6 +209,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
       child: Scaffold(
         backgroundColor: colors.whiteColor,
         appBar: AppBar(
+          forceMaterialTransparency: true,
           backgroundColor: colors.whiteColor,
           elevation: 0,
           leading: IconButton(

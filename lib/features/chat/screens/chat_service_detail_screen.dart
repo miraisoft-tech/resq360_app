@@ -120,6 +120,7 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
       child: Scaffold(
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
+          forceMaterialTransparency: true,
           title: UrbText(
             'Service Details',
             color: appColors.black,
@@ -127,7 +128,6 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
             size: 22,
             height: 32.5,
           ),
-          forceMaterialTransparency: true,
           centerTitle: true,
           elevation: 0,
           backgroundColor: appColors.whiteColor,

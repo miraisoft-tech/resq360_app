@@ -248,6 +248,7 @@ class _AddressScreenState extends State<AddressScreen> {
       child: Scaffold(
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
+          forceMaterialTransparency: true,
           title: UrbText(
             'Add Address',
             size: 22,
@@ -260,7 +261,6 @@ class _AddressScreenState extends State<AddressScreen> {
           ),
           centerTitle: true,
           elevation: 0,
-          forceMaterialTransparency: true,
           backgroundColor: appColors.whiteColor,
           foregroundColor: appColors.black,
         ),

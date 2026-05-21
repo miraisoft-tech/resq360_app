@@ -52,6 +52,7 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     return Scaffold(
       backgroundColor: colors.neutral.shade50,
       appBar: AppBar(
+          forceMaterialTransparency: true,
         title: UrbText(
           'My Promotions',
           size: 22,

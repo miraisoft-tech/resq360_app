@@ -111,26 +111,15 @@ Future<void> main() async {
           BlocProvider(
             create: (_) => ServiceRequestBloc(serviceRepo: serviceRepo),
           ),
+          BlocProvider(create: (_) => NotificationSettingsBloc()),
+          BlocProvider(create: (_) => ProviderBloc()),
+          BlocProvider(create: (_) => PhoneUpdateBloc()),
+          BlocProvider(create: (_) => KycBloc()),
+          BlocProvider(create: (_) => BankBloc()),
+          BlocProvider(create: (_) => PromotionBloc()),
           BlocProvider(
-            create: (_) => NotificationSettingsBloc(),
-          ),
-          BlocProvider(
-            create: (_) => ProviderBloc(),
-          ),
-          BlocProvider(
-            create: (_) => PhoneUpdateBloc(),
-          ),
-          BlocProvider(
-            create: (_) => KycBloc(),
-          ),
-          BlocProvider(
-            create: (_) => BankBloc(),
-          ),
-          BlocProvider(
-            create: (_) => PromotionBloc(),
-          ),
-           BlocProvider(
-            create: (_) => ProviderStatsBloc(authRepo: ProviderAuthRemoteRepo())
+            create:
+                (_) => ProviderStatsBloc(authRepo: ProviderAuthRemoteRepo()),
           ),
         ],
         child: const MyApp(),

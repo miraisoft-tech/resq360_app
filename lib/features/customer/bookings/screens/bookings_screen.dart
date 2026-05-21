@@ -69,6 +69,7 @@ class _BookingsScreenState extends State<BookingsScreen>
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(100.h),
         child: AppBar(
+          forceMaterialTransparency: true,
           backgroundColor: appColors.whiteColor,
           elevation: 0,
           centerTitle: false,
@@ -106,7 +107,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                   'Upcoming',
                   textAlign: TextAlign.center,
                   weight: FontWeight.w500,
-                  size: 12,
+                  size: 11,
                   height: 30,
                   color:
                       _tabController.index == 0
@@ -121,7 +122,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                   'Ongoing',
                   textAlign: TextAlign.center,
                   weight: FontWeight.w500,
-                  size: 12,
+                  size: 11,
                   height: 30,
                   color:
                       _tabController.index == 1
@@ -136,7 +137,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                   'Completed',
                   textAlign: TextAlign.center,
                   weight: FontWeight.w500,
-                  size: 12,
+                  size: 11,
                   height: 30,
                   color:
                       _tabController.index == 2
@@ -151,7 +152,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                   'Cancelled',
                   textAlign: TextAlign.center,
                   weight: FontWeight.w500,
-                  size: 12,
+                  size: 11,
                   height: 30,
                   color:
                       _tabController.index == 3

@@ -114,6 +114,7 @@ class _WalletScreenState extends State<WalletScreen> {
       child: Scaffold(
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
+          forceMaterialTransparency: true,
           elevation: 0,
           backgroundColor: appColors.whiteColor,
           leading: IconButton(

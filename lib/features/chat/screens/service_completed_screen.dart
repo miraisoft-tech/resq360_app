@@ -21,6 +21,7 @@ class _ServiceCompletedScreenState extends State<ServiceCompletedScreen> {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+          forceMaterialTransparency: true,
         backgroundColor: appColors.whiteColor,
         elevation: 0,
         leading: IconButton(

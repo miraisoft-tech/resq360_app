@@ -109,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: colors.whiteColor,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             Padding(
@@ -466,8 +467,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         return const SizedBox.shrink();
                       },
                     ),
-
-                    30.verticalSpace,
                   ],
                 ),
               ),

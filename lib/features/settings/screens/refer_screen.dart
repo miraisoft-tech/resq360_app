@@ -16,13 +16,13 @@ class _ReferScreenState extends State<ReferScreen> {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+        forceMaterialTransparency: true,
         title: UrbText(
           'Refer and Earn',
           size: 22,
           weight: FontWeight.w700,
           color: appColors.black,
         ),
-        forceMaterialTransparency: true,
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: appColors.black),
@@ -59,10 +59,7 @@ class _ReferScreenState extends State<ReferScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GenText(
-                    'Referral code',
-                    color: appColors.textColor.shade500,
-                  ),
+                  GenText('Referral code', color: appColors.textColor.shade500),
                   30.verticalSpace,
                   Container(
                     padding: pad(horizontal: 12, vertical: 14),

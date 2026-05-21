@@ -5,7 +5,12 @@ import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/issue_radio_widget.dart';
 
 class ContactAdminScreen extends StatefulWidget {
-  const ContactAdminScreen({super.key, this.issueType, this.serviceCategory, this.relatedServiceProviderId});
+  const ContactAdminScreen({
+    super.key,
+    this.issueType,
+    this.serviceCategory,
+    this.relatedServiceProviderId,
+  });
   final AdminIssueType? issueType;
   final int? serviceCategory;
   final int? relatedServiceProviderId;
@@ -43,61 +48,62 @@ class _ContactAdminScreenState extends State<ContactAdminScreen> {
     }
     return email;
   }
-  
 
-Future<void> _handleContinue(BuildContext context) async {
-  final issue = selectedIssue.value;
+  Future<void> _handleContinue(BuildContext context) async {
+    final issue = selectedIssue.value;
 
-  if (issue == null) {
-    return showErrorSnackbar(context, 'Please select an issue');
+    if (issue == null) {
+      return showErrorSnackbar(context, 'Please select an issue');
+    }
+
+    if (issue == AdminIssueType.other && issueController.text.trim().isEmpty) {
+      return showErrorSnackbar(context, 'Please choose your issue');
+    }
+
+    if (descriptionController.text.isEmpty) {
+      return showErrorSnackbar(context, 'Please describe your issue');
+    }
+
+    setState(() => isLoading = true);
+
+    final email = await _getEmail();
+
+    int? serviceCategory;
+    int? relatedServiceProviderId;
+
+    if (widget.issueType != null &&
+        widget.issueType == AdminIssueType.serviceIssue) {
+      serviceCategory = widget.serviceCategory;
+      relatedServiceProviderId = widget.relatedServiceProviderId;
+    }
+
+    final res = await SupportRepo.instance.createTicket(
+      subject:
+          issue == AdminIssueType.other
+              ? issueController.text.trim()
+              : issue.value,
+      description: descriptionController.text.trim(),
+      category: issue.value,
+      priority: issue.priority,
+      contactEmail: email ?? '',
+      serviceCategory: serviceCategory,
+      relatedServiceProviderId: relatedServiceProviderId,
+    );
+
+    if (!mounted) return;
+
+    setState(() => isLoading = false);
+
+    if (res.error != null) {
+      return showErrorSnackbar(context, res.error!);
+    }
+
+    await showSuccessSnackbar(
+      context,
+      'Ticket has been sent, check email for response',
+    );
+    await pop(context);
   }
-
-  if (issue == AdminIssueType.other && issueController.text.trim().isEmpty) {
-    return showErrorSnackbar(context, 'Please choose your issue');
-  }
-
-  if (descriptionController.text.isEmpty) {
-    return showErrorSnackbar(context, 'Please describe your issue');
-  }
-
-  setState(() => isLoading = true);
-
-  final email = await _getEmail();
-
-  int? serviceCategory;
-  int? relatedServiceProviderId;
-
-if (widget.issueType != null &&
-    widget.issueType == AdminIssueType.serviceIssue) {
-  serviceCategory = widget.serviceCategory;
-  relatedServiceProviderId = widget.relatedServiceProviderId;
-}
-
-
-  final res = await SupportRepo.instance.createTicket(
-    subject: issue == AdminIssueType.other ? issueController.text.trim() : issue.value,
-    description: descriptionController.text.trim(),
-    category: issue.value,
-    priority: issue.priority,
-    contactEmail: email ?? '',
-    serviceCategory: serviceCategory,
-    relatedServiceProviderId: relatedServiceProviderId,
-  );
-
-  if (!mounted) return;
-
-  setState(() => isLoading = false);
-
-  if (res.error != null) {
-    return showErrorSnackbar(context, res.error!);
-  }
-
-  await showSuccessSnackbar(
-    context,
-    'Ticket has been sent, check email for response',
-  );
-  await pop(context);
-}
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +112,7 @@ if (widget.issueType != null &&
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+        forceMaterialTransparency: true,
         title: UrbText(
           'Contact Admin',
           size: 22,
@@ -117,7 +124,6 @@ if (widget.issueType != null &&
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        forceMaterialTransparency: true,
         elevation: 0,
         backgroundColor: appColors.whiteColor,
         foregroundColor: appColors.black,
