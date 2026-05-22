@@ -54,7 +54,16 @@ class CustomerPaymentBloc
     final result = await _repo.verifyPayment(event.reference);
 
     if (result.isSuccess && result.data != null) {
-      emit(WalletFundingVerifiedState(result.data!));
+      if (result.data!.gatewayResponse == 'Successful' ||
+          result.data!.status == 'success') {
+        emit(WalletFundingVerifiedState(result.data!));
+      } else {
+        emit(
+          WalletFundingFailureState(
+            'Payment was not successful: ${result.data!.gatewayResponse}',
+          ),
+        );
+      }
     } else {
       emit(
         WalletFundingFailureState(
@@ -213,7 +222,16 @@ class CustomerPaymentBloc
     final result = await _repo.verifyPayment(event.reference);
 
     if (result.isSuccess && result.data != null) {
-      emit(AdvertisementPaymentVerifiedState(result.data!));
+      if (result.data!.gatewayResponse == 'Successful' ||
+          result.data!.status == 'success') {
+        emit(AdvertisementPaymentVerifiedState(result.data!));
+      } else {
+        emit(
+          AdvertisementPaymentFailureState(
+            'Payment was not successful: ${result.data!.gatewayResponse}',
+          ),
+        );
+      }
     } else {
       emit(
         AdvertisementPaymentFailureState(
