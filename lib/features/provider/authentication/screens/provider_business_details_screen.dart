@@ -201,8 +201,10 @@ class _ProviderBusinessDetailsScreenState
                     BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
                       builder: (context, state) {
                         if (state is ServiceCatalogLoading) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: colors.primary.shade500,
+                            ),
                           );
                         }
 

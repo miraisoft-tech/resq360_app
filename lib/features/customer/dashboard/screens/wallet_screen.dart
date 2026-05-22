@@ -148,7 +148,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     if (state is FetchWalletLoading) {
                       return Center(
                         child: CircularProgressIndicator(
-                          color: appColors.primary,
+                          color: appColors.primary.shade500,
                         ),
                       );
                     }
@@ -223,7 +223,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     if (state is WalletTransactionsLoading) {
                       return Center(
                         child: CircularProgressIndicator(
-                          color: appColors.primary,
+                          color: appColors.primary.shade500,
                         ),
                       );
                     }

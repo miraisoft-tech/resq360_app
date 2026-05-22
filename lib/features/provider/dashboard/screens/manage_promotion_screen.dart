@@ -52,7 +52,7 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     return Scaffold(
       backgroundColor: colors.neutral.shade50,
       appBar: AppBar(
-          forceMaterialTransparency: true,
+        forceMaterialTransparency: true,
         title: UrbText(
           'My Promotions',
           size: 22,
@@ -106,7 +106,9 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
   Widget _buildPromotionsList(PromotionState state, {bool activeOnly = false}) {
     if (state is PromotionLoading) {
       return Center(
-        child: CircularProgressIndicator(color: context.appColors.primary),
+        child: CircularProgressIndicator(
+          color: context.appColors.primary.shade500,
+        ),
       );
     }
 
@@ -125,36 +127,37 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     return RefreshIndicator(
       onRefresh: () async => _loadPromotions(),
       color: context.appColors.primary.shade500,
-      child: promotions.isEmpty
-          ? SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: PromotionEmptyState(
-                activeOnly: activeOnly,
-                onCreatePromotion: _navigateToCreatePromotion,
-              ),
-            )
-          : Column(
-            children: [
-              if (promotions.isNotEmpty)
-                PromotionStatsOverview(stats: stats),
-              Expanded(
-                child: ListView.separated(
-                  padding: pad(horizontal: 16, vertical: 16),
-                  itemCount: promotions.length,
-                  separatorBuilder: (_, _) => 16.verticalSpace,
-                  itemBuilder: (context, index) {
-                    return PromotionCard(
-                      promotion: promotions[index],
-                      onViewDetails:
-                          () => _showPromotionDetails(promotions[index]),
-                      onShowOptions:
-                          () => _showPromotionOptions(promotions[index]),
-                    );
-                  },
+      child:
+          promotions.isEmpty
+              ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: PromotionEmptyState(
+                  activeOnly: activeOnly,
+                  onCreatePromotion: _navigateToCreatePromotion,
                 ),
+              )
+              : Column(
+                children: [
+                  if (promotions.isNotEmpty)
+                    PromotionStatsOverview(stats: stats),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: pad(horizontal: 16, vertical: 16),
+                      itemCount: promotions.length,
+                      separatorBuilder: (_, _) => 16.verticalSpace,
+                      itemBuilder: (context, index) {
+                        return PromotionCard(
+                          promotion: promotions[index],
+                          onViewDetails:
+                              () => _showPromotionDetails(promotions[index]),
+                          onShowOptions:
+                              () => _showPromotionOptions(promotions[index]),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
     );
   }
 

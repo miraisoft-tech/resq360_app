@@ -25,7 +25,7 @@ class _ServiceRequestNotificationState
         color: Colors.transparent,
         child: Container(
           margin: pad(horizontal: 80),
-          padding: pad(horizontal: 10, vertical: 5),
+          padding: pad(horizontal: 5, vertical: 5),
           decoration: BoxDecoration(
             color: appColors.whiteColor,
             borderRadius: BorderRadius.circular(12.r),
@@ -52,8 +52,9 @@ class _ServiceRequestNotificationState
                   10.horizontalSpace,
                   UrbText(
                     'Service Request',
+                    size: 16,
                     height: 16.5,
-                    weight: FontWeight.w500,
+                    weight: FontWeight.w600,
                     color: appColors.black,
                   ),
                 ],
@@ -64,7 +65,7 @@ class _ServiceRequestNotificationState
                 color: appColors.neutral.shade500,
                 size: 12,
                 height: 16.5,
-                weight: FontWeight.w400,
+                weight: FontWeight.w500,
                 textAlign: TextAlign.center,
               ),
             ],

@@ -75,7 +75,9 @@ class _ServiceCategoryScreenState extends State<ServiceCategoryScreen> {
             builder: (context, state) {
               if (state is ServiceCatalogLoading) {
                 return Center(
-                  child: CircularProgressIndicator(color: colors.primary),
+                  child: CircularProgressIndicator(
+                    color: colors.primary.shade500,
+                  ),
                 );
               }
 

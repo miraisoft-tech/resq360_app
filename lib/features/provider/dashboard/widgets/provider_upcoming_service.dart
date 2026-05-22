@@ -192,7 +192,7 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                                       width: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: colors.whiteColor,
+                                        color: colors.primary.shade500,
                                       ),
                                     )
                                     : GenText(

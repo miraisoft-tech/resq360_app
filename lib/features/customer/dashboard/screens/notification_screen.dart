@@ -126,7 +126,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
               return _buildList(appColors);
             }
             return Center(
-              child: CircularProgressIndicator(color: appColors.primary),
+              child: CircularProgressIndicator(
+                color: appColors.primary.shade500,
+              ),
             );
           }
 
@@ -205,9 +207,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
 
             if (_isLoadingMore)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(child: CircularProgressIndicator()),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: appColors.primary.shade500,
+                  ),
+                ),
               ),
           ],
         ),

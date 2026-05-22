@@ -100,7 +100,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
     return Scaffold(
       backgroundColor: colors.whiteColor,
       appBar: AppBar(
-          forceMaterialTransparency: true,
+        forceMaterialTransparency: true,
         backgroundColor: colors.whiteColor,
         elevation: 0,
         leading: IconButton(
@@ -170,10 +170,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                     listener: (context, state) {
                       if (state is ServiceProvidersError) {
                         WidgetsBinding.instance.addPostFrameCallback((_) async {
-                          await showErrorSnackbar(
-                            context,
-                            state.error,
-                          );
+                          await showErrorSnackbar(context, state.error);
                         });
                       }
 
@@ -188,8 +185,10 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                     },
                     builder: (context, state) {
                       if (state is PingProvidersLoading) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: colors.primary.shade500,
+                          ),
                         );
                       }
                       return ElevatedButton.icon(
@@ -268,7 +267,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                                         (p) => p.activityStatus == 'online',
                                       )
                                       .toList(),
-                            serviceCategoryId: widget.serviceProviderId
+                              serviceCategoryId: widget.serviceProviderId,
                             ),
                             _ProviderList(
                               providers:
@@ -277,7 +276,7 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                                         (p) => p.activityStatus == 'offline',
                                       )
                                       .toList(),
-                            serviceCategoryId: widget.serviceProviderId
+                              serviceCategoryId: widget.serviceProviderId,
                             ),
                           ],
                         ),
@@ -296,20 +295,23 @@ class _ServiceProvidersScreenState extends State<ServiceProvidersScreen>
                     return TabBarView(
                       controller: _tabController,
                       children: [
-                        _ProviderList(providers: providers, serviceCategoryId: widget.serviceProviderId),
+                        _ProviderList(
+                          providers: providers,
+                          serviceCategoryId: widget.serviceProviderId,
+                        ),
                         _ProviderList(
                           providers:
                               providers
                                   .where((p) => p.activityStatus == 'online')
                                   .toList(),
-                        serviceCategoryId: widget.serviceProviderId
+                          serviceCategoryId: widget.serviceProviderId,
                         ),
                         _ProviderList(
                           providers:
                               providers
                                   .where((p) => p.activityStatus == 'offline')
                                   .toList(),
-                        serviceCategoryId: widget.serviceProviderId
+                          serviceCategoryId: widget.serviceProviderId,
                         ),
                       ],
                     );
@@ -345,11 +347,7 @@ class _ProviderList extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.search_off,
-                size: 64,
-                color: colors.greyColor,
-              ),
+              Icon(Icons.search_off, size: 64, color: colors.greyColor),
               16.verticalSpace,
               UrbText(
                 'No providers found',
@@ -426,10 +424,7 @@ class _ProviderCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  PictureWidget(
-                    image: provider.profileImage,
-                    radius: 30,
-                  ),
+                  PictureWidget(image: provider.profileImage, radius: 30),
                   12.horizontalSpace,
                   Expanded(
                     child: Column(
@@ -473,7 +468,7 @@ class _ProviderCard extends StatelessWidget {
                             ),
                             2.horizontalSpace,
                             GenText(
-                             distanceInKm.toString(),
+                              distanceInKm.toString(),
                               size: 12,
                               color: colors.neutral.shade300,
                             ),

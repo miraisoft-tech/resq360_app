@@ -37,9 +37,7 @@ class ProfileSection extends StatelessWidget {
 
           if (state is ProviderAuthLoadingState) {
             return Center(
-              child: CircularProgressIndicator(
-                color: colors.primary,
-              ),
+              child: CircularProgressIndicator(color: colors.primary.shade500),
             );
           }
 
@@ -66,9 +64,7 @@ class ProfileSection extends StatelessWidget {
 
         if (state is CustomerAuthLoading) {
           return Center(
-            child: CircularProgressIndicator(
-              color: colors.primary,
-            ),
+            child: CircularProgressIndicator(color: colors.primary.shade500),
           );
         }
 
@@ -103,16 +99,13 @@ class ProfileView extends StatelessWidget {
 
     return Column(
       children: [
-       GestureDetector(
+        GestureDetector(
           onTap: onPickImage,
           child: Stack(
             alignment: Alignment.bottomRight,
             clipBehavior: Clip.none,
             children: [
-              PictureWidget(
-                image: imageUrl,
-                radius: 50,
-              ),
+              PictureWidget(image: imageUrl, radius: 50),
               Positioned(
                 bottom: 5,
                 right: 5,

@@ -92,7 +92,7 @@ class _NotificationSettingsScreenState
           if (state is FetchNotificationSettingsLoading) {
             return Center(
               child: CircularProgressIndicator(
-                color: appColors.primary,
+                color: appColors.primary.shade500,
               ),
             );
           }
@@ -100,7 +100,7 @@ class _NotificationSettingsScreenState
           if (currentSettings == null) {
             return Center(
               child: CircularProgressIndicator(
-                color: appColors.primary,
+                color: appColors.primary.shade500,
               ),
             );
           }
@@ -195,10 +195,7 @@ class _NotificationSettingsScreenState
                                           amount: '₦15,000',
                                         ),
                                       );
-                                      Navigator.pop(
-                                        context,
-                                        true,
-                                      );
+                                      Navigator.pop(context, true);
                                     },
                                   ),
                                 );
@@ -363,10 +360,13 @@ class _CardTile extends StatelessWidget {
                     //   ),
                     const Spacer(),
                     if (isLoading)
-                       SizedBox(
+                      SizedBox(
                         height: 24,
                         width: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: appColors.primary,),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: appColors.primary.shade500,
+                        ),
                       )
                     else
                       CustomSwitchWidget(
