@@ -40,6 +40,7 @@ class ProviderOpenPing {
     this.providerServiceId,
     this.serviceRequestId,
     this.chatId,
+    this.createdAt,
   });
 
   factory ProviderOpenPing.fromJson(Map<String, dynamic> json) {
@@ -97,6 +98,7 @@ class ProviderOpenPing {
             ['serviceRequest', 'chatId'],
             ['request', 'chatId'],
           ]),
+      createdAt: _parseDateTime(json['createdAt']),
     );
   }
 
@@ -107,6 +109,7 @@ class ProviderOpenPing {
   final int? providerServiceId;
   final int? serviceRequestId;
   final int? chatId;
+  final DateTime? createdAt;
   final Map<String, dynamic> raw;
 
   bool get canContactCustomer {
@@ -237,5 +240,14 @@ class ProviderOpenPing {
     if (text == null || text.isEmpty || text == 'null') return null;
 
     return int.tryParse(text);
+  }
+
+  static DateTime? _parseDateTime(Object? value) {
+    if (value is DateTime) return value;
+
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty || text == 'null') return null;
+
+    return DateTime.tryParse(text);
   }
 }

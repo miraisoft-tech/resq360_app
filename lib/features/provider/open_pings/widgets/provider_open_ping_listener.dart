@@ -28,6 +28,7 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
     with WidgetsBindingObserver {
   static const Duration _initialCheckDelay = Duration(seconds: 4);
   static const Duration _pollInterval = Duration(seconds: 30);
+  static const Duration _pingFreshnessDuration = Duration(minutes: 5);
   static const String _contactCustomerMessage =
       'Hello, I am available for booking.';
 
@@ -91,12 +92,13 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
     _startPolling();
   }
 
-  Future<void> _loadSeenPingBatchIds() async {
-    if (_hasLoadedSeenPingBatchIds) return;
+  Future<void> _loadSeenPingBatchIds({bool forceRefresh = false}) async {
+    if (_hasLoadedSeenPingBatchIds && !forceRefresh) return;
 
     final seenBatchIds = await _seenStore.getSeenBatchIds();
     if (!mounted) return;
 
+    if (forceRefresh) _seenPingBatchIds.clear();
     _seenPingBatchIds.addAll(seenBatchIds);
     _hasLoadedSeenPingBatchIds = true;
   }
@@ -132,7 +134,7 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
       return;
     }
 
-    await _loadSeenPingBatchIds();
+    await _loadSeenPingBatchIds(forceRefresh: true);
     if (!mounted) return;
 
     _isChecking = true;
@@ -147,11 +149,17 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
       if (openPings.isEmpty) return;
 
       ProviderOpenPing? ping;
+      final now = DateTime.now().toUtc();
       for (final item in openPings) {
-        if (!_seenPingBatchIds.contains(item.seenKey)) {
-          ping = item;
-          break;
+        if (_seenPingBatchIds.contains(item.seenKey)) continue;
+
+        if (!_isPingFresh(item, now)) {
+          await _markPingSeen(item);
+          continue;
         }
+
+        ping = item;
+        break;
       }
 
       if (ping == null) return;
@@ -242,6 +250,14 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
     if (!saved) {
       log('Failed to persist seen open ping batch id: $seenKey');
     }
+  }
+
+  bool _isPingFresh(ProviderOpenPing ping, DateTime now) {
+    final createdAt = ping.createdAt;
+    if (createdAt == null) return false;
+
+    final age = now.difference(createdAt.toUtc());
+    return age <= _pingFreshnessDuration;
   }
 
   Future<int?> _findOrCreateChat(ProviderOpenPing ping) async {

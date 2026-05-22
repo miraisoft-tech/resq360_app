@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/chat_cache_service.dart';
@@ -7,37 +5,57 @@ import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
 
-class LogoutDialog extends StatelessWidget {
+class LogoutDialog extends StatefulWidget {
   const LogoutDialog({super.key});
 
+  @override
+  State<LogoutDialog> createState() => _LogoutDialogState();
+}
+
+class _LogoutDialogState extends State<LogoutDialog> {
+  bool _isLoggingOut = false;
+
   Future<void> _handleLogout(BuildContext context) async {
-    showLoadingDialog(context);
+    if (_isLoggingOut) return;
+
+    final navigator = Navigator.of(context, rootNavigator: true);
+
+    setState(() {
+      _isLoggingOut = true;
+    });
 
     try {
       await ChatSocketService.instance.dispose();
 
       await AuthLocalRepo.instance.clearAuthCredentials();
       await AuthLocalRepo.instance.clearAccessToken();
+      await AuthLocalRepo.instance.clearLocalCred();
       await AuthLocalRepo.instance.clearUserType();
+      await AuthLocalRepo.instance.clearGuestMode();
       ChatCacheService.instance.clearAll();
 
       dashboardViewModel.reset();
 
       log('Cleared all local auth data successfully');
 
-      if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
+      if (!navigator.mounted) return;
 
-      if (context.mounted) {
-        await replaceScreen(context, const SelectAccountTypeScreen());
-      }
+      await navigator.pushAndRemoveUntil(
+        MaterialPageRoute<void>(
+          builder: (_) => const SelectAccountTypeScreen(),
+        ),
+        (_) => false,
+      );
     } on Exception catch (e) {
-      if (Navigator.of(context, rootNavigator: true).canPop()) {
-        Navigator.of(context, rootNavigator: true).pop();
+      if (mounted) {
+        setState(() {
+          _isLoggingOut = false;
+        });
       }
 
-      await showErrorSnackbar(context, 'Logout failed: $e');
+      if (mounted) {
+        await showErrorSnackbar(context, 'Logout failed: $e');
+      }
     }
   }
 
@@ -71,16 +89,19 @@ class LogoutDialog extends StatelessWidget {
                 label: 'Yes',
                 backgroundColor: appColors.error.shade500,
                 textColor: appColors.whiteColor,
-                onPressed: () async => _handleLogout(context),
+                loading: _isLoggingOut,
+                onPressed:
+                    _isLoggingOut ? null : () async => _handleLogout(context),
               ),
               20.verticalSpace,
               WideButton(
                 label: 'Back',
                 backgroundColor: appColors.error.shade50,
                 textColor: appColors.error.shade500,
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                },
+                onPressed:
+                    _isLoggingOut
+                        ? null
+                        : () async => Navigator.of(context).pop(),
               ),
             ],
           ),

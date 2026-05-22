@@ -19,6 +19,7 @@ import 'package:resq360/features/settings/data/models/admin_types.enums.dart';
 import 'package:resq360/features/settings/data/models/settings_model.dart';
 import 'package:resq360/features/settings/screens/account_and_security_screen.dart';
 import 'package:resq360/features/settings/screens/add_bank_details.dart';
+import 'package:resq360/features/settings/screens/change_password_screen.dart';
 import 'package:resq360/features/settings/screens/contact_admin_screen.dart';
 import 'package:resq360/features/settings/screens/notification_settings_screen.dart';
 import 'package:resq360/features/settings/screens/ratings_screen.dart';
@@ -169,13 +170,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
         },
       ),
-      // SettingsItem(
-      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
-      //   title: 'Change Password',
-      //   onTap: () async {
-      //     await pushScreen(context, const ChangePasswordScreen());
-      //   },
-      // ),
+      SettingsItem(
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
+        title: 'Change Password',
+        onTap: () async {
+          await pushScreen(context, const ChangePasswordScreen());
+        },
+      ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',
@@ -266,13 +267,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await AppGenUtil.launchUrlText(AppKeys.termsAndConditionsUrl);
         },
       ),
-      // SettingsItem(
-      //   icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
-      //   title: 'Change Password',
-      //   onTap: () async {
-      //     await pushScreen(context, const ChangePasswordScreen());
-      //   },
-      // ),
+      SettingsItem(
+        icon: AppAssets.ASSETS_ICONS_SETTINGS_PASSWORD_SVG.svg,
+        title: 'Change Password',
+        onTap: () async {
+          await pushScreen(context, const ChangePasswordScreen());
+        },
+      ),
       SettingsItem(
         icon: AppAssets.ASSETS_ICONS_SETTINGS_ADMIN_SVG.svg,
         title: 'Contact Admin',

@@ -62,9 +62,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
           await pushAndReplaceScreen(
             context: context,
-            ConfirmEmailScreen(
-              email: emailController.text,
-            ),
+            ConfirmEmailScreen(email: emailController.text),
           );
         }
       },
@@ -169,7 +167,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         onPressed:
                             _agree
                                 ? () async {
-                                  log('pressing create account');
+                                  await AppGenUtil.offKeyboard();
+
                                   if (_formKey.currentState!.validate()) {
                                     context.read<CustomerAuthBloc>().add(
                                       CustomerSignupWIthEmail(

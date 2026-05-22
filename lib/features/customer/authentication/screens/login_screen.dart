@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/biometric_auth_service.dart';
+import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
@@ -126,9 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           await pushAndReplaceScreen(
             context: context,
-            ConfirmEmailScreen(
-              email: emailController.text,
-            ),
+            ConfirmEmailScreen(email: emailController.text),
           );
         }
 
@@ -139,9 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           await replaceScreen(
             context,
-            const MainLayoutPage(
-              userType: UserType.customer,
-            ),
+            const MainLayoutPage(userType: UserType.customer),
           );
         }
       },
@@ -197,6 +194,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     label: 'Log in',
                     loading: state is CustomerAuthLoading,
                     onPressed: () async {
+                      await AppGenUtil.offKeyboard();
+
                       if (_formKey.currentState!.validate()) {
                         context.read<CustomerAuthBloc>().add(
                           CustomerLoginWithEmail(
@@ -215,10 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onTap: _authenticateWithBiometrics,
                   child: Center(
                     child: Container(
-                      padding: pad(
-                        vertical: 14,
-                        horizontal: 20,
-                      ),
+                      padding: pad(vertical: 14, horizontal: 20),
                       decoration: BoxDecoration(
                         border: Border.all(color: colors.primary.shade500),
                         borderRadius: BorderRadius.circular(12.r),

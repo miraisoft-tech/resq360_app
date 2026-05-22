@@ -112,7 +112,7 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                   child: SafeArea(
                     top: false,
                     bottom: false,
-                    minimum: EdgeInsets.only(bottom: 25.h),
+                    minimum: EdgeInsets.only(bottom: 10.h),
                     child: Row(
                       children: List.generate(navItems.length, (index) {
                         final item = navItems[index];
