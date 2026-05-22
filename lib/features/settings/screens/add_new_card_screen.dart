@@ -20,6 +20,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+          forceMaterialTransparency: true,
         title: const GenText(
           'Manage Cards',
           size: 18,

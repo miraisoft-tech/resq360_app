@@ -62,6 +62,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+        forceMaterialTransparency: true,
         elevation: 0,
         backgroundColor: appColors.whiteColor,
         leading: IconButton(
@@ -86,7 +87,9 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
           builder: (context, state) {
             if (state is WalletTransactionsLoading) {
               return Center(
-                child: CircularProgressIndicator(color: appColors.primary),
+                child: CircularProgressIndicator(
+                  color: appColors.primary.shade500,
+                ),
               );
             }
 
@@ -141,7 +144,9 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                     return Center(
                       child: Padding(
                         padding: pad(both: 16),
-                        child: const CircularProgressIndicator(),
+                        child: CircularProgressIndicator(
+                          color: appColors.primary.shade500,
+                        ),
                       ),
                     );
                   }

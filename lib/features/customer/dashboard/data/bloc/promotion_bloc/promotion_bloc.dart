@@ -25,7 +25,6 @@ class PromotionBloc extends Bloc<PromotionEvent, PromotionState> {
     on<DeletePromotion>(_onDeletePromotion);
   }
 
-
   Future<void> _onFetchMyPromotions(
     FetchMyPromotions event,
     Emitter<PromotionState> emit,
@@ -38,8 +37,7 @@ class PromotionBloc extends Bloc<PromotionEvent, PromotionState> {
       return;
     }
 
-    final result =
-        await _advertRepo.fetchMyPromotions(providerId: providerId);
+    final result = await _advertRepo.fetchMyPromotions(providerId: providerId);
 
     if (result.data != null) {
       emit(PromotionsFetched(promotions: result.data!));
@@ -80,7 +78,6 @@ class PromotionBloc extends Bloc<PromotionEvent, PromotionState> {
     }
   }
 
-
   Future<void> _onCreatePromotion(
     CreatePromotion event,
     Emitter<PromotionState> emit,
@@ -88,6 +85,7 @@ class PromotionBloc extends Bloc<PromotionEvent, PromotionState> {
     emit(PromotionLoading());
 
     final result = await _advertRepo.createAdvertisement(
+      providerServiceId: event.providerServiceId,
       discountPercentage: event.discountPercentage,
       durationInMilliSeconds: event.durationInMilliSeconds,
       paymentMethod: event.paymentMethod,
@@ -107,7 +105,6 @@ class PromotionBloc extends Bloc<PromotionEvent, PromotionState> {
     }
   }
 
-
   Future<void> _onVerifyPromotionPayment(
     VerifyPromotionPayment event,
     Emitter<PromotionState> emit,
@@ -123,16 +120,12 @@ class PromotionBloc extends Bloc<PromotionEvent, PromotionState> {
         emit(PromotionCreated());
       } else {
         emit(
-          PromotionError(
-            error: 'Payment failed: ${payment.gatewayResponse}',
-          ),
+          PromotionError(error: 'Payment failed: ${payment.gatewayResponse}'),
         );
       }
     } else {
       emit(
-        PromotionError(
-          error: result.error ?? 'Payment verification failed',
-        ),
+        PromotionError(error: result.error ?? 'Payment verification failed'),
       );
     }
   }

@@ -20,11 +20,18 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
     final isAssigned =
         widget.booking.status?.toUpperCase() ==
         BookingEnums.assigned.name.toUpperCase();
+    final isArrived =
+        widget.booking.status?.toUpperCase() ==
+        BookingEnums.arrived.name.toUpperCase();
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
         if (state is BookingStarted) {
           await showSuccessSnackbar(context, 'Service has started');
+        }
+
+        if (state is BookingArrived) {
+          await showSuccessSnackbar(context, 'Provider arrival confirmed');
         }
       },
       child: Col(
@@ -145,6 +152,16 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                                       log(serviceRequestId);
                                       if (serviceRequestId != null) {
                                         context.read<BookingBloc>().add(
+                                          ArriveBooking(
+                                            serviceRequestId: serviceRequestId,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                    : isArrived
+                                    ? () {
+                                      if (serviceRequestId != null) {
+                                        context.read<BookingBloc>().add(
                                           StartBooking(
                                             serviceRequestId: serviceRequestId,
                                           ),
@@ -175,11 +192,13 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                                       width: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: colors.whiteColor,
+                                        color: colors.primary.shade500,
                                       ),
                                     )
                                     : GenText(
                                       isAssigned
+                                          ? 'Mark Arrived'
+                                          : isArrived
                                           ? 'Start Service'
                                           : 'In Progress',
                                       height: 16.5,

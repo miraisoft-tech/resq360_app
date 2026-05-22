@@ -136,35 +136,46 @@ class _RequestTile extends StatelessWidget {
           children: [
              PictureWidget(image: user?.profileImage ?? '',),
             10.horizontalSpace,
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    GenText(name, weight: FontWeight.w400),
-                    4.horizontalSpace,
-                    GenText(
-                      '($service)',
-                      weight: FontWeight.w400,
-                      color: colors.neutral.shade400,
-                    ),
-                  ],
-                ),
-                // Row(
-                //   children: [
-                //     AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                //       color: colors.neutral.shade400,
-                //     ),
-                //     4.horizontalSpace,
-                //     GenText(
-                //       distance ?? '',
-                //       size: 12,
-                //       weight: FontWeight.w400,
-                //       color: colors.neutral.shade400,
-                //     ),
-                //   ],
-                // ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GenText(
+                          name,
+                          weight: FontWeight.w400,
+                          maxLines: 1,
+                        ),
+                      ),
+                      4.horizontalSpace,
+                      Expanded(
+                        child: GenText(
+                          '($service)',
+                          weight: FontWeight.w400,
+                          color: colors.neutral.shade400,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Row(
+                  //   children: [
+                  //     AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
+                  //       color: colors.neutral.shade400,
+                  //     ),
+                  //     4.horizontalSpace,
+                  //     GenText(
+                  //       distance ?? '',
+                  //       size: 12,
+                  //       weight: FontWeight.w400,
+                  //       color: colors.neutral.shade400,
+                  //     ),
+                  //   ],
+                  // ),
+                ],
+              ),
             ),
           ],
         ),

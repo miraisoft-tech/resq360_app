@@ -20,21 +20,27 @@ class FetchActivePromotions extends PromotionEvent {
 class FetchPromotionPrice extends PromotionEvent {}
 
 class CreatePromotion extends PromotionEvent {
-
   const CreatePromotion({
+    required this.providerServiceId,
     required this.discountPercentage,
     required this.durationInMilliSeconds,
     required this.paymentMethod,
     required this.description,
   });
+  final int providerServiceId;
   final int discountPercentage;
   final int durationInMilliSeconds;
   final String paymentMethod;
   final String description;
 
   @override
-  List<Object?> get props =>
-      [discountPercentage, durationInMilliSeconds, paymentMethod, description];
+  List<Object?> get props => [
+    providerServiceId,
+    discountPercentage,
+    durationInMilliSeconds,
+    paymentMethod,
+    description,
+  ];
 }
 
 class VerifyPromotionPayment extends PromotionEvent {
@@ -46,7 +52,6 @@ class VerifyPromotionPayment extends PromotionEvent {
 }
 
 class UpdatePromotion extends PromotionEvent {
-
   const UpdatePromotion({
     required this.id,
     this.title,

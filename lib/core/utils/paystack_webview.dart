@@ -70,6 +70,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
       },
       child: Scaffold(
         appBar: AppBar(
+          forceMaterialTransparency: true,
           backgroundColor: context.appColors.whiteColor,
           title: const GenText('Complete Payment'),
           actions: [
@@ -82,6 +83,7 @@ class _PaystackWebViewPageState extends State<PaystackWebViewPage> {
                   height: 18,
                   child: CircularProgressIndicator(
                     value: progress > 0 ? progress : null,
+                    color: context.appColors.primary.shade500,
                   ),
                 ),
               ),

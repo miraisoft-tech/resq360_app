@@ -21,6 +21,8 @@ class PromotionsDashboardScreen extends StatefulWidget {
 class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  var _promotions = <Advertisement>[];
+  bool _isLoadingPromotions = true;
 
   bool _isPromotionActiveByDate(Advertisement ad) {
     final endDate = ad.endDate;
@@ -32,10 +34,16 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    context.read<PromotionBloc>().add(FetchMyPromotions());
+    _loadPromotions();
   }
 
   Future<void> _loadPromotions() async {
+    if (mounted) {
+      setState(() {
+        _isLoadingPromotions = true;
+      });
+    }
+
     context.read<PromotionBloc>().add(FetchMyPromotions());
   }
 
@@ -52,6 +60,7 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     return Scaffold(
       backgroundColor: colors.neutral.shade50,
       appBar: AppBar(
+        forceMaterialTransparency: true,
         title: UrbText(
           'My Promotions',
           size: 22,
@@ -75,7 +84,19 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
       ),
       body: BlocConsumer<PromotionBloc, PromotionState>(
         listener: (context, state) async {
+          if (state is PromotionsFetched) {
+            setState(() {
+              _promotions = state.promotions;
+              _isLoadingPromotions = false;
+            });
+          }
+
           if (state is PromotionError) {
+            if (_isLoadingPromotions) {
+              setState(() {
+                _isLoadingPromotions = false;
+              });
+            }
             await showErrorSnackbar(context, state.error);
           }
         },
@@ -83,8 +104,8 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
           return TabBarView(
             controller: _tabController,
             children: [
-              _buildPromotionsList(state, activeOnly: true),
-              _buildPromotionsList(state),
+              _buildPromotionsList(activeOnly: true),
+              _buildPromotionsList(),
             ],
           );
         },
@@ -102,21 +123,18 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
     );
   }
 
-  Widget _buildPromotionsList(PromotionState state, {bool activeOnly = false}) {
-    if (state is PromotionLoading) {
+  Widget _buildPromotionsList({bool activeOnly = false}) {
+    if (_isLoadingPromotions && _promotions.isEmpty) {
       return Center(
-        child: CircularProgressIndicator(color: context.appColors.primary),
+        child: CircularProgressIndicator(
+          color: context.appColors.primary.shade500,
+        ),
       );
     }
 
-    var promotions = <Advertisement>[];
-
-    if (state is PromotionsFetched) {
-      promotions = state.promotions;
-
-      if (activeOnly) {
-        promotions = promotions.where(_isPromotionActiveByDate).toList();
-      }
+    var promotions = _promotions;
+    if (activeOnly) {
+      promotions = promotions.where(_isPromotionActiveByDate).toList();
     }
 
     final stats = _calculateStats(promotions);
@@ -126,9 +144,12 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
       color: context.appColors.primary.shade500,
       child:
           promotions.isEmpty
-              ? PromotionEmptyState(
-                activeOnly: activeOnly,
-                onCreatePromotion: _navigateToCreatePromotion,
+              ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: PromotionEmptyState(
+                  activeOnly: activeOnly,
+                  onCreatePromotion: _navigateToCreatePromotion,
+                ),
               )
               : Column(
                 children: [

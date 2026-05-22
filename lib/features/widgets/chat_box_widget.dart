@@ -4,18 +4,26 @@ class ChatBoxWidget extends StatefulWidget {
   const ChatBoxWidget({
     required this.onSend,
     required this.onAttachment,
+    this.initialMessage,
     super.key,
   });
 
   final void Function(String message) onSend;
   final void Function(BuildContext) onAttachment;
+  final String? initialMessage;
 
   @override
   State<ChatBoxWidget> createState() => _ChatBoxWidgetState();
 }
 
 class _ChatBoxWidgetState extends State<ChatBoxWidget> {
-  final TextEditingController _controller = TextEditingController();
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialMessage);
+  }
 
   void _handleSend() {
     final text = _controller.text.trim();
@@ -37,6 +45,12 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
   // }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
@@ -44,9 +58,7 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
       padding: pad(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: appColors.whiteColor,
-        border: Border(
-          top: BorderSide(color: appColors.textColor.shade100),
-        ),
+        border: Border(top: BorderSide(color: appColors.textColor.shade100)),
       ),
       child: Row(
         children: [
@@ -88,10 +100,7 @@ class _ChatBoxWidgetState extends State<ChatBoxWidget> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(
-                    color: appColors.black,
-                    width: 0.5,
-                  ),
+                  borderSide: BorderSide(color: appColors.black, width: 0.5),
                 ),
               ),
               onSubmitted: (_) => _handleSend(),

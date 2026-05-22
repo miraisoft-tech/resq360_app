@@ -120,7 +120,11 @@ class _ServiceProviderDetailsScreenState
                       )
                       .toList(),
               titleGallery: null,
-              loadingWidget: const Center(child: CircularProgressIndicator()),
+              loadingWidget: Center(
+                child: CircularProgressIndicator(
+                  color: context.appColors.primary.shade500,
+                ),
+              ),
               errorWidget: const Center(
                 child: Icon(Icons.broken_image, size: 50),
               ),
@@ -159,6 +163,7 @@ class _ServiceProviderDetailsScreenState
             return Scaffold(
               backgroundColor: colors.whiteColor,
               appBar: AppBar(
+                forceMaterialTransparency: true,
                 backgroundColor: colors.whiteColor,
                 elevation: 0,
                 leading: IconButton(
@@ -166,7 +171,11 @@ class _ServiceProviderDetailsScreenState
                   onPressed: () => pop(context),
                 ),
               ),
-              body: const Center(child: CircularProgressIndicator()),
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: colors.primary.shade500,
+                ),
+              ),
             );
           }
 
@@ -498,8 +507,10 @@ class _ServiceProviderDetailsScreenState
                                 BlocBuilder<RatingsBloc, RatingsState>(
                                   builder: (context, ratingState) {
                                     if (ratingState is RatingsLoading) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          color: colors.primary.shade500,
+                                        ),
                                       );
                                     }
 
@@ -511,7 +522,8 @@ class _ServiceProviderDetailsScreenState
                                     }
 
                                     if (ratingState is RatingsLoaded) {
-                                      final ratings = ratingState.providerRatings;
+                                      final ratings =
+                                          ratingState.providerRatings;
                                       final reviews = ratings?.reviews ?? [];
 
                                       return Column(
@@ -592,6 +604,7 @@ class _ServiceProviderDetailsScreenState
 
     return showModalBottomSheet<int>(
       context: context,
+      backgroundColor: context.appColors.whiteColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

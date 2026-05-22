@@ -33,6 +33,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return Scaffold(
       backgroundColor: appColors.whiteColor,
       appBar: AppBar(
+        forceMaterialTransparency: true,
         title: UrbText(
           'Change Password',
           size: 22,
@@ -45,7 +46,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
         centerTitle: true,
         elevation: 0,
-        forceMaterialTransparency: true,
         backgroundColor: appColors.whiteColor,
       ),
       body: BlocConsumer<ProfileUpdateBloc, ProfileUpdateState>(

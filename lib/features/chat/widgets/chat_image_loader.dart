@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class ChatImageLoader extends StatelessWidget {
   const ChatImageLoader({
@@ -15,8 +16,7 @@ class ChatImageLoader extends StatelessWidget {
   final double? height;
   final BoxFit fit;
 
-  bool get _isLocal =>
-      source.startsWith('/') || source.startsWith('file://');
+  bool get _isLocal => source.startsWith('/') || source.startsWith('file://');
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +41,10 @@ class ChatImageLoader extends StatelessWidget {
       fit: fit,
       loadingBuilder: (context, child, progress) {
         if (progress == null) return child;
-        return Container(
+        return SizedBox(
           width: width,
           height: height,
-          alignment: Alignment.center,
-          color: Colors.black12,
-          child: const CircularProgressIndicator(),
+          child: SkeletonLoader(width: width, height: height ?? 160),
         );
       },
       errorBuilder: (_, _, _) => _errorPlaceholder(),
@@ -59,11 +57,7 @@ class ChatImageLoader extends StatelessWidget {
       height: height,
       alignment: Alignment.center,
       color: Colors.black12,
-      child: const Icon(
-        Icons.broken_image,
-        color: Colors.grey,
-        size: 40,
-      ),
+      child: const Icon(Icons.broken_image, color: Colors.grey, size: 40),
     );
   }
 }

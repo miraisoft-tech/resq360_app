@@ -11,7 +11,7 @@ import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/chat/screens/chat_service_detail_screen.dart';
-import 'package:resq360/features/chat/screens/generate_invoice.dialog.dart';
+import 'package:resq360/features/chat/screens/generate_invoice.bottomsheet.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/chat/widgets/appeal_closed_card.dart';
 import 'package:resq360/features/chat/widgets/chat_document.dart';
@@ -30,18 +30,21 @@ import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class ChatDetailScreen extends StatelessWidget {
   const ChatDetailScreen({
     required this.chatId,
     required this.userType,
     this.providerServiceId,
+    this.initialMessage,
     super.key,
   });
 
   final int chatId;
   final UserType userType;
   final int? providerServiceId;
+  final String? initialMessage;
 
   Future<int?> _loadCurrentUserId() async {
     if (userType == UserType.customer) {
@@ -59,7 +62,7 @@ class ChatDetailScreen extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: SafeArea(child: SkeletonChatDetailContent()),
           );
         }
 
@@ -75,6 +78,7 @@ class ChatDetailScreen extends StatelessWidget {
             userType: userType,
             currentUserId: userId,
             providerServiceId: providerServiceId,
+            initialMessage: initialMessage,
           ),
         );
       },
@@ -88,12 +92,14 @@ class _ChatDetailView extends StatefulWidget {
     required this.userType,
     required this.currentUserId,
     this.providerServiceId,
+    this.initialMessage,
   });
 
   final int chatId;
   final UserType userType;
   final int currentUserId;
   final int? providerServiceId;
+  final String? initialMessage;
 
   @override
   State<_ChatDetailView> createState() => _ChatDetailViewState();
@@ -312,6 +318,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                       child: Opacity(
                         opacity: state is ChatDetailReady ? 1.0 : 0.5,
                         child: ChatBoxWidget(
+                          initialMessage: widget.initialMessage,
                           onAttachment: (ctx) {
                             if (state is ChatDetailReady) {
                               unawaited(_showAttachmentMenu(ctx, state.chat));
@@ -354,16 +361,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     final appColors = context.appColors;
 
     if (state is ChatDetailLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: appColors.primary),
-            16.verticalSpace,
-            GenText('Loading messages...', color: appColors.neutral.shade400),
-          ],
-        ),
-      );
+      return const SkeletonChatMessages();
     }
 
     if (state is ChatDetailFailure) {
@@ -857,12 +855,16 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
   }
 
   Future<void> _onInvoiceTap(BuildContext context, ChatResponse chat) async {
-    await GeneralDialogs.showCustomDialog<void>(
-      context,
-      body: BlocProvider.value(
-        value: context.read<ChatDetailBloc>(),
-        child: GenerateInvoiceDialog(chat: chat),
-      ),
+    final chatDetailBloc = context.read<ChatDetailBloc>();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder:
+          (_) => GenerateInvoiceBottomSheet(
+            chat: chat,
+            chatDetailBloc: chatDetailBloc,
+          ),
     );
   }
 
@@ -1076,7 +1078,7 @@ class _MessageList extends StatelessWidget {
         if (isLoadingMore && index == messages.length) {
           return const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
+            child: SkeletonChatBubble(isMine: false, width: 180),
           );
         }
 

@@ -12,6 +12,7 @@ import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bl
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/provider/bookings/widgets/booking_receipt_modal.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class ProviderBookingsScreen extends StatefulWidget {
   const ProviderBookingsScreen({super.key});
@@ -45,16 +46,12 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
     switch (index) {
       case 0:
         status = 'upcoming';
-
       case 1:
         status = 'ongoing';
-
       case 2:
         status = 'completed';
-
       case 3:
         status = 'cancelled';
-
       default:
         status = 'upcoming';
     }
@@ -71,6 +68,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(100.h),
         child: AppBar(
+          forceMaterialTransparency: true,
           backgroundColor: appColors.whiteColor,
           elevation: 0,
           centerTitle: false,
@@ -108,7 +106,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                   'Upcoming',
                   textAlign: TextAlign.center,
                   weight: FontWeight.w500,
-                  size: 12,
+                  size: 11,
                   height: 30,
                   color:
                       _tabController.index == 0
@@ -123,7 +121,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                   'Ongoing',
                   textAlign: TextAlign.center,
                   weight: FontWeight.w500,
-                  size: 12,
+                  size: 11,
                   height: 30,
                   color:
                       _tabController.index == 1
@@ -138,7 +136,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                   'Completed',
                   textAlign: TextAlign.center,
                   weight: FontWeight.w500,
-                  size: 12,
+                  size: 11,
                   height: 30,
                   color:
                       _tabController.index == 2
@@ -153,7 +151,7 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
                   'Cancelled',
                   textAlign: TextAlign.center,
                   weight: FontWeight.w500,
-                  size: 12,
+                  size: 11,
                   height: 30,
                   color:
                       _tabController.index == 3
@@ -204,9 +202,7 @@ class _BookingList extends StatelessWidget {
     return BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
       builder: (context, state) {
         if (state is ProviderServicesLoading) {
-          return Center(
-            child: CircularProgressIndicator(color: appColors.primary),
-          );
+          return const SkeletonBookingList();
         }
 
         if (state is ProviderServicesError) {

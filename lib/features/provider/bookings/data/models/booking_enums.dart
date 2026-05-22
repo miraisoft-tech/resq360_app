@@ -3,6 +3,7 @@ enum BookingStatus {
   ongoing('ongoing'),
   completed('completed'),
   cancelled('cancelled'),
+  arrived('ARRIVED'),
   inProgress('IN_PROGRESS'),
   matching('MATCHING'),
   assigned('ASSIGNED');

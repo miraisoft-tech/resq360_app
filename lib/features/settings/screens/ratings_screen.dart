@@ -53,7 +53,11 @@ class _RatingScreenState extends State<RatingScreen> {
       body: BlocConsumer<RatingsBloc, RatingsState>(
         builder: (context, state) {
           if (state is RatingsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color: appColors.primary.shade500,
+              ),
+            );
           }
 
           if (state is RatingsLoaded) {

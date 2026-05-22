@@ -7,9 +7,7 @@ sealed class BookingEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-
 class StartBooking extends BookingEvent {
-
   const StartBooking({required this.serviceRequestId});
   final int serviceRequestId;
 
@@ -17,8 +15,15 @@ class StartBooking extends BookingEvent {
   List<Object?> get props => [serviceRequestId];
 }
 
-class CancelBooking extends BookingEvent {
+class ArriveBooking extends BookingEvent {
+  const ArriveBooking({required this.serviceRequestId});
+  final int serviceRequestId;
 
+  @override
+  List<Object?> get props => [serviceRequestId];
+}
+
+class CancelBooking extends BookingEvent {
   const CancelBooking({
     required this.serviceRequestId,
     required this.cancellationReason,
@@ -31,7 +36,6 @@ class CancelBooking extends BookingEvent {
 }
 
 class CompleteBooking extends BookingEvent {
-
   const CompleteBooking({
     required this.serviceRequestId,
     required this.ratings,

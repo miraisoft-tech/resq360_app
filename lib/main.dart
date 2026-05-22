@@ -34,6 +34,7 @@ import 'package:resq360/features/provider/authentication/data/bloc/provider_auth
 import 'package:resq360/features/provider/authentication/data/service/provider_auth_remote.repo.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/dashboard/data/bloc/provider_stats_bloc/provider_stats_bloc.dart';
+import 'package:resq360/features/provider/open_pings/widgets/provider_open_ping_listener.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/gallery_bloc/gallery_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/notification_settings_bloc/notification_settings_bloc.dart';
@@ -65,13 +66,18 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  await SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: SystemUiOverlay.values,
+  );
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
+      statusBarColor: Colors.white,
       statusBarIconBrightness: Brightness.dark,
       statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 
@@ -111,26 +117,15 @@ Future<void> main() async {
           BlocProvider(
             create: (_) => ServiceRequestBloc(serviceRepo: serviceRepo),
           ),
+          BlocProvider(create: (_) => NotificationSettingsBloc()),
+          BlocProvider(create: (_) => ProviderBloc()),
+          BlocProvider(create: (_) => PhoneUpdateBloc()),
+          BlocProvider(create: (_) => KycBloc()),
+          BlocProvider(create: (_) => BankBloc()),
+          BlocProvider(create: (_) => PromotionBloc()),
           BlocProvider(
-            create: (_) => NotificationSettingsBloc(),
-          ),
-          BlocProvider(
-            create: (_) => ProviderBloc(),
-          ),
-          BlocProvider(
-            create: (_) => PhoneUpdateBloc(),
-          ),
-          BlocProvider(
-            create: (_) => KycBloc(),
-          ),
-          BlocProvider(
-            create: (_) => BankBloc(),
-          ),
-          BlocProvider(
-            create: (_) => PromotionBloc(),
-          ),
-           BlocProvider(
-            create: (_) => ProviderStatsBloc(authRepo: ProviderAuthRemoteRepo())
+            create:
+                (_) => ProviderStatsBloc(authRepo: ProviderAuthRemoteRepo()),
           ),
         ],
         child: const MyApp(),
@@ -226,16 +221,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 localizationsDelegates: GlobalMaterialLocalizations.delegates,
                 home: const SplashScreen(),
                 builder:
-                    (context, child) => Overlay(
-                      initialEntries: [
-                        OverlayEntry(
-                          builder:
-                              (context) => MediaQuery(
-                                data: MediaQuery.of(context),
-                                child: child!,
-                              ),
-                        ),
-                      ],
+                    (context, child) => ProviderOpenPingListener(
+                      child: Overlay(
+                        initialEntries: [
+                          OverlayEntry(
+                            builder:
+                                (context) => MediaQuery(
+                                  data: MediaQuery.of(context),
+                                  child: child!,
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
               ),
             ),

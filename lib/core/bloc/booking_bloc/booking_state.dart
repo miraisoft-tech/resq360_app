@@ -2,7 +2,7 @@ part of 'booking_bloc.dart';
 
 sealed class BookingState extends Equatable {
   const BookingState();
-  
+
   @override
   List<Object?> get props => [];
 }
@@ -12,7 +12,6 @@ class BookingInitial extends BookingState {}
 class BookingLoading extends BookingState {}
 
 class BookingStarted extends BookingState {
-
   const BookingStarted({required this.serviceRequestId});
   final int serviceRequestId;
 
@@ -20,8 +19,15 @@ class BookingStarted extends BookingState {
   List<Object?> get props => [serviceRequestId];
 }
 
-class BookingCancelled extends BookingState {
+class BookingArrived extends BookingState {
+  const BookingArrived({required this.serviceRequestId});
+  final int serviceRequestId;
 
+  @override
+  List<Object?> get props => [serviceRequestId];
+}
+
+class BookingCancelled extends BookingState {
   const BookingCancelled({required this.serviceRequestId});
   final int serviceRequestId;
 
@@ -30,7 +36,6 @@ class BookingCancelled extends BookingState {
 }
 
 class BookingCompleted extends BookingState {
-
   const BookingCompleted({required this.serviceRequestId});
   final int serviceRequestId;
 
@@ -39,7 +44,6 @@ class BookingCompleted extends BookingState {
 }
 
 class BookingError extends BookingState {
-
   const BookingError({required this.error});
   final String error;
 

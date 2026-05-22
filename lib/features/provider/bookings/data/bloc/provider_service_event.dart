@@ -8,7 +8,7 @@ sealed class ProviderServiceEvent extends Equatable {
 }
 
 class ProviderFetchBookings extends ProviderServiceEvent {
-   const ProviderFetchBookings({this.status});
+  const ProviderFetchBookings({this.status});
   final String? status;
 }
 
@@ -17,8 +17,16 @@ class ProviderStartServiceBooking extends ProviderServiceEvent {
   final int serviceRequestId;
 }
 
+class ProviderArriveServiceBooking extends ProviderServiceEvent {
+  const ProviderArriveServiceBooking(this.serviceRequestId);
+  final int serviceRequestId;
+}
+
 class ProviderCancelServiceBooking extends ProviderServiceEvent {
-  const ProviderCancelServiceBooking({required this.serviceRequestId, required this.cancellationReason});
+  const ProviderCancelServiceBooking({
+    required this.serviceRequestId,
+    required this.cancellationReason,
+  });
   final int serviceRequestId;
   final String cancellationReason;
 }

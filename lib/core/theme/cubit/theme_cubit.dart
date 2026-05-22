@@ -74,8 +74,8 @@ class ThemeCubit extends Cubit<ThemeState> {
       ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: colors.primary.shade500,
-        selectionColor:  AppColorPalette.dark().primary.shade100,
-        selectionHandleColor:  AppColorPalette.dark().primary.shade500,
+        selectionColor: AppColorPalette.dark().primary.shade100,
+        selectionHandleColor: AppColorPalette.dark().primary.shade500,
       ),
     );
 

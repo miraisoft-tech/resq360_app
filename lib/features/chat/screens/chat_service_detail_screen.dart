@@ -80,6 +80,9 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
     final isAssigned =
         status?.toUpperCase() == BookingEnums.assigned.name.toUpperCase();
 
+    final isArrived =
+        status?.toUpperCase() == BookingEnums.arrived.name.toUpperCase();
+
     final isProgress =
         status?.toUpperCase() == BookingEnums.progress.name.toUpperCase();
 
@@ -102,6 +105,14 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
           Navigator.pop(context);
         }
 
+        if (state is BookingArrived) {
+          Navigator.pop(context);
+
+          await showSuccessSnackbar(context, 'Provider arrival confirmed');
+
+          Navigator.pop(context);
+        }
+
         if (state is BookingCompleted) {
           Navigator.pop(context);
 
@@ -120,6 +131,7 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
       child: Scaffold(
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
+          forceMaterialTransparency: true,
           title: UrbText(
             'Service Details',
             color: appColors.black,
@@ -127,7 +139,6 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
             size: 22,
             height: 32.5,
           ),
-          forceMaterialTransparency: true,
           centerTitle: true,
           elevation: 0,
           backgroundColor: appColors.whiteColor,
@@ -275,13 +286,23 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
                       child: WideButton(
                         label:
                             _isProvider
-                                ? (isAssigned ? 'Start Service' : 'Complete')
+                                ? isAssigned
+                                    ? 'Mark Arrived'
+                                    : isArrived
+                                    ? 'Start Service'
+                                    : 'Complete'
                                 : 'Appeal',
                         backgroundColor: appColors.primary.shade500,
                         textColor: appColors.whiteColor,
                         onPressed: () async {
                           if (_isProvider) {
                             if (isAssigned) {
+                              context.read<BookingBloc>().add(
+                                ArriveBooking(
+                                  serviceRequestId: serviceRequestId!,
+                                ),
+                              );
+                            } else if (isArrived) {
                               context.read<BookingBloc>().add(
                                 StartBooking(
                                   serviceRequestId: serviceRequestId!,

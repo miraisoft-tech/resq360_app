@@ -58,6 +58,8 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
 
     final isAssigned =
         status?.toUpperCase() == BookingEnums.assigned.name.toUpperCase();
+    final isArrived =
+        status?.toUpperCase() == BookingEnums.arrived.name.toUpperCase();
     final isProgress =
         status?.toUpperCase() == BookingEnums.progress.name.toUpperCase();
     final isCompleted =
@@ -74,6 +76,12 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
             if (state is BookingStarted) {
               await pop(context);
               await showSuccessSnackbar(context, 'Service has started');
+              await pop(context);
+            }
+
+            if (state is BookingArrived) {
+              await pop(context);
+              await showSuccessSnackbar(context, 'Provider arrival confirmed');
               await pop(context);
             }
 
@@ -95,6 +103,7 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
       child: Scaffold(
         backgroundColor: appColors.whiteColor,
         appBar: AppBar(
+          forceMaterialTransparency: true,
           title: UrbText(
             'Service Details',
             color: appColors.black,
@@ -102,7 +111,6 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
             size: 22,
             height: 32.5,
           ),
-          forceMaterialTransparency: true,
           centerTitle: true,
           elevation: 0,
           backgroundColor: appColors.whiteColor,
@@ -165,11 +173,24 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
                     12.horizontalSpace,
                     Expanded(
                       child: WideButton(
-                        label: isAssigned ? 'Start Service' : 'Complete',
+                        label:
+                            isAssigned
+                                ? 'Mark Arrived'
+                                : isArrived
+                                ? 'Start Service'
+                                : 'Complete',
                         backgroundColor: appColors.primary.shade500,
                         textColor: appColors.whiteColor,
                         onPressed: () async {
                           if (isAssigned) {
+                            if (serviceRequestId != null) {
+                              context.read<BookingBloc>().add(
+                                ArriveBooking(
+                                  serviceRequestId: serviceRequestId,
+                                ),
+                              );
+                            }
+                          } else if (isArrived) {
                             if (serviceRequestId != null) {
                               context.read<BookingBloc>().add(
                                 StartBooking(
@@ -195,24 +216,22 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
                     Expanded(
                       child: WideButton(
                         label: 'Appeal',
-                        backgroundColor: appColors.primary.shade50,
-                        textColor: appColors.primary.shade500,
                         onPressed: () async {
                           await _handleAppeal(context, serviceRequestId);
                         },
                       ),
                     ),
-                    12.horizontalSpace,
-                    Expanded(
-                      child: WideButton(
-                        label: 'Rate Client',
-                        backgroundColor: appColors.primary.shade500,
-                        textColor: appColors.whiteColor,
-                        onPressed: () async {
-                          // wire to provider's rate client screen
-                        },
-                      ),
-                    ),
+                    // 12.horizontalSpace,
+                    // Expanded(
+                    //   child: WideButton(
+                    //     label: 'Rate Client',
+                    //     backgroundColor: appColors.primary.shade500,
+                    //     textColor: appColors.whiteColor,
+                    //     onPressed: () async {
+                    //       // wire to provider's rate client screen
+                    //     },
+                    //   ),
+                    // ),
                   ],
                 ],
               ),

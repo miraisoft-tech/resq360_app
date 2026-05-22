@@ -8,6 +8,7 @@ import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/widgets/chat_tile.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
 import 'package:resq360/features/widgets/inputs/filter_search_field.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 /// Unified chat list screen for both customer and provider users.
 class ChatListScreen extends StatefulWidget {
@@ -46,6 +47,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       backgroundColor: appColors.whiteColor,
 
       body: SafeArea(
+        bottom: false,
         child: Padding(
           padding: pad(horizontal: 16),
           child: RefreshIndicator(
@@ -116,11 +118,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   child: BlocBuilder<ChatListBloc, ChatListState>(
                     builder: (context, state) {
                       if (state.isLoading && state.chats.isEmpty) {
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: appColors.primary,
-                          ),
-                        );
+                        return const SkeletonChatList();
                       }
 
                       if (state.error != null) {

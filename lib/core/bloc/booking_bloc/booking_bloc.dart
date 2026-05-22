@@ -8,6 +8,7 @@ part 'booking_state.dart';
 class BookingBloc extends Bloc<BookingEvent, BookingState> {
   BookingBloc({required this.serviceRepo}) : super(BookingInitial()) {
     on<StartBooking>(_onStartBooking);
+    on<ArriveBooking>(_onArriveBooking);
     on<CancelBooking>(_onCancelBooking);
     on<CompleteBooking>(_onCompleteBooking);
   }
@@ -33,6 +34,30 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
     }
   }
 
+  Future<void> _onArriveBooking(
+    ArriveBooking event,
+    Emitter<BookingState> emit,
+  ) async {
+    emit(BookingLoading());
+    try {
+      final result = await serviceRepo.arriveServiceBooking(
+        event.serviceRequestId,
+      );
+
+      if (result.error != null) {
+        emit(
+          BookingError(
+            error: result.error ?? 'Failed to mark provider arrived',
+          ),
+        );
+      } else {
+        emit(BookingArrived(serviceRequestId: event.serviceRequestId));
+      }
+    } on Exception catch (e) {
+      emit(BookingError(error: e.toString()));
+    }
+  }
+
   Future<void> _onCancelBooking(
     CancelBooking event,
     Emitter<BookingState> emit,
@@ -45,7 +70,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       );
 
       log(result);
-        if (result.error != null) {
+      if (result.error != null) {
         emit(BookingError(error: result.error ?? 'Failed to cancel booking'));
       } else {
         emit(BookingCancelled(serviceRequestId: event.serviceRequestId));
@@ -68,11 +93,9 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       );
 
       if (result.error != null) {
-          emit(
-            BookingError(error: result.error ?? 'Failed to complete booking'),
-          );
-        } else {
-          emit(BookingCompleted(serviceRequestId: event.serviceRequestId));
+        emit(BookingError(error: result.error ?? 'Failed to complete booking'));
+      } else {
+        emit(BookingCompleted(serviceRequestId: event.serviceRequestId));
       }
     } on Exception catch (e) {
       emit(BookingError(error: e.toString()));

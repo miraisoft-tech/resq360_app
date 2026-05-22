@@ -341,6 +341,21 @@ class ServiceRepo extends BaseAPI {
     return ApiResult();
   }
 
+  Future<ApiResult<String>> arriveServiceBooking(int serviceRequestId) async {
+    final result = await updateRequestStatus(
+      requestId: serviceRequestId,
+      status: 'ARRIVED',
+    );
+
+    if (!result.isSuccess) {
+      return ApiResult(
+        error: result.error ?? 'Failed to mark provider as arrived',
+      );
+    }
+
+    return ApiResult(data: result.data ?? 'ARRIVED');
+  }
+
   Future<ApiResult<String>> cancelServiceBooking({
     required int serviceRequestId,
     required String cancellationReason,

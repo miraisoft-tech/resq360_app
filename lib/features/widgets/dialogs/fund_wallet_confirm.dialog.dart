@@ -147,17 +147,11 @@ class _FundWalletConfirmDialogState extends State<FundWalletConfirmDialog> {
                           CustomerInitWalletFundingEvent(
                             amount:
                                 cardNumberController.text.isNotEmpty
-                                    ? int.parse(
-                                      cardNumberController.text,
-                                    )
+                                    ? int.parse(cardNumberController.text)
                                     : 0,
                             userType: userType ?? 'user',
                           ),
                         );
-                        // await GeneralDialogs.showCustomDialog<void>(
-                        //   context,
-                        //   body: const FundWalletCompleted(),
-                        // );
                       },
                     ),
                   ),

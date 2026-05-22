@@ -26,6 +26,7 @@ import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
 import 'package:resq360/features/widgets/header_widget.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -75,21 +76,50 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<BookingBloc, BookingState>(
-      listener: (context, state) async {
-        if (state is BookingStarted) {
-          await showSuccessSnackbar(context, 'Service started successfully');
-          context.read<ProviderServiceBloc>().add(
-            ProviderFetchBookings(status: BookingStatus.upcoming.value),
-          );
-        }
-        if (state is BookingError) {
-          await showErrorSnackbar(context, state.error);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<BookingBloc, BookingState>(
+          listener: (context, state) async {
+            if (state is BookingArrived) {
+              await showSuccessSnackbar(context, 'Provider arrival confirmed');
+              context.read<ProviderServiceBloc>().add(
+                ProviderFetchBookings(status: BookingStatus.upcoming.value),
+              );
+            }
+            if (state is BookingStarted) {
+              await showSuccessSnackbar(
+                context,
+                'Service started successfully',
+              );
+              context.read<ProviderServiceBloc>().add(
+                ProviderFetchBookings(status: BookingStatus.upcoming.value),
+              );
+            }
+            if (state is BookingError) {
+              await showErrorSnackbar(context, state.error);
+            }
+          },
+        ),
+        BlocListener<ProviderAuthBloc, ProviderAuthState>(
+          listenWhen: (previous, current) {
+            return current is ProviderProfileLoadedState;
+          },
+          listener: (context, state) {
+            if (state is! ProviderProfileLoadedState) return;
+
+            final providerId = state.user.id;
+            if (providerId == null) return;
+
+            context.read<PromotionBloc>().add(
+              FetchActivePromotions(providerId),
+            );
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: colors.whiteColor,
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               Padding(
@@ -107,14 +137,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             v is ProviderProfileLoadedState ? v.user : null;
                         providerData = user;
                         isApproved = providerData?.isApproved ?? false;
-                        if (providerData != null) {
-                          final providerId = providerData!.id;
-                          if (providerId != null) {
-                            context.read<PromotionBloc>().add(
-                              FetchActivePromotions(providerId),
-                            );
-                          }
-                        }
                         // final profileNotDone =
                         //     !(providerData?.isEmailVerified == true &&
                         //         providerData?.isApproved == true &&
@@ -195,18 +217,15 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               if (state is ProviderStatsLoaded) {
                                 return ProviderStatsCard(
                                   title: 'Engagement',
-                                  value: (state.stats.completedServicesCount ?? 0).toString(),
+                                  value:
+                                      (state.stats.completedServicesCount ?? 0)
+                                          .toString(),
                                   icon:
                                       AppAssets
                                           .ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
                                 );
                               }
-                              return const ProviderStatsCard(
-                                title: 'Engagement',
-                                value: '-',
-                                icon:
-                                    AppAssets.ASSETS_ICONS_ENGAGEMENT_ICON_SVG,
-                              );
+                              return const SkeletonStatsCard();
                             },
                           ),
 
@@ -214,18 +233,16 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                           BlocBuilder<ProviderStatsBloc, ProviderStatsState>(
                             builder: (context, state) {
                               if (state is ProviderStatsLoaded) {
-                                final revenue = state.stats.totalRevenue?.toString() ?? '-';
+                                final revenue =
+                                    state.stats.totalRevenue?.toString() ?? '-';
                                 return ProviderStatsCard(
                                   title: 'Revenue',
-                                  value: '₦${AppTextUtil.formatAmount(revenue)}',
+                                  value:
+                                      '₦${AppTextUtil.formatAmount(revenue)}',
                                   icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
                                 );
                               }
-                              return const ProviderStatsCard(
-                                title: 'Revenue',
-                                value: '-',
-                                icon: AppAssets.ASSETS_ICONS_REVENUE_ICON_SVG,
-                              );
+                              return const SkeletonStatsCard();
                             },
                           ),
                         ],
@@ -299,6 +316,14 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               );
                             }
                           }
+                          if (state is ProviderServicesLoading) {
+                            return Column(
+                              children: [
+                                const SkeletonBookingCard(),
+                                20.verticalSpace,
+                              ],
+                            );
+                          }
                           return const SizedBox.shrink();
                         },
                       ),
@@ -314,27 +339,45 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                         },
                         builder: (context, state) {
                           if (state is ActivePromotionsFetched) {
-                            final activeAds = state.promotions;
-                            if (activeAds.isNotEmpty &&
-                                activeAds.first.endDate != null) {
-                              final endDate = activeAds.first.endDate!;
-                              final daysSinceEnd =
-                                  DateTime.now().difference(endDate).inDays;
+                            final activeAds =
+                                state.promotions.where((ad) {
+                                  final endDate = ad.endDate;
+                                  if (endDate == null) return false;
 
-                              if (daysSinceEnd > 7) {
-                                return const SizedBox.shrink();
-                              }
+                                  return !endDate.toUtc().isBefore(
+                                    DateTime.now().toUtc(),
+                                  );
+                                }).toList();
 
-                              return Column(
-                                children: [
-                                  AdvertCountdownTimer(
-                                    key: ValueKey(endDate),
-                                    endDate: endDate,
-                                  ),
-                                  30.verticalSpace,
-                                ],
-                              );
+                            if (activeAds.isEmpty) {
+                              return const SizedBox.shrink();
                             }
+                            return Column(
+                              children: List.generate(activeAds.length, (
+                                index,
+                              ) {
+                                final promotion = activeAds[index];
+                                final endDate = promotion.endDate!;
+
+                                return GestureDetector(
+                                  onTap: () async {
+                                    await pushScreen(
+                                      context,
+                                      const PromoteServiceScreen(),
+                                    );
+                                  },
+                                  child: Column(
+                                    children: [
+                                      AdvertCountdownTimer(
+                                        key: ValueKey(endDate),
+                                        endDate: endDate,
+                                      ),
+                                      30.verticalSpace,
+                                    ],
+                                  ),
+                                );
+                              }),
+                            );
                           }
                           return const SizedBox.shrink();
                         },
@@ -369,11 +412,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                   context,
                                   const PromoteServiceScreen(),
                                 );
-
-                                // await GeneralDialogs.showCustomDialog<void>(
-                                //   context,
-                                //   body: const ServiceRequestNotification(),
-                                // );
                               },
                               child: const GenText(
                                 'Promote Page',

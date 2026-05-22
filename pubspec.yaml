@@ -2,7 +2,7 @@ name: resq360
 description: "A new Flutter project."
 publish_to: "none"
 
-version: 1.0.6+16
+version: 1.0.6+19
 
 environment:
   sdk: ^3.7.2
@@ -40,7 +40,10 @@ dependencies:
   flutter_svg: ^2.2.1
   geocoding: ^4.0.0
   geolocator: ^14.0.1
+  google_api_headers: 4.6.2
   google_fonts: ^6.3.1
+  google_maps_flutter:
+  google_place:
   google_sign_in: ^7.2.0
   http: ^1.5.0
   http_parser: ^4.1.2
@@ -49,7 +52,7 @@ dependencies:
   intl: ^0.20.2
   local_auth: ^3.0.0
   open_filex: ^4.7.0
-  package_info_plus: ^9.0.0
+  package_info_plus: ^8.3.1
   path: ^1.9.1
   path_provider: ^2.1.5
   pdf: ^3.11.3
@@ -80,6 +83,9 @@ dev_dependencies:
   slang_build_runner: 3.31.0
   very_good_analysis: ^8.0.0
 
+dependency_overrides:
+  http: ^1.5.0
+
 flutter_native_splash:
   android: true
   ios: true
@@ -103,6 +109,7 @@ flutter:
     - assets/images/
     - assets/logo/
     - assets/navigation/
+    - keys.json
     - assets/json/states_list.json
     - assets/json/banks_list.json
 
