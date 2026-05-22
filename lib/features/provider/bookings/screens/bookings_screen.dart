@@ -12,6 +12,7 @@ import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bl
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/provider/bookings/widgets/booking_receipt_modal.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class ProviderBookingsScreen extends StatefulWidget {
   const ProviderBookingsScreen({super.key});
@@ -201,9 +202,7 @@ class _BookingList extends StatelessWidget {
     return BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
       builder: (context, state) {
         if (state is ProviderServicesLoading) {
-          return Center(
-            child: CircularProgressIndicator(color: appColors.primary),
-          );
+          return const SkeletonBookingList();
         }
 
         if (state is ProviderServicesError) {

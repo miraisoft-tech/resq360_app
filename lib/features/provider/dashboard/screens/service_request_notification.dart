@@ -1,7 +1,12 @@
 import 'package:resq360/__lib.dart';
 
 class ServiceRequestNotification extends StatefulWidget {
-  const ServiceRequestNotification({super.key});
+  const ServiceRequestNotification({
+    this.message = 'You have a new service request',
+    super.key,
+  });
+
+  final String message;
 
   @override
   State<ServiceRequestNotification> createState() =>
@@ -33,10 +38,7 @@ class _ServiceRequestNotificationState
                 alignment: Alignment.topRight,
                 child: IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    Icons.close,
-                    color: appColors.textColor.shade400,
-                  ),
+                  icon: Icon(Icons.close, color: appColors.textColor.shade400),
                 ),
               ),
               Row(
@@ -46,9 +48,7 @@ class _ServiceRequestNotificationState
                     padding: pad(vertical: 2, horizontal: 2),
                     decoration: BoxDecoration(color: appColors.primary.shade50),
                     child: AppAssets.ASSETS_ICONS_NOTIFICATION_BELL_SVG
-                        .svgColor(
-                          color: appColors.primary.shade500,
-                        ),
+                        .svgColor(color: appColors.primary.shade500),
                   ),
                   10.horizontalSpace,
                   UrbText(
@@ -61,7 +61,7 @@ class _ServiceRequestNotificationState
               ),
               10.verticalSpace,
               GenText(
-                'You have a new service request from Jane Doe',
+                widget.message,
                 color: appColors.neutral.shade500,
                 size: 12,
                 height: 16.5,

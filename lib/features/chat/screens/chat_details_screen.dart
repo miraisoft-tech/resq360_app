@@ -30,6 +30,7 @@ import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class ChatDetailScreen extends StatelessWidget {
   const ChatDetailScreen({
@@ -59,7 +60,7 @@ class ChatDetailScreen extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: SafeArea(child: SkeletonChatDetailContent()),
           );
         }
 
@@ -354,16 +355,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     final appColors = context.appColors;
 
     if (state is ChatDetailLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: appColors.primary),
-            16.verticalSpace,
-            GenText('Loading messages...', color: appColors.neutral.shade400),
-          ],
-        ),
-      );
+      return const SkeletonChatMessages();
     }
 
     if (state is ChatDetailFailure) {
@@ -862,10 +854,11 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => GenerateInvoiceBottomSheet(
-        chat: chat,
-        chatDetailBloc: chatDetailBloc,
-      ),
+      builder:
+          (_) => GenerateInvoiceBottomSheet(
+            chat: chat,
+            chatDetailBloc: chatDetailBloc,
+          ),
     );
   }
 
@@ -1079,7 +1072,7 @@ class _MessageList extends StatelessWidget {
         if (isLoadingMore && index == messages.length) {
           return const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
+            child: SkeletonChatBubble(isMine: false, width: 180),
           );
         }
 

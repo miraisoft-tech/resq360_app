@@ -13,6 +13,7 @@ import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/widgets/empty_screen_widget.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -204,9 +205,7 @@ class _BookingList extends StatelessWidget {
     return BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
       builder: (context, state) {
         if (state is CustomerBookingLoading) {
-          return Center(
-            child: CircularProgressIndicator(color: appColors.primary),
-          );
+          return const SkeletonBookingList();
         }
 
         if (state is CustomerBookingError) {

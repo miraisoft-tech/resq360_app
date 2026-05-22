@@ -6,6 +6,7 @@ import 'package:resq360/features/settings/data/models/ticket_message.model.dart'
 import 'package:resq360/features/settings/data/service/support_service.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class SupportChatScreen extends StatelessWidget {
   const SupportChatScreen({
@@ -60,18 +61,21 @@ class _SupportChatViewState extends State<_SupportChatView> {
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: _buildAppBar(
-        context,
-      ),
+      appBar: _buildAppBar(context),
       body: SafeArea(
         child: BlocConsumer<SupportTicketCubit, SupportTicketState>(
           listener: (context, state) {},
           builder: (context, state) {
             if (state.loading && state.messages.isEmpty) {
-              return Center(
-                child: CircularProgressIndicator(
-                  color: appColors.primary,
-                ),
+              return const Column(
+                children: [
+                  ListDivider(),
+                  Expanded(child: SkeletonChatMessages()),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(16, 10, 16, 16),
+                    child: SkeletonLoader(height: 48, borderRadius: 24),
+                  ),
+                ],
               );
             }
             _scrollToBottom();
@@ -170,11 +174,7 @@ class _SupportChatViewState extends State<_SupportChatView> {
                 weight: FontWeight.w500,
                 color: appColors.black,
               ),
-              GenText(
-                'Online',
-                size: 13,
-                color: appColors.success.shade600,
-              ),
+              GenText('Online', size: 13, color: appColors.success.shade600),
             ],
           ),
         ],
