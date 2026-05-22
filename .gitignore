@@ -53,3 +53,4 @@ app.*.map.json
 /lib/gen/
 
 /lib/**.g.dart
+keys.json
