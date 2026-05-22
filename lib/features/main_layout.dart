@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:badges/badges.dart' as badges;
 import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/nav_item.model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
@@ -59,6 +59,38 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
     await pushScreen(context, const SelectAccountTypeScreen());
   }
 
+  Future<void> _onNavItemTapped(int index) async {
+    await HapticFeedback.lightImpact();
+
+    if (widget.userType == UserType.customer && _isGuest && index > 1) {
+      await _requireLogin();
+      return;
+    }
+
+    dashboardVM.onChanged(index);
+  }
+
+  Widget _navIcon(String assetPath, Color color) {
+    return SvgPicture.asset(
+      assetPath,
+      height: 24,
+      width: 24,
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+    );
+  }
+
+  BottomNavigationBarItem _bottomNavItem(
+    NavItem item, {
+    required Color selectedColor,
+    required Color unselectedColor,
+  }) {
+    return BottomNavigationBarItem(
+      icon: _navIcon(item.unselectedImgPath, unselectedColor),
+      activeIcon: _navIcon(item.selectedImgPath, selectedColor),
+      label: item.title,
+    );
+  }
+
   @override
   void dispose() {
     if (_ownsDashboardVM) {
@@ -85,107 +117,53 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
 
           return Scaffold(
             key: mainLayoutScaffoldKey,
-            body: Column(
-              children: [
-                Expanded(child: navItems[selectedIndex].body),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 15.w,
-                    vertical: 15.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: appColors.whiteColor,
-                    border: Border(
-                      top: BorderSide(
-                        color: appColors.neutral.shade100,
-                        width: 0.6,
-                      ),
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.1),
-                        blurRadius: 64,
-                        offset: Offset(0, -3),
-                      ),
-                    ],
-                  ),
-                  child: SafeArea(
-                    top: false,
-                    bottom: false,
-                    minimum: EdgeInsets.only(bottom: 10.h),
-                    child: Row(
-                      children: List.generate(navItems.length, (index) {
-                        final item = navItems[index];
-                        final isSelected = selectedIndex == index;
-                        return Expanded(
-                          child: InkWell(
-                            onTap: () async {
-                              await HapticFeedback.lightImpact();
-                              if (widget.userType == UserType.customer &&
-                                  _isGuest &&
-                                  index > 1) {
-                                await _requireLogin();
-                                return;
-                              }
-                              dashboardVM.onChanged(index);
-                            },
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                badges.Badge(
-                                  position: badges.BadgePosition.topEnd(),
-                                  showBadge: false,
-                                  ignorePointer: true,
-                                  badgeContent: GenText(
-                                    '0',
-                                    size: 12,
-                                    height: 12,
-                                    weight: FontWeight.w600,
-                                    textAlign: TextAlign.center,
-                                    color: appColors.whiteColor,
-                                  ),
-                                  badgeStyle: badges.BadgeStyle(
-                                    shape: badges.BadgeShape.square,
-                                    badgeColor: const Color(0xffCE2C60),
-                                    padding: pad(horizontal: 5, vertical: 3),
-                                    borderRadius: BorderRadius.circular(3),
-                                    elevation: 0,
-                                  ),
-                                  child: SvgPicture.asset(
-                                    isSelected
-                                        ? item.selectedImgPath
-                                        : item.unselectedImgPath,
-                                    height: 24,
-                                    width: 24,
-                                    colorFilter: ColorFilter.mode(
-                                      isSelected
-                                          ? appColors.primary.shade500
-                                          : appColors.neutral.shade300,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                ),
-                                4.verticalSpace,
-                                GenText(
-                                  item.title,
-                                  size: 12,
-                                  height: 15.1,
-                                  weight: FontWeight.w500,
-                                  color:
-                                      isSelected
-                                          ? appColors.primary.shade500
-                                          : appColors.neutral.shade300,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
+            body: navItems[selectedIndex].body,
+            bottomNavigationBar: DecoratedBox(
+              decoration: BoxDecoration(
+                color: appColors.whiteColor,
+                border: Border(
+                  top: BorderSide(
+                    color: appColors.neutral.shade100,
+                    width: 0.6,
                   ),
                 ),
-              ],
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(0, 0, 0, 0.08),
+                    blurRadius: 10,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: BottomNavigationBar(
+                currentIndex: selectedIndex,
+                onTap: (index) => unawaited(_onNavItemTapped(index)),
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: appColors.whiteColor,
+                elevation: 10,
+                selectedFontSize: 12,
+                selectedItemColor: appColors.primary.shade500,
+                unselectedItemColor: appColors.neutral.shade300,
+                selectedLabelStyle: const TextStyle(
+                  fontSize: 12,
+                  height: 1.26,
+                  fontWeight: FontWeight.w500,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 12,
+                  height: 1.26,
+                  fontWeight: FontWeight.w500,
+                ),
+                items: navItems
+                    .map(
+                      (item) => _bottomNavItem(
+                        item,
+                        selectedColor: appColors.primary.shade500,
+                        unselectedColor: appColors.neutral.shade300,
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
             ),
           );
         },
