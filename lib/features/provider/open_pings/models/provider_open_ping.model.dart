@@ -1,5 +1,35 @@
 import 'dart:convert';
 
+class ProviderOpenPingsResponse {
+  const ProviderOpenPingsResponse({
+    required this.data,
+    this.message,
+    this.success = false,
+  });
+
+  factory ProviderOpenPingsResponse.fromJson(Map<String, dynamic> json) {
+    final rawData = json['data'];
+
+    return ProviderOpenPingsResponse(
+      message: json['message']?.toString(),
+      success: json['success'] == true,
+      data:
+          rawData is List
+              ? rawData
+                  .whereType<Map<String, dynamic>>()
+                  .map(ProviderOpenPing.fromJson)
+                  .toList()
+              : <ProviderOpenPing>[],
+    );
+  }
+
+  final String? message;
+  final bool success;
+  final List<ProviderOpenPing> data;
+
+  bool get hasOpenPings => data.isNotEmpty;
+}
+
 class ProviderOpenPing {
   const ProviderOpenPing({required this.raw, this.id, this.customerName});
 

@@ -6,9 +6,9 @@ import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
-import 'package:resq360/features/provider/dashboard/data/provider_open_pings_repo.dart';
-import 'package:resq360/features/provider/dashboard/models/provider_open_ping.model.dart';
-import 'package:resq360/features/provider/dashboard/screens/service_request_notification.dart';
+import 'package:resq360/features/provider/open_pings/data/provider_open_pings_repo.dart';
+import 'package:resq360/features/provider/open_pings/models/provider_open_ping.model.dart';
+import 'package:resq360/features/provider/open_pings/widgets/service_request_notification.dart';
 
 class ProviderOpenPingListener extends StatefulWidget {
   const ProviderOpenPingListener({required this.child, super.key});
@@ -28,6 +28,7 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
   final ProviderOpenPingsRepo _repo = ProviderOpenPingsRepo.instance;
   final Set<String> _shownPingFingerprints = <String>{};
 
+  late ProviderOpenPingsResponse _latestResponse;
   Timer? _pollTimer;
   bool _isChecking = false;
   bool _isDialogOpen = false;
@@ -110,16 +111,20 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
     _isChecking = true;
     try {
       final result = await _repo.getOpenPings();
-      if (!mounted || result.data == null) return;
+      final response = result.data;
+      if (!mounted || response == null) return;
 
-      if (result.data!.isEmpty) {
+      _latestResponse = response;
+      final openPings = _latestResponse.data;
+
+      if (openPings.isEmpty) {
         _shownPingFingerprints.clear();
         return;
       }
 
-      final ping = result.data!.firstWhere(
+      final ping = openPings.firstWhere(
         (item) => !_shownPingFingerprints.contains(item.fingerprint),
-        orElse: () => result.data!.first,
+        orElse: () => openPings.first,
       );
 
       if (_shownPingFingerprints.contains(ping.fingerprint)) return;

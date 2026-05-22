@@ -34,7 +34,7 @@ import 'package:resq360/features/provider/authentication/data/bloc/provider_auth
 import 'package:resq360/features/provider/authentication/data/service/provider_auth_remote.repo.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/dashboard/data/bloc/provider_stats_bloc/provider_stats_bloc.dart';
-import 'package:resq360/features/provider/dashboard/widgets/provider_open_ping_listener.dart';
+import 'package:resq360/features/provider/open_pings/widgets/provider_open_ping_listener.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/gallery_bloc/gallery_bloc.dart';
 import 'package:resq360/features/settings/data/bloc/notification_settings_bloc/notification_settings_bloc.dart';

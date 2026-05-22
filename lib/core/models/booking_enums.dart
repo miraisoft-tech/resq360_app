@@ -1,5 +1,6 @@
 enum BookingEnums {
   assigned('ASSIGNED'),
+  arrived('ARRIVED'),
   progress('IN_PROGRESS'),
   completed('COMPLETED'),
   cancelled('CANCELLED');

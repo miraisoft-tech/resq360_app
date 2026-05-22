@@ -78,6 +78,12 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
+        if (state is BookingArrived) {
+          await showSuccessSnackbar(context, 'Provider arrival confirmed');
+          context.read<ProviderServiceBloc>().add(
+            ProviderFetchBookings(status: BookingStatus.upcoming.value),
+          );
+        }
         if (state is BookingStarted) {
           await showSuccessSnackbar(context, 'Service started successfully');
           context.read<ProviderServiceBloc>().add(
@@ -392,11 +398,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                                   context,
                                   const PromoteServiceScreen(),
                                 );
-
-                                // await GeneralDialogs.showCustomDialog<void>(
-                                //   context,
-                                //   body: const ServiceRequestNotification(),
-                                // );
                               },
                               child: const GenText(
                                 'Promote Page',

@@ -80,6 +80,9 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
     final isAssigned =
         status?.toUpperCase() == BookingEnums.assigned.name.toUpperCase();
 
+    final isArrived =
+        status?.toUpperCase() == BookingEnums.arrived.name.toUpperCase();
+
     final isProgress =
         status?.toUpperCase() == BookingEnums.progress.name.toUpperCase();
 
@@ -98,6 +101,14 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
           Navigator.pop(context);
 
           await showSuccessSnackbar(context, 'Service has started');
+
+          Navigator.pop(context);
+        }
+
+        if (state is BookingArrived) {
+          Navigator.pop(context);
+
+          await showSuccessSnackbar(context, 'Provider arrival confirmed');
 
           Navigator.pop(context);
         }
@@ -275,13 +286,23 @@ class _ChatServiceDetailScreenState extends State<ChatServiceDetailScreen> {
                       child: WideButton(
                         label:
                             _isProvider
-                                ? (isAssigned ? 'Start Service' : 'Complete')
+                                ? isAssigned
+                                    ? 'Mark Arrived'
+                                    : isArrived
+                                    ? 'Start Service'
+                                    : 'Complete'
                                 : 'Appeal',
                         backgroundColor: appColors.primary.shade500,
                         textColor: appColors.whiteColor,
                         onPressed: () async {
                           if (_isProvider) {
                             if (isAssigned) {
+                              context.read<BookingBloc>().add(
+                                ArriveBooking(
+                                  serviceRequestId: serviceRequestId!,
+                                ),
+                              );
+                            } else if (isArrived) {
                               context.read<BookingBloc>().add(
                                 StartBooking(
                                   serviceRequestId: serviceRequestId!,

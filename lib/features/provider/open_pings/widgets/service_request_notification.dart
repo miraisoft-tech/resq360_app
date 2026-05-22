@@ -21,7 +21,6 @@ class _ServiceRequestNotificationState
 
     return Padding(
       padding: EdgeInsets.only(top: 365.h, bottom: 320.h),
-
       child: Material(
         color: Colors.transparent,
         child: Container(
