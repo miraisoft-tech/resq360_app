@@ -37,12 +37,14 @@ class ChatDetailScreen extends StatelessWidget {
     required this.chatId,
     required this.userType,
     this.providerServiceId,
+    this.initialMessage,
     super.key,
   });
 
   final int chatId;
   final UserType userType;
   final int? providerServiceId;
+  final String? initialMessage;
 
   Future<int?> _loadCurrentUserId() async {
     if (userType == UserType.customer) {
@@ -76,6 +78,7 @@ class ChatDetailScreen extends StatelessWidget {
             userType: userType,
             currentUserId: userId,
             providerServiceId: providerServiceId,
+            initialMessage: initialMessage,
           ),
         );
       },
@@ -89,12 +92,14 @@ class _ChatDetailView extends StatefulWidget {
     required this.userType,
     required this.currentUserId,
     this.providerServiceId,
+    this.initialMessage,
   });
 
   final int chatId;
   final UserType userType;
   final int currentUserId;
   final int? providerServiceId;
+  final String? initialMessage;
 
   @override
   State<_ChatDetailView> createState() => _ChatDetailViewState();
@@ -313,6 +318,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                       child: Opacity(
                         opacity: state is ChatDetailReady ? 1.0 : 0.5,
                         child: ChatBoxWidget(
+                          initialMessage: widget.initialMessage,
                           onAttachment: (ctx) {
                             if (state is ChatDetailReady) {
                               unawaited(_showAttachmentMenu(ctx, state.chat));

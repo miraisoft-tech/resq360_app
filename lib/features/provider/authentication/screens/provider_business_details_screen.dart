@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:google_place/google_place.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/utils/app_gen_utils.dart';
 import 'package:resq360/core/utils/app_tracking_permission_handler.dart';
-import 'package:resq360/core/utils/location_helper.dart';
 import 'package:resq360/core/utils/validators.dart';
 import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
@@ -37,16 +37,10 @@ class _ProviderBusinessDetailsScreenState
   late TextEditingController addressController;
   late TextEditingController otherController;
 
-  // address controllers
-  late TextEditingController cityController;
-  late TextEditingController stateController;
-  late TextEditingController countryController;
-  late TextEditingController zipCodeController;
-  late TextEditingController longitudeController;
-  late TextEditingController latitudeController;
-
   final _formKey = GlobalKey<FormState>();
   final ValueNotifier<Service?> _selectType = ValueNotifier(null);
+  AutocompletePrediction? _selectedBusinessPrediction;
+  DetailsResult? _selectedBusinessPlace;
 
   @override
   void initState() {
@@ -66,11 +60,11 @@ class _ProviderBusinessDetailsScreenState
   bool isFetchingAddress = false;
   @override
   void dispose() {
-    super.dispose();
-
     addressController.dispose();
     nameController.dispose();
     otherController.dispose();
+    _selectType.dispose();
+    super.dispose();
   }
 
   Future<void> _handleSignup(BuildContext context) async {
@@ -78,30 +72,60 @@ class _ProviderBusinessDetailsScreenState
       return;
     }
 
+    final selectedService = _selectType.value;
+    if (selectedService == null) {
+      await showErrorSnackbar(context, 'Please select a service category');
+      return;
+    }
+
+    final selectedPrediction = _selectedBusinessPrediction;
+    final selectedPlace = _selectedBusinessPlace;
+    if (selectedPrediction == null || selectedPlace == null) {
+      await showErrorSnackbar(
+        context,
+        'Please select a valid business address',
+      );
+      return;
+    }
+
+    final city = _addressComponent(selectedPlace, const [
+      'locality',
+      'postal_town',
+      'administrative_area_level_2',
+      'sublocality_level_1',
+    ]);
+    final state = _addressComponent(selectedPlace, const [
+      'administrative_area_level_1',
+    ]);
+    final location = selectedPlace.geometry?.location;
+    if (city.isEmpty || state.isEmpty) {
+      await showErrorSnackbar(
+        context,
+        'Please choose a more specific business address',
+      );
+      return;
+    }
+    if (location?.lat == null || location?.lng == null) {
+      await showErrorSnackbar(
+        context,
+        'Please choose a business address with map coordinates',
+      );
+      return;
+    }
+
     try {
       setState(() {
         isFetchingAddress = true;
       });
-      final locationData = await LocationHelper.getCurrentLocation();
-
-      if (!context.mounted) return;
 
       final address = Address(
-        state: locationData['state'] as String,
-        city: locationData['city'] as String,
-        zipCode: locationData['zipCode'] as String,
-        address: locationData['address'] as String,
-        longitude: locationData['longitude'] as double,
-        latitude: locationData['latitude'] as double,
+        state: state,
+        city: city,
+        zipCode: _addressComponent(selectedPlace, const ['postal_code']),
+        address: addressController.text.trim(),
+        longitude: location!.lng,
+        latitude: location.lat,
       );
-
-      if (_selectType.value == null) {
-        await showErrorSnackbar(context, 'Please select a service category');
-
-        return;
-      }
-
-      final selectedService = _selectType.value;
 
       context.read<ProviderAuthBloc>().add(
         ProviderSignupWIthEmail(
@@ -111,16 +135,43 @@ class _ProviderBusinessDetailsScreenState
           companyName: nameController.text,
           phoneNumber: widget.phone,
           customServiceName:
-              selectedService?.name == 'Other'
+              selectedService.name == 'Other'
                   ? otherController.text
-                  : selectedService?.name ?? '',
-          service: selectedService?.id ?? 0,
+                  : selectedService.name,
+          service: selectedService.id,
           address: address,
         ),
       );
     } on Exception catch (e, s) {
       log('Signup failed: $e\n$s');
+      if (mounted) {
+        setState(() {
+          isFetchingAddress = false;
+        });
+      }
     }
+  }
+
+  void _applyBusinessPlaceDetails(DetailsResult place) {
+    setState(() {
+      _selectedBusinessPlace = place;
+    });
+  }
+
+  String _addressComponent(DetailsResult place, List<String> preferredTypes) {
+    final components = place.addressComponents;
+    if (components == null) return '';
+
+    for (final component in components) {
+      final types = component.types ?? const <String>[];
+      final hasPreferredType = preferredTypes.any(types.contains);
+      if (!hasPreferredType) continue;
+
+      final value = component.longName?.trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+
+    return '';
   }
 
   @override
@@ -179,23 +230,16 @@ class _ProviderBusinessDetailsScreenState
                               AppGenUtil.isValidName(value, 'business name', 5),
                     ),
                     16.verticalSpace,
-                    KFormField(
+                    GooglePlacesAutocompleteField(
                       label: 'Business Address',
-                      hintText: 'Enter Your Business Address',
                       controller: addressController,
-                      keyboardType: TextInputType.text,
-                      onChanged: (a) {
-                        setState(() {});
+                      hintText: 'Search for your business address',
+                      onPredictionSelected: (prediction) {
+                        setState(() {
+                          _selectedBusinessPrediction = prediction;
+                        });
                       },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Business address is required';
-                        }
-                        if (value.length < 5) {
-                          return 'Business address must be at least 5 characters';
-                        }
-                        return null;
-                      },
+                      onPlaceDetailsSelected: _applyBusinessPlaceDetails,
                     ),
                     16.verticalSpace,
                     BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(

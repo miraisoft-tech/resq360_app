@@ -76,24 +76,46 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return BlocListener<BookingBloc, BookingState>(
-      listener: (context, state) async {
-        if (state is BookingArrived) {
-          await showSuccessSnackbar(context, 'Provider arrival confirmed');
-          context.read<ProviderServiceBloc>().add(
-            ProviderFetchBookings(status: BookingStatus.upcoming.value),
-          );
-        }
-        if (state is BookingStarted) {
-          await showSuccessSnackbar(context, 'Service started successfully');
-          context.read<ProviderServiceBloc>().add(
-            ProviderFetchBookings(status: BookingStatus.upcoming.value),
-          );
-        }
-        if (state is BookingError) {
-          await showErrorSnackbar(context, state.error);
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<BookingBloc, BookingState>(
+          listener: (context, state) async {
+            if (state is BookingArrived) {
+              await showSuccessSnackbar(context, 'Provider arrival confirmed');
+              context.read<ProviderServiceBloc>().add(
+                ProviderFetchBookings(status: BookingStatus.upcoming.value),
+              );
+            }
+            if (state is BookingStarted) {
+              await showSuccessSnackbar(
+                context,
+                'Service started successfully',
+              );
+              context.read<ProviderServiceBloc>().add(
+                ProviderFetchBookings(status: BookingStatus.upcoming.value),
+              );
+            }
+            if (state is BookingError) {
+              await showErrorSnackbar(context, state.error);
+            }
+          },
+        ),
+        BlocListener<ProviderAuthBloc, ProviderAuthState>(
+          listenWhen: (previous, current) {
+            return current is ProviderProfileLoadedState;
+          },
+          listener: (context, state) {
+            if (state is! ProviderProfileLoadedState) return;
+
+            final providerId = state.user.id;
+            if (providerId == null) return;
+
+            context.read<PromotionBloc>().add(
+              FetchActivePromotions(providerId),
+            );
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: colors.whiteColor,
         body: SafeArea(
@@ -115,14 +137,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             v is ProviderProfileLoadedState ? v.user : null;
                         providerData = user;
                         isApproved = providerData?.isApproved ?? false;
-                        if (providerData != null) {
-                          final providerId = providerData!.id;
-                          if (providerId != null) {
-                            context.read<PromotionBloc>().add(
-                              FetchActivePromotions(providerId),
-                            );
-                          }
-                        }
                         // final profileNotDone =
                         //     !(providerData?.isEmailVerified == true &&
                         //         providerData?.isApproved == true &&

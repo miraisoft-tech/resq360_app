@@ -4,8 +4,12 @@ import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/general_auth_bloc/auth_bloc.dart';
 import 'package:resq360/core/navigation/navigator.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/open_pings/data/provider_open_ping_seen_store.dart';
 import 'package:resq360/features/provider/open_pings/data/provider_open_pings_repo.dart';
 import 'package:resq360/features/provider/open_pings/models/provider_open_ping.model.dart';
 import 'package:resq360/features/provider/open_pings/widgets/service_request_notification.dart';
@@ -24,14 +28,20 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
     with WidgetsBindingObserver {
   static const Duration _initialCheckDelay = Duration(seconds: 4);
   static const Duration _pollInterval = Duration(seconds: 30);
+  static const String _contactCustomerMessage =
+      'Hello, I am available for booking.';
 
   final ProviderOpenPingsRepo _repo = ProviderOpenPingsRepo.instance;
-  final Set<String> _shownPingFingerprints = <String>{};
+  final ProviderOpenPingSeenStore _seenStore =
+      ProviderOpenPingSeenStore.instance;
+  final ChatRepo _chatRepo = ChatRepo();
+  final Set<String> _seenPingBatchIds = <String>{};
 
   late ProviderOpenPingsResponse _latestResponse;
   Timer? _pollTimer;
   bool _isChecking = false;
   bool _isDialogOpen = false;
+  bool _hasLoadedSeenPingBatchIds = false;
 
   @override
   void initState() {
@@ -69,12 +79,26 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
     if (!mounted) return;
 
     if (!shouldPoll) {
-      _shownPingFingerprints.clear();
+      _seenPingBatchIds.clear();
+      _hasLoadedSeenPingBatchIds = false;
       _stopPolling();
       return;
     }
 
+    await _loadSeenPingBatchIds();
+    if (!mounted) return;
+
     _startPolling();
+  }
+
+  Future<void> _loadSeenPingBatchIds() async {
+    if (_hasLoadedSeenPingBatchIds) return;
+
+    final seenBatchIds = await _seenStore.getSeenBatchIds();
+    if (!mounted) return;
+
+    _seenPingBatchIds.addAll(seenBatchIds);
+    _hasLoadedSeenPingBatchIds = true;
   }
 
   Future<bool> _shouldPollOpenPings() async {
@@ -108,6 +132,9 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
       return;
     }
 
+    await _loadSeenPingBatchIds();
+    if (!mounted) return;
+
     _isChecking = true;
     try {
       final result = await _repo.getOpenPings();
@@ -117,17 +144,17 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
       _latestResponse = response;
       final openPings = _latestResponse.data;
 
-      if (openPings.isEmpty) {
-        _shownPingFingerprints.clear();
-        return;
+      if (openPings.isEmpty) return;
+
+      ProviderOpenPing? ping;
+      for (final item in openPings) {
+        if (!_seenPingBatchIds.contains(item.seenKey)) {
+          ping = item;
+          break;
+        }
       }
 
-      final ping = openPings.firstWhere(
-        (item) => !_shownPingFingerprints.contains(item.fingerprint),
-        orElse: () => openPings.first,
-      );
-
-      if (_shownPingFingerprints.contains(ping.fingerprint)) return;
+      if (ping == null) return;
 
       await _showOpenPingDialog(ping);
     } on Exception catch (e, s) {
@@ -144,16 +171,122 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
     if (navigator == null || context == null || _isDialogOpen) return;
 
     _isDialogOpen = true;
-    _shownPingFingerprints.add(ping.fingerprint);
 
     try {
+      await _markPingSeen(ping);
+      if (!mounted) return;
+
       await GeneralDialogs.showCustomDialog<void>(
         context,
-        body: ServiceRequestNotification(message: ping.notificationMessage),
+        body: ServiceRequestNotification(
+          message: ping.notificationMessage,
+          onContactCustomer:
+              ping.canContactCustomer
+                  ? () => _contactCustomerFromPing(ping)
+                  : null,
+        ),
       );
     } finally {
       _isDialogOpen = false;
     }
+  }
+
+  Future<void> _contactCustomerFromPing(ProviderOpenPing ping) async {
+    final context = AppNavigator.navKey.currentContext;
+    if (context == null) return;
+
+    try {
+      final chatId = await _findOrCreateChat(ping);
+      if (chatId == null) {
+        await showErrorSnackbar(context, 'Unable to contact customer');
+        return;
+      }
+
+      if (!mounted) return;
+
+      final currentContext = AppNavigator.navKey.currentContext;
+      if (currentContext == null) return;
+
+      await Navigator.of(currentContext, rootNavigator: true).maybePop();
+      await Future<void>.delayed(Duration.zero);
+
+      final navigationContext = AppNavigator.navKey.currentContext;
+      if (navigationContext == null) return;
+
+      await pushScreen(
+        navigationContext,
+        ChatDetailScreen(
+          chatId: chatId,
+          userType: UserType.provider,
+          providerServiceId: ping.providerServiceId,
+          initialMessage: _contactCustomerMessage,
+        ),
+      );
+    } on Exception catch (e, s) {
+      log('Contact customer from ping failed: $e\n$s');
+      if (!mounted) return;
+
+      final currentContext = AppNavigator.navKey.currentContext;
+      if (currentContext != null) {
+        await showErrorSnackbar(currentContext, 'Unable to contact customer');
+      }
+    }
+  }
+
+  Future<void> _markPingSeen(ProviderOpenPing ping) async {
+    final seenKey = ping.seenKey;
+    if (_seenPingBatchIds.contains(seenKey)) return;
+
+    _seenPingBatchIds.add(seenKey);
+    final saved = await _seenStore.markBatchIdSeen(seenKey);
+    if (!saved) {
+      log('Failed to persist seen open ping batch id: $seenKey');
+    }
+  }
+
+  Future<int?> _findOrCreateChat(ProviderOpenPing ping) async {
+    final existingChatId = ping.chatId;
+    if (existingChatId != null) return existingChatId;
+
+    final serviceRequestId = ping.serviceRequestId;
+    if (serviceRequestId != null) {
+      final existingChat = await _chatRepo.getChatByserviceRequestId(
+        serviceRequestId,
+      );
+      final chatId = existingChat.data?.id;
+      if (chatId != null) return chatId;
+    }
+
+    final customerId = ping.customerId;
+    if (customerId == null) return null;
+
+    final providerId = await AuthLocalRepo.instance.getProviderId();
+    if (providerId == null) return null;
+
+    final result = await _chatRepo.createChat(
+      chatRequest: CreateChatRequest(
+        title: _chatTitleForPing(ping),
+        type: 'PRIVATE',
+        participants: [
+          ChatParticipant(participantType: 'USER', participantId: customerId),
+          ChatParticipant(
+            participantType: 'PROVIDER',
+            participantId: providerId,
+          ),
+        ],
+      ),
+    );
+
+    return result.data?.id;
+  }
+
+  String _chatTitleForPing(ProviderOpenPing ping) {
+    final customerName = ping.customerName?.trim();
+    if (customerName != null && customerName.isNotEmpty) {
+      return 'Service request with $customerName';
+    }
+
+    return 'Service request';
   }
 
   @override
@@ -163,7 +296,8 @@ class _ProviderOpenPingListenerState extends State<ProviderOpenPingListener>
         BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthLoggedOut) {
-              _shownPingFingerprints.clear();
+              _seenPingBatchIds.clear();
+              _hasLoadedSeenPingBatchIds = false;
               _stopPolling();
             }
           },

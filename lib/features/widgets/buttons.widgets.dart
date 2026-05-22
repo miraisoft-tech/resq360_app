@@ -75,7 +75,7 @@ class WideButton extends StatelessWidget {
                   width: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
-                    color: colors.primary.shade500,
+                    color: colors.whiteColor,
                   ),
                 )
                 : UrbText(

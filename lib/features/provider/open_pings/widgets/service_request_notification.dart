@@ -3,10 +3,12 @@ import 'package:resq360/__lib.dart';
 class ServiceRequestNotification extends StatefulWidget {
   const ServiceRequestNotification({
     this.message = 'You have a new service request',
+    this.onContactCustomer,
     super.key,
   });
 
   final String message;
+  final Future<void> Function()? onContactCustomer;
 
   @override
   State<ServiceRequestNotification> createState() =>
@@ -15,17 +17,19 @@ class ServiceRequestNotification extends StatefulWidget {
 
 class _ServiceRequestNotificationState
     extends State<ServiceRequestNotification> {
+  bool _isContacting = false;
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 365.h, bottom: 320.h),
+      padding: EdgeInsets.only(top: 320.h, bottom: 280.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
-          margin: pad(horizontal: 80),
-          padding: pad(horizontal: 5, vertical: 5),
+          margin: pad(horizontal: 40),
+          padding: pad(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: appColors.whiteColor,
             borderRadius: BorderRadius.circular(12.r),
@@ -68,10 +72,35 @@ class _ServiceRequestNotificationState
                 weight: FontWeight.w500,
                 textAlign: TextAlign.center,
               ),
+              if (widget.onContactCustomer != null) ...[
+                18.verticalSpace,
+                WideButton(
+                  label: 'Contact customer',
+                  loading: _isContacting,
+                  onPressed: _isContacting ? null : _contactCustomer,
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _contactCustomer() async {
+    final onContactCustomer = widget.onContactCustomer;
+    if (onContactCustomer == null) return;
+
+    setState(() {
+      _isContacting = true;
+    });
+
+    await onContactCustomer();
+
+    if (!mounted) return;
+
+    setState(() {
+      _isContacting = false;
+    });
   }
 }

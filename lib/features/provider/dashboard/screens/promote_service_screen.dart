@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/dashboard/models/duration.enum.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_review.dart';
 
@@ -11,27 +13,33 @@ class PromoteServiceScreen extends StatefulWidget {
 }
 
 class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
-  late TextEditingController nameController;
   late TextEditingController promoController;
   late TextEditingController discountController;
 
   final ValueNotifier<PromotionDuration?> _selectDuration =
       ValueNotifier<PromotionDuration?>(null);
+  final ValueNotifier<ProviderService?> _selectedProviderService =
+      ValueNotifier<ProviderService?>(null);
 
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController();
     promoController = TextEditingController();
     discountController = TextEditingController();
+
+    final providerState = context.read<ProviderAuthBloc>().state;
+    if (providerState is! ProviderProfileLoadedState) {
+      context.read<ProviderAuthBloc>().add(const ProvidergetProviderProfile());
+    }
   }
 
   @override
   void dispose() {
-    super.dispose();
-
     promoController.dispose();
     discountController.dispose();
+    _selectDuration.dispose();
+    _selectedProviderService.dispose();
+    super.dispose();
   }
 
   @override
@@ -74,6 +82,10 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                       color: appColors.textColor.shade800,
                     ),
                     20.verticalSpace,
+                    _ProviderServiceDropdown(
+                      controller: _selectedProviderService,
+                    ),
+                    16.verticalSpace,
                     KFormField(
                       label: 'Promotion Description',
                       hintText: 'Get 30% off every towing service today.',
@@ -90,10 +102,8 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                       label: 'Discount Rate',
                       hintText: 'Enter a Discount Rate',
                       controller: discountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-                      ],
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       onChanged: (a) {
                         setState(() {});
                       },
@@ -139,17 +149,54 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                       backgroundColor: appColors.primary.shade500,
                       textColor: appColors.whiteColor,
                       onPressed: () async {
+                        final selectedProviderService =
+                            _selectedProviderService.value;
                         final selected = _selectDuration.value;
+                        final discount = int.tryParse(
+                          discountController.text.trim(),
+                        );
 
-                        if (selected == null) return;
-                        if (promoController.text.isEmpty) return;
-                        if (discountController.text.isEmpty) return;
+                        if (selectedProviderService?.id == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Please select a service to promote',
+                          );
+                          return;
+                        }
+
+                        if (promoController.text.trim().isEmpty) {
+                          await showErrorSnackbar(
+                            context,
+                            'Please enter a promotion description',
+                          );
+                          return;
+                        }
+
+                        if (discount == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Please enter a valid discount rate',
+                          );
+                          return;
+                        }
+
+                        if (selected == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Please select the promotion duration',
+                          );
+                          return;
+                        }
 
                         await pushScreen(
                           context,
                           PromoteServiceReviewScreen(
-                            description: promoController.text,
-                            discount: discountController.text,
+                            providerServiceId: selectedProviderService!.id!,
+                            providerServiceName: _providerServiceLabel(
+                              selectedProviderService,
+                            ),
+                            description: promoController.text.trim(),
+                            discount: discount.toString(),
                             duration: selected,
                           ),
                         );
@@ -164,4 +211,83 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
       ),
     );
   }
+}
+
+class _ProviderServiceDropdown extends StatelessWidget {
+  const _ProviderServiceDropdown({required this.controller});
+
+  final ValueNotifier<ProviderService?> controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ProviderAuthBloc, ProviderAuthState>(
+      builder: (context, state) {
+        final services = _providerServicesFromState(state);
+
+        return ValueListenableBuilder<ProviderService?>(
+          valueListenable: controller,
+          builder: (context, selectedService, child) {
+            final dropdownValue = _matchingService(services, selectedService);
+
+            return ObjectKDropDown<ProviderService>(
+              label: 'Service to Promote',
+              hintText:
+                  state is ProviderAuthLoadingState
+                      ? 'Loading services...'
+                      : 'Select a service',
+              showPrefix: false,
+              displayStringForOption: _providerServiceLabel,
+              value: dropdownValue,
+              dropdownItems: services,
+              onChanged:
+                  services.isEmpty
+                      ? null
+                      : (selected) => controller.value = selected,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  List<ProviderService> _providerServicesFromState(ProviderAuthState state) {
+    if (state is! ProviderProfileLoadedState) {
+      return const [];
+    }
+
+    return (state.user.providerServices ?? <ProviderService>[])
+        .where((service) => service.id != null && service.isActive)
+        .toList(growable: false);
+  }
+
+  ProviderService? _matchingService(
+    List<ProviderService> services,
+    ProviderService? selectedService,
+  ) {
+    if (selectedService?.id == null) {
+      return null;
+    }
+
+    for (final service in services) {
+      if (service.id == selectedService!.id) {
+        return service;
+      }
+    }
+
+    return null;
+  }
+}
+
+String _providerServiceLabel(ProviderService service) {
+  final name = service.name?.trim();
+  if (name != null && name.isNotEmpty) {
+    return name;
+  }
+
+  final serviceName = service.service?.name.trim();
+  if (serviceName != null && serviceName.isNotEmpty) {
+    return serviceName;
+  }
+
+  return 'Service ${service.id ?? ''}'.trim();
 }

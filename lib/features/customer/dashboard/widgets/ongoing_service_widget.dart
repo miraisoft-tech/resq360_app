@@ -8,6 +8,7 @@ import 'package:resq360/features/customer/dashboard/data/models/bookings/booking
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 // import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/data/service/support_service.dart';
+
 class OngoingServiceCard extends StatefulWidget {
   const OngoingServiceCard({required this.booking, super.key});
 
@@ -29,7 +30,6 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
 
     final status = widget.booking.status ?? 'PENDING';
     final serviceRequestId = widget.booking.id;
-
 
     return Container(
       padding: pad(horizontal: 14, vertical: 14),
@@ -67,7 +67,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: GenText(
-                            status,
+                            status.replaceAll('_', ' '),
                             size: 10,
                             height: 20.5,
                             color: colors.success.shade700,
@@ -195,7 +195,7 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
     );
   }
 
-   Future<void> _handleAppeal(
+  Future<void> _handleAppeal(
     BuildContext context,
     int? serviceRequestId,
   ) async {
@@ -237,5 +237,4 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
       ),
     );
   }
-
 }

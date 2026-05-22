@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geo;
+import 'package:google_place/google_place.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
@@ -139,14 +140,11 @@ class _AddressScreenState extends State<AddressScreen> {
         setState(() {
           _latitude = position.latitude;
           _longitude = position.longitude;
-          _addressController.text =
-              place.street != ''
-                  ? place.street ?? ''
-                  : place.subLocality != ''
-                  ? place.subLocality ?? ''
-                  : place.thoroughfare != null
-                  ? place.thoroughfare ?? ''
-                  : '';
+          _addressController.text = _firstNonEmpty([
+            place.street,
+            place.subLocality,
+            place.thoroughfare,
+          ]);
           _cityController.text = place.locality ?? '';
           _stateController.text = place.administrativeArea ?? '';
           _zipCodeController.text = place.postalCode ?? '';
@@ -163,6 +161,53 @@ class _AddressScreenState extends State<AddressScreen> {
     }
   }
 
+  void _applyPlaceDetails(DetailsResult place) {
+    final location = place.geometry?.location;
+    setState(() {
+      _latitude = location?.lat;
+      _longitude = location?.lng;
+      _addressController.text =
+          place.formattedAddress ?? _addressController.text;
+      _cityController.text = _addressComponent(place, const [
+        'locality',
+        'postal_town',
+        'administrative_area_level_2',
+        'sublocality_level_1',
+      ]);
+      _stateController.text = _addressComponent(place, const [
+        'administrative_area_level_1',
+      ]);
+      _zipCodeController.text = _addressComponent(place, const ['postal_code']);
+    });
+  }
+
+  String _addressComponent(DetailsResult place, List<String> preferredTypes) {
+    final components = place.addressComponents;
+    if (components == null) return '';
+
+    for (final component in components) {
+      final types = component.types ?? const <String>[];
+      final hasPreferredType = preferredTypes.any(types.contains);
+      if (!hasPreferredType) continue;
+
+      final value = component.longName?.trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+
+    return '';
+  }
+
+  String _firstNonEmpty(List<String?> values) {
+    for (final value in values) {
+      final trimmedValue = value?.trim();
+      if (trimmedValue != null && trimmedValue.isNotEmpty) {
+        return trimmedValue;
+      }
+    }
+
+    return '';
+  }
+
   Future<void> _saveAddress() async {
     if (_addressController.text.isEmpty ||
         _cityController.text.isEmpty ||
@@ -175,7 +220,10 @@ class _AddressScreenState extends State<AddressScreen> {
 
     if (_latitude == null || _longitude == null) {
       unawaited(
-        showErrorSnackbar(context, 'Please get current location first'),
+        showErrorSnackbar(
+          context,
+          'Please pick a location or use current location first',
+        ),
       );
       return;
     }
@@ -328,11 +376,14 @@ class _AddressScreenState extends State<AddressScreen> {
                           color: appColors.black,
                         ),
                         20.verticalSpace,
-                        KFormField(
-                          label: 'Address',
+                        GooglePlacesAutocompleteField(
                           controller: _addressController,
-                          hintText: 'Enter your address',
-                          onChanged: (value) {},
+                          hintText: 'Search for your address',
+                          onPredictionSelected: (prediction) {
+                            _addressController.text =
+                                prediction.description ?? '';
+                          },
+                          onPlaceDetailsSelected: _applyPlaceDetails,
                         ),
                         20.verticalSpace,
                         Row(

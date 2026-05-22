@@ -103,6 +103,7 @@ class _GenerateInvoiceBottomSheetState
 
     return DraggableScrollableSheet(
       expand: false,
+      initialChildSize: 0.8,
       builder:
           (context, scrollController) => Container(
             decoration: BoxDecoration(

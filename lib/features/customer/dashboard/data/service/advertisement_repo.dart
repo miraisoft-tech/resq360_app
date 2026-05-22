@@ -85,9 +85,7 @@ class AdvertisementRepo extends BaseAPI {
     const url = '/advertisements';
 
     try {
-      final queryParams = <String, dynamic>{
-        'providerId': providerId,
-      };
+      final queryParams = <String, dynamic>{'providerId': providerId};
       if (isActive != null) queryParams['isActive'] = isActive;
       if (status != null) queryParams['status'] = status;
 
@@ -143,6 +141,7 @@ class AdvertisementRepo extends BaseAPI {
   }
 
   Future<ApiResult<CreateAvertisementResponse>> createAdvertisement({
+    required int providerServiceId,
     required int discountPercentage,
     required int durationInMilliSeconds,
     required String paymentMethod,
@@ -154,6 +153,7 @@ class AdvertisementRepo extends BaseAPI {
       final res = await dio().post<Map<String, dynamic>>(
         url,
         data: {
+          'providerServiceId': providerServiceId,
           'discountPercentage': discountPercentage,
           'durationInMilliSeconds': durationInMilliSeconds,
           'paymentMethod': paymentMethod,

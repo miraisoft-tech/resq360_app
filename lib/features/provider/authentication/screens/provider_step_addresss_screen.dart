@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' as geo;
+import 'package:google_place/google_place.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/kyc_bloc/kyc_bloc.dart';
 import 'package:resq360/core/models/verification_source.enum.dart';
@@ -31,13 +32,16 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
 
   ProviderModel? userInfo;
   bool _isLoadingLocation = false;
+  bool _usedCurrentLocation = false;
+  AutocompletePrediction? _selectedPlace;
 
   List<StateModel> states = [];
 
   bool get isFormValid =>
       _streetCtrl.text.isNotEmpty &&
       _cityCtrl.text.isNotEmpty &&
-      _selectState.value != null;
+      _selectState.value != null &&
+      (_selectedPlace != null || _usedCurrentLocation);
 
   @override
   void initState() {
@@ -99,21 +103,19 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
       if (placemarks.isNotEmpty && mounted) {
         final place = placemarks.first;
         final stateFromLocation = place.administrativeArea ?? '';
-
-        final stateExists = states.any(
-          (state) =>
-              state.name?.toLowerCase() == stateFromLocation.toLowerCase(),
-        );
+        final matchingState = _matchingStateName(stateFromLocation);
 
         setState(() {
           _streetCtrl.text =
               '${place.street ?? ''}, ${place.subLocality ?? ''}'.trim();
           _cityCtrl.text = place.locality ?? '';
-          _selectState.value = stateExists ? stateFromLocation : null;
+          _selectState.value = matchingState;
+          _selectedPlace = null;
+          _usedCurrentLocation = true;
           _isLoadingLocation = false;
         });
 
-        if (!stateExists && stateFromLocation.isNotEmpty) {
+        if (matchingState == null && stateFromLocation.isNotEmpty) {
           unawaited(
             showErrorSnackbar(
               context,
@@ -124,16 +126,72 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
       }
     } on Exception catch (e) {
       setState(() => _isLoadingLocation = false);
+      unawaited(showErrorSnackbar(context, 'Failed to get location: $e'));
+    }
+  }
+
+  void _applyPlaceDetails(DetailsResult place) {
+    final stateFromPlace = _addressComponent(place, const [
+      'administrative_area_level_1',
+    ]);
+    final matchingState = _matchingStateName(stateFromPlace);
+
+    setState(() {
+      _cityCtrl.text = _addressComponent(place, const [
+        'locality',
+        'postal_town',
+        'administrative_area_level_2',
+        'sublocality_level_1',
+      ]);
+      _selectState.value = matchingState;
+      _usedCurrentLocation = false;
+    });
+
+    if (matchingState == null && stateFromPlace.isNotEmpty) {
       unawaited(
-        showErrorSnackbar(context, 'Failed to get location: $e'),
+        showErrorSnackbar(
+          context,
+          'State "$stateFromPlace" not found. Please select manually.',
+        ),
       );
     }
+  }
+
+  String _addressComponent(DetailsResult place, List<String> preferredTypes) {
+    final components = place.addressComponents;
+    if (components == null) return '';
+
+    for (final component in components) {
+      final types = component.types ?? const <String>[];
+      final hasPreferredType = preferredTypes.any(types.contains);
+      if (!hasPreferredType) continue;
+
+      final value = component.longName?.trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+
+    return '';
+  }
+
+  String? _matchingStateName(String stateName) {
+    final normalizedStateName = stateName.trim().toLowerCase();
+    if (normalizedStateName.isEmpty) return null;
+
+    for (final state in states) {
+      final name = state.name;
+      if (name != null && name.toLowerCase() == normalizedStateName) {
+        return name;
+      }
+    }
+
+    return null;
   }
 
   @override
   void dispose() {
     _streetCtrl.dispose();
     _cityCtrl.dispose();
+    _selectState.dispose();
     super.dispose();
   }
 
@@ -181,9 +239,7 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
                 } else {
                   await replaceScreen(
                     context,
-                    const MainLayoutPage(
-                      userType: UserType.customer,
-                    ),
+                    const MainLayoutPage(userType: UserType.customer),
                   );
                 }
               },
@@ -232,12 +288,17 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
                             textAlign: TextAlign.center,
                           ),
                           50.verticalSpace,
-                          KFormField(
+                          GooglePlacesAutocompleteField(
                             label: 'Street Address',
-                            hintText: 'Enter Your Street Address',
                             controller: _streetCtrl,
-                            keyboardType: TextInputType.streetAddress,
-                            onChanged: (_) => setState(() {}),
+                            hintText: 'Search for your street address',
+                            onPredictionSelected: (prediction) {
+                              setState(() {
+                                _selectedPlace = prediction;
+                                _usedCurrentLocation = false;
+                              });
+                            },
+                            onPlaceDetailsSelected: _applyPlaceDetails,
                           ),
                           16.verticalSpace,
                           KFormField(

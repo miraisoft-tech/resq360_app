@@ -13,11 +13,15 @@ import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
 class PromoteServiceReviewScreen extends StatefulWidget {
   const PromoteServiceReviewScreen({
+    required this.providerServiceId,
+    required this.providerServiceName,
     required this.description,
     required this.discount,
     required this.duration,
     super.key,
   });
+  final int providerServiceId;
+  final String providerServiceName;
   final String description;
   final String discount;
   final PromotionDuration duration;
@@ -97,12 +101,34 @@ class _PromoteServiceReviewScreenState
                   child: Col(
                     children: [
                       GenText(
-                        'Get ${widget.discount}% off every service today.',
+                        'Get ${widget.discount}% off ${widget.providerServiceName} today.',
                         height: 24.5,
                         weight: FontWeight.w400,
                         color: appColors.textColor.shade400,
                       ),
                       12.verticalSpace,
+                      Row(
+                        children: [
+                          GenText(
+                            'Service:',
+                            height: 24.5,
+                            weight: FontWeight.w400,
+                            color: appColors.textColor.shade400,
+                          ),
+                          const Spacer(),
+                          Flexible(
+                            child: GenText(
+                              widget.providerServiceName,
+                              height: 24.5,
+                              weight: FontWeight.w500,
+                              color: appColors.black,
+                              maxLines: 1,
+                              textAlign: TextAlign.end,
+                            ),
+                          ),
+                        ],
+                      ),
+                      8.verticalSpace,
                       Row(
                         children: [
                           GenText(
@@ -252,6 +278,8 @@ class _PromoteServiceReviewScreenState
                                                     0,
                                                 discount: widget.discount,
                                                 duration: widget.duration,
+                                                providerServiceId:
+                                                    widget.providerServiceId,
                                                 description: widget.description,
                                                 paymentType: paymentMethod.name,
                                                 total: total,
@@ -384,6 +412,7 @@ class FinishPaymentDialog extends StatefulWidget {
     required this.walletBalance,
     required this.discount,
     required this.duration,
+    required this.providerServiceId,
     required this.description,
     required this.paymentType,
     required this.total,
@@ -394,6 +423,7 @@ class FinishPaymentDialog extends StatefulWidget {
   final num walletBalance;
   final String discount;
   final PromotionDuration duration;
+  final int providerServiceId;
   final String description;
   final String paymentType;
   final int total;
@@ -596,6 +626,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
   void _payWithWallet(PromotionBloc promotionBloc) {
     promotionBloc.add(
       CreatePromotion(
+        providerServiceId: widget.providerServiceId,
         discountPercentage: int.parse(widget.discount),
         durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.wallet.name,
@@ -607,10 +638,10 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
   void _payWithCard(PromotionBloc promotionBloc) {
     promotionBloc.add(
       CreatePromotion(
+        providerServiceId: widget.providerServiceId,
         discountPercentage: int.parse(widget.discount),
         durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.new_card.name,
-
         description: widget.description,
       ),
     );

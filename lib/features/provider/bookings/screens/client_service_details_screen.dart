@@ -216,24 +216,22 @@ class _ClientServiceDetailScreenState extends State<ClientServiceDetailScreen> {
                     Expanded(
                       child: WideButton(
                         label: 'Appeal',
-                        backgroundColor: appColors.primary.shade50,
-                        textColor: appColors.primary.shade500,
                         onPressed: () async {
                           await _handleAppeal(context, serviceRequestId);
                         },
                       ),
                     ),
-                    12.horizontalSpace,
-                    Expanded(
-                      child: WideButton(
-                        label: 'Rate Client',
-                        backgroundColor: appColors.primary.shade500,
-                        textColor: appColors.whiteColor,
-                        onPressed: () async {
-                          // wire to provider's rate client screen
-                        },
-                      ),
-                    ),
+                    // 12.horizontalSpace,
+                    // Expanded(
+                    //   child: WideButton(
+                    //     label: 'Rate Client',
+                    //     backgroundColor: appColors.primary.shade500,
+                    //     textColor: appColors.whiteColor,
+                    //     onPressed: () async {
+                    //       // wire to provider's rate client screen
+                    //     },
+                    //   ),
+                    // ),
                   ],
                 ],
               ),
