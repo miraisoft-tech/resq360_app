@@ -604,6 +604,7 @@ class _ServiceProviderDetailsScreenState
 
     return showModalBottomSheet<int>(
       context: context,
+      backgroundColor: context.appColors.error,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
