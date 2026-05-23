@@ -343,7 +343,10 @@ class _ServiceProviderDetailsScreenState
                                                         4.horizontalSpace,
                                                         GenText(
                                                           provider.averageRating
-                                                              .toString(),
+                                                                  ?.toStringAsFixed(
+                                                                    1,
+                                                                  ) ??
+                                                              '0.0',
                                                           color: colors.black,
                                                         ),
 
@@ -403,24 +406,6 @@ class _ServiceProviderDetailsScreenState
                                         ],
                                       ),
                                     ),
-                                    // if(provider.)
-                                    // SVGButton(
-                                    //   path:
-                                    //       AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                                    //   onTap: () async {
-                                    //     await _createServiceRequest();
-                                    //   },
-                                    // ),
-                                    // 15.horizontalSpace,
-                                    // SVGButton(
-                                    //   path:
-                                    //       AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-                                    //   onTap: () async {
-                                    //     await DialerUtil.open(
-                                    //       provider.phoneNumber ?? '',
-                                    //     );
-                                    //   },
-                                    // ),
                                   ],
                                 ),
 
@@ -498,7 +483,7 @@ class _ServiceProviderDetailsScreenState
 
                                 /// REVIEWS
                                 UrbText(
-                                  'Reviews',
+                                  'Reviews (${provider.totalReviews ?? 0})',
                                   height: 20.5,
                                   weight: FontWeight.w700,
                                   color: colors.black,

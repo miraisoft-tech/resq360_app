@@ -187,8 +187,8 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                 backgroundColor: appColors.whiteColor,
                 elevation: 10,
                 selectedFontSize: 12,
-                selectedItemColor: appColors.primary.shade500,
-                unselectedItemColor: appColors.neutral.shade300,
+                selectedItemColor: appColors.primary.shade600,
+                unselectedItemColor: appColors.neutral.shade500,
                 selectedLabelStyle: const TextStyle(
                   fontSize: 12,
                   height: 1.26,
@@ -201,8 +201,8 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                 ),
                 items: _buildNavItems(
                   navItems,
-                  selectedColor: appColors.primary.shade500,
-                  unselectedColor: appColors.neutral.shade300,
+                  selectedColor: appColors.primary.shade600,
+                  unselectedColor: appColors.neutral.shade500,
                 ),
               ),
             ),

@@ -54,9 +54,7 @@ class ChatSocketService {
     }
 
     if (_socket != null && (_currentToken != token || forceReconnect)) {
-      _socket?.disconnect();
-      _socket?.dispose();
-      _socket = null;
+      _closeSocket();
     }
 
     _currentToken = token;
@@ -120,8 +118,8 @@ class ChatSocketService {
 
       try {
         _handleChatNotification(data);
-      } on Exception catch (e) {
-        log('Parse error: $e');
+      } on Object catch (e, s) {
+        log('Chat notification error: $e\n$s');
       }
     });
 
@@ -202,20 +200,30 @@ class ChatSocketService {
         final key = _messageKey(message);
 
         if (_emittedMessageKeys.add(key)) {
-          _messageController.add(message);
+          _safeAdd(_messageController, message);
         }
 
       case 'USER_TYPING':
-        _typingController.add(notification['data'] as Map<String, dynamic>);
+        _safeAdd(
+          _typingController,
+          notification['data'] as Map<String, dynamic>,
+        );
 
       case 'USER_JOINED':
-        _userJoinedController.add(notification['data'] as Map<String, dynamic>);
+        _safeAdd(
+          _userJoinedController,
+          notification['data'] as Map<String, dynamic>,
+        );
 
       case 'USER_LEFT':
-        _userLeftController.add(notification['data'] as Map<String, dynamic>);
+        _safeAdd(
+          _userLeftController,
+          notification['data'] as Map<String, dynamic>,
+        );
 
       case 'MESSAGE_DELIVERED':
-        _messageDeliveredController.add(
+        _safeAdd(
+          _messageDeliveredController,
           notification['data'] as Map<String, dynamic>,
         );
 
@@ -224,10 +232,11 @@ class ChatSocketService {
           'chatId': notification['chatId'],
           ...notification['data'] as Map<String, dynamic>,
         };
-        _allDeliveredController.add(payload);
+        _safeAdd(_allDeliveredController, payload);
 
       case 'MESSAGE_READ':
-        _messageReadController.add(
+        _safeAdd(
+          _messageReadController,
           notification['data'] as Map<String, dynamic>,
         );
 
@@ -236,12 +245,12 @@ class ChatSocketService {
           'chatId': notification['chatId'],
           ...notification['data'] as Map<String, dynamic>,
         };
-        _allReadController.add(payload);
+        _safeAdd(_allReadController, payload);
 
       case 'PAYMENT_EVENT':
         final chatId = notification['chatId'] as int?;
         if (chatId != null) {
-          _paymentEventController.add(chatId);
+          _safeAdd(_paymentEventController, chatId);
         }
 
       default:
@@ -253,10 +262,28 @@ class ChatSocketService {
     return '${m.id}_${m.chatId}_${m.createdAt?.millisecondsSinceEpoch}';
   }
 
-  Future<void> disconnect() async {
-    _socket?.disconnect();
-    _socket?.dispose();
+  void _safeAdd<T>(StreamController<T> controller, T data) {
+    if (!controller.isClosed) {
+      controller.add(data);
+    }
+  }
+
+  void _closeSocket() {
+    final socket = _socket;
+    if (socket == null) return;
+
+    socket
+      ..off('chat-notification')
+      ..offAny()
+      ..clearListeners()
+      ..disconnect()
+      ..dispose();
+
     _socket = null;
+  }
+
+  Future<void> disconnect() async {
+    _closeSocket();
     _currentToken = null;
     _connectedAt = null;
   }
@@ -268,15 +295,6 @@ class ChatSocketService {
 
   Future<void> dispose() async {
     await disconnect();
-
-    await _messageController.close();
-    await _typingController.close();
-    await _userJoinedController.close();
-    await _userLeftController.close();
-    await _messageReadController.close();
-    await _messageDeliveredController.close();
-    await _allDeliveredController.close();
-    await _allReadController.close();
-    await _paymentEventController.close();
+    _emittedMessageKeys.clear();
   }
 }

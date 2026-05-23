@@ -39,15 +39,6 @@ class ReviewSummaryCard extends StatelessWidget {
 
               Row(children: _buildStars(averageRating, colors)),
               5.verticalSpace,
-
-              Padding(
-                padding: pad(horizontal: 25),
-                child: GenText(
-                  '($totalReviews)',
-                  size: 13,
-                  color: colors.greyColor2,
-                ),
-              ),
             ],
           ),
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/bloc/service_catalog_bloc/service_catalog_bloc.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/services/notification_service.dart';
@@ -109,6 +110,18 @@ class _HomeScreenState extends State<HomeScreen> {
         bottom: false,
         child: Column(
           children: [
+            BlocListener<BookingBloc, BookingState>(
+              listener: (context, state) {
+                if (_isGuest) return;
+
+                if (state is BookingCancelled || state is BookingCompleted) {
+                  context.read<CustomerBookingBloc>().add(
+                    const FetchDashboardBookings(),
+                  );
+                }
+              },
+              child: const SizedBox.shrink(),
+            ),
             Padding(
               padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 10.h),
               child: Row(

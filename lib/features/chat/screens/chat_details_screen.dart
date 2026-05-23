@@ -130,6 +130,7 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
 
   bool canShowServiceDetails = false;
   bool _isModeratingMessage = false;
+  bool _isDisputeDetailExpanded = true;
 
   bool _isAtBottom() {
     if (!_scrollController.hasClients) return false;
@@ -422,6 +423,10 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
     }
 
     if (state is ChatDetailReady) {
+      final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+      final isDisputeDetailCollapsed =
+          isKeyboardVisible || !_isDisputeDetailExpanded;
+
       return Stack(
         children: [
           _MessageList(
@@ -440,7 +445,19 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
               top: 0,
               left: 16.w,
               right: 16.w,
-              child: DisputeServiceDetailCard(chat: state.chat),
+              child: DisputeServiceDetailCard(
+                chat: state.chat,
+                isCollapsed: isDisputeDetailCollapsed,
+                onToggle:
+                    isKeyboardVisible
+                        ? null
+                        : () {
+                          setState(() {
+                            _isDisputeDetailExpanded =
+                                !_isDisputeDetailExpanded;
+                          });
+                        },
+              ),
             ),
           if (_showJumpButton)
             Positioned(

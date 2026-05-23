@@ -17,18 +17,94 @@ class RatingScreen extends StatefulWidget {
 }
 
 class _RatingScreenState extends State<RatingScreen> {
+  late final ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
     unawaited(_refreshRatings());
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
   }
 
   Future<void> _refreshRatings() async {
     if (widget.isProvider) {
-      context.read<RatingsBloc>().add(FetchProviderRatings());
+      context.read<RatingsBloc>().add(const FetchProviderRatings());
     } else {
-      context.read<RatingsBloc>().add(FetchCustomerRatings());
+      context.read<RatingsBloc>().add(const FetchCustomerRatings());
     }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+    if (position.pixels < position.maxScrollExtent - 280) return;
+
+    final state = context.read<RatingsBloc>().state;
+    if (state is! RatingsLoaded) return;
+
+    if (widget.isProvider) {
+      if (!state.providerRatingsHasMore || state.providerRatingsLoadingMore) {
+        return;
+      }
+
+      context.read<RatingsBloc>().add(const LoadMoreProviderRatings());
+      return;
+    }
+
+    if (!state.customerRatingsHasMore || state.customerRatingsLoadingMore) {
+      return;
+    }
+
+    context.read<RatingsBloc>().add(const LoadMoreCustomerRatings());
+  }
+
+  List<ProviderReview> _sortProviderReviews(List<ProviderReview>? reviews) {
+    return List<ProviderReview>.of(reviews ?? const <ProviderReview>[])..sort(
+      (a, b) => _compareReviewDates(
+        a.ratingDate,
+        a.createdAt,
+        b.ratingDate,
+        b.createdAt,
+      ),
+    );
+  }
+
+  List<CustomerReview> _sortCustomerReviews(List<CustomerReview>? reviews) {
+    return List<CustomerReview>.of(reviews ?? const <CustomerReview>[])..sort(
+      (a, b) => _compareReviewDates(
+        a.ratingDate,
+        a.createdAt,
+        b.ratingDate,
+        b.createdAt,
+      ),
+    );
+  }
+
+  int _compareReviewDates(
+    String? aRatingDate,
+    String? aCreatedAt,
+    String? bRatingDate,
+    String? bCreatedAt,
+  ) {
+    final aDate = _reviewSortDate(aRatingDate, aCreatedAt);
+    final bDate = _reviewSortDate(bRatingDate, bCreatedAt);
+
+    return bDate.compareTo(aDate);
+  }
+
+  DateTime _reviewSortDate(String? ratingDate, String? createdAt) {
+    return DateTime.tryParse(ratingDate ?? '') ??
+        DateTime.tryParse(createdAt ?? '') ??
+        DateTime.fromMillisecondsSinceEpoch(0);
   }
 
   @override
@@ -62,7 +138,10 @@ class _RatingScreenState extends State<RatingScreen> {
 
           if (state is RatingsLoaded) {
             if (widget.isProvider) {
-              final reviews = state.providerRatings?.reviews ?? [];
+              final reviews = _sortProviderReviews(
+                state.providerRatings?.reviews,
+              );
+              final isLoadingMore = state.providerRatingsLoadingMore;
 
               if (reviews.isEmpty) {
                 return EmptyScreenWidget(
@@ -75,11 +154,12 @@ class _RatingScreenState extends State<RatingScreen> {
               return Padding(
                 padding: pad(horizontal: 20, vertical: 16),
                 child: ListView(
+                  controller: _scrollController,
                   children: [
                     RatingSummaryWidget<ProviderReview>(
                       average: state.providerRatings?.averageRatings ?? 0,
                       totalReviews: state.providerRatings?.totalReviews ?? 0,
-                      reviews: state.providerRatings?.reviews ?? [],
+                      reviews: reviews,
                       extractRating: (review) => review.overallRating ?? 0,
                     ),
 
@@ -105,11 +185,15 @@ class _RatingScreenState extends State<RatingScreen> {
                         );
                       },
                     ),
+                    if (isLoadingMore) const _LoadMoreIndicator(),
                   ],
                 ),
               );
             } else {
-              final reviews = state.customerRatings?.reviews ?? [];
+              final reviews = _sortCustomerReviews(
+                state.customerRatings?.reviews,
+              );
+              final isLoadingMore = state.customerRatingsLoadingMore;
 
               if (reviews.isEmpty) {
                 return EmptyScreenWidget(
@@ -122,11 +206,12 @@ class _RatingScreenState extends State<RatingScreen> {
               return Padding(
                 padding: pad(horizontal: 20, vertical: 16),
                 child: ListView(
+                  controller: _scrollController,
                   children: [
                     RatingSummaryWidget<CustomerReview>(
                       average: state.customerRatings?.averageRatings ?? 0,
                       totalReviews: state.customerRatings?.totalReviews ?? 0,
-                      reviews: state.customerRatings?.reviews ?? [],
+                      reviews: reviews,
                       extractRating: (review) => review.overallRating ?? 0,
                     ),
 
@@ -152,6 +237,7 @@ class _RatingScreenState extends State<RatingScreen> {
                         );
                       },
                     ),
+                    if (isLoadingMore) const _LoadMoreIndicator(),
                   ],
                 ),
               );
@@ -166,6 +252,29 @@ class _RatingScreenState extends State<RatingScreen> {
             unawaited(showErrorSnackbar(context, state.message));
           }
         },
+      ),
+    );
+  }
+}
+
+class _LoadMoreIndicator extends StatelessWidget {
+  const _LoadMoreIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    final appColors = context.appColors;
+
+    return Padding(
+      padding: pad(vertical: 16),
+      child: Center(
+        child: SizedBox(
+          height: 24,
+          width: 24,
+          child: CircularProgressIndicator(
+            color: appColors.primary.shade500,
+            strokeWidth: 2,
+          ),
+        ),
       ),
     );
   }

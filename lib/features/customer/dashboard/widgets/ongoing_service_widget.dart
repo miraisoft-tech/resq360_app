@@ -1,10 +1,10 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/core/bloc/service_detail_bloc/service_detail_bloc.dart';
 import 'package:resq360/core/models/booking_enums.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/chat/screens/chat_details_screen.dart';
 import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
@@ -138,8 +138,8 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                         ),
                       );
                       if (context.mounted) {
-                        context.read<ServiceDetailBloc>().add(
-                          const RefreshServiceDetail(),
+                        context.read<CustomerBookingBloc>().add(
+                          const FetchDashboardBookings(),
                         );
                       }
                     },
@@ -172,8 +172,8 @@ class _OngoingServiceCardState extends State<OngoingServiceCard> {
                         ),
                       );
                       if (context.mounted) {
-                        context.read<ServiceDetailBloc>().add(
-                          const RefreshServiceDetail(),
+                        context.read<CustomerBookingBloc>().add(
+                          const FetchDashboardBookings(),
                         );
                       }
                     },

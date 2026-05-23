@@ -452,7 +452,8 @@ class _ProviderCard extends StatelessWidget {
                             ),
                             4.horizontalSpace,
                             GenText(
-                              provider.averageRating.toString(),
+                              provider.averageRating?.toStringAsFixed(1) ??
+                                  '0.0',
                               size: 12,
                               color: colors.black,
                             ),

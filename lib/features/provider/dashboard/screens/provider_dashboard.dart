@@ -11,7 +11,6 @@ import 'package:resq360/features/customer/dashboard/screens/notification_screen.
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
-import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/provider/dashboard/data/bloc/provider_ongoing_bloc.dart';
 import 'package:resq360/features/provider/dashboard/data/bloc/provider_stats_bloc/provider_stats_bloc.dart';
@@ -83,8 +82,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
           listener: (context, state) async {
             if (state is BookingArrived) {
               await showSuccessSnackbar(context, 'Provider arrival confirmed');
-              context.read<ProviderServiceBloc>().add(
-                ProviderFetchBookings(status: BookingStatus.upcoming.value),
+              context.read<ProviderOngoingBloc>().add(
+                const FetchProviderOngoingService(),
               );
             }
             if (state is BookingStarted) {
@@ -92,12 +91,29 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                 context,
                 'Service started successfully',
               );
-              context.read<ProviderServiceBloc>().add(
-                ProviderFetchBookings(status: BookingStatus.upcoming.value),
+              context.read<ProviderOngoingBloc>().add(
+                const FetchProviderOngoingService(),
+              );
+            }
+            if (state is BookingCancelled) {
+              context.read<ProviderOngoingBloc>().add(
+                const FetchProviderOngoingService(),
               );
             }
             if (state is BookingError) {
               await showErrorSnackbar(context, state.error);
+            }
+          },
+        ),
+        BlocListener<ProviderServiceBloc, ProviderServiceState>(
+          listener: (context, state) {
+            if (state is ProviderServiceBookingCompleted ||
+                state is ProviderServiceBookingCancelled ||
+                state is ProviderServiceBookingStarted ||
+                state is ProviderServiceBookingArrived) {
+              context.read<ProviderOngoingBloc>().add(
+                const FetchProviderOngoingService(),
+              );
             }
           },
         ),
