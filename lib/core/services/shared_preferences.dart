@@ -19,7 +19,6 @@ class AppLocalPref {
     return true;
   }
 
-  //
   Future<bool> saveBool({required String key, required bool value}) async {
     if (_prefs == null) {
       await initPref();
@@ -38,7 +37,6 @@ class AppLocalPref {
     return value;
   }
 
-  //
   Future<bool> save({required String key, required String value}) async {
     if (_prefs == null) {
       await initPref();
@@ -77,12 +75,23 @@ class AppLocalPref {
     if (_prefs == null) {
       await initPref();
     }
+
     final value = _prefs?.getString(key) ?? '';
     log('READ $key== $value');
-    return value.isEmpty ? null : jsonDecode(value);
+
+    if (value.isEmpty) return null;
+
+    try {
+      final decoded = jsonDecode(value);
+      return decoded;
+    } on Exception catch (_) {
+      if (value.startsWith('"') && value.endsWith('"') && value.length > 2) {
+        return value.substring(1, value.length - 1);
+      }
+      return value;
+    }
   }
 
-  //
   Future<dynamic> getBoolNotifications({required String key}) async {
     if (_prefs == null) {
       await initPref();

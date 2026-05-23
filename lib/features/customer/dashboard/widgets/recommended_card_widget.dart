@@ -1,120 +1,163 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 
 class RecommendedCard extends StatelessWidget {
-  const RecommendedCard({super.key});
+  const RecommendedCard({required this.advertisement, super.key});
+
+  final Advertisement advertisement;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final title = advertisement.provider?.fullName ?? 'Untitled';
+    final description = advertisement.description ?? '';
+    final image = advertisement.provider?.profileImage;
+    final services = advertisement.provider?.providerServices ?? [];
 
-    return Column(
-      children: [
-        Container(
-          padding: pad(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            border: Border.all(color: colors.lightGreyColor2),
-            borderRadius: BorderRadius.circular(12),
-            color: colors.whiteColor,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const CircleAvatar(
-                radius: 25,
-                backgroundImage: AssetImage(
-                  AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                ),
-              ),
-              12.horizontalSpace,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    final rating = (advertisement.provider?.averageRating ?? 0).toStringAsFixed(
+      2,
+    );
+    final reviewCount = advertisement.provider?.totalReviews ?? 0;
+    final location =
+        advertisement.provider!.providerServices?.first.service?.distanceKM ??
+        'N/A';
+
+    return Container(
+      padding: pad(horizontal: 5, vertical: 14),
+      margin: EdgeInsets.only(right: 12.w),
+      decoration: BoxDecoration(
+        border: Border.all(color: colors.lightGreyColor2),
+        borderRadius: BorderRadius.circular(12),
+        color: colors.whiteColor,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          PictureWidget(image: image),
+          10.horizontalSpace,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        UrbText(
-                          'Plumbing Pro',
-                          height: 24.5,
-                          weight: FontWeight.w500,
-                          color: colors.black,
-                        ),
-                        const Spacer(),
-                        Container(
-                          padding: pad(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: colors.success.shade50,
-                            borderRadius: BorderRadius.circular(10.r),
-                          ),
-                          child: GenText(
-                            'Sponsored',
-                            size: 10,
-                            height: 20.5,
-                            color: colors.success.shade700,
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: UrbText(
+                        title.capitalize,
+                        height: 24.5,
+                        weight: FontWeight.w500,
+                        color: colors.black,
+                        maxLines: 1,
+                      ),
                     ),
-                    GenText(
-                      'Emergency Plumbing',
-                      size: 12,
-                      height: 20.5,
-                      weight: FontWeight.w400,
-                      color: colors.textColor.shade500,
-                    ),
-                    4.verticalSpace,
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 16, color: Colors.orange),
-                        4.horizontalSpace,
-                        GenText('4.8', size: 12, color: colors.black),
-                        2.horizontalSpace,
-                        GenText(
-                          '(127)',
-                          size: 12,
-                          color: colors.neutral.shade300,
-                        ),
-                        10.horizontalSpace,
-                        AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                          color: colors.neutral.shade300,
-                        ),
-                        2.horizontalSpace,
-                        GenText(
-                          '1.2km',
-                          size: 12,
-                          color: colors.neutral.shade300,
-                        ),
-                      ],
-                    ),
-                    8.verticalSpace,
-                    GenText(
-                      'With over 5 years experience we provide prompt and professional plumbing service.',
-                      size: 12,
-                      weight: FontWeight.w400,
-                      color: colors.textColor.shade500,
-                    ),
-                    20.verticalSpace,
+                    20.horizontalSpace,
+
                     Container(
-                      padding: pad(horizontal: 10, vertical: 6),
+                      padding: pad(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: colors.primary.shade500,
-                        borderRadius: BorderRadius.circular(33.r),
+                        color: colors.success.shade50,
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: GenText(
-                        '-30% Today',
-                        size: 13,
-                        weight: FontWeight.w600,
-                        color: colors.whiteColor,
+                        'Sponsored',
+                        size: 10,
+                        height: 20.5,
+                        color: colors.success.shade700,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+
+                if (services.isNotEmpty) ...[
+                  4.verticalSpace,
+                  Wrap(
+                    spacing: 6.w,
+                    runSpacing: 4.h,
+                    children:
+                        services
+                            .map((service) {
+                              final serviceName =
+                                  service.name ?? service.service?.name ?? '';
+                              if (serviceName.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w,
+                                  vertical: 2.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.primary.shade50,
+                                  borderRadius: BorderRadius.circular(6.r),
+                                ),
+                                child: GenText(
+                                  serviceName,
+                                  size: 10,
+                                  height: 16,
+                                  weight: FontWeight.w500,
+                                  color: colors.primary.shade500,
+                                ),
+                              );
+                            })
+                            .take(3)
+                            .toList(),
+                  ),
+                ],
+                4.verticalSpace,
+
+                Row(
+                  children: [
+                    const Icon(Icons.star, size: 16, color: Colors.orange),
+                    4.horizontalSpace,
+                    GenText(rating, size: 12, color: colors.black),
+                    2.horizontalSpace,
+                    GenText(
+                      '($reviewCount)',
+                      size: 12,
+                      color: colors.neutral.shade300,
+                    ),
+                    10.horizontalSpace,
+                    AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
+                      color: colors.neutral.shade300,
+                    ),
+                    2.horizontalSpace,
+                    GenText(
+                      '$location km',
+                      size: 12,
+                      color: colors.neutral.shade400,
+                    ),
+                  ],
+                ),
+                8.verticalSpace,
+                if (description.isNotEmpty)
+                  GenText(
+                    description,
+                    size: 12,
+                    weight: FontWeight.w400,
+                    color: colors.textColor.shade500,
+                    maxLines: 4,
+                  ),
+                8.verticalSpace,
+                if (advertisement.budget != null) ...[
+                  Container(
+                    padding: pad(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: colors.primary.shade500,
+                      borderRadius: BorderRadius.circular(33.r),
+                    ),
+                    child: GenText(
+                      '-${advertisement.budget}% Today',
+                      size: 13,
+                      weight: FontWeight.w600,
+                      color: colors.whiteColor,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
-        10.verticalSpace,
-        const SmallDotIndicator(total: 3, currentIndex: 0),
-      ],
+        ],
+      ),
     );
   }
 }

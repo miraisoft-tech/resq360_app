@@ -1,12 +1,15 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/authentication/data/models/provider_response.dart';
 
 class ProviderAccountProgress extends StatelessWidget {
-  const ProviderAccountProgress({super.key});
+  const ProviderAccountProgress({required this.provider, super.key,});
+final ProviderModel provider;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-
+final progress = calculateProviderProgress(provider);
+    final percentText = (progress * 100).toInt();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -17,7 +20,7 @@ class ProviderAccountProgress extends StatelessWidget {
         ),
         12.verticalSpace,
         LinearProgressIndicator(
-          value: 0.75,
+          value: progress,
           backgroundColor: colors.textColor.shade100,
           valueColor: AlwaysStoppedAnimation(colors.primary.shade500),
           minHeight: 6,
@@ -27,7 +30,7 @@ class ProviderAccountProgress extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: GenText(
-            '75% complete',
+            '$percentText% complete',
             size: 12,
             color: colors.textColor.shade500,
             textAlign: TextAlign.right,
@@ -36,4 +39,41 @@ class ProviderAccountProgress extends StatelessWidget {
       ],
     );
   }
+}
+double calculateProviderProgress(ProviderModel provider) {
+  const totalSteps = 6;
+  var completed = 0;
+
+  if (provider.profileImage != null &&
+      provider.profileImage!.trim().isNotEmpty) {
+    completed++;
+  }
+
+  if (provider.providerServices?.isNotEmpty ?? false) {
+    completed++;
+  }
+
+  if (provider.description != null &&
+      provider.description!.trim().isNotEmpty) {
+    completed++;
+  }
+
+  if (provider.address != null) {
+    completed++;
+  }
+
+  if (provider.openingHours != null &&
+      provider.closingHours != null) {
+    completed++;
+  }
+
+  final kycApproved =
+      provider.isKYCVerified ||
+      provider.kycStatus?.toUpperCase() == 'APPROVED';
+
+  if (kycApproved) {
+    completed++;
+  }
+
+  return completed / totalSteps;
 }

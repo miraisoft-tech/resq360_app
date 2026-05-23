@@ -1,13 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter_countdown_timer/countdown_timer_controller.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/verification_source.enum.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/screens/provider_verification_steps_screen.dart';
 import 'package:resq360/features/widgets/inputs/pin_field.dart';
 import 'package:resq360/features/widgets/scaffolds/app_scaffold.dart';
 
 class ProviderConfirmEmailScreen extends StatefulWidget {
-  const ProviderConfirmEmailScreen({required this.email, super.key});
+  const ProviderConfirmEmailScreen({
+    required this.email,
+    super.key,
+  });
 
   final String email;
 
@@ -20,7 +27,7 @@ class _ProviderConfirmEmailScreenState
     extends State<ProviderConfirmEmailScreen> {
   int endTime =
       DateTime.now()
-          .add(const Duration(seconds: 5 * 60))
+          .add(const Duration(seconds: 1 * 60))
           .millisecondsSinceEpoch;
 
   late TextEditingController _otpController1;
@@ -41,26 +48,20 @@ class _ProviderConfirmEmailScreenState
   }
 
   Future<void> onResend() async {
-    // showLoadingDialog();
+    if (controller.isRunning) {
+      return;
+    }
 
-    // final result = await AuthRemoteRepo.instance.resendVerifyEmail(
-    //   email: widget.email,
-    // );
+    context.read<ProviderAuthBloc>().add(
+      ProviderResendVerificationEmailEvent(email: widget.email),
+    );
 
-    // if (result is ErrorResponse && mounted) {
-    //   await pop(context);
-    //   await showErrorSnackbar(result.errorMessage);
-    // } else if (result is AuthResponse && mounted) {
-    //   await pop(context);
-
-    //   await showSuccessSnackbar('Verification mail resent successfully!');
-    //   controller.endTime =
-    //       DateTime.now()
-    //           .add(const Duration(seconds: 5 * 60))
-    //           .millisecondsSinceEpoch;
-    //   controller.start();
-    //   setState(() {});
-    // }
+    controller
+      ..endTime =
+          DateTime.now()
+              .add(const Duration(seconds: 1 * 60))
+              .millisecondsSinceEpoch
+      ..start();
   }
 
   Future<void> onVerify() async {
@@ -68,77 +69,121 @@ class _ProviderConfirmEmailScreenState
       await showErrorSnackbar(context, 'otp field must be 6 digits');
       return;
     }
-
-    await pushScreen(context, const ProviderVerificationStepsScreen());
+    context.read<ProviderAuthBloc>().add(
+      ProviderVerifyEmailAddressEvent(
+        emailVerificationToken: _otpController1.text,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    return AppScaffold(
-      title: 'Verify Email',
-      subTitle: 'Please enter the 6-digit code sent to your email',
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                NormalPinCodeField(
-                  controller: _otpController1,
-                  onDone: (code) {},
-                  onChange: (dynamic value) {
-                    log(value);
-                    setState(() {});
-                  },
-                ),
-                25.verticalSpace,
+    return BlocListener<ProviderAuthBloc, ProviderAuthState>(
+      listener: (context, state) async {
+        if (state is ProviderAuthLoadingState) {
+          showLoadingDialog(context);
+        }
 
-                Center(
-                  child: CountdownTimer(
-                    endTime: endTime,
-                    controller: controller,
-                    widgetBuilder: (_, CurrentRemainingTime? time) {
-                      return Column(
-                        children: [
-                          InkWell(
-                            onTap: onResend,
-                            child: GenText(
+        if (state is ProviderAuthFailureState) {
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+
+          await showSnackBar(context, 'Error', state.error);
+        }
+        if (state is ProviderVerificationEmailResentState) {
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+
+          await showSuccessSnackbar(context, state.message);
+
+          controller
+            ..endTime =
+                DateTime.now()
+                    .add(const Duration(seconds: 1 * 60))
+                    .millisecondsSinceEpoch
+            ..start();
+
+          setState(() {});
+        }
+
+        if (state is ProviderEmailVerifiedState) {
+          await pop(context);
+
+          log('Email verified, navigating to main layout');
+          await pushAndReplaceScreen(
+            context: context,
+            const ProviderVerificationStepsScreen(
+              source: VerificationSource.signup,
+            ),
+          );
+        }
+      },
+      child: AppScaffold(
+        title: 'Verify Email',
+        subTitle: 'Please enter the 6-digit code sent to your email',
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                children: [
+                  NormalPinCodeField(
+                    controller: _otpController1,
+                    onDone: (code) {},
+                    onChange: (dynamic value) {
+                      log(value);
+                      setState(() {});
+                    },
+                  ),
+                  25.verticalSpace,
+
+                  Center(
+                    child: CountdownTimer(
+                      endTime: endTime,
+                      controller: controller,
+                      widgetBuilder: (_, CurrentRemainingTime? time) {
+                        return Column(
+                          children: [
+                            GenText(
                               'Didn’t receive code?',
                               size: 12,
                               height: 20.5,
                               color: colors.neutral.shade500,
                               weight: FontWeight.w400,
                             ),
-                          ),
-                          5.verticalSpace,
-                          GoToWidget(
-                            ligthText: 'Resend code in ',
-                            coloredText:
-                                '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
-                          ),
-                        ],
-                      );
-                    },
+                            5.verticalSpace,
+                            GoToWidget(
+                              ligthText: 'Resend code in ',
+                              onTap: onResend,
+                              coloredText:
+                                  '0${time?.min ?? 0}:${(time?.sec ?? 0) < 10 ? '0${time?.sec ?? 0}' : time?.sec ?? 0}',
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-                50.verticalSpace,
-              ],
+                  50.verticalSpace,
+                ],
+              ),
             ),
-          ),
 
-          WideButton(
-            label: 'Verify & Continue',
-            onPressed: (_otpController1.text.length < 6 ? null : onVerify),
-          ),
-          20.verticalSpace,
-        ],
+            WideButton(
+              label: 'Verify & Continue',
+              onPressed: (_otpController1.text.length < 6 ? null : onVerify),
+            ),
+            20.verticalSpace,
+          ],
+        ),
       ),
     );
   }
 }
 
-class GoToWidget extends ConsumerWidget {
+class GoToWidget extends StatelessWidget {
   const GoToWidget({
     required this.ligthText,
     required this.coloredText,
@@ -155,7 +200,7 @@ class GoToWidget extends ConsumerWidget {
   final double height;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return Text.rich(

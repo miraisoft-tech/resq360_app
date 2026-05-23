@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
-import 'package:resq360/features/customer/authentication/data/service/auth.local.repo.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 
 class IntroScreen extends StatefulWidget {
@@ -32,10 +32,7 @@ class _IntroScreenState extends State<IntroScreen> {
     await AuthLocalRepo.instance.saveIntroCompleted(isIntroCompleted: true);
     if (!mounted) return;
 
-    await replaceScreen(
-      context,
-      const SelectAccountTypeScreen(),
-    );
+    await replaceScreen(context, const SelectAccountTypeScreen());
   }
 
   Future<void> _continue() async {
@@ -49,10 +46,7 @@ class _IntroScreenState extends State<IntroScreen> {
       await AuthLocalRepo.instance.saveIntroCompleted(isIntroCompleted: true);
       if (!mounted) return;
 
-      await replaceScreen(
-        context,
-        const SelectAccountTypeScreen(),
-      );
+      await replaceScreen(context, const SelectAccountTypeScreen());
     }
   }
 
@@ -108,7 +102,7 @@ class _IntroScreenState extends State<IntroScreen> {
                   ),
                 ),
               ),
-              50.verticalSpace,
+
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -124,10 +118,11 @@ class _IntroScreenState extends State<IntroScreen> {
                           child: Column(
                             children: [
                               e.imagePath.imageAsset(
-                                height: 300,
-                                width: 300,
+                                height: 330,
+                                width: 330,
+                                fit: BoxFit.contain,
                               ),
-                              40.verticalSpace,
+                              20.verticalSpace,
                               UrbText(
                                 e.title,
                                 size: 26,
@@ -150,16 +145,12 @@ class _IntroScreenState extends State<IntroScreen> {
                       }).toList(),
                 ),
               ),
+              20.verticalSpace,
               Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  DotIndicator(
-                    total: 3,
-                    currentIndex: currentIndex,
-                  ),
-                ],
+                children: [DotIndicator(total: 3, currentIndex: currentIndex)],
               ),
-              30.verticalSpace,
+              25.verticalSpace,
               Padding(
                 padding: pad(horizontal: 16, vertical: 20),
                 child: WideButton(

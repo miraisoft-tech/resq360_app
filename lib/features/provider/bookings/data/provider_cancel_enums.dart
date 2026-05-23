@@ -1,6 +1,9 @@
 enum CancelReasonEnum {
-  unableToReachClient,
+  unableToReach,
   vehicleEquipmentIssue,
   emergencySituation,
-  other,
+  providerDelayed,
+  noLongerNeeded,
+  changedMind,
+   other,
 }

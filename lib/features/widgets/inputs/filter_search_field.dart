@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resq360/__lib.dart';
 
-class FilterSearchFormField extends ConsumerStatefulWidget {
+class FilterSearchFormField extends StatefulWidget {
   const FilterSearchFormField({
     required this.prefixIconPath,
     required this.controller,
@@ -10,6 +10,7 @@ class FilterSearchFormField extends ConsumerStatefulWidget {
     this.inputFormatters,
     this.hintWidget,
     this.onTapSuffix,
+    this.onTap,
     this.validator,
     this.onChanged,
     this.keyboardType,
@@ -18,6 +19,7 @@ class FilterSearchFormField extends ConsumerStatefulWidget {
     this.fillColor,
     this.type = InputType.primary,
     this.enabled = true,
+    this.focusNode,
     super.key,
   });
   final InputType type;
@@ -28,6 +30,7 @@ class FilterSearchFormField extends ConsumerStatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final void Function()? onTapSuffix;
   final void Function(String?)? onChanged;
+  final VoidCallback? onTap;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final int maxLines;
@@ -35,13 +38,13 @@ class FilterSearchFormField extends ConsumerStatefulWidget {
   final Color? fillColor;
 
   final bool enabled;
+  final FocusNode? focusNode;
 
   @override
-  ConsumerState<FilterSearchFormField> createState() =>
-      _FilterSearchFormFieldState();
+  State<FilterSearchFormField> createState() => _FilterSearchFormFieldState();
 }
 
-class _FilterSearchFormFieldState extends ConsumerState<FilterSearchFormField> {
+class _FilterSearchFormFieldState extends State<FilterSearchFormField> {
   late FocusNode _focusNode;
   late ValueNotifier<bool> _obscureNotier;
 
@@ -50,7 +53,7 @@ class _FilterSearchFormFieldState extends ConsumerState<FilterSearchFormField> {
   void initState() {
     super.initState();
     _obscureNotier = ValueNotifier(widget.type == InputType.password);
-    _focusNode = FocusNode();
+    _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(() {
       setState(() {});
     });
@@ -70,6 +73,7 @@ class _FilterSearchFormFieldState extends ConsumerState<FilterSearchFormField> {
             keyboardType: widget.keyboardType,
             validator: widget.validator,
             onChanged: widget.onChanged,
+            onTap: widget.onTap,
             inputFormatters: widget.inputFormatters,
             controller: widget.controller,
             focusNode: _focusNode,
@@ -110,7 +114,7 @@ class _FilterSearchFormFieldState extends ConsumerState<FilterSearchFormField> {
                         child: Padding(
                           padding: const EdgeInsets.only(right: 5),
                           child: Transform.scale(
-                            scale: 0.5,
+                            scale: 1,
                             child: Icon(
                               Icons.close,
                               color: appTheme.textColor.shade300,
@@ -151,7 +155,9 @@ class _FilterSearchFormFieldState extends ConsumerState<FilterSearchFormField> {
 
   @override
   void dispose() {
-    _focusNode.dispose();
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
     _obscureNotier.dispose();
     super.dispose();
   }

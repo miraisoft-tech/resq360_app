@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
@@ -24,10 +26,28 @@
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<key>NSCameraUsageDescription</key>
+		<string>Allow ResQ360 take profile picture</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>ResQ360 needs to use your face id to authenticate you.</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>This app needs permission to save images to your photo library</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>ResQ360 requires access to your location to find users around you</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>ResQ360 needs access to your location to find users around you</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>ResQ360 needs access to your location to find users around you</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Pick image for profile picture</string>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
 		<key>UIMainStoryboardFile</key>
 		<string>Main</string>
+		<key>UIStatusBarHidden</key>
+		<true/>
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
@@ -41,25 +61,18 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
-		<key>CADisableMinimumFrameDurationOnPhone</key>
-		<true/>
-		<key>UIApplicationSupportsIndirectInputEvents</key>
-		<true/>
-		<key>UIStatusBarHidden</key>
-		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
-		<key>NSCameraUsageDescription</key>
-		<string>Allow ResQ360 take profile picture</string>
-		<key>NSFaceIDUsageDescription</key>
-		<string>ResQ360 needs to use your face id to authenticate you.</string>
-		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>ResQ360 requires access to your location to find users around you</string>
-		<key>NSLocationAlwaysUsageDescription</key>
-		<string>ResQ360 needs access to your location to find users around you</string>
-		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>ResQ360 needs access to your location to find users around you</string>
-		<key>NSPhotoLibraryUsageDescription</key>
-		<string>Pick image for profile picture</string>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>sms</string>
+			<string>tel</string>
+			<string>mailto</string>
+			<string>https</string>
+		</array>
+		<key>NSUserTrackingUsageDescription</key>
+		<string>This identifier will be used to deliver personalized ads to you.</string>
 	</dict>
 </plist>

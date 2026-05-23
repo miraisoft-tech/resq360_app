@@ -71,8 +71,10 @@ class AppGenUtil {
     }
   }
 
-  static Future<void> callPhone() async {
-    final uri = Uri(scheme: 'tel', path: '08123266902');
+  static Future<void> callPhone({
+    required String phoneNumber,
+  }) async {
+    final uri = Uri(scheme: 'tel', path: phoneNumber);
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -169,6 +171,10 @@ class AppGenUtil {
       return '$type is too short';
     } else if (value.length > 50) {
       return '$type max length is 50';
+    } else if (value.contains(',')) {
+      return '$type cannot contain commas';
+    } else if (value.contains('.')) {
+      return '$type cannot contain periods';
     }
     return null;
   }

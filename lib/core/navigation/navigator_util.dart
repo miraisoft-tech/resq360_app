@@ -20,7 +20,6 @@ Future<dynamic> pushScreen(
 Future<dynamic> replaceScreen(
   BuildContext context,
   Widget widget, {
-
   bool removeSession = false,
 }) async {
   return Navigator.pushAndRemoveUntil<dynamic>(
@@ -28,6 +27,7 @@ Future<dynamic> replaceScreen(
     MaterialPageRoute<dynamic>(
       builder: (BuildContext context) => widget,
     ),
+
     (Route<dynamic> route) => false,
   );
 }
@@ -50,7 +50,10 @@ void clearFocus(BuildContext context) {
 }
 
 Future<dynamic> pop(BuildContext context, [dynamic result]) {
-  Navigator.pop(context, result);
+  if (Navigator.canPop(context)) {
+    Navigator.pop(context, result);
+  }
+
   return Future.value(result);
 }
 

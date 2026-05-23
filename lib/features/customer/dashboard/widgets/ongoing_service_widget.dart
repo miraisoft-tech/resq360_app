@@ -1,28 +1,68 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/models/booking_enums.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
+import 'package:resq360/features/chat/screens/service_completed_screen.dart';
+import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 
-class OngoingServiceCard extends StatelessWidget {
-  const OngoingServiceCard({super.key});
+class OngoingServiceCard extends StatefulWidget {
+  const OngoingServiceCard({
+    required this.booking,
+    this.isProvider = false,
+    super.key,
+  });
+
+  final Bookings booking;
+  final bool isProvider;
 
   @override
+  State<OngoingServiceCard> createState() => _OngoingServiceCardState();
+}
+
+class _OngoingServiceCardState extends State<OngoingServiceCard> {
+  @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
+    final appColors = context.appColors;
+
+    final providerName =
+        widget.booking.assignedProvider?.fullName ?? 'Assigned Provider';
+    final serviceName = widget.booking.serviceCategory?.name ?? 'Service';
+
+    final serviceRequestId = widget.booking.id;
+    final status = widget.booking.status;
+
+    final isAssigned =
+        widget.booking.status?.toUpperCase() ==
+        BookingEnums.assigned.name.toUpperCase();
+    final isArrived =
+        widget.booking.status?.toUpperCase() ==
+        BookingEnums.arrived.name.toUpperCase();
+    final isAwaitingProvider = isAssigned || isArrived;
+
+    final isProgress =
+        widget.booking.status?.toUpperCase() ==
+        BookingEnums.progress.name.toUpperCase();
+    final isCompleted =
+        widget.booking.completedBy?.toLowerCase() == UserType.provider.value;
 
     return Container(
       padding: pad(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: colors.whiteColor,
-        border: Border.all(color: colors.lightGreyColor2),
+        color: appColors.whiteColor,
+        border: Border.all(color: appColors.lightGreyColor2),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              const CircleAvatar(
-                radius: 25,
-                backgroundImage: AssetImage(
-                  AppAssets.ASSETS_IMAGES_PROFILE_PIC_PNG,
-                ),
+              PictureWidget(
+                image: widget.booking.assignedProvider?.profileImage,
               ),
               8.horizontalSpace,
               Expanded(
@@ -32,44 +72,46 @@ class OngoingServiceCard extends StatelessWidget {
                     Row(
                       children: [
                         GenText(
-                          'QuickTow Emergency',
+                          providerName,
                           height: 24.5,
                           weight: FontWeight.w500,
-                          color: colors.black,
+                          color: appColors.black,
+                          maxLines: 1,
                         ),
                         const Spacer(),
                         Container(
                           padding: pad(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: colors.success.shade50,
+                            color: appColors.success.shade50,
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: GenText(
-                            'Completed',
+                            status?.replaceAll('_', ' ') ?? 'N/A',
                             size: 10,
                             height: 20.5,
-                            color: colors.success.shade700,
+                            color: appColors.success.shade700,
                           ),
                         ),
                       ],
                     ),
                     GenText(
-                      'Towing Service',
+                      serviceName,
                       size: 12,
                       height: 20.5,
                       weight: FontWeight.w500,
-                      color: colors.neutral.shade400,
+                      color: appColors.neutral.shade400,
+                      maxLines: 1,
                     ),
                     Row(
                       children: [
                         AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
                         4.horizontalSpace,
                         GenText(
-                          '₦15,000',
+                          '₦${AppTextUtil.formatAmount(widget.booking.amount?.toString() ?? '0')}',
                           size: 12,
                           height: 20.5,
                           weight: FontWeight.w400,
-                          color: colors.black,
+                          color: appColors.black,
                         ),
                       ],
                     ),
@@ -78,52 +120,107 @@ class OngoingServiceCard extends StatelessWidget {
               ),
             ],
           ),
-          30.verticalSpace,
+          20.verticalSpace,
           Row(
             children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: pad(horizontal: 14),
-                    elevation: 0,
-                    backgroundColor: colors.error.shade50,
-                    foregroundColor: colors.primary.shade500,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  onPressed: () {},
-                  child: GenText(
-                    'Appeal',
-                    height: 16.5,
-                    color: colors.primary.shade500,
-                    weight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              20.horizontalSpace,
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.primary.shade500,
-                    foregroundColor: colors.whiteColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  child: GenText(
-                    'Complete',
-                    height: 16.5,
-                    color: colors.whiteColor,
-                    weight: FontWeight.w500,
+              if (isAwaitingProvider) ...[
+                Expanded(
+                  child: WideButton(
+                    label: 'Cancel',
+                    backgroundColor: appColors.primary.shade50,
+                    textColor: appColors.primary.shade500,
+                    onPressed: () async {
+                      if (serviceRequestId == null) return;
+                      await pushScreen(
+                        context,
+                        CancelClientServiceScreen(
+                          serviceRequestId: serviceRequestId,
+                        ),
+                      );
+                      if (context.mounted) {
+                        context.read<CustomerBookingBloc>().add(
+                          const FetchDashboardBookings(),
+                        );
+                      }
+                    },
                   ),
                 ),
-              ),
+              ],
+              if (isCompleted || isProgress) ...[
+                Expanded(
+                  child: WideButton(
+                    label: 'Appeal',
+                    backgroundColor: appColors.primary.shade50,
+                    textColor: appColors.primary.shade500,
+                    onPressed: () async {
+                      await _handleAppeal(context, serviceRequestId);
+                    },
+                  ),
+                ),
+                12.horizontalSpace,
+                Expanded(
+                  child: WideButton(
+                    label: 'Complete',
+                    backgroundColor: appColors.primary.shade500,
+                    textColor: appColors.whiteColor,
+                    onPressed: () async {
+                      if (serviceRequestId == null) return;
+                      await pushScreen(
+                        context,
+                        ServiceCompletedScreen(
+                          serviceRequestId: serviceRequestId,
+                        ),
+                      );
+                      if (context.mounted) {
+                        context.read<CustomerBookingBloc>().add(
+                          const FetchDashboardBookings(),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _handleAppeal(
+    BuildContext context,
+    int? serviceRequestId,
+  ) async {
+    if (serviceRequestId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const PaymentAppealDialog(isProvider: true),
+    );
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    showLoadingDialog(context);
+
+    final result = await SupportRepo.instance.fileDispute(
+      requestId: serviceRequestId,
+      reason: 'Service Appeal',
+      details:
+          'Provider filed an appeal for service request #$serviceRequestId',
+    );
+
+    if (!context.mounted) return;
+    Navigator.pop(context);
+
+    if (result.error != null) {
+      await showErrorSnackbar(context, result.error!);
+      return;
+    }
+
+    final chatId = result.data!;
+    await pushScreen(
+      context,
+      ChatDetailScreen(chatId: chatId, userType: UserType.provider),
     );
   }
 }

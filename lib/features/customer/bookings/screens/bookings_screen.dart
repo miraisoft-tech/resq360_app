@@ -1,6 +1,19 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/bookings/data/models/booking_model.dart';
+import 'package:resq360/core/models/booking_enums.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/core/utils/booking_reciept_pdf_util.dart';
+import 'package:resq360/core/utils/dialer_util.dart';
+import 'package:resq360/features/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/customer/bookings/data/bloc/customer_booking_bloc.dart';
+import 'package:resq360/features/customer/bookings/screens/provider_service_details.dart';
 import 'package:resq360/features/customer/bookings/widgets/booking_receipt_modal.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/widgets/empty_screen_widget.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -16,7 +29,36 @@ class _BookingsScreenState extends State<BookingsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchBookingsForTab(0);
+    });
+
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      _fetchBookingsForTab(_tabController.index);
+    });
+  }
+
+  void _fetchBookingsForTab(int index) {
+    final bloc = context.read<CustomerBookingBloc>();
+    String status;
+
+    switch (index) {
+      case 0:
+        status = 'upcoming';
+      case 1:
+        status = 'ongoing';
+      case 2:
+        status = 'completed';
+      case 3:
+        status = 'cancelled';
+      default:
+        status = 'upcoming';
+    }
+
+    bloc.add(FetchCustomerBookings(status: status));
   }
 
   @override
@@ -25,39 +67,110 @@ class _BookingsScreenState extends State<BookingsScreen>
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        backgroundColor: appColors.whiteColor,
-        elevation: 0,
-        title: UrbText(
-          'My Bookings',
-          size: 18,
-          weight: FontWeight.w700,
-          color: appColors.black,
-        ),
-        leading:
-            Navigator.canPop(context)
-                ? IconButton(
-                  icon: Icon(Icons.arrow_back, color: appColors.black),
-                  onPressed: () => pop(context),
-                )
-                : null,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: appColors.primary,
-          labelColor: appColors.primary,
-          unselectedLabelColor: appColors.textColor.shade500,
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Cancelled'),
-          ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100.h),
+        child: AppBar(
+          forceMaterialTransparency: true,
+          backgroundColor: appColors.whiteColor,
+          elevation: 0,
+          centerTitle: false,
+          title: Padding(
+            padding: pad(horizontal: 10),
+            child: UrbText(
+              'My Bookings',
+              size: 20,
+              height: 22,
+              weight: FontWeight.w700,
+              color: appColors.black,
+            ),
+          ),
+          leading:
+              Navigator.canPop(context)
+                  ? IconButton(
+                    icon: Icon(Icons.arrow_back, color: appColors.black),
+                    onPressed: () => pop(context),
+                  )
+                  : null,
+          bottom: TabBar(
+            onTap: (value) {
+              setState(() {});
+            },
+            controller: _tabController,
+            indicatorColor: appColors.primary,
+            labelColor: appColors.primary,
+            unselectedLabelColor: appColors.textColor.shade500,
+            indicatorSize: TabBarIndicatorSize.tab,
+            padding: EdgeInsets.only(bottom: 10.h),
+            tabs: [
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Upcoming',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 11,
+                  height: 30,
+                  color:
+                      _tabController.index == 0
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                  maxLines: 1,
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Ongoing',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 11,
+                  height: 30,
+                  color:
+                      _tabController.index == 1
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                  maxLines: 1,
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Completed',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 11,
+                  height: 30,
+                  color:
+                      _tabController.index == 2
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                  maxLines: 1,
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Cancelled',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 11,
+                  height: 30,
+                  color:
+                      _tabController.index == 3
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                  maxLines: 1,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: const [
           _BookingList(type: 'upcoming'),
+          _BookingList(type: 'ongoing'),
           _BookingList(type: 'completed'),
           _BookingList(type: 'cancelled'),
         ],
@@ -66,47 +179,142 @@ class _BookingsScreenState extends State<BookingsScreen>
   }
 }
 
-class _BookingList extends StatelessWidget {
+class _BookingList extends StatefulWidget {
   const _BookingList({required this.type});
   final String type;
 
   @override
-  Widget build(BuildContext context) {
-    final bookings = [
-      Booking(
-        service: 'QuickTow Emergency',
-        category: 'Towing Service',
-        amount: '₦15,000',
-        date: 'August 02, 2025',
-        start: '12:00 pm',
-        end: '2:00 pm',
-      ),
-      Booking(
-        service: 'QuickTow Emergency',
-        category: 'Towing Service',
-        amount: '₦15,000',
-        date: 'August 03, 2025',
-        start: '9:00 am',
-        end: '10:00 am',
-      ),
-    ];
+  State<_BookingList> createState() => _BookingListState();
+}
 
-    return ListView.separated(
-      padding: pad(vertical: 16, horizontal: 16),
-      itemCount: bookings.length,
-      separatorBuilder: (_, _) => 16.verticalSpace,
-      itemBuilder: (_, index) {
-        return BookingCard(
-          data: bookings[index],
-        );
+class _BookingListState extends State<_BookingList> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final bloc = context.read<CustomerBookingBloc>();
+      final current = bloc.state;
+      if (current is CustomerBookingLoaded &&
+          current.hasMore &&
+          !current.isLoadingMore) {
+        bloc.add(LoadMoreCustomerBookings(status: widget.type));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appColors = context.appColors;
+
+    return BlocBuilder<CustomerBookingBloc, CustomerBookingState>(
+      builder: (context, state) {
+        if (state is CustomerBookingLoading) {
+          return const SkeletonBookingList();
+        }
+
+        if (state is CustomerBookingError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  state.error,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: WideButton(
+                    label: 'Retry',
+                    onPressed: () {
+                      context.read<CustomerBookingBloc>().add(
+                        FetchCustomerBookings(status: widget.type),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (state is CustomerBookingLoaded) {
+          final bookings = state.bookings;
+          if (bookings.isEmpty) {
+            return EmptyScreenWidget(
+              image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
+              message: 'No booking found',
+              subMessage: 'Book a service with a service provider',
+            );
+          }
+
+          return RefreshIndicator(
+            color: appColors.primary,
+            onRefresh: () async {
+              context.read<CustomerBookingBloc>().add(
+                FetchCustomerBookings(status: widget.type),
+              );
+            },
+            child: ListView.separated(
+              controller: _scrollController,
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                top: 16.h,
+                bottom: 100.h,
+              ),
+              itemCount: bookings.length + (state.isLoadingMore ? 1 : 0),
+              separatorBuilder: (_, _) => 16.verticalSpace,
+              itemBuilder: (_, index) {
+                if (index >= bookings.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                final booking = bookings[index];
+                return BookingCard(
+                  data: booking,
+                  onTap: () async {
+                    await pushScreen(
+                      context,
+                      ProviderServiceDetailScreen(booking: booking),
+                    );
+                  },
+                );
+              },
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
       },
     );
   }
 }
 
 class BookingCard extends StatefulWidget {
-  const BookingCard({required this.data, super.key});
-  final Booking data;
+  const BookingCard({required this.data, required this.onTap, super.key});
+  final Bookings data;
+  final VoidCallback onTap;
 
   @override
   State<BookingCard> createState() => _BookingCardState();
@@ -121,169 +329,234 @@ class _BookingCardState extends State<BookingCard> {
     });
   }
 
+  Future<void> _navigateToChatByServiceRequest(
+    BuildContext context,
+    int serviceRequestId,
+  ) async {
+    try {
+      showLoadingDialog(context);
+
+      final response = await ChatRepo().getChatByserviceRequestId(
+        serviceRequestId,
+      );
+
+      Navigator.pop(context);
+
+      if (response.data != null) {
+        final chatId = response.data?.id;
+        if (chatId != null) {
+          await pushScreen(
+            context,
+            ChatDetailScreen(chatId: chatId, userType: UserType.customer),
+          );
+        }
+      } else {
+        await showErrorSnackbar(context, 'Unable to open chat');
+      }
+    } on Exception catch (e) {
+      Navigator.pop(context);
+      await showErrorSnackbar(context, 'Failed to load chat: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final data = widget.data;
 
-    return Container(
-      padding: pad(vertical: 18, horizontal: 14),
-      decoration: BoxDecoration(
-        color: colors.whiteColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.lightGreyColor2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const CircleAvatar(
-                radius: 25,
-                backgroundImage: NetworkImage(
-                  'https://randomuser.me/api/portraits/men/30.jpg',
-                ),
-              ),
-              12.horizontalSpace,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        GenText(
-                          'QuickTow Emergency',
-                          height: 24.5,
-                          weight: FontWeight.w500,
-                          color: colors.black,
-                        ),
-                      ],
-                    ),
-                    GenText(
-                      'Towing Service',
-                      size: 12,
-                      height: 20.5,
-                      weight: FontWeight.w500,
-                      color: colors.neutral.shade400,
-                    ),
-                    Row(
-                      children: [
-                        AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
-                        4.horizontalSpace,
-                        GenText(
-                          '₦15,000',
-                          size: 12,
-                          height: 20.5,
-                          weight: FontWeight.w400,
-                          color: colors.black,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              SVGButton(
-                path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                onTap: () {},
-              ),
-              15.horizontalSpace,
-              SVGButton(
-                path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
-                color: colors.primary.shade500,
-                onTap: () {},
-              ),
-              10.horizontalSpace,
-            ],
-          ),
-          const ListDivider(
-            verticalSpacing: 10,
-          ),
+    final providerName = data.assignedProvider?.fullName ?? 'Unknown Provider';
 
-          if (expanded)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
+    final amount = data.amount ?? '';
+
+    final date = data.expectedStartDate?.formatDate ?? 'N/A';
+    final start = data.providerStartedAt?.formatTime ?? '--';
+    final end = data.completedAt?.formatTime ?? '--';
+
+    final status = data.status?.capitalize ?? 'Unknown';
+    final paymentMethod = data.paymentMethod ?? '';
+
+    final phonenumber = data.assignedProvider?.phoneNumber ?? '';
+    final serviceRequest = data.id;
+    final showAction = status.toUpperCase() != BookingEnums.completed.name;
+
+    log('data $showAction');
+    log('status $status');
+
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        padding: pad(vertical: 18, horizontal: 14),
+        decoration: BoxDecoration(
+          color: colors.whiteColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colors.lightGreyColor2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// --- Header Row
+            Row(
               children: [
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CALENDER_SVG.svgColor(
-                    color: colors.textColor.shade600,
-                  ),
-                  label: 'Date',
-                  value: data.date ?? 'N/A',
-                ),
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
-                    color: colors.textColor.shade600,
-                  ),
-                  label: 'Time Started',
-                  value: data.start ?? 'N/A',
-                ),
-                _InfoRow(
-                  icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
-                    color: colors.textColor.shade600,
-                  ),
-                  label: 'Time Completed',
-                  value: data.end ?? 'N/A',
-                ),
-                8.verticalSpace,
-                GestureDetector(
-                  onTap: () async {
-                    await GeneralDialogs.showCustomBottomSheet(
-                      context,
-                      body: BookingReceiptModal(
-                        service: 'Towing Service',
-                        provider: 'QuickTow Emergency',
-                        serviceId: 'TXN-20250815-PLUMB123',
-                        status: 'Completed',
-                        invoice: '#INV-238777',
-                        dateTime:
-                            '${data.date ?? 'N/A'} - ${data.end ?? 'N/A'}',
-                        method: 'Card',
-                        onDownload: () {},
-                      ),
-                    );
-                  },
-                  child: Row(
+                PictureWidget(image: data.assignedProvider?.profileImage),
+                12.horizontalSpace,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AppAssets.ASSETS_ICONS_RECEIPT_SVG.svg,
-                      5.horizontalSpace,
+                      Row(
+                        children: [
+                          GenText(
+                            providerName,
+                            height: 24.5,
+                            weight: FontWeight.w500,
+                            color: colors.black,
+                          ),
+                        ],
+                      ),
                       GenText(
-                        'View Receipt',
+                        serviceCategory,
                         size: 12,
-                        weight: FontWeight.w400,
-                        color: colors.primary.shade500,
-                        decoration: TextDecoration.underline,
+                        height: 20.5,
+                        weight: FontWeight.w500,
+                        color: colors.neutral.shade400,
+                      ),
+                      Row(
+                        children: [
+                          AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
+                          4.horizontalSpace,
+                          GenText(
+                            'NGN${AppTextUtil.formatAmount(amount)}',
+                            size: 12,
+                            height: 20.5,
+                            weight: FontWeight.w400,
+                            color: colors.black,
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-
-                const ListDivider(
-                  verticalSpacing: 15,
-                ),
+                if (showAction) ...[
+                  SVGButton(
+                    path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
+                    onTap: () async {
+                      if (serviceRequest != null) {
+                        await _navigateToChatByServiceRequest(
+                          context,
+                          serviceRequest,
+                        );
+                      }
+                    },
+                  ),
+                  15.horizontalSpace,
+                  SVGButton(
+                    path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
+                    color: colors.primary.shade500,
+                    onTap: () async {
+                      await DialerUtil.open(phonenumber);
+                    },
+                  ),
+                  10.horizontalSpace,
+                ],
               ],
             ),
-          GestureDetector(
-            onTap: expandCard,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GenText(
-                  expanded ? 'View Less' : 'View More',
-                  weight: FontWeight.w500,
-                  color: colors.primary.shade500,
-                ),
-                4.horizontalSpace,
-                Transform.rotate(
-                  angle: expanded ? 3.14 : 0,
-                  child: Icon(
-                    Icons.keyboard_arrow_down,
+            const ListDivider(verticalSpacing: 10),
+
+            if (expanded)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _InfoRow(
+                    icon: AppAssets.ASSETS_ICONS_CALENDER_SVG.svgColor(
+                      color: colors.textColor.shade600,
+                    ),
+                    label: 'Date',
+                    value: date,
+                  ),
+                  _InfoRow(
+                    icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
+                      color: colors.textColor.shade600,
+                    ),
+                    label: 'Time Started',
+                    value: start,
+                  ),
+                  if (end.isNotEmpty && end != '--')
+                    _InfoRow(
+                      icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
+                        color: colors.textColor.shade600,
+                      ),
+                      label: 'Time Completed',
+                      value: end,
+                    ),
+                  8.verticalSpace,
+                  GestureDetector(
+                    onTap: () async {
+                      await GeneralDialogs.showCustomBottomSheet(
+                        context,
+                        body: BookingReceiptModal(
+                          service: serviceCategory,
+                          provider: providerName,
+                          serviceId: data.requestId ?? 'N/A',
+                          status: status,
+                          invoice: data.requestId ?? 'N/A',
+                          dateTime: '$date - $end',
+                          method: paymentMethod,
+                          onDownload: () async {
+                            await BookingReceiptPdfUtil.generateBookingReceiptPdf(
+                              bookingId: data.requestId ?? 'N/A',
+                              service: serviceCategory,
+                              providerName: providerName,
+                              status: status,
+                              dateTime: '$date - $end',
+                              paymentMethod: paymentMethod,
+                              amount: amount,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        AppAssets.ASSETS_ICONS_RECEIPT_SVG.svg,
+                        5.horizontalSpace,
+                        GenText(
+                          'View Receipt',
+                          size: 12,
+                          weight: FontWeight.w400,
+                          color: colors.primary.shade500,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const ListDivider(verticalSpacing: 15),
+                ],
+              ),
+            GestureDetector(
+              onTap: expandCard,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GenText(
+                    expanded ? 'View Less' : 'View More',
+                    weight: FontWeight.w500,
                     color: colors.primary.shade500,
                   ),
-                ),
-              ],
+                  4.horizontalSpace,
+                  Transform.rotate(
+                    angle: expanded ? 3.14 : 0,
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: colors.primary.shade500,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -310,11 +583,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           icon,
           8.horizontalSpace,
-          GenText(
-            '$label: $value',
-            size: 13,
-            color: colors.textColor.shade600,
-          ),
+          GenText('$label: $value', size: 13, color: colors.textColor.shade600),
         ],
       ),
     );

@@ -1,6 +1,13 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
 import 'package:resq360/core/theme/static_colors.dart';
-import 'package:resq360/features/customer/chat/screens/payment_completed.dialog.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/features/chat/data/models/chat_models.dart';
+import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
+import 'package:resq360/features/customer/authentication/data/models/auth/local_user.model.dart';
+import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
 
 class CompletePaymentDialog extends StatefulWidget {
   const CompletePaymentDialog({required this.amount, super.key});
@@ -21,7 +28,7 @@ class _CompletePaymentDialogState extends State<CompletePaymentDialog> {
     final appColors = context.appColors;
 
     return Padding(
-      padding: EdgeInsets.only(top: 230.h, bottom: 140.h),
+      padding: EdgeInsets.only(top: 200.h, bottom: 200.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -137,9 +144,151 @@ class _CompletePaymentDialogState extends State<CompletePaymentDialog> {
                       textColor: appColors.whiteColor,
                       onPressed: () async {
                         Navigator.of(context).pop();
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: const PaymentCompleted(),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ClientPaymentConfirmDialog extends StatefulWidget {
+  const ClientPaymentConfirmDialog({
+    required this.title,
+    required this.amount,
+    required this.invoiceNumber,
+    required this.message,
+    required this.chatId,
+    required this.paymentMethod,
+    super.key,
+  });
+
+  final String title;
+  final int amount;
+  final String invoiceNumber;
+  final MessageResponse message;
+  final int chatId;
+  final String paymentMethod;
+
+  @override
+  State<ClientPaymentConfirmDialog> createState() =>
+      _ClientPaymentConfirmDialogState();
+}
+
+class _ClientPaymentConfirmDialogState
+    extends State<ClientPaymentConfirmDialog> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(getCurrentUser());
+    });
+  }
+
+  late final String? email;
+
+  Future<LocalUser?> getCurrentUser() async {
+    final user = await AuthLocalRepo.instance.getLocalCredentials();
+    email = user?.userName;
+    return user;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appColors = context.appColors;
+
+    return Padding(
+      padding: EdgeInsets.only(top: 220.h, bottom: 160.h),
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: pad(horizontal: 20),
+        child: Container(
+          padding: pad(horizontal: 25, vertical: 25),
+          decoration: BoxDecoration(
+            color: appColors.whiteColor,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GenText(
+                    'Complete Payment',
+                    weight: FontWeight.w700,
+                    color: appColors.black,
+                    size: 16,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: appColors.textColor.shade400,
+                    ),
+                  ),
+                ],
+              ),
+
+              12.verticalSpace,
+
+              GenText(
+                widget.title,
+                size: 15,
+                weight: FontWeight.w600,
+                color: appColors.black,
+              ),
+              10.verticalSpace,
+              GenText(
+                'Invoice No: ${widget.invoiceNumber}',
+                size: 13,
+                color: appColors.textColor.shade400,
+              ),
+              10.verticalSpace,
+              GenText(
+                '₦${AppTextUtil.formatAmount(widget.amount.toString())}',
+                size: 22,
+                weight: FontWeight.w700,
+                color: appColors.black,
+              ),
+
+              20.verticalSpace,
+
+              Row(
+                children: [
+                  Expanded(
+                    child: WideButton(
+                      label: 'Cancel',
+                      backgroundColor: appColors.primary.shade50,
+                      textColor: appColors.primary.shade500,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  12.horizontalSpace,
+                  Expanded(
+                    child: WideButton(
+                      label: 'Pay ₦${AppTextUtil.formatAmount(widget.amount.toString())}',
+                      backgroundColor: appColors.primary.shade500,
+                      textColor: appColors.whiteColor,
+                      onPressed: () {
+                        Navigator.pop(context);
+
+                        context.read<CustomerPaymentBloc>().add(
+                          CustomerInitServiceRequestPaymentEvent(
+                            chatId: widget.chatId,
+                            invoiceMessageId: widget.message.id!,
+                            paymentMethod: widget.paymentMethod,
+                          ),
                         );
                       },
                     ),

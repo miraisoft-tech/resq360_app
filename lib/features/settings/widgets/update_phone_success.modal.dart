@@ -1,7 +1,12 @@
 import 'package:resq360/__lib.dart';
 
 class UpdatePhoneSuccessModal extends StatelessWidget {
-  const UpdatePhoneSuccessModal({super.key});
+  const UpdatePhoneSuccessModal({
+    required this.phoneNumber,
+    super.key,
+  });
+
+  final String phoneNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +38,7 @@ class UpdatePhoneSuccessModal extends StatelessWidget {
               ),
               4.verticalSpace,
               GenText(
-                'You will now receive job notification on this number',
+                'You will now receive job notification on $phoneNumber',
                 height: 24.5,
                 color: appColors.textColor.shade300,
                 weight: FontWeight.w400,
@@ -45,7 +50,8 @@ class UpdatePhoneSuccessModal extends StatelessWidget {
                 label: 'Done',
                 backgroundColor: appColors.primary.shade500,
                 textColor: appColors.whiteColor,
-                onPressed: () async {
+                onPressed: () {
+                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 },
               ),

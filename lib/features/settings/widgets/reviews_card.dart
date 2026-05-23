@@ -1,88 +1,99 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/settings/data/models/reviews_model.dart';
 
-class ReviewCard extends StatelessWidget {
-  const ReviewCard({
-    required this.item,
+class ReviewCardShared extends StatelessWidget {
+  const ReviewCardShared({
+    required this.name,
+    required this.avatar,
+    required this.category,
+    required this.date,
+    required this.rating,
+    required this.feedback,
     super.key,
   });
 
-  final ReviewModel item;
+  final String name;
+  final String avatar;
+  final String category;
+  final String date;
+  final int rating;
+  final String feedback;
 
   @override
   Widget build(BuildContext context) {
-    final appColors = context.appColors;
+    final colors = context.appColors;
 
     return Container(
-      padding: pad(vertical: 20, horizontal: 10),
+      padding: pad(vertical: 20, horizontal: 12),
       decoration: BoxDecoration(
-        color: appColors.whiteColor,
+        color: colors.whiteColor,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: appColors.textColor.shade100),
+        border: Border.all(color: colors.textColor.shade100),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 25.r,
-                backgroundImage: NetworkImage(item.avatar),
-              ),
+              CircleAvatar(radius: 25.r, backgroundImage: NetworkImage(avatar)),
+
               12.horizontalSpace,
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GenText(
-                      item.name,
-                      size: 15,
-                      weight: FontWeight.w600,
-                    ),
+                    GenText(name, size: 15, weight: FontWeight.w600),
+
                     5.verticalSpace,
+
                     GenText(
-                      item.category,
+                      category,
                       size: 12,
-                      color: appColors.textColor.shade300,
+                      color: colors.textColor.shade300,
                     ),
-                    2.verticalSpace,
+
+                    5.verticalSpace,
+
                     Row(
                       children: [
                         AppAssets.ASSETS_ICONS_CALENDER_SVG.svgColor(
-                          color: appColors.textColor.shade300,
+                          color: colors.textColor.shade300,
                         ),
                         5.horizontalSpace,
                         GenText(
-                          item.date,
+                          date,
                           size: 12,
-                          color: appColors.textColor.shade400,
+                          color: colors.textColor.shade400,
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
+
               Row(
                 children: List.generate(
                   5,
                   (i) => Icon(
                     Icons.star,
                     color:
-                        i < item.rating
-                            ? appColors.primary.shade500
-                            : appColors.textColor.shade100,
-                    size: 16,
+                        i < rating
+                            ? colors.primary.shade500
+                            : colors.textColor.shade100,
+                    size: 15,
                   ),
                 ),
               ),
             ],
           ),
-          10.verticalSpace,
+
+          12.verticalSpace,
+
           GenText(
-            item.review,
+            feedback,
             size: 12,
-            color: appColors.textColor.shade300,
-            height: 20,
+            color: colors.textColor.shade400,
+            height: 19,
           ),
         ],
       ),

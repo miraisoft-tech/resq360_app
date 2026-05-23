@@ -16,7 +16,7 @@ class ProviderStatsCard extends StatelessWidget {
     final colors = context.appColors;
     return Expanded(
       child: Container(
-        padding: pad(horizontal: 45, vertical: 14),
+        padding: pad(horizontal: 5, vertical: 15),
         decoration: BoxDecoration(
           border: Border.all(color: colors.textColor.shade100),
           borderRadius: BorderRadius.circular(12.r),
@@ -36,7 +36,7 @@ class ProviderStatsCard extends StatelessWidget {
             GenText(
               value,
               size: 18,
-              height: 28.5,
+              height: 22.5,
               color: colors.black,
               weight: FontWeight.w700,
             ),

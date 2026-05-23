@@ -1,0 +1,582 @@
+import 'dart:developer';
+
+import 'package:dio/dio.dart';
+import 'package:resq360/core/models/api_response.dart';
+import 'package:resq360/core/services/__services.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/book_request.model.dart';
+import 'package:resq360/features/customer/dashboard/data/models/service_models/service_request.model.dart';
+
+class ServiceRepo extends BaseAPI {
+  factory ServiceRepo() {
+    return _instance;
+  }
+
+  ServiceRepo._internal();
+  static final ServiceRepo _instance = ServiceRepo._internal();
+
+  Future<ApiResult<Service>> createService({
+    required String name,
+    required String description,
+    required String imagePath,
+  }) async {
+    const url = '/services';
+    try {
+      final formData = FormData.fromMap({
+        'name': name,
+        'description': description,
+        'image': await MultipartFile.fromFile(imagePath),
+      });
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: formData);
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 201 && res.data != null) {
+        final data = Service.fromJson(
+          res.data!['data'] as Map<String, dynamic>,
+        );
+        return ApiResult(data: data);
+      } else {
+        return ApiResult(
+          error: res.data?['message']?.toString() ?? 'Failed to create service',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<BookRequest>> bookServiceRequest({
+    required int providerServiceId,
+  }) async {
+    const url = '/requests/book-request';
+    try {
+      final res = await dio().post<Map<String, dynamic>>(
+        url,
+        data: {'providerServiceId': providerServiceId},
+      );
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 201 && res.data != null) {
+        final data = BookRequest.fromJson(
+          res.data!['data'] as Map<String, dynamic>,
+        );
+        return ApiResult(data: data);
+      } else {
+        return ApiResult(
+          error: res.data?['message']?.toString() ?? 'Failed to create service',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<List<Service>>> fetchServices() async {
+    const url = '/services?page=1';
+    try {
+      final response = await dio().get<Map<String, dynamic>>(url);
+      log('GET $url => ${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final json = response.data!;
+        log(response.data!.toString());
+        final servicesData =
+            (json['data'] as List)
+                .map((item) => Service.fromJson(item as Map<String, dynamic>))
+                .toList();
+        log('Fetched ${servicesData.length} services');
+        log(servicesData.map((s) => s.image).join(', '));
+        return ApiResult(data: servicesData);
+      } else {
+        log(response.data!.toString());
+        return ApiResult(error: 'Failed to fetch services');
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<List<Service>>> fetchServicesForAProvider() async {
+    const url = '/services/provider';
+    try {
+      final response = await dio().get<Map<String, dynamic>>(url);
+      log('GET $url => ${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final json = response.data!;
+        log(response.data!.toString());
+        final servicesData =
+            (json['data'] as List)
+                .map((item) => Service.fromJson(item as Map<String, dynamic>))
+                .toList();
+        log('Fetched ${servicesData.length} services');
+        log(servicesData.map((s) => s.image).join(', '));
+        return ApiResult(data: servicesData);
+      } else {
+        log(response.data!.toString());
+        return ApiResult(error: 'Failed to fetch services');
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<Service>> fetchServiceInfo(int serviceCategoryId) async {
+    final url = '/services/$serviceCategoryId/info';
+    try {
+      final response = await dio().get<Map<String, dynamic>>(url);
+      log('GET $url => ${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final serviceData = Service.fromJson(
+          response.data!['data'] as Map<String, dynamic>,
+        );
+        return ApiResult(data: serviceData);
+      } else {
+        return ApiResult(
+          error:
+              response.data?['message']?.toString() ??
+              'Failed to fetch service info',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<List<ServiceProvider>>> fetchProviders({
+    required int serviceCategoryId,
+    String? activityStatus,
+    String? search,
+    bool nearYou = true,
+  }) async {
+    final longitude = await AppLocalPref().getValue(key: DBKeys.longitude);
+    final latitude = await AppLocalPref().getValue(key: DBKeys.latitude);
+    if (longitude == null ||
+        latitude == null ||
+        longitude.toString().isEmpty ||
+        latitude.toString().isEmpty) {
+      return ApiResult(error: 'Location data not available');
+    }
+    final url = '/services/$serviceCategoryId/providers';
+    try {
+      final queryParams = {
+        if (activityStatus != null) 'activity_status': activityStatus,
+        if (search != null && search.isNotEmpty) 'search': search,
+        'near_you': nearYou.toString(),
+        if (longitude != null) 'longitude': longitude.toString(),
+        if (latitude != null) 'latitude': latitude.toString(),
+      };
+      final response = await dio().get<Map<String, dynamic>>(
+        url,
+        queryParameters: queryParams,
+      );
+      log('GET $url => ${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final json = response.data!;
+        final providers =
+            (json['data'] as List)
+                .map(
+                  (item) =>
+                      ServiceProvider.fromJson(item as Map<String, dynamic>),
+                )
+                .toList();
+        return ApiResult(data: providers);
+      } else {
+        log('Failed to fetch providers: ${response.data}');
+        return ApiResult(error: 'Failed to fetch providers');
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<ServiceProvider>> fetchProviderByid({
+    required int providerId,
+  }) async {
+    final url = '/user/provider/$providerId';
+    try {
+      final response = await dio().get<Map<String, dynamic>>(url);
+      log('GET $url => ${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final json = response.data!;
+        final providers = ServiceProvider.fromJson(
+          json['data'] as Map<String, dynamic>,
+        );
+        return ApiResult(data: providers);
+      } else {
+        log('Failed to fetch provider: ${response.data}');
+        return ApiResult(error: 'Failed to fetch provider');
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> updateServiceInfo({
+    required int serviceCategoryId,
+    required String name,
+    required String description,
+    String? imagePath,
+  }) async {
+    final url = '/services/$serviceCategoryId/info';
+    try {
+      final formData = FormData.fromMap({
+        'name': name,
+        'description': description,
+        if (imagePath != null) 'image': await MultipartFile.fromFile(imagePath),
+      });
+
+      final res = await dio().put<Map<String, dynamic>>(url, data: formData);
+      log('PUT $url => ${res.statusCode}');
+
+      if (res.statusCode == 200 && res.data != null) {
+        return ApiResult(data: res.data!['data'] as Map<String, dynamic>);
+      } else {
+        return ApiResult(
+          error:
+              res.data?['message']?.toString() ??
+              'Failed to update service info',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<void>> deleteService(int serviceCategoryId) async {
+    final url = '/services/$serviceCategoryId/remove';
+    try {
+      final res = await dio().delete<Map<String, dynamic>>(url);
+      log('DELETE $url => ${res.statusCode}');
+
+      if (res.statusCode == 200) {
+        return ApiResult();
+      } else {
+        return ApiResult(
+          error: res.data?['message']?.toString() ?? 'Failed to delete service',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  // TODOrefactor
+  Future<ApiResult<List<Bookings>>> getServiceBookings({
+    String? status,
+    int limit = 10,
+    int page = 1,
+  }) async {
+    final queryParams = <String, dynamic>{'limit': limit, 'page': page};
+
+    if (status != null) {
+      queryParams['booking_status'] = status;
+    }
+
+    const url = '/services/bookings';
+    try {
+      final res = await dio().get<Map<String, dynamic>>(
+        url,
+        queryParameters: queryParams,
+      );
+
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 200 && res.data != null) {
+        final raw = res.data!;
+        final dataObj = raw['data']?['data'] as Map<String, dynamic>? ?? {};
+        final services = dataObj['services'] as List<dynamic>? ?? [];
+
+        final bookings =
+            services
+                .map((e) => Bookings.fromJson(e as Map<String, dynamic>))
+                .toList();
+
+        final totalPages = dataObj['totalPages'] as int? ?? 1;
+        final currentPage = dataObj['currentPage'] as int? ?? page;
+
+        return ApiResult(
+          data: bookings,
+          meta: PaginationMeta(
+            currentPage: currentPage,
+            totalPages: totalPages,
+            hasMore: currentPage < totalPages,
+          ),
+        );
+      } else {
+        final error = res.data!['message'];
+        return ApiResult(error: error.toString());
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<void>> startServiceBooking(int serviceRequestId) async {
+    final result = await updateRequestStatus(
+      requestId: serviceRequestId,
+      status: 'IN_PROGRESS',
+    );
+
+    if (!result.isSuccess) {
+      return ApiResult(
+        error: result.error ?? 'Failed to start service booking',
+      );
+    }
+
+    return ApiResult();
+  }
+
+  Future<ApiResult<String>> arriveServiceBooking(int serviceRequestId) async {
+    final result = await updateRequestStatus(
+      requestId: serviceRequestId,
+      status: 'ARRIVED',
+    );
+
+    if (!result.isSuccess) {
+      return ApiResult(
+        error: result.error ?? 'Failed to mark provider as arrived',
+      );
+    }
+
+    return ApiResult(data: result.data ?? 'ARRIVED');
+  }
+
+  Future<ApiResult<String>> cancelServiceBooking({
+    required int serviceRequestId,
+    required String cancellationReason,
+  }) async {
+    final result = await updateRequestStatus(
+      requestId: serviceRequestId,
+      status: 'CANCELLED',
+      reason: cancellationReason,
+    );
+
+    if (!result.isSuccess) {
+      return ApiResult(
+        error: result.error ?? 'Failed to cancel service booking',
+      );
+    }
+
+    return ApiResult(data: result.data ?? 'CANCELLED');
+  }
+
+  Future<ApiResult<bool>> completeServiceBooking(
+    int serviceRequestId, {
+    required int ratings,
+    required String review,
+    bool isProvider = false,
+  }) async {
+    final results = await Future.wait([
+      updateRequestStatus(
+        requestId: serviceRequestId,
+        status: 'COMPLETED',
+        reason: review,
+      ),
+      if (isProvider)
+        _rateUser(
+          serviceRequestId: serviceRequestId,
+          ratings: ratings,
+          review: review,
+        )
+      else
+        _rateProvider(
+          serviceRequestId: serviceRequestId,
+          ratings: ratings,
+          review: review,
+        ),
+    ]);
+
+    final completeResult = results[0];
+    if (!completeResult.isSuccess) {
+      return ApiResult(
+        error: completeResult.error ?? 'Failed to complete service booking',
+        data: false,
+      );
+    }
+
+    return ApiResult(data: true);
+  }
+
+  Future<ApiResult<bool>> _rateProvider({
+    required int serviceRequestId,
+    required int ratings,
+    required String review,
+  }) async {
+    try {
+      final endpoint = '/services/$serviceRequestId/rate-provider';
+      final data = {'ratings': ratings, 'review': review};
+      final res = await dio().post<Map<String, dynamic>>(endpoint, data: data);
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return ApiResult(data: true);
+      }
+      return ApiResult(
+        error: res.data?['message']?.toString() ?? 'Failed to submit rating',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<bool>> _rateUser({
+    required int serviceRequestId,
+    required int ratings,
+    required String review,
+  }) async {
+    try {
+      final endpoint = '/services/$serviceRequestId/rate-user';
+      final data = {'ratings': ratings, 'review': review};
+      final res = await dio().post<Map<String, dynamic>>(endpoint, data: data);
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return ApiResult(data: true);
+      }
+      return ApiResult(
+        error: res.data?['message']?.toString() ?? 'Failed to submit rating',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<String>> updateRequestStatus({
+    required int requestId,
+    required String status,
+    String? reason,
+  }) async {
+    final endpoint = '/requests/$requestId/status';
+
+    final data = {'status': status, if (reason != null) 'reason': reason};
+
+    try {
+      final res = await dio().patch<Map<String, dynamic>>(endpoint, data: data);
+
+      if (res.statusCode == 200 && res.data != null) {
+        final updatedStatus = res.data!['data']?['status'] as String? ?? status;
+        return ApiResult(data: updatedStatus);
+      }
+
+      return ApiResult(
+        error:
+            res.data?['message'] as String? ??
+            'Failed to update request status',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> createServiceRequest({
+    required int providerServiceId,
+  }) async {
+    const url = '/requests/service-request';
+
+    final data = {'providerServiceId': providerServiceId};
+
+    try {
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final responseData = res.data?['data'] as Map<String, dynamic>;
+        return ApiResult(data: responseData);
+      } else {
+        return ApiResult(
+          error:
+              res.data?['message']?.toString() ??
+              'Failed to create new service request',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<bool>> pingProviders({
+    required int serviceCategoryId,
+  }) async {
+    final url = '/services/$serviceCategoryId/ping-providers';
+    try {
+      final res = await dio().post<Map<String, dynamic>>(url);
+      log('POST $url => ${res.statusCode}');
+
+      if (res.statusCode == 200) {
+        return ApiResult(data: true);
+      } else {
+        return ApiResult(
+          error:
+              res.data?['message']?.toString() ??
+              'Failed to complete service booking',
+        );
+      }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<Bookings>> fetchServiceRequest(int serviceRequestId) async {
+    final endpoint = '/services/request/$serviceRequestId';
+    try {
+      final res = await dio().get<Map<String, dynamic>>(endpoint);
+
+      if (res.statusCode == 200 && res.data != null) {
+        final json = res.data!['data'] as Map<String, dynamic>?;
+        if (json == null) {
+          return ApiResult(error: 'No data returned');
+        }
+
+        // Map amountPaid to amount for Bookings model compatibility
+        if (json.containsKey('amountPaid') && !json.containsKey('amount')) {
+          json['amount'] = json['amountPaid'];
+        }
+
+        return ApiResult(data: Bookings.fromJson(json));
+      }
+
+      return ApiResult(
+        error:
+            res.data?['message'] as String? ??
+            'Failed to fetch service request',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+}

@@ -1,22 +1,46 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/core/utils/payment_receipt_pdf_util.dart';
 
-class TransactionDetailModal extends ConsumerWidget {
+import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
+
+class TransactionDetailModal extends StatelessWidget {
   const TransactionDetailModal({
+    required this.tx,
     required this.onRetry,
     required this.onSupport,
     super.key,
   });
 
+  final WalletTransaction tx;
   final VoidCallback onRetry;
   final VoidCallback onSupport;
 
+  Future<void> _downloadReceipt() async {
+    try {
+      await PaymentReceiptPdfUtil.generatePaymentReceiptPdf(
+        reference: tx.reference ?? 'N/A',
+        title: tx.title,
+        amount: tx.uiAmount.toString(),
+        status: tx.status ?? 'UNKNOWN',
+        dateTime: tx.uiDate.isNotEmpty ? tx.uiDate : '-',
+        paymentMethod: tx.gatewayReference != null ? 'Card' : 'Wallet',
+        description: tx.description,
+        serviceId: tx.serviceRequestId?.toString(),
+        failureReason: tx.status == 'FAILED' ? 'Transaction failed' : null,
+      );
+    } on Exception catch (e) {
+      debugPrint('Error generating receipt: $e');
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.65,
+      height: MediaQuery.of(context).size.height * 0.75,
       padding: pad(vertical: 10, horizontal: 16),
       decoration: BoxDecoration(
         color: appColors.whiteColor,
@@ -62,78 +86,77 @@ class TransactionDetailModal extends ConsumerWidget {
                 color: appColors.black,
               ),
               20.verticalSpace,
+
               GenText(
-                'Transfer to QuickTow Emergency',
+                tx.title,
                 size: 12,
                 color: appColors.textColor.shade400,
+                textAlign: TextAlign.center,
               ),
               4.verticalSpace,
+
               UrbText(
-                '₦15,000.00',
+                '₦${AppTextUtil.formatAmount(tx.uiAmount.toString())}',
                 size: 18,
                 weight: FontWeight.w700,
                 color: appColors.black,
               ),
               4.verticalSpace,
+
               GenText(
-                'Failed',
-                color: appColors.error.shade500,
+                tx.status ?? 'UNKNOWN',
+                color:
+                    tx.status == 'FAILED'
+                        ? appColors.error.shade500
+                        : tx.status == 'PENDING'
+                        ? appColors.warning.shade500
+                        : appColors.success.shade600,
                 weight: FontWeight.w600,
               ),
               20.verticalSpace,
               Divider(color: appColors.textColor.shade100),
               20.verticalSpace,
-              const _TransactionDetailItem(
+
+              _TransactionDetailItem(
                 label: 'Invoice No.',
-                value: '#INV-238777',
+                value: tx.reference ?? '-',
               ),
-              const _TransactionDetailItem(
+              _TransactionDetailItem(
                 label: 'Description',
-                value: 'Payment for towing van',
+                value: tx.description ?? '-',
               ),
-              const _TransactionDetailItem(
+              _TransactionDetailItem(
                 label: 'Date & Time',
-                value: 'Aug 27, 2025 - 5:16pm',
+                value: tx.uiDate.isNotEmpty ? tx.uiDate : '-',
               ),
-              const _TransactionDetailItem(
+              _TransactionDetailItem(
                 label: 'Service ID',
-                value: 'TXN-20250815-PLUMB123',
+                value: tx.serviceRequestId?.toString() ?? '-',
               ),
-              const _TransactionDetailItem(
+              _TransactionDetailItem(
                 label: 'Payment Method',
-                value: 'Card',
+                value: tx.gatewayReference != null ? 'Card' : 'Wallet',
               ),
-              const _TransactionDetailItem(
-                label: 'Failure Reason',
-                value: 'Network Error',
-              ),
+
+              if (tx.status == 'FAILED')
+                _TransactionDetailItem(
+                  label: 'Failure Reason',
+                  value: tx.status == 'FAILED' ? 'Transaction failed' : '-',
+                ),
+
               24.verticalSpace,
-              Row(
-                children: [
-                  Expanded(
-                    child: WideButton(
-                      label: 'Contact Support',
-                      backgroundColor: appColors.error.shade50,
-                      textColor: appColors.primary.shade500,
-                      onPressed: onSupport,
-                    ),
-                  ),
-                  10.horizontalSpace,
-                  Expanded(
-                    child: WideButton(
-                      label: 'Try Again',
-                      backgroundColor: appColors.primary.shade500,
-                      textColor: appColors.whiteColor,
-                      onPressed: onRetry,
-                    ),
-                  ),
-                ],
+              WideButton(
+                label: 'Contact Support',
+                backgroundColor: appColors.error.shade50,
+                textColor: appColors.primary.shade500,
+                onPressed: onSupport,
               ),
+              20.verticalSpace,
               WideButton(
                 label: 'Download Receipt',
                 backgroundColor: appColors.primary.shade500,
                 textColor: appColors.whiteColor,
-                onPressed: onRetry,
+                onPressed: _downloadReceipt,
               ),
             ],
           ),
@@ -144,10 +167,7 @@ class TransactionDetailModal extends ConsumerWidget {
 }
 
 class _TransactionDetailItem extends StatelessWidget {
-  const _TransactionDetailItem({
-    required this.label,
-    required this.value,
-  });
+  const _TransactionDetailItem({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -159,17 +179,17 @@ class _TransactionDetailItem extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GenText(
-            label,
-            size: 12,
-            color: appColors.textColor.shade400,
-          ),
-          GenText(
-            value,
-            color: appColors.black,
-            weight: FontWeight.w500,
+          GenText(label, size: 12, color: appColors.textColor.shade400),
+          20.horizontalSpace,
+          Expanded(
+            child: GenText(
+              value,
+              color: appColors.black,
+              weight: FontWeight.w500,
+              textAlign: TextAlign.end,
+              maxLines: 1,
+            ),
           ),
         ],
       ),

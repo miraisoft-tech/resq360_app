@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resq360/__lib.dart';
 
-class KFormField extends ConsumerStatefulWidget {
+class KFormField extends StatefulWidget {
   const KFormField({
     required this.label,
     required this.controller,
@@ -22,6 +22,7 @@ class KFormField extends ConsumerStatefulWidget {
     this.formKey,
     this.fillColor,
     this.onEditingComplete,
+    this.onFieldSubmitted,
     this.type = InputType.primary,
     super.key,
   });
@@ -44,12 +45,13 @@ class KFormField extends ConsumerStatefulWidget {
   final Key? formKey;
   final Color? fillColor;
   final void Function()? onEditingComplete;
+  final void Function(String)? onFieldSubmitted;
 
   @override
-  ConsumerState<KFormField> createState() => _KFormFieldState();
+  State<KFormField> createState() => _KFormFieldState();
 }
 
-class _KFormFieldState extends ConsumerState<KFormField> {
+class _KFormFieldState extends State<KFormField> {
   late FocusNode _focusNode;
   late ValueNotifier<bool> _obscureNotier;
 
@@ -112,6 +114,7 @@ class _KFormFieldState extends ConsumerState<KFormField> {
                 validator: widget.validator,
                 onChanged: widget.onChanged,
                 onEditingComplete: widget.onEditingComplete,
+                onFieldSubmitted: widget.onFieldSubmitted,
                 inputFormatters: widget.inputFormatters,
                 controller: widget.controller,
                 focusNode: widget.focusNode ?? _focusNode,
@@ -129,6 +132,7 @@ class _KFormFieldState extends ConsumerState<KFormField> {
                   isDense: true,
                   filled: true,
                   fillColor: colors.whiteColor,
+                  errorMaxLines: 2,
                   errorStyle: TextStyle(
                     fontFamily: 'sfpro',
                     fontWeight: FontWeight.w400,

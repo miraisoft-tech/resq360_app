@@ -1,7 +1,7 @@
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:resq360/__lib.dart';
 
-class NormalPinCodeField extends ConsumerWidget {
+class NormalPinCodeField extends StatelessWidget {
   const NormalPinCodeField({
     required this.onDone,
     this.onChange,
@@ -19,7 +19,7 @@ class NormalPinCodeField extends ConsumerWidget {
   final double? height;
   final double? width;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return Center(
@@ -69,7 +69,7 @@ class NormalPinCodeField extends ConsumerWidget {
   }
 }
 
-class PinCodeField extends ConsumerWidget {
+class PinCodeField extends StatelessWidget {
   const PinCodeField({
     required this.onDone,
     this.onChange,
@@ -87,7 +87,7 @@ class PinCodeField extends ConsumerWidget {
   final double? height;
   final double? width;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colors = context.appColors;
 
     return PinCodeTextField(

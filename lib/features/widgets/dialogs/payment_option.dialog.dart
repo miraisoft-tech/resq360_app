@@ -1,16 +1,17 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/wallet_bloc/wallet_bloc.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 
 enum PaymentMethod {
   wallet,
   existingCard,
-  newCard,
+  //how it is from BE
+  // ignore_for_file: constant_identifier_names
+  new_card,
 }
 
 class PaymentOptionDialog extends StatefulWidget {
-  const PaymentOptionDialog({
-    required this.onPaymentSelected,
-    super.key,
-  });
+  const PaymentOptionDialog({required this.onPaymentSelected, super.key});
 
   final void Function(PaymentMethod) onPaymentSelected;
 
@@ -22,13 +23,19 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
   PaymentMethod? selectedPayment;
 
   @override
+  void initState() {
+    super.initState();
+    context.read<WalletBloc>().add(FetchWalletInfo());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Padding(
       padding: EdgeInsets.only(
         top: 225.h,
-        bottom: selectedPayment != null ? 170.h : 230.h,
+        bottom: selectedPayment != null ? 250.h : 300.h,
       ),
       child: Material(
         color: Colors.transparent,
@@ -61,28 +68,45 @@ class _PaymentOptionDialogState extends State<PaymentOptionDialog> {
                 ],
               ),
               20.verticalSpace,
-              PaymentOption(
-                icon: AppAssets.ASSETS_ICONS_PAYMENT_WALLET_SVG.svg,
-                title: 'Pay from Wallet',
-                subtitle: 'Balance: ₦45,000',
-                isSelected: selectedPayment == PaymentMethod.wallet,
-                onTap: () => _selectPayment(PaymentMethod.wallet),
+              BlocBuilder<WalletBloc, WalletState>(
+                builder: (context, state) {
+                  var subtitle = 'Loading...';
+                  var disabled = true;
+                  if (state is FetchedWalletInfo) {
+                    subtitle =
+                        'Balance: ₦${AppTextUtil.formatAmount(state.wallet.balance?.toString() ?? '0')}';
+                    disabled = false;
+                  } else if (state is FetchingWalletInfoError) {
+                    subtitle = 'Unable to fetch balance';
+                    disabled = true;
+                  }
+                  return PaymentOption(
+                    icon: AppAssets.ASSETS_ICONS_PAYMENT_WALLET_SVG.svg,
+                    title: 'Pay from Wallet',
+                    subtitle: subtitle,
+                    isSelected: selectedPayment == PaymentMethod.wallet,
+                    onTap:
+                        disabled
+                            ? null
+                            : () => _selectPayment(PaymentMethod.wallet),
+                  );
+                },
               ),
               12.verticalSpace,
-              PaymentOption(
-                icon: AppAssets.ASSETS_ICONS_PAYMENT_EXISTING_CARD_SVG.svg,
-                title: 'Pay with Existing Card',
-                subtitle: '**** **** **** 1234',
-                isSelected: selectedPayment == PaymentMethod.existingCard,
-                onTap: () => _selectPayment(PaymentMethod.existingCard),
-              ),
-              12.verticalSpace,
+              // PaymentOption(
+              //   icon: AppAssets.ASSETS_ICONS_PAYMENT_EXISTING_CARD_SVG.svg,
+              //   title: 'Pay with Existing Card',
+              //   subtitle: '**** **** **** 1234',
+              //   isSelected: selectedPayment == PaymentMethod.existingCard,
+              //   onTap: () => _selectPayment(PaymentMethod.existingCard),
+              // ),
+              // 12.verticalSpace,
               PaymentOption(
                 icon: AppAssets.ASSETS_ICONS_PAYMENT_CARD_SVG.svg,
-                title: 'Pay with New Card',
+                title: 'Pay Online',
                 bordered: true,
-                isSelected: selectedPayment == PaymentMethod.newCard,
-                onTap: () => _selectPayment(PaymentMethod.newCard),
+                isSelected: selectedPayment == PaymentMethod.new_card,
+                onTap: () => _selectPayment(PaymentMethod.new_card),
               ),
               if (selectedPayment != null) ...[
                 20.verticalSpace,

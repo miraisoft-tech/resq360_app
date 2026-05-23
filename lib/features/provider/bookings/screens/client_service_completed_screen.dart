@@ -1,9 +1,13 @@
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:resq360/__lib.dart';
+import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 
 class ClientServiceCompletedScreen extends StatefulWidget {
-  const ClientServiceCompletedScreen({super.key});
-
+  const ClientServiceCompletedScreen({
+    required this.serviceRequestId,
+    super.key,
+  });
+  final int serviceRequestId;
   @override
   State<ClientServiceCompletedScreen> createState() =>
       _ClientServiceCompletedScreenState();
@@ -11,7 +15,7 @@ class ClientServiceCompletedScreen extends StatefulWidget {
 
 class _ClientServiceCompletedScreenState
     extends State<ClientServiceCompletedScreen> {
-  double rating = 0;
+  int rating = 0;
   final TextEditingController reviewController = TextEditingController();
 
   @override
@@ -108,7 +112,7 @@ class _ClientServiceCompletedScreenState
             ),
             12.verticalSpace,
             RatingBar.builder(
-              initialRating: rating,
+              initialRating: rating.toDouble(),
               minRating: 1,
               itemSize: 32,
               allowHalfRating: true,
@@ -119,7 +123,7 @@ class _ClientServiceCompletedScreenState
                     color: appColors.primary.shade500,
                   ),
               onRatingUpdate: (val) {
-                setState(() => rating = val);
+                setState(() => rating = val.toInt());
               },
             ),
             32.verticalSpace,
@@ -135,24 +139,43 @@ class _ClientServiceCompletedScreenState
               },
             ),
             40.verticalSpace,
-            WideButton(
-              label: 'Submit',
-              backgroundColor: appColors.primary.shade500,
-              onPressed:
-                  reviewController.text.isNotEmpty && rating > 0
-                      ? () async {
-                        await GeneralDialogs.showCustomBottomSheet(
-                          context,
-                          body: ProviderThankYouModal(
-                            onContinuePressed: () async {
-                              if (context.mounted) await pop(context);
-                              if (context.mounted) await pop(context);
-                              if (context.mounted) await pop(context);
-                            },
-                          ),
-                        );
-                      }
-                      : null,
+            BlocConsumer<ProviderServiceBloc, ProviderServiceState>(
+              listener: (context, state) async {
+                if (state is ProviderServiceBookingCompleted) {
+                  await GeneralDialogs.showCustomBottomSheet(
+                    context,
+                    body: ProviderThankYouModal(
+                      onContinuePressed: () async {
+                        if (context.mounted) await pop(context);
+                        if (context.mounted) await pop(context);
+                        if (context.mounted) await pop(context);
+                      },
+                    ),
+                  );
+                }
+                if (state is ProviderServicesError) {
+                  await showErrorSnackbar(context, state.error);
+                }
+              },
+              builder: (context, state) {
+                return WideButton(
+                  label: 'Submit',
+                  backgroundColor: appColors.primary.shade500,
+                  loading: state is ProviderServicesLoading,
+                  onPressed:
+                      reviewController.text.isNotEmpty && rating > 0
+                          ? () async {
+                            context.read<ProviderServiceBloc>().add(
+                              ProviderCompleteServiceBooking(
+                                serviceRequestId: widget.serviceRequestId,
+                                ratings: rating,
+                                review: reviewController.text,
+                              ),
+                            );
+                          }
+                          : null,
+                );
+              },
             ),
           ],
         ),
@@ -161,7 +184,7 @@ class _ClientServiceCompletedScreenState
   }
 }
 
-class ProviderThankYouModal extends ConsumerWidget {
+class ProviderThankYouModal extends StatelessWidget {
   const ProviderThankYouModal({
     required this.onContinuePressed,
 
@@ -171,7 +194,7 @@ class ProviderThankYouModal extends ConsumerWidget {
   final void Function() onContinuePressed;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final appColors = context.appColors;
 
     return Container(
@@ -210,7 +233,7 @@ class ProviderThankYouModal extends ConsumerWidget {
             textAlign: TextAlign.center,
           ),
           GenText(
-            'You earned a good review, get ready for more clients.',
+            "You've completed a service, get ready for more clients.",
             color: appColors.neutral.shade500,
             height: 32.5,
             weight: FontWeight.w400,

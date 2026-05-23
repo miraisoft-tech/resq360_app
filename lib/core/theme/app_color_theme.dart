@@ -222,7 +222,18 @@ class AppColorPalette extends ThemeExtension<AppColorPalette> {
       greyColor3 = const Color(0xFF98959D),
       greyColor4 = const Color(0xFF58585F),
       darkGreyColor = const Color(0xFF19191A),
-      textColor = const MaterialColor(0xFF656983, {});
+      textColor = const MaterialColor(0xFF656983, {
+        50: Color(0xFFedeeef),
+        100: Color(0xFFe4e6e8),
+        200: Color(0xFFc7cacf),
+        300: Color(0xFF4b5563),
+        400: Color(0xFF444d59),
+        500: Color(0xFF3c444f),
+        600: Color(0xFF38404a),
+        700: Color(0xFF2d333b),
+        800: Color(0xFF22262d),
+        900: Color(0xFF1a1e23),
+      });
 
   final MaterialColor textColor;
   final MaterialColor primary;

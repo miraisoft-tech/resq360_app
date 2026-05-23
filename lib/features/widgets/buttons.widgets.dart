@@ -75,9 +75,7 @@ class WideButton extends StatelessWidget {
                   width: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      textColor ?? colors.primary.shade500,
-                    ),
+                    color: colors.whiteColor,
                   ),
                 )
                 : UrbText(
@@ -137,9 +135,7 @@ class IWideButton extends StatelessWidget {
                   width: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      textColor ?? colors.primary.shade500,
-                    ),
+                    color: colors.primary.shade500,
                   ),
                 )
                 : UrbText(

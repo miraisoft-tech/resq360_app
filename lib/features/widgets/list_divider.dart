@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 
-class ListDivider extends ConsumerWidget {
+class ListDivider extends StatelessWidget {
   const ListDivider({
     super.key,
     this.verticalSpacing = 24,
@@ -12,7 +12,7 @@ class ListDivider extends ConsumerWidget {
   final Color? color;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Padding(
       padding: pad(vertical: verticalSpacing),
       child: Container(

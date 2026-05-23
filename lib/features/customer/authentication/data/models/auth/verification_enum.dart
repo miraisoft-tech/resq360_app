@@ -1,0 +1,4 @@
+enum VerificationPurpose {
+  registration,
+  passwordReset,
+}

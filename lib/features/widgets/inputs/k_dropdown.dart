@@ -1,8 +1,9 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:resq360/__lib.dart';
 
-class KDropDown extends ConsumerStatefulWidget {
+class KDropDown extends StatefulWidget {
   const KDropDown({
     required this.hintText,
     required this.value,
@@ -34,10 +35,10 @@ class KDropDown extends ConsumerStatefulWidget {
   final bool showPrefix;
 
   @override
-  ConsumerState<KDropDown> createState() => _CustomDropdownButtonState();
+  State<KDropDown> createState() => _CustomDropdownButtonState();
 }
 
-class _CustomDropdownButtonState extends ConsumerState<KDropDown> {
+class _CustomDropdownButtonState extends State<KDropDown> {
   List<DropdownMenuItem<String>> addDividersAfterItems(List<String> items) {
     final menuItems = <DropdownMenuItem<String>>[];
     for (final item in items) {
@@ -181,7 +182,7 @@ class _CustomDropdownButtonState extends ConsumerState<KDropDown> {
             ),
             iconStyleData: IconStyleData(
               icon: SvgPicture.asset(
-                'AppAssets.ASSETS_ICONS_ARROW_DOWN_SVG',
+                AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
                 height: 24.h,
                 width: 24.w,
                 colorFilter: ColorFilter.mode(appTheme.black, BlendMode.srcIn),
@@ -219,7 +220,7 @@ class _CustomDropdownButtonState extends ConsumerState<KDropDown> {
   }
 }
 
-class ObjectKDropDown<T> extends ConsumerStatefulWidget {
+class ObjectKDropDown<T> extends StatefulWidget {
   const ObjectKDropDown({
     required this.hintText,
     required this.value,
@@ -235,6 +236,7 @@ class ObjectKDropDown<T> extends ConsumerStatefulWidget {
     this.hintUrl,
     this.dropdownKey,
     this.showPrefix = true,
+    this.maxHeight = 300,
     super.key,
   });
 
@@ -251,14 +253,14 @@ class ObjectKDropDown<T> extends ConsumerStatefulWidget {
   final String? hintUrl;
   final Key? dropdownKey;
   final bool showPrefix;
-  // Function to get the display string from the generic type
   final String Function(T) displayStringForOption;
+  final double? maxHeight;
 
   @override
-  ConsumerState<ObjectKDropDown<T>> createState() => _ObjectKDropDownState<T>();
+  State<ObjectKDropDown<T>> createState() => _ObjectKDropDownState<T>();
 }
 
-class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
+class _ObjectKDropDownState<T> extends State<ObjectKDropDown<T>> {
   List<DropdownMenuItem<T>> addDividersAfterItems(List<T> items) {
     final menuItems = <DropdownMenuItem<T>>[];
     for (var i = 0; i < items.length; i++) {
@@ -282,7 +284,6 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
         ),
       );
 
-      // Add a divider item unless it's the last item
       if (i != items.length - 1) {
         menuItems.add(
           DropdownMenuItem<T>(
@@ -302,10 +303,8 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
     final itemsHeights = <double>[];
 
     for (var i = 0; i < widget.dropdownItems.length; i++) {
-      // Add height for the item itself
       itemsHeights.add(50);
 
-      // Add height for the divider if it's not the last item
       if (i != widget.dropdownItems.length - 1) {
         itemsHeights.add(10);
       }
@@ -362,20 +361,6 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
               contentPadding:
                   widget.padding ??
                   EdgeInsets.symmetric(horizontal: 0.w, vertical: 16.h),
-              suffixIcon: Transform.scale(
-                scale: 0.5,
-                child:
-                    widget.icon ??
-                    SvgPicture.asset(
-                      AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
-                      height: 24.h,
-                      width: 24.w,
-                      colorFilter: ColorFilter.mode(
-                        colors.black,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-              ),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: colors.lightGreyColor3,
@@ -427,14 +412,20 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
               padding: EdgeInsets.only(right: 8),
             ),
             iconStyleData: IconStyleData(
-              icon: SvgPicture.asset(
-                'AppAssets.ASSETS_ICONS_ARROW_DOWN_SVG',
-                height: 24.h,
-                width: 24.w,
-                colorFilter: ColorFilter.mode(colors.black, BlendMode.srcIn),
-              ),
+              icon:
+                  widget.icon ??
+                  SvgPicture.asset(
+                    AppAssets.ASSETS_ICONS_ARROW_DROPDOWN_SVG,
+                    height: 24.h,
+                    width: 24.w,
+                    colorFilter: ColorFilter.mode(
+                      colors.black,
+                      BlendMode.srcIn,
+                    ),
+                  ),
             ),
             dropdownStyleData: DropdownStyleData(
+              maxHeight: widget.maxHeight,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15.r),
                 color: Colors.white,
@@ -463,5 +454,204 @@ class _ObjectKDropDownState<T> extends ConsumerState<ObjectKDropDown<T>> {
   void dispose() {
     _focusNode.dispose();
     super.dispose();
+  }
+}
+
+class KSearchDropDown extends StatefulWidget {
+  const KSearchDropDown({
+    required this.label,
+    required this.hintText,
+    required this.items,
+    required this.value,
+    required this.onChanged,
+    this.maxHeight = 450,
+    this.validator,
+    this.dropdownKey,
+    super.key,
+  });
+
+  final String label;
+  final String hintText;
+  final List<String> items;
+  final String? value;
+  final String? Function(String?) onChanged;
+  final String? Function(String?)? validator;
+  final double maxHeight;
+  final Key? dropdownKey;
+
+  @override
+  State<KSearchDropDown> createState() => _KSearchDropDownState();
+}
+
+class _KSearchDropDownState extends State<KSearchDropDown> {
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  Widget _styledItem(String item, bool isLast) {
+    final colors = context.appColors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          alignment: Alignment.centerLeft,
+          child: GenText(
+            item,
+            weight: FontWeight.w500,
+            color: colors.black,
+          ),
+        ),
+        if (!isLast)
+          Divider(
+            color: colors.lightGreyColor,
+            height: 10,
+            thickness: 0.8,
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.label.isNotEmpty)
+          GenText(
+            widget.label,
+            size: 12,
+            weight: FontWeight.w400,
+            color:
+                _focusNode.hasFocus ? colors.black : colors.textColor.shade900,
+          ),
+
+        6.verticalSpace,
+
+        DropdownSearch<String>(
+          key: widget.dropdownKey,
+          selectedItem: widget.value,
+          items: (filter, infiniteScrollProps) => widget.items,
+          onChanged: widget.onChanged,
+          validator: widget.validator,
+
+          popupProps: PopupProps.menu(
+            showSearchBox: true,
+            itemBuilder: (
+              BuildContext context,
+              String item,
+              bool isSelected,
+              bool isHighlighted,
+            ) {
+              final index = widget.items.indexOf(item);
+              final isLast = index == widget.items.length - 1;
+
+              return _styledItem(item, isLast);
+            },
+
+            searchFieldProps: TextFieldProps(
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: colors.black, 
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                hintStyle: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: colors.textColor.shade300,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: colors.primary.shade500),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+
+            containerBuilder: (ctx, popupWidget) {
+              return Container(
+                constraints: BoxConstraints(maxHeight: widget.maxHeight),
+                decoration: BoxDecoration(
+                  color: colors.whiteColor,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      offset: const Offset(-2, 2),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      color: colors.lightGreyColor,
+                    ),
+                  ],
+                ),
+                child: popupWidget,
+              );
+            },
+          ),
+
+          decoratorProps: DropDownDecoratorProps(
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: colors.whiteColor,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+
+              hintText: widget.hintText,
+              hintStyle: TextStyle(
+                fontFamily: 'inter',
+                fontWeight: FontWeight.w400,
+                fontSize: 12,
+                color: colors.textColor.shade300,
+              ),
+
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: colors.lightGreyColor3,
+                  width: 0.5,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colors.primary.shade500),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colors.error.shade500),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: colors.error.shade500),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+
+            baseStyle: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: colors.black,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

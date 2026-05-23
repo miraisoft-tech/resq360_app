@@ -1,6 +1,6 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/theme/static_colors.dart';
-import 'package:resq360/features/widgets/dialogs/payment_fiished.modal.dart';
+import 'package:resq360/features/widgets/dialogs/payment_finished.modal.dart';
 
 class SubscribeConfirmDialog extends StatefulWidget {
   const SubscribeConfirmDialog({required this.amount, super.key});
@@ -170,7 +170,7 @@ class _SubscribeConfirmDialogState extends State<SubscribeConfirmDialog> {
                       onPressed: () async {
                         Navigator.of(context).pop();
 
-                        await GeneralDialogs.showCustomDialog(
+                        await GeneralDialogs.showCustomDialog<void>(
                           context,
                           body: PaymentFinished(
                             onTap: () async {

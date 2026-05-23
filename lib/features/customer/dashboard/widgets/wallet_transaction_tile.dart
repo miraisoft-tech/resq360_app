@@ -1,5 +1,5 @@
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/dashboard/models/wallet_transaction.dart';
+import 'package:resq360/features/customer/dashboard/data/models/wallet_transaction.dart';
 
 class WalletTransactionTile extends StatelessWidget {
   const WalletTransactionTile({
@@ -9,7 +9,8 @@ class WalletTransactionTile extends StatelessWidget {
   });
 
   final WalletTransaction tx;
-  final void Function() onTap;
+  final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
@@ -44,7 +45,7 @@ class WalletTransactionTile extends StatelessWidget {
                   ),
                   4.verticalSpace,
                   GenText(
-                    tx.date,
+                    tx.uiDate,
                     size: 12,
                     height: 18.5,
                     weight: FontWeight.w400,
@@ -54,7 +55,7 @@ class WalletTransactionTile extends StatelessWidget {
               ),
             ),
             GenText(
-              '${tx.isCredit ? '+' : '-'}₦${tx.amount.abs()}',
+              '${tx.isCredit ? '+' : '-'}₦${tx.uiAmount}',
               size: 15,
               weight: FontWeight.w600,
               color: color,

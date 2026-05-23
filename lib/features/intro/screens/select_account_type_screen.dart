@@ -1,40 +1,74 @@
-import 'package:resq360/__lib.dart';
-import 'package:resq360/features/customer/authentication/screens/create_account_screen.dart';
-import 'package:resq360/features/customer/authentication/view_models/auth_vm.dart';
-import 'package:resq360/features/intro/models/user_type.emum.dart';
-import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/authentication/screens/provider_create_account_screen.dart';
+import 'dart:async';
 
-class SelectAccountTypeScreen extends ConsumerStatefulWidget {
+import 'package:resq360/__lib.dart';
+import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/push_notification_service.dart';
+import 'package:resq360/features/customer/authentication/data/bloc/customer_auth_bloc.dart';
+import 'package:resq360/features/customer/authentication/screens/login_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/main_layout.dart';
+import 'package:resq360/features/main_layout_provider.dart';
+import 'package:resq360/features/provider/authentication/screens/provider_login_screen.dart';
+
+class SelectAccountTypeScreen extends StatefulWidget {
   const SelectAccountTypeScreen({super.key});
 
   @override
-  ConsumerState<SelectAccountTypeScreen> createState() =>
-      _CreateAccountTypeScreenState();
+  State<SelectAccountTypeScreen> createState() =>
+      _SelectAccountTypeScreenState();
 }
 
-class _CreateAccountTypeScreenState
-    extends ConsumerState<SelectAccountTypeScreen> {
+class _SelectAccountTypeScreenState extends State<SelectAccountTypeScreen> {
   int _selectedIndex = 0;
 
   Future<void> _onContinue() async {
     log('Selected index: $_selectedIndex');
 
-    ref.read(dashboardViewModel).userType =
+    final selectedType =
         _selectedIndex == 0 ? UserType.customer : UserType.provider;
 
+    await AuthLocalRepo.instance.saveUserType(selectedType);
+
+    if (!mounted) return;
+
+    dashboardViewModel.userType = selectedType;
+
     if (_selectedIndex == 0) {
-      await pushScreen(context, const CreateAccountScreen());
+      await pushScreen(
+        context,
+        BlocProvider(
+          create: (_) => CustomerAuthBloc(),
+          child: const LoginScreen(),
+        ),
+      );
     } else {
-      await pushScreen(context, const ProviderCreateAccountScreen());
+      await pushScreen(context, const ProviderLoginScreen());
     }
+  }
+
+  Future<void> _onContinueAsGuest() async {
+    await AuthLocalRepo.instance.saveGuestMode(isGuest: true);
+    await AuthLocalRepo.instance.saveUserType(UserType.customer);
+    await AuthLocalRepo.instance.clearAccessToken();
+    await AuthLocalRepo.instance.clearAuthCredentials();
+
+    if (!mounted) return;
+
+    dashboardViewModel.userType = UserType.customer;
+
+    await replaceScreen(
+      context,
+      const MainLayoutPage(userType: UserType.customer),
+    );
   }
 
   @override
   void initState() {
     super.initState();
 
-    ref.read(authProvider);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await notificationService.initializeAppNotifications();
+    });
   }
 
   @override
@@ -52,6 +86,7 @@ class _CreateAccountTypeScreenState
               AppAssets.ASSETS_IMAGES_CREATE_ACCOUNT_TYPE_PNG.imageAsset(
                 height: 170,
                 width: 200,
+                fit: BoxFit.contain,
               ),
               30.verticalSpace,
               UrbText(
@@ -76,11 +111,7 @@ class _CreateAccountTypeScreenState
                 subTitle: 'Looking for services',
                 isSelected: _selectedIndex == 0,
                 icon: AppAssets.ASSETS_ICONS_CLIENT_ICON_SVG.svg,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = 0;
-                  });
-                },
+                onTap: () => setState(() => _selectedIndex = 0),
               ),
               20.verticalSpace,
               _AccountTypeCard(
@@ -88,17 +119,22 @@ class _CreateAccountTypeScreenState
                 subTitle: 'Offering my services',
                 isSelected: _selectedIndex == 1,
                 icon: AppAssets.ASSETS_ICONS_VENDOR_ICON_SVG.svg,
-                onTap: () {
-                  setState(() {
-                    _selectedIndex = 1;
-                  });
-                },
+                onTap: () => setState(() => _selectedIndex = 1),
               ),
               const Spacer(),
-              WideButton(
-                label: 'Continue',
-                onPressed: _onContinue,
-              ),
+              WideButton(label: 'Continue', onPressed: _onContinue),
+              10.verticalSpace,
+              if (_selectedIndex == 0)
+                GestureDetector(
+                  onTap: _onContinueAsGuest,
+                  child: GenText(
+                    'Continue as guest',
+                    height: 20,
+                    weight: FontWeight.w600,
+                    color: colors.primary.shade500,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               20.verticalSpace,
             ],
           ),
@@ -168,10 +204,7 @@ class _AccountTypeCard extends StatelessWidget {
               width: 15,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: colors.primary.shade500,
-                  width: 1.5,
-                ),
+                border: Border.all(color: colors.primary.shade500, width: 1.5),
                 color: isSelected ? colors.primary.shade500 : colors.whiteColor,
               ),
             ),

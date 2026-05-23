@@ -1,7 +1,19 @@
+import 'dart:async';
+
 import 'package:resq360/__lib.dart';
-import 'package:resq360/features/provider/bookings/data/models/booking_model.dart';
+import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
+import 'package:resq360/core/utils/booking_reciept_pdf_util.dart';
+import 'package:resq360/core/utils/dialer_util.dart';
+import 'package:resq360/features/chat/data/services/chat_repo.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/provider/bookings/widgets/booking_receipt_modal.dart';
+import 'package:resq360/features/widgets/empty_screen_widget.dart';
+import 'package:resq360/features/widgets/skeleton_loader.dart';
 
 class ProviderBookingsScreen extends StatefulWidget {
   const ProviderBookingsScreen({super.key});
@@ -17,7 +29,35 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchBookingsForTab(0);
+    });
+
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      _fetchBookingsForTab(_tabController.index);
+    });
+  }
+
+  void _fetchBookingsForTab(int index) {
+    final bloc = context.read<ProviderServiceBloc>();
+    String status;
+
+    switch (index) {
+      case 0:
+        status = 'upcoming';
+      case 1:
+        status = 'ongoing';
+      case 2:
+        status = 'completed';
+      case 3:
+        status = 'cancelled';
+      default:
+        status = 'upcoming';
+    }
+
+    bloc.add(ProviderFetchBookings(status: status));
   }
 
   @override
@@ -26,83 +66,251 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
 
     return Scaffold(
       backgroundColor: appColors.whiteColor,
-      appBar: AppBar(
-        backgroundColor: appColors.whiteColor,
-        elevation: 0,
-        title: UrbText(
-          'My Bookings',
-          size: 18,
-          weight: FontWeight.w700,
-          color: appColors.black,
-        ),
-        leading:
-            Navigator.canPop(context)
-                ? IconButton(
-                  icon: Icon(Icons.arrow_back, color: appColors.black),
-                  onPressed: () => pop(context),
-                )
-                : null,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: appColors.primary,
-          labelColor: appColors.primary,
-          unselectedLabelColor: appColors.textColor.shade500,
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Cancelled'),
-          ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(100.h),
+        child: AppBar(
+          forceMaterialTransparency: true,
+          backgroundColor: appColors.whiteColor,
+          elevation: 0,
+          centerTitle: false,
+          title: Padding(
+            padding: pad(horizontal: 10),
+            child: UrbText(
+              'My Bookings',
+              size: 20,
+              height: 22,
+              weight: FontWeight.w700,
+              color: appColors.black,
+            ),
+          ),
+          leading:
+              Navigator.canPop(context)
+                  ? IconButton(
+                    icon: Icon(Icons.arrow_back, color: appColors.black),
+                    onPressed: () => pop(context),
+                  )
+                  : null,
+          bottom: TabBar(
+            onTap: (value) {
+              setState(() {});
+            },
+            controller: _tabController,
+            indicatorColor: appColors.primary,
+            labelColor: appColors.primary,
+            unselectedLabelColor: appColors.textColor.shade500,
+            indicatorSize: TabBarIndicatorSize.tab,
+            padding: EdgeInsets.only(bottom: 10.h),
+            tabs: [
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Upcoming',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 11,
+                  height: 30,
+                  color:
+                      _tabController.index == 0
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                  maxLines: 1,
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Ongoing',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 11,
+                  height: 30,
+                  color:
+                      _tabController.index == 1
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                  maxLines: 1,
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Completed',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 11,
+                  height: 30,
+                  color:
+                      _tabController.index == 2
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                  maxLines: 1,
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: GenText(
+                  'Cancelled',
+                  textAlign: TextAlign.center,
+                  weight: FontWeight.w500,
+                  size: 11,
+                  height: 30,
+                  color:
+                      _tabController.index == 3
+                          ? appColors.primary
+                          : appColors.neutral.shade500,
+                  maxLines: 1,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          _BookingList(type: 'upcoming'),
-          _BookingList(type: 'completed'),
-          _BookingList(type: 'cancelled'),
-        ],
+      body: BlocListener<BookingBloc, BookingState>(
+        listener: (context, state) {
+          if (state is BookingStarted || state is BookingArrived) {
+            _fetchBookingsForTab(_tabController.index);
+          }
+        },
+        child: TabBarView(
+          controller: _tabController,
+          children: const [
+            _BookingList(type: 'upcoming'),
+            _BookingList(type: 'ongoing'),
+            _BookingList(type: 'completed'),
+            _BookingList(type: 'cancelled'),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _BookingList extends StatelessWidget {
+class _BookingList extends StatefulWidget {
   const _BookingList({required this.type});
   final String type;
 
   @override
-  Widget build(BuildContext context) {
-    final bookings = [
-      Booking(
-        service: 'QuickTow Emergency',
-        category: 'Towing Service',
-        amount: '₦15,000',
-        date: 'August 02, 2025',
-        start: '12:00 pm',
-        end: '2:00 pm',
-      ),
-      Booking(
-        service: 'QuickTow Emergency',
-        category: 'Towing Service',
-        amount: '₦15,000',
-        date: 'August 03, 2025',
-        start: '9:00 am',
-        end: '10:00 am',
-      ),
-    ];
+  State<_BookingList> createState() => _BookingListState();
+}
 
-    return ListView.separated(
-      padding: pad(vertical: 16, horizontal: 16),
-      itemCount: bookings.length,
-      separatorBuilder: (_, _) => 16.verticalSpace,
-      itemBuilder: (_, index) {
-        return BookingCard(
-          data: bookings[index],
-          onTap: () async {
-            await pushScreen(context, const ProviderServiceDetailScreen());
-          },
-        );
+class _BookingListState extends State<_BookingList> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final bloc = context.read<ProviderServiceBloc>();
+      final current = bloc.state;
+      if (current is ProviderBookingsLoaded &&
+          current.hasMore &&
+          !current.isLoadingMore) {
+        bloc.add(LoadMoreProviderBookings(status: widget.type));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appColors = context.appColors;
+    return BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
+      builder: (context, state) {
+        if (state is ProviderServicesLoading) {
+          return const SkeletonBookingList();
+        }
+
+        if (state is ProviderServicesError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  state.error,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: WideButton(
+                    label: 'Retry',
+                    onPressed: () {
+                      context.read<ProviderServiceBloc>().add(
+                        ProviderFetchBookings(status: widget.type),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (state is ProviderBookingsLoaded) {
+          final bookings = state.bookings;
+          if (bookings.isEmpty) {
+            return EmptyScreenWidget(
+              image: AppAssets.ASSETS_ICONS_EMPTY_STATE_SVG.svg,
+              message: 'No booking found',
+              subMessage: '',
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<ProviderServiceBloc>().add(
+                ProviderFetchBookings(status: widget.type),
+              );
+            },
+            color: appColors.primary,
+            child: ListView.separated(
+              controller: _scrollController,
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                top: 16.h,
+                bottom: 100.h,
+              ),
+              itemCount: bookings.length + (state.isLoadingMore ? 1 : 0),
+              separatorBuilder: (_, _) => 16.verticalSpace,
+              itemBuilder: (_, index) {
+                if (index >= bookings.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                final booking = bookings[index];
+                return BookingCard(
+                  data: booking,
+                  onTap: () async {
+                    await pushScreen(
+                      context,
+                      ClientServiceDetailScreen(booking: booking),
+                    );
+                  },
+                );
+              },
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
       },
     );
   }
@@ -110,9 +318,9 @@ class _BookingList extends StatelessWidget {
 
 class BookingCard extends StatefulWidget {
   const BookingCard({required this.data, required this.onTap, super.key});
-  final Booking data;
-
+  final Bookings data;
   final VoidCallback onTap;
+
   @override
   State<BookingCard> createState() => _BookingCardState();
 }
@@ -126,10 +334,54 @@ class _BookingCardState extends State<BookingCard> {
     });
   }
 
+  Future<void> navigateToChatByServiceRequest(
+    BuildContext context,
+    int serviceRequestId,
+  ) async {
+    try {
+      showLoadingDialog(context);
+
+      final response = await ChatRepo().getChatByserviceRequestId(
+        serviceRequestId,
+      );
+
+      Navigator.pop(context);
+
+      if (response.data != null) {
+        final chatId = response.data?.id;
+        if (chatId != null) {
+          await pushScreen(
+            context,
+            ChatDetailScreen(chatId: chatId, userType: UserType.provider),
+          );
+        }
+      } else {
+        await showErrorSnackbar(context, 'Unable to open chat');
+      }
+    } on Exception catch (e) {
+      Navigator.pop(context);
+      await showErrorSnackbar(context, 'Failed to load chat: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final data = widget.data;
+
+    final clientName = data.user?.fullName ?? 'Unknown Client';
+    final serviceCategory = data.serviceCategory?.name ?? 'Uncategorized';
+    final amount = data.amount ?? '';
+    final date = data.expectedStartDate?.formatDate ?? 'N/A';
+    final start = data.providerStartedAt?.formatTime ?? '--';
+    final end = data.completedAt?.formatTime ?? '--';
+
+    final status = data.status?.capitalize ?? 'Unknown';
+
+    final method = data.paymentMethod ?? 'Unknown';
+
+    final phonenumber = data.user?.phoneNumber ?? '';
+    final serviceRequest = data.id;
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -145,29 +397,20 @@ class _BookingCardState extends State<BookingCard> {
           children: [
             Row(
               children: [
-                const CircleAvatar(
-                  radius: 25,
-                  backgroundImage: NetworkImage(
-                    'https://randomuser.me/api/portraits/men/30.jpg',
-                  ),
-                ),
+                PictureWidget(image: data.user!.profileImage),
                 12.horizontalSpace,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          GenText(
-                            'QuickTow Emergency',
-                            height: 24.5,
-                            weight: FontWeight.w500,
-                            color: colors.black,
-                          ),
-                        ],
+                      GenText(
+                        clientName,
+                        height: 24.5,
+                        weight: FontWeight.w500,
+                        color: colors.black,
                       ),
                       GenText(
-                        'Towing Service',
+                        serviceCategory,
                         size: 12,
                         height: 20.5,
                         weight: FontWeight.w500,
@@ -178,7 +421,7 @@ class _BookingCardState extends State<BookingCard> {
                           AppAssets.ASSETS_ICONS_TOW_ICON_SVG.svg,
                           4.horizontalSpace,
                           GenText(
-                            '₦15,000',
+                            'NGN${AppTextUtil.formatAmount(amount)}',
                             size: 12,
                             height: 20.5,
                             weight: FontWeight.w400,
@@ -191,20 +434,27 @@ class _BookingCardState extends State<BookingCard> {
                 ),
                 SVGButton(
                   path: AppAssets.ASSETS_ICONS_CHAT_ICON_SVG,
-                  onTap: () {},
+                  onTap: () async {
+                    log(serviceRequest);
+                    if (serviceRequest != null) {
+                      await navigateToChatByServiceRequest(
+                        context,
+                        serviceRequest,
+                      );
+                    }
+                  },
                 ),
                 15.horizontalSpace,
                 SVGButton(
                   path: AppAssets.ASSETS_ICONS_CALL_ICON_SVG,
                   color: colors.primary.shade500,
-                  onTap: () {},
+                  onTap: () async {
+                    await DialerUtil.open(phonenumber);
+                  },
                 ),
-                10.horizontalSpace,
               ],
             ),
-            const ListDivider(
-              verticalSpacing: 10,
-            ),
+            const ListDivider(verticalSpacing: 10),
 
             if (expanded)
               Column(
@@ -215,21 +465,21 @@ class _BookingCardState extends State<BookingCard> {
                       color: colors.textColor.shade600,
                     ),
                     label: 'Date',
-                    value: data.date ?? 'N/A',
+                    value: date,
                   ),
                   _InfoRow(
                     icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
                       color: colors.textColor.shade600,
                     ),
                     label: 'Time Started',
-                    value: data.start ?? 'N/A',
+                    value: start,
                   ),
                   _InfoRow(
                     icon: AppAssets.ASSETS_ICONS_CLOCK_SVG.svgColor(
                       color: colors.textColor.shade600,
                     ),
                     label: 'Time Completed',
-                    value: data.end ?? 'N/A',
+                    value: end,
                   ),
                   8.verticalSpace,
                   GestureDetector(
@@ -237,14 +487,24 @@ class _BookingCardState extends State<BookingCard> {
                       await GeneralDialogs.showCustomBottomSheet(
                         context,
                         body: BookingReceiptModal(
-                          service: 'Towing Service',
-                          provider: 'Jane Doe',
-                          status: 'Completed',
-                          invoice: '#INV-238777',
-                          dateTime:
-                              '${data.date ?? 'N/A'} - ${data.end ?? 'N/A'}',
-                          method: 'Card',
-                          onDownload: () {},
+                          service: serviceCategory,
+                          provider: clientName,
+                          status: status,
+                          invoice: data.requestId ?? 'N/A',
+                          amount: amount,
+                          dateTime: '$date - $end',
+                          method: method,
+                          onDownload: () async {
+                            await BookingReceiptPdfUtil.generateBookingReceiptPdf(
+                              bookingId: data.requestId ?? 'N/A',
+                              service: serviceCategory,
+                              clientName: clientName,
+                              status: status,
+                              dateTime: '$date - $end',
+                              paymentMethod: method,
+                              amount: amount,
+                            );
+                          },
                         ),
                       );
                     },
@@ -262,10 +522,7 @@ class _BookingCardState extends State<BookingCard> {
                       ],
                     ),
                   ),
-
-                  const ListDivider(
-                    verticalSpacing: 15,
-                  ),
+                  const ListDivider(verticalSpacing: 15),
                 ],
               ),
             GestureDetector(
@@ -296,7 +553,6 @@ class _BookingCardState extends State<BookingCard> {
   }
 }
 
-/// Row for Booking Info
 class _InfoRow extends StatelessWidget {
   const _InfoRow({
     required this.icon,
@@ -317,11 +573,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           icon,
           8.horizontalSpace,
-          GenText(
-            '$label: $value',
-            size: 13,
-            color: colors.textColor.shade600,
-          ),
+          GenText('$label: $value', size: 13, color: colors.textColor.shade600),
         ],
       ),
     );

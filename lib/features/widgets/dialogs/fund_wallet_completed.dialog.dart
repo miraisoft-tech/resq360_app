@@ -1,11 +1,13 @@
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/utils/app_text.util.dart';
 
 class FundWalletCompleted extends StatelessWidget {
-  const FundWalletCompleted({super.key});
-
+  const FundWalletCompleted({required this.amount, super.key});
+  final num? amount;
   @override
   Widget build(BuildContext context) {
     final appColors = context.appColors;
+    final finalAmount = (amount?.toDouble() ?? 0) / 100;
 
     return Padding(
       padding: EdgeInsets.only(top: 250.h, bottom: 220.h),
@@ -32,7 +34,7 @@ class FundWalletCompleted extends StatelessWidget {
               ),
               4.verticalSpace,
               UrbText(
-                'You have successfully added ₦20,000 to your wallet.',
+                'You have successfully added ₦${AppTextUtil.formatAmount(finalAmount.toString())} to your wallet.',
                 height: 24.5,
                 color: appColors.textColor.shade300,
                 textAlign: TextAlign.center,
@@ -40,7 +42,7 @@ class FundWalletCompleted extends StatelessWidget {
               30.verticalSpace,
               WideButton(
                 heigth: 40,
-                label: 'Go to Wallet',
+                label: 'Continue',
                 backgroundColor: appColors.primary.shade500,
                 textColor: appColors.whiteColor,
                 onPressed: () async {
