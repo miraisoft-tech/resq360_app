@@ -13,7 +13,7 @@ The ResQ360 Mobile App
 - ENV
     - request keys.json
     - build android:fvm flutter build apk --dart-define-from-file=keys.json || fvmflutter build aab --dart-define-from-file=keys.json
-    - build ios: fvm flutter build aab --dart-define-from-file=keys.json
+    - build ios: fvm flutter build ipa --dart-define-from-file=keys.json
 
 - ARCHITECTURE
 
