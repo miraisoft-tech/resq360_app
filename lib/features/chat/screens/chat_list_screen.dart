@@ -164,6 +164,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                       )
                                       : '',
                               imgUrl: chat.imgurl,
+                              unread: chat.unreadCount,
                             ),
                             onTap: () async {
                               context.read<ChatListBloc>().add(

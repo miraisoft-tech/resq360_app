@@ -59,29 +59,6 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
 
     return Scaffold(
       backgroundColor: colors.neutral.shade50,
-      appBar: AppBar(
-        forceMaterialTransparency: true,
-        title: UrbText(
-          'My Promotions',
-          size: 22,
-          weight: FontWeight.w700,
-          color: colors.textColor.shade800,
-        ),
-        elevation: 0,
-        backgroundColor: colors.whiteColor,
-        leading: IconButton(
-          onPressed: () => pop(context),
-          icon: AppAssets.ASSETS_ICONS_BACK_ICON_SVG.svg,
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: colors.primary.shade500,
-          unselectedLabelColor: colors.neutral.shade400,
-          indicatorColor: colors.primary.shade500,
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [Tab(text: 'Active'), Tab(text: 'All')],
-        ),
-      ),
       body: BlocConsumer<PromotionBloc, PromotionState>(
         listener: (context, state) async {
           if (state is PromotionsFetched) {
@@ -101,12 +78,46 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
           }
         },
         builder: (context, state) {
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _buildPromotionsList(activeOnly: true),
-              _buildPromotionsList(),
-            ],
+          return NestedScrollView(
+            floatHeaderSlivers: true,
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  backgroundColor: colors.whiteColor,
+                  surfaceTintColor: colors.whiteColor,
+                  shadowColor: Colors.transparent,
+                  elevation: 0,
+                  pinned: true,
+                  floating: true,
+                  snap: true,
+                  leading: IconButton(
+                    onPressed: () => pop(context),
+                    icon: AppAssets.ASSETS_ICONS_BACK_ICON_SVG.svg,
+                  ),
+                  title: UrbText(
+                    'My Promotions',
+                    size: 22,
+                    weight: FontWeight.w700,
+                    color: colors.textColor.shade800,
+                  ),
+                  bottom: TabBar(
+                    controller: _tabController,
+                    labelColor: colors.primary.shade500,
+                    unselectedLabelColor: colors.neutral.shade400,
+                    indicatorColor: colors.primary.shade500,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    tabs: const [Tab(text: 'Active'), Tab(text: 'All')],
+                  ),
+                ),
+              ];
+            },
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildPromotionsList(activeOnly: true),
+                _buildPromotionsList(),
+              ],
+            ),
           );
         },
       ),
@@ -151,27 +162,23 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
                   onCreatePromotion: _navigateToCreatePromotion,
                 ),
               )
-              : Column(
-                children: [
-                  if (promotions.isNotEmpty)
-                    PromotionStatsOverview(stats: stats),
-                  Expanded(
-                    child: ListView.separated(
-                      padding: pad(horizontal: 16, vertical: 16),
-                      itemCount: promotions.length,
-                      separatorBuilder: (_, _) => 16.verticalSpace,
-                      itemBuilder: (context, index) {
-                        return PromotionCard(
-                          promotion: promotions[index],
-                          onViewDetails:
-                              () => _showPromotionDetails(promotions[index]),
-                          onShowOptions:
-                              () => _showPromotionOptions(promotions[index]),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+              : ListView.separated(
+                padding: pad(horizontal: 16, vertical: 16),
+                itemCount: promotions.length + 1,
+                separatorBuilder: (_, _) => 16.verticalSpace,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return PromotionStatsOverview(stats: stats);
+                  }
+                  final promoIndex = index - 1;
+                  return PromotionCard(
+                    promotion: promotions[promoIndex],
+                    onViewDetails:
+                        () => _showPromotionDetails(promotions[promoIndex]),
+                    onShowOptions:
+                        () => _showPromotionOptions(promotions[promoIndex]),
+                  );
+                },
               ),
     );
   }
@@ -210,6 +217,11 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: colors.whiteColor,
+          surfaceTintColor: colors.whiteColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
           title: const GenText('Delete Promotion', weight: FontWeight.w700),
           content: const GenText(
             'Are you sure you want to delete this promotion? This action cannot be undone.',

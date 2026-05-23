@@ -96,82 +96,67 @@ class _GenerateInvoiceBottomSheetState
   Widget build(BuildContext context) {
     final appColors = context.appColors;
 
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
     return Material(
       color: Colors.transparent,
-      child: Container(
-        padding: pad(horizontal: 20, vertical: 20),
-        decoration: BoxDecoration(
-          color: appColors.whiteColor,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.r),
-            topRight: Radius.circular(20.r),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
           ),
-        ),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                UrbText(
-                  'Generate Invoice',
-                  size: 22,
-                  height: 32.5,
-                  weight: FontWeight.w700,
-                  color: appColors.black,
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: appColors.textColor.shade400),
-                ),
-              ],
+          padding: pad(horizontal: 20, vertical: 20),
+          decoration: BoxDecoration(
+            color: appColors.whiteColor,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
             ),
-            BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
-              builder: (context, state) {
-                if (state is ServiceCatalogLoading) {
-                  isProcessing = true;
-                  return const SkeletonLoader(height: 48);
-                }
+          ),
+          child: ListView(
+            padding: EdgeInsets.zero,
+            shrinkWrap: true,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  UrbText(
+                    'Generate Invoice',
+                    size: 22,
+                    height: 32.5,
+                    weight: FontWeight.w700,
+                    color: appColors.black,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: appColors.textColor.shade400,
+                    ),
+                  ),
+                ],
+              ),
+              BlocBuilder<ServiceCatalogBloc, ServiceCatalogState>(
+                builder: (context, state) {
+                  if (state is ServiceCatalogLoading) {
+                    isProcessing = true;
+                    return const SkeletonLoader(height: 48);
+                  }
 
-                if (state is ServiceCatalogError) {
-                  isProcessing = false;
-                  log('Error loading services: ${state.error}');
-                  return Column(
-                    children: [
-                      const Center(
-                        child: Text(
-                          'fetching services failed',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                      WideButton(
-                        label: 'retry',
-                        onPressed: () {
-                          context.read<ServiceCatalogBloc>().add(
-                            const FetchServicesForAProvider(),
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                }
-
-                if (state is ServicesLoaded) {
-                  isProcessing = false;
-
-                  final services = state.services;
-
-                  if (services.isEmpty) {
+                  if (state is ServiceCatalogError) {
+                    isProcessing = false;
+                    log('Error loading services: ${state.error}');
                     return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        GenText(
-                          'No service found for this request.',
-                          color: appColors.textColor.shade400,
+                        const Center(
+                          child: Text(
+                            'fetching services failed',
+                            style: TextStyle(color: Colors.red),
+                          ),
                         ),
-                        12.verticalSpace,
                         WideButton(
-                          label: 'Retry',
+                          label: 'retry',
                           onPressed: () {
                             context.read<ServiceCatalogBloc>().add(
                               const FetchServicesForAProvider(),
@@ -182,166 +167,193 @@ class _GenerateInvoiceBottomSheetState
                     );
                   }
 
-                  if (_selectType.value == null ||
-                      !services.any((s) => s.id == _selectType.value!.id)) {
-                    _selectType.value = services.first;
+                  if (state is ServicesLoaded) {
+                    isProcessing = false;
+
+                    final services = state.services;
+
+                    if (services.isEmpty) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GenText(
+                            'No service found for this request.',
+                            color: appColors.textColor.shade400,
+                          ),
+                          12.verticalSpace,
+                          WideButton(
+                            label: 'Retry',
+                            onPressed: () {
+                              context.read<ServiceCatalogBloc>().add(
+                                const FetchServicesForAProvider(),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    }
+
+                    if (_selectType.value == null ||
+                        !services.any((s) => s.id == _selectType.value!.id)) {
+                      _selectType.value = services.first;
+                    }
+
+                    return ServiceDropdown(
+                      items: services,
+                      controller: _selectType,
+                    );
                   }
 
-                  return ServiceDropdown(
-                    items: services,
-                    controller: _selectType,
+                  return const SizedBox.shrink();
+                },
+              ),
+              14.verticalSpace,
+              KFormField(
+                label: 'Location',
+                hintText: 'Enter your location',
+                controller: locationController,
+                keyboardType: TextInputType.text,
+              ),
+              14.verticalSpace,
+              ValueListenableBuilder<DateTime?>(
+                valueListenable: _selectedDate,
+                builder: (_, value, _) {
+                  return KFormField(
+                    label: 'Task date',
+                    hintText: 'Select date',
+                    controller: dateController,
+                    type: InputType.dob,
+                    onTapSuffix: () async {
+                      final now = DateTime.now();
+
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: value ?? now,
+                        firstDate: now,
+                        lastDate: DateTime(now.year + 1),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: ColorScheme.light(
+                                primary: appColors.primary.shade500,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+
+                      if (picked != null) {
+                        _selectedDate.value = picked;
+                        dateController.text =
+                            '${picked.month}/${picked.day}/${picked.year}';
+                      }
+                    },
                   );
-                }
+                },
+              ),
 
-                return const SizedBox.shrink();
-              },
-            ),
-            14.verticalSpace,
-            KFormField(
-              label: 'Location',
-              hintText: 'Enter your location',
-              controller: locationController,
-              keyboardType: TextInputType.text,
-            ),
-            14.verticalSpace,
-            ValueListenableBuilder<DateTime?>(
-              valueListenable: _selectedDate,
-              builder: (_, value, _) {
-                return KFormField(
-                  label: 'Task date',
-                  hintText: 'Select date',
-                  controller: dateController,
-                  type: InputType.dob,
-                  onTapSuffix: () async {
-                    final now = DateTime.now();
+              14.verticalSpace,
+              KFormField(
+                label: 'Price',
+                hintText: 'Enter the price',
+                controller: priceController,
+                keyboardType: TextInputType.number,
+              ),
+              14.verticalSpace,
+              KFormField(
+                label: 'Service Description',
+                hintText: 'Type service description here...',
+                controller: serviceController,
+                keyboardType: TextInputType.text,
+                maxLines: 8,
+                minLines: 6,
+              ),
+              24.verticalSpace,
+              Row(
+                children: [
+                  Expanded(
+                    child: WideButton(
+                      label: 'Cancel',
+                      backgroundColor: appColors.primary.shade50,
+                      textColor: appColors.primary.shade500,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  12.horizontalSpace,
+                  Expanded(
+                    child: WideButton(
+                      label: 'Generate Invoice',
+                      backgroundColor: appColors.primary.shade500,
+                      textColor: appColors.whiteColor,
+                      onPressed: () async {
+                        if (currentUserId == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Unable to identify provider.',
+                          );
+                          return;
+                        }
 
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: value ?? now,
-                      firstDate: now,
-                      lastDate: DateTime(now.year + 1),
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: ColorScheme.light(
-                              primary: appColors.primary.shade500,
+                        if (locationController.text.isEmpty ||
+                            priceController.text.isEmpty ||
+                            serviceController.text.isEmpty ||
+                            _selectedDate.value == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Please fill in all required fields',
+                          );
+                          return;
+                        }
+
+                        final rand = Random().nextInt(999);
+                        final user = widget.chat.participants?.firstWhere(
+                          (p) => p.participantType == 'USER',
+                        );
+                        final providerServiceId =
+                            _selectType.value!.providerServiceId;
+
+                        log(
+                          '[INVOICE] _selectType.value: ${_selectType.value?.toJson()}',
+                        );
+
+                        if (providerServiceId == null) {
+                          await showErrorSnackbar(
+                            context,
+                            'Selected service has no ID.',
+                          );
+                          return;
+                        }
+
+                        final invoice = InvoiceFormData(
+                          invoiceNo: 'INV-${rand.toString().padLeft(3, '0')}',
+                          chatId: widget.chat.id,
+                          userId: user?.participantId,
+                          providerServiceId: providerServiceId,
+                          serviceCategory: _selectType.value!.name,
+                          location: locationController.text,
+                          price: int.tryParse(priceController.text) ?? 0,
+                          description: serviceController.text,
+                          date: _selectedDate.value!,
+                        );
+
+                        await GeneralDialogs.showCustomDialog<void>(
+                          context,
+                          body: BlocProvider.value(
+                            value: context.read<ChatDetailBloc>(),
+                            child: ProviderInvoiceConfirmDialog(
+                              invoice: invoice,
+                              chat: widget.chat,
                             ),
                           ),
-                          child: child!,
                         );
                       },
-                    );
-
-                    if (picked != null) {
-                      _selectedDate.value = picked;
-                      dateController.text =
-                          '${picked.month}/${picked.day}/${picked.year}';
-                    }
-                  },
-                );
-              },
-            ),
-
-            14.verticalSpace,
-            KFormField(
-              label: 'Price',
-              hintText: 'Enter the price',
-              controller: priceController,
-              keyboardType: TextInputType.number,
-            ),
-            14.verticalSpace,
-            KFormField(
-              label: 'Service Description',
-              hintText: 'Type service description here...',
-              controller: serviceController,
-              keyboardType: TextInputType.text,
-              maxLines: 8,
-              minLines: 6,
-            ),
-            24.verticalSpace,
-            Row(
-              children: [
-                Expanded(
-                  child: WideButton(
-                    label: 'Cancel',
-                    backgroundColor: appColors.primary.shade50,
-                    textColor: appColors.primary.shade500,
-                    onPressed: () => Navigator.pop(context),
+                    ),
                   ),
-                ),
-                12.horizontalSpace,
-                Expanded(
-                  child: WideButton(
-                    label: 'Generate Invoice',
-                    backgroundColor: appColors.primary.shade500,
-                    textColor: appColors.whiteColor,
-                    onPressed: () async {
-                      if (currentUserId == null) {
-                        await showErrorSnackbar(
-                          context,
-                          'Unable to identify provider.',
-                        );
-                        return;
-                      }
-
-                      if (locationController.text.isEmpty ||
-                          priceController.text.isEmpty ||
-                          serviceController.text.isEmpty ||
-                          _selectedDate.value == null) {
-                        await showErrorSnackbar(
-                          context,
-                          'Please fill in all required fields',
-                        );
-                        return;
-                      }
-
-                      final rand = Random().nextInt(999);
-                      final user = widget.chat.participants?.firstWhere(
-                        (p) => p.participantType == 'USER',
-                      );
-                      final providerServiceId =
-                          _selectType.value!.providerServiceId;
-
-                      log(
-                        '[INVOICE] _selectType.value: ${_selectType.value?.toJson()}',
-                      );
-
-                      if (providerServiceId == null) {
-                        await showErrorSnackbar(
-                          context,
-                          'Selected service has no ID.',
-                        );
-                        return;
-                      }
-
-                      final invoice = InvoiceFormData(
-                        invoiceNo: 'INV-${rand.toString().padLeft(3, '0')}',
-                        chatId: widget.chat.id,
-                        userId: user?.participantId,
-                        providerServiceId: providerServiceId,
-                        serviceCategory: _selectType.value!.name,
-                        location: locationController.text,
-                        price: int.tryParse(priceController.text) ?? 0,
-                        description: serviceController.text,
-                        date: _selectedDate.value!,
-                      );
-
-                      await GeneralDialogs.showCustomDialog<void>(
-                        context,
-                        body: BlocProvider.value(
-                          value: context.read<ChatDetailBloc>(),
-                          child: ProviderInvoiceConfirmDialog(
-                            invoice: invoice,
-                            chat: widget.chat,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

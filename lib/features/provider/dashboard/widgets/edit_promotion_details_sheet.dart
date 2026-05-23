@@ -3,12 +3,7 @@ import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/pro
 import 'package:resq360/features/customer/dashboard/data/models/advertisment/advertisement.model.dart';
 
 class EditPromotionSheet extends StatefulWidget {
-
-  const EditPromotionSheet({
-    required this.promotion,
-    super.key,
-
-  });
+  const EditPromotionSheet({required this.promotion, super.key});
   final Advertisement promotion;
 
   @override
@@ -22,10 +17,12 @@ class _EditPromotionSheetState extends State<EditPromotionSheet> {
   @override
   void initState() {
     super.initState();
-    _descriptionCtrl =
-        TextEditingController(text: widget.promotion.description ?? '');
+    _descriptionCtrl = TextEditingController(
+      text: widget.promotion.description ?? '',
+    );
     _discountCtrl = TextEditingController(
-        text: widget.promotion.budget?.toString() ?? '');
+      text: widget.promotion.budget?.toString() ?? '',
+    );
   }
 
   @override
@@ -39,12 +36,12 @@ class _EditPromotionSheetState extends State<EditPromotionSheet> {
     Navigator.pop(context);
 
     context.read<PromotionBloc>().add(
-          UpdatePromotion(
-            id: widget.promotion.id!,
-            description: _descriptionCtrl.text.trim(),
-            discountPercentage: int.tryParse(_discountCtrl.text.trim()),
-          ),
-        );
+      UpdatePromotion(
+        id: widget.promotion.id!,
+        description: _descriptionCtrl.text.trim(),
+        discountPercentage: int.tryParse(_discountCtrl.text.trim()),
+      ),
+    );
   }
 
   @override
@@ -54,17 +51,13 @@ class _EditPromotionSheetState extends State<EditPromotionSheet> {
         left: 16,
         right: 16,
         top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 100,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const GenText(
-            'Edit Promotion',
-            size: 18,
-            weight: FontWeight.w700,
-          ),
+          const GenText('Edit Promotion', size: 18, weight: FontWeight.w700),
           20.verticalSpace,
           KFormField(
             label: 'Description',
@@ -80,10 +73,7 @@ class _EditPromotionSheetState extends State<EditPromotionSheet> {
             hintText: '',
           ),
           24.verticalSpace,
-          WideButton(
-            label: 'Save Changes',
-            onPressed: _saveChanges,
-          ),
+          WideButton(label: 'Save Changes', onPressed: _saveChanges),
         ],
       ),
     );

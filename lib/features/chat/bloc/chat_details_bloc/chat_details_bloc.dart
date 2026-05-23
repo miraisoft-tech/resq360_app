@@ -300,6 +300,7 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
       id: localMessageId,
       chatId: current.chat.id,
       senderType: 'PROVIDER',
+      senderId: currentUserId,
       messageType: 'INVOICE',
       content: event.invoice.description ?? 'Invoice',
       createdAt: DateTime.now(),
@@ -459,7 +460,8 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
             (m.id ?? 0) < 0 &&
             m.senderId == event.message.senderId &&
             m.messageType == event.message.messageType &&
-            (m.content ?? '') == (event.message.content ?? ''),
+            (m.messageType == 'INVOICE' ||
+                (m.content ?? '') == (event.message.content ?? '')),
       );
 
       if (pendingLocalIndex != -1) {

@@ -195,7 +195,7 @@ class _PromoteServiceScreenState extends State<PromoteServiceScreen> {
                             providerServiceName: _providerServiceLabel(
                               selectedProviderService,
                             ),
-                            description: promoController.text.trim(),
+                            promotionDescription: promoController.text.trim(),
                             discount: discount.toString(),
                             duration: selected,
                           ),

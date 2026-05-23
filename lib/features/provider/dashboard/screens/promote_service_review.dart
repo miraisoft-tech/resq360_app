@@ -15,14 +15,14 @@ class PromoteServiceReviewScreen extends StatefulWidget {
   const PromoteServiceReviewScreen({
     required this.providerServiceId,
     required this.providerServiceName,
-    required this.description,
+    required this.promotionDescription,
     required this.discount,
     required this.duration,
     super.key,
   });
   final int providerServiceId;
   final String providerServiceName;
-  final String description;
+  final String promotionDescription;
   final String discount;
   final PromotionDuration duration;
 
@@ -34,11 +34,30 @@ class PromoteServiceReviewScreen extends StatefulWidget {
 class _PromoteServiceReviewScreenState
     extends State<PromoteServiceReviewScreen> {
   bool _isLoadingDialogVisible = false;
+  bool _isLoadingDialogScheduled = false;
+  bool _dismissLoadingDialogWhenShown = false;
+  bool _isPaymentFlowRunning = false;
+  BuildContext? _loadingDialogContext;
 
   @override
   void initState() {
     super.initState();
     context.read<PromotionBloc>().add(FetchPromotionPrice());
+  }
+
+  @override
+  void dispose() {
+    final loadingDialogContext = _loadingDialogContext;
+    if (loadingDialogContext != null) {
+      final navigator = Navigator.of(loadingDialogContext, rootNavigator: true);
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+    } else if (_isLoadingDialogScheduled) {
+      _dismissLoadingDialogWhenShown = true;
+    }
+
+    super.dispose();
   }
 
   @override
@@ -280,9 +299,14 @@ class _PromoteServiceReviewScreenState
                                                 duration: widget.duration,
                                                 providerServiceId:
                                                     widget.providerServiceId,
-                                                description: widget.description,
+                                                promotionDescription:
+                                                    widget.promotionDescription,
                                                 paymentType: paymentMethod.name,
                                                 total: total,
+                                                onPaymentStarted:
+                                                    () =>
+                                                        _isPaymentFlowRunning =
+                                                            true,
                                               ),
                                             );
                                           },
@@ -310,12 +334,16 @@ class _PromoteServiceReviewScreenState
   ) async {
     if (!mounted) return;
 
-    if (state is PromotionLoading || state is PromotionPaymentVerifying) {
+    final shouldShowPaymentLoader =
+        _isPaymentFlowRunning &&
+        (state is PromotionLoading || state is PromotionPaymentVerifying);
+
+    if (shouldShowPaymentLoader) {
       _showLoadingDialog(context);
       return;
     }
 
-    await _hideLoadingDialog(context);
+    await _hideLoadingDialog();
 
     if (state is PromotionPaymentInitiated) {
       if (!mounted) return;
@@ -343,6 +371,8 @@ class _PromoteServiceReviewScreenState
     }
 
     if (state is PromotionCreated) {
+      _isPaymentFlowRunning = false;
+
       if (!mounted) return;
 
       if (!mounted) return;
@@ -361,6 +391,8 @@ class _PromoteServiceReviewScreenState
     }
 
     if (state is PromotionError) {
+      _isPaymentFlowRunning = false;
+
       if (mounted) {
         await showErrorSnackbar(context, state.error);
         context.read<PromotionBloc>().add(FetchPromotionPrice());
@@ -369,28 +401,55 @@ class _PromoteServiceReviewScreenState
   }
 
   void _showLoadingDialog(BuildContext context) {
-    if (!mounted || _isLoadingDialogVisible) return;
+    if (!mounted || _isLoadingDialogVisible || _isLoadingDialogScheduled) {
+      return;
+    }
 
-    _isLoadingDialogVisible = true;
+    _isLoadingDialogScheduled = true;
+    _dismissLoadingDialogWhenShown = false;
 
     unawaited(
       showDialog<void>(
         context: context,
         barrierColor: const Color.fromRGBO(173, 173, 173, 0.23),
         barrierDismissible: false,
-        builder: (BuildContext context) {
+        builder: (BuildContext dialogContext) {
+          _loadingDialogContext = dialogContext;
+          _isLoadingDialogVisible = true;
+
+          if (_dismissLoadingDialogWhenShown) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final navigator = Navigator.of(
+                dialogContext,
+                rootNavigator: true,
+              );
+              if (navigator.canPop()) {
+                navigator.pop();
+              }
+            });
+          }
+
           return const Center(child: ActivityDialogWidget());
         },
       ).whenComplete(() {
+        _loadingDialogContext = null;
         _isLoadingDialogVisible = false;
+        _isLoadingDialogScheduled = false;
+        _dismissLoadingDialogWhenShown = false;
       }),
     );
   }
 
-  Future<void> _hideLoadingDialog(BuildContext context) async {
-    if (!mounted || !_isLoadingDialogVisible) return;
+  Future<void> _hideLoadingDialog() async {
+    if (!_isLoadingDialogVisible && !_isLoadingDialogScheduled) return;
 
-    final navigator = Navigator.of(context, rootNavigator: true);
+    final loadingDialogContext = _loadingDialogContext;
+    if (loadingDialogContext == null) {
+      _dismissLoadingDialogWhenShown = true;
+      return;
+    }
+
+    final navigator = Navigator.of(loadingDialogContext, rootNavigator: true);
     if (navigator.canPop()) {
       navigator.pop();
       await Future<void>.delayed(Duration.zero);
@@ -413,9 +472,10 @@ class FinishPaymentDialog extends StatefulWidget {
     required this.discount,
     required this.duration,
     required this.providerServiceId,
-    required this.description,
+    required this.promotionDescription,
     required this.paymentType,
     required this.total,
+    this.onPaymentStarted,
     super.key,
   });
 
@@ -424,9 +484,10 @@ class FinishPaymentDialog extends StatefulWidget {
   final String discount;
   final PromotionDuration duration;
   final int providerServiceId;
-  final String description;
+  final String promotionDescription;
   final String paymentType;
   final int total;
+  final VoidCallback? onPaymentStarted;
 
   @override
   State<FinishPaymentDialog> createState() => _FinishPaymentDialogState();
@@ -440,7 +501,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
     final remaining = widget.walletBalance - fee;
 
     return Padding(
-      padding: EdgeInsets.only(top: 200.h, bottom: 200.h),
+      padding: EdgeInsets.only(top: 270.h, bottom: 270.h),
       child: Material(
         color: Colors.transparent,
         child: Container(
@@ -605,6 +666,8 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
                         ).maybePop();
                         await Future<void>.delayed(Duration.zero);
 
+                        widget.onPaymentStarted?.call();
+
                         if (isWalletPayment) {
                           _payWithWallet(promotionBloc);
                           return;
@@ -630,7 +693,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
         discountPercentage: int.parse(widget.discount),
         durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.wallet.name,
-        description: widget.description,
+        description: widget.promotionDescription,
       ),
     );
   }
@@ -642,7 +705,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
         discountPercentage: int.parse(widget.discount),
         durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.new_card.name,
-        description: widget.description,
+        description: widget.promotionDescription,
       ),
     );
   }
