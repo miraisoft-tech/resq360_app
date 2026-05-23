@@ -12,6 +12,11 @@ class ProviderFetchBookings extends ProviderServiceEvent {
   final String? status;
 }
 
+class LoadMoreProviderBookings extends ProviderServiceEvent {
+  const LoadMoreProviderBookings({required this.status});
+  final String status;
+}
+
 class ProviderStartServiceBooking extends ProviderServiceEvent {
   const ProviderStartServiceBooking(this.serviceRequestId);
   final int serviceRequestId;

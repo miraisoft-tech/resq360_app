@@ -7,21 +7,18 @@ import 'package:resq360/core/utils/app_constant.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/promotion_bloc/promotion_bloc.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
+import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/dashboard/models/duration.enum.dart';
 import 'package:resq360/features/widgets/dialogs/payment_finished.modal.dart';
 import 'package:resq360/features/widgets/dialogs/payment_option.dialog.dart';
 
 class PromoteServiceReviewScreen extends StatefulWidget {
   const PromoteServiceReviewScreen({
-    required this.providerServiceId,
-    required this.providerServiceName,
     required this.promotionDescription,
     required this.discount,
     required this.duration,
     super.key,
   });
-  final int providerServiceId;
-  final String providerServiceName;
   final String promotionDescription;
   final String discount;
   final PromotionDuration duration;
@@ -120,34 +117,12 @@ class _PromoteServiceReviewScreenState
                   child: Col(
                     children: [
                       GenText(
-                        'Get ${widget.discount}% off ${widget.providerServiceName} today.',
+                        'Get ${widget.discount}% off today.',
                         height: 24.5,
                         weight: FontWeight.w400,
                         color: appColors.textColor.shade400,
                       ),
                       12.verticalSpace,
-                      Row(
-                        children: [
-                          GenText(
-                            'Service:',
-                            height: 24.5,
-                            weight: FontWeight.w400,
-                            color: appColors.textColor.shade400,
-                          ),
-                          const Spacer(),
-                          Flexible(
-                            child: GenText(
-                              widget.providerServiceName,
-                              height: 24.5,
-                              weight: FontWeight.w500,
-                              color: appColors.black,
-                              maxLines: 1,
-                              textAlign: TextAlign.end,
-                            ),
-                          ),
-                        ],
-                      ),
-                      8.verticalSpace,
                       Row(
                         children: [
                           GenText(
@@ -297,8 +272,6 @@ class _PromoteServiceReviewScreenState
                                                     0,
                                                 discount: widget.discount,
                                                 duration: widget.duration,
-                                                providerServiceId:
-                                                    widget.providerServiceId,
                                                 promotionDescription:
                                                     widget.promotionDescription,
                                                 paymentType: paymentMethod.name,
@@ -394,8 +367,12 @@ class _PromoteServiceReviewScreenState
       _isPaymentFlowRunning = false;
 
       if (mounted) {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        if (!mounted) return;
         await showErrorSnackbar(context, state.error);
-        context.read<PromotionBloc>().add(FetchPromotionPrice());
+        if (mounted) {
+          context.read<PromotionBloc>().add(FetchPromotionPrice());
+        }
       }
     }
   }
@@ -471,7 +448,6 @@ class FinishPaymentDialog extends StatefulWidget {
     required this.walletBalance,
     required this.discount,
     required this.duration,
-    required this.providerServiceId,
     required this.promotionDescription,
     required this.paymentType,
     required this.total,
@@ -483,7 +459,6 @@ class FinishPaymentDialog extends StatefulWidget {
   final num walletBalance;
   final String discount;
   final PromotionDuration duration;
-  final int providerServiceId;
   final String promotionDescription;
   final String paymentType;
   final int total;
@@ -686,10 +661,21 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
     );
   }
 
+  int? _resolveProviderServiceId() {
+    final authState = context.read<ProviderAuthBloc>().state;
+    if (authState is ProviderProfileLoadedState) {
+      final services = authState.user.providerServices ?? [];
+      final active = services.where((s) => s.id != null && s.isActive);
+      if (active.isNotEmpty) return active.first.id;
+      if (services.isNotEmpty) return services.first.id;
+    }
+    return null;
+  }
+
   void _payWithWallet(PromotionBloc promotionBloc) {
     promotionBloc.add(
       CreatePromotion(
-        providerServiceId: widget.providerServiceId,
+        providerServiceId: _resolveProviderServiceId(),
         discountPercentage: int.parse(widget.discount),
         durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.wallet.name,
@@ -701,7 +687,7 @@ class _FinishPaymentDialogState extends State<FinishPaymentDialog> {
   void _payWithCard(PromotionBloc promotionBloc) {
     promotionBloc.add(
       CreatePromotion(
-        providerServiceId: widget.providerServiceId,
+        providerServiceId: _resolveProviderServiceId(),
         discountPercentage: int.parse(widget.discount),
         durationInMilliSeconds: widget.duration.milliseconds,
         paymentMethod: PaymentMethod.new_card.name,

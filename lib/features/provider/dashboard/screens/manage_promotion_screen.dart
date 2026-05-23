@@ -157,6 +157,7 @@ class _PromotionsDashboardScreenState extends State<PromotionsDashboardScreen>
           promotions.isEmpty
               ? SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
+                clipBehavior: Clip.none,
                 child: PromotionEmptyState(
                   activeOnly: activeOnly,
                   onCreatePromotion: _navigateToCreatePromotion,

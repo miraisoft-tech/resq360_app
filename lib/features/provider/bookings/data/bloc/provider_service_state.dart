@@ -14,8 +14,30 @@ class ProviderServicesInitial extends ProviderServiceState {}
 class ProviderServicesLoading extends ProviderServiceState {}
 
 class ProviderBookingsLoaded extends ProviderServiceState {
-  const ProviderBookingsLoaded(this.bookings);
+  const ProviderBookingsLoaded(
+    this.bookings, {
+    this.currentPage = 1,
+    this.hasMore = false,
+    this.isLoadingMore = false,
+  });
   final List<Bookings> bookings;
+  final int currentPage;
+  final bool hasMore;
+  final bool isLoadingMore;
+
+  ProviderBookingsLoaded copyWith({
+    List<Bookings>? bookings,
+    int? currentPage,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return ProviderBookingsLoaded(
+      bookings ?? this.bookings,
+      currentPage: currentPage ?? this.currentPage,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 }
 
 class ProviderServicesError extends ProviderServiceState {

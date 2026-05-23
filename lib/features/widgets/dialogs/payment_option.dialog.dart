@@ -11,10 +11,7 @@ enum PaymentMethod {
 }
 
 class PaymentOptionDialog extends StatefulWidget {
-  const PaymentOptionDialog({
-    required this.onPaymentSelected,
-    super.key,
-  });
+  const PaymentOptionDialog({required this.onPaymentSelected, super.key});
 
   final void Function(PaymentMethod) onPaymentSelected;
 

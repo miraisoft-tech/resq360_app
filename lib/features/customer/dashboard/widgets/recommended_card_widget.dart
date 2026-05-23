@@ -12,15 +12,15 @@ class RecommendedCard extends StatelessWidget {
     final title = advertisement.provider?.fullName ?? 'Untitled';
     final description = advertisement.description ?? '';
     final image = advertisement.provider?.profileImage;
-    final services = advertisement.provider?.providerServices;
-    final serviceType =
-        (services != null && services.isNotEmpty)
-            ? (services.first.name ?? '')
-            : '';
+    final services = advertisement.provider?.providerServices ?? [];
 
-    final rating = advertisement.provider?.averageRating ?? 0;
+    final rating = (advertisement.provider?.averageRating ?? 0).toStringAsFixed(
+      2,
+    );
     final reviewCount = advertisement.provider?.totalReviews ?? 0;
-    final location = advertisement.provider!.providerServices?.first.service?.distanceKM ?? 'N/A';
+    final location =
+        advertisement.provider!.providerServices?.first.service?.distanceKM ??
+        'N/A';
 
     return Container(
       padding: pad(horizontal: 5, vertical: 14),
@@ -68,21 +68,48 @@ class RecommendedCard extends StatelessWidget {
                   ],
                 ),
 
-                if (serviceType.isNotEmpty)
-                  GenText(
-                    serviceType,
-                    size: 12,
-                    height: 20.5,
-                    weight: FontWeight.w400,
-                    color: colors.textColor.shade500,
+                if (services.isNotEmpty) ...[
+                  4.verticalSpace,
+                  Wrap(
+                    spacing: 6.w,
+                    runSpacing: 4.h,
+                    children:
+                        services
+                            .map((service) {
+                              final serviceName =
+                                  service.name ?? service.service?.name ?? '';
+                              if (serviceName.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w,
+                                  vertical: 2.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.primary.shade50,
+                                  borderRadius: BorderRadius.circular(6.r),
+                                ),
+                                child: GenText(
+                                  serviceName,
+                                  size: 10,
+                                  height: 16,
+                                  weight: FontWeight.w500,
+                                  color: colors.primary.shade500,
+                                ),
+                              );
+                            })
+                            .take(3)
+                            .toList(),
                   ),
+                ],
                 4.verticalSpace,
 
                 Row(
                   children: [
                     const Icon(Icons.star, size: 16, color: Colors.orange),
                     4.horizontalSpace,
-                    GenText('$rating', size: 12, color: colors.black),
+                    GenText(rating, size: 12, color: colors.black),
                     2.horizontalSpace,
                     GenText(
                       '($reviewCount)',
@@ -94,7 +121,11 @@ class RecommendedCard extends StatelessWidget {
                       color: colors.neutral.shade300,
                     ),
                     2.horizontalSpace,
-                    GenText('$location km', size: 12, color: colors.neutral.shade300),
+                    GenText(
+                      '$location km',
+                      size: 12,
+                      color: colors.neutral.shade400,
+                    ),
                   ],
                 ),
                 8.verticalSpace,

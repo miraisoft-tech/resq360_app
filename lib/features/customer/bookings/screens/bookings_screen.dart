@@ -179,22 +179,41 @@ class _BookingsScreenState extends State<BookingsScreen>
   }
 }
 
-class _BookingList extends StatelessWidget {
+class _BookingList extends StatefulWidget {
   const _BookingList({required this.type});
   final String type;
 
-  String _mapTypeToStatus() {
-    switch (type) {
-      case 'upcoming':
-        return 'upcoming';
-      case 'ongoing':
-        return 'ongoing';
-      case 'completed':
-        return 'completed';
-      case 'cancelled':
-        return 'cancelled';
-      default:
-        return 'PENDING';
+  @override
+  State<_BookingList> createState() => _BookingListState();
+}
+
+class _BookingListState extends State<_BookingList> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final bloc = context.read<CustomerBookingBloc>();
+      final current = bloc.state;
+      if (current is CustomerBookingLoaded &&
+          current.hasMore &&
+          !current.isLoadingMore) {
+        bloc.add(LoadMoreCustomerBookings(status: widget.type));
+      }
     }
   }
 
@@ -225,7 +244,7 @@ class _BookingList extends StatelessWidget {
                     label: 'Retry',
                     onPressed: () {
                       context.read<CustomerBookingBloc>().add(
-                        FetchCustomerBookings(status: _mapTypeToStatus()),
+                        FetchCustomerBookings(status: widget.type),
                       );
                     },
                   ),
@@ -249,19 +268,28 @@ class _BookingList extends StatelessWidget {
             color: appColors.primary,
             onRefresh: () async {
               context.read<CustomerBookingBloc>().add(
-                FetchCustomerBookings(status: _mapTypeToStatus()),
+                FetchCustomerBookings(status: widget.type),
               );
             },
             child: ListView.separated(
+              controller: _scrollController,
               padding: EdgeInsets.only(
                 left: 16.w,
                 right: 16.w,
                 top: 16.h,
                 bottom: 100.h,
               ),
-              itemCount: bookings.length,
+              itemCount: bookings.length + (state.isLoadingMore ? 1 : 0),
               separatorBuilder: (_, _) => 16.verticalSpace,
               itemBuilder: (_, index) {
+                if (index >= bookings.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
                 final booking = bookings[index];
                 return BookingCard(
                   data: booking,

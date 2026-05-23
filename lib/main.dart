@@ -33,6 +33,7 @@ import 'package:resq360/features/intro/screens/splash_screen.dart';
 import 'package:resq360/features/provider/authentication/data/bloc/provider_auth_bloc.dart';
 import 'package:resq360/features/provider/authentication/data/service/provider_auth_remote.repo.dart';
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
+import 'package:resq360/features/provider/dashboard/data/bloc/provider_ongoing_bloc.dart';
 import 'package:resq360/features/provider/dashboard/data/bloc/provider_stats_bloc/provider_stats_bloc.dart';
 import 'package:resq360/features/provider/open_pings/widgets/provider_open_ping_listener.dart';
 import 'package:resq360/features/settings/data/bloc/bank_bloc/bloc/bank_bloc.dart';
@@ -123,6 +124,7 @@ Future<void> main() async {
           BlocProvider(create: (_) => KycBloc()),
           BlocProvider(create: (_) => BankBloc()),
           BlocProvider(create: (_) => PromotionBloc()),
+          BlocProvider(create: (_) => ProviderOngoingBloc()),
           BlocProvider(
             create:
                 (_) => ProviderStatsBloc(authRepo: ProviderAuthRemoteRepo()),

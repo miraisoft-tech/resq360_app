@@ -8,10 +8,21 @@ sealed class CustomerBookingEvent extends Equatable {
 }
 
 class FetchCustomerBookings extends CustomerBookingEvent {
-
   const FetchCustomerBookings({this.status});
   final String? status;
 
   @override
   List<Object?> get props => [status];
+}
+
+class LoadMoreCustomerBookings extends CustomerBookingEvent {
+  const LoadMoreCustomerBookings({required this.status});
+  final String status;
+
+  @override
+  List<Object?> get props => [status];
+}
+
+class FetchDashboardBookings extends CustomerBookingEvent {
+  const FetchDashboardBookings();
 }

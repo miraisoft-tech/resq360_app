@@ -43,6 +43,7 @@ class Bookings {
     this.expectedStartDate,
     this.distanceKM,
     this.distanceM,
+    this.completedBy,
   });
 
   factory Bookings.fromJson(Map<String, dynamic> json) => Bookings(
@@ -54,7 +55,7 @@ class Bookings {
     assignedProviderId: json['assignedProviderId'] as int?,
     status: json['status'] as String?,
     description: json['description'] as String?,
-
+    completedBy: json['completedBy'] as String?,
     providerStartedAt:
         json['providerStartedAt'] == null
             ? null
@@ -115,7 +116,7 @@ class Bookings {
               json['serviceCategory'] as Map<String, dynamic>,
             ),
     paymentMethod: json['paymentMethod'] as String?,
-    amount: json['amount'] as String?,
+    amount: (json['amount'] as String?) ?? (json['amountPaid'] as String?),
     chatId: json['chatId'] as int?,
     invoiceId: json['invoiceId'] as String?,
     expectedStartDate:
@@ -145,7 +146,7 @@ class Bookings {
 
   final String? otpHash;
   final DateTime? otpExpiresAt;
-
+  final String? completedBy;
   final bool? isDisputed;
   final String? disputeReason;
   final String? disputeDetails;

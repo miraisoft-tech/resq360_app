@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/models/nav_item.model.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
@@ -46,6 +47,7 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
     dashboardVM.userType = widget.userType;
     _ownsDashboardVM = false;
     unawaited(_loadGuestMode());
+    context.read<ChatListBloc>().add(LoadChatList());
   }
 
   Future<void> _loadGuestMode() async {
@@ -83,12 +85,55 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
     NavItem item, {
     required Color selectedColor,
     required Color unselectedColor,
+    int badgeCount = 0,
   }) {
     return BottomNavigationBarItem(
-      icon: _navIcon(item.unselectedImgPath, unselectedColor),
-      activeIcon: _navIcon(item.selectedImgPath, selectedColor),
+      icon: _navIconWithBadge(
+        item.unselectedImgPath,
+        unselectedColor,
+        badgeCount,
+      ),
+      activeIcon: _navIconWithBadge(
+        item.selectedImgPath,
+        selectedColor,
+        badgeCount,
+      ),
       label: item.title,
     );
+  }
+
+  Widget _navIconWithBadge(String assetPath, Color color, int badgeCount) {
+    final icon = _navIcon(assetPath, color);
+    if (badgeCount <= 0) return icon;
+    return Badge(
+      label: Text(
+        badgeCount > 99 ? '99+' : '$badgeCount',
+        style: const TextStyle(fontSize: 10, color: Colors.white),
+      ),
+      child: icon,
+    );
+  }
+
+  List<BottomNavigationBarItem> _buildNavItems(
+    List<NavItem> navItems, {
+    required Color selectedColor,
+    required Color unselectedColor,
+  }) {
+    final chatIndex = dashboardVM.userType == UserType.customer ? 3 : 2;
+    final unreadCount = context.watch<ChatListBloc>().state.totalUnreadCount;
+
+    return navItems
+        .asMap()
+        .entries
+        .map((entry) {
+          return _bottomNavItem(
+            entry.value,
+            selectedColor: selectedColor,
+            unselectedColor: unselectedColor,
+            badgeCount: entry.key == chatIndex ? unreadCount : 0,
+          );
+        })
+        .toList(growable: false);
   }
 
   @override
@@ -154,15 +199,11 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
                   height: 1.26,
                   fontWeight: FontWeight.w500,
                 ),
-                items: navItems
-                    .map(
-                      (item) => _bottomNavItem(
-                        item,
-                        selectedColor: appColors.primary.shade500,
-                        unselectedColor: appColors.neutral.shade300,
-                      ),
-                    )
-                    .toList(growable: false),
+                items: _buildNavItems(
+                  navItems,
+                  selectedColor: appColors.primary.shade500,
+                  unselectedColor: appColors.neutral.shade300,
+                ),
               ),
             ),
           );

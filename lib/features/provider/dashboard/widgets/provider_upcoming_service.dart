@@ -1,8 +1,13 @@
 import 'package:resq360/__lib.dart';
 import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
+import 'package:resq360/core/bloc/service_detail_bloc/service_detail_bloc.dart';
 import 'package:resq360/core/models/booking_enums.dart';
+import 'package:resq360/features/chat/screens/chat_details_screen.dart';
+import 'package:resq360/features/chat/screens/payment_appeal.dialog.dart';
 import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
-import 'package:resq360/features/provider/bookings/screens/cancel_client_service_screen.dart';
+import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/bookings/screens/client_service_completed_screen.dart';
+import 'package:resq360/features/settings/data/service/support_service.dart';
 
 class ProviderUpcomingService extends StatefulWidget {
   const ProviderUpcomingService({required this.booking, super.key});
@@ -15,14 +20,12 @@ class ProviderUpcomingService extends StatefulWidget {
 class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
+    final appColors = context.appColors;
+
     final serviceRequestId = widget.booking.id;
-    final isAssigned =
+    final isProgress =
         widget.booking.status?.toUpperCase() ==
-        BookingEnums.assigned.name.toUpperCase();
-    final isArrived =
-        widget.booking.status?.toUpperCase() ==
-        BookingEnums.arrived.name.toUpperCase();
+        BookingEnums.progress.name.toUpperCase();
 
     return BlocListener<BookingBloc, BookingState>(
       listener: (context, state) async {
@@ -37,17 +40,17 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
       child: Col(
         children: [
           UrbText(
-            'Upcoming Service',
+            'Current Service',
             size: 18,
             weight: FontWeight.w700,
-            color: colors.black,
+            color: appColors.black,
           ),
           20.verticalSpace,
           Container(
             padding: pad(horizontal: 14, vertical: 20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: colors.textColor.shade100),
+              border: Border.all(color: appColors.textColor.shade100),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,14 +78,14 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                                 '(${widget.booking.serviceCategory?.name ?? 'Service'})',
                                 height: 24.5,
                                 weight: FontWeight.w400,
-                                color: colors.neutral.shade400,
+                                color: appColors.neutral.shade400,
                               ),
                             ],
                           ),
                           Row(
                             children: [
                               AppAssets.ASSETS_ICONS_LOCATION_SVG.svgColor(
-                                color: colors.neutral.shade400,
+                                color: appColors.neutral.shade400,
                               ),
                               2.horizontalSpace,
                               Expanded(
@@ -92,7 +95,7 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                                       : 'Distance unknown',
                                   height: 24.5,
                                   weight: FontWeight.w400,
-                                  color: colors.neutral.shade400,
+                                  color: appColors.neutral.shade400,
                                   maxLines: 1,
                                 ),
                               ),
@@ -105,117 +108,139 @@ class _ProviderUpcomingServiceState extends State<ProviderUpcomingService> {
                 ),
 
                 10.verticalSpace,
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: pad(horizontal: 14),
-                          elevation: 0,
-                          backgroundColor: colors.error.shade50,
-                          foregroundColor: colors.primary.shade500,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                        ),
-                        onPressed: () async {
-                          if (serviceRequestId != null) {
-                            await pushScreen(
-                              context,
-                              CancelClientServiceScreen(
-                                serviceRequestId: serviceRequestId,
-                              ),
-                            );
-                          }
-                        },
-                        child: GenText(
-                          'Cancel',
-                          height: 16.5,
-                          color: colors.primary.shade500,
-                          weight: FontWeight.w500,
+                // if (isAssigned || isArrived)
+                //   Row(
+                //     children: [
+                //       Expanded(
+                //         child: WideButton(
+                //           label: 'Cancel',
+                //           backgroundColor: appColors.primary.shade50,
+                //           textColor: appColors.primary.shade500,
+                //           onPressed: () async {
+                //             if (serviceRequestId == null) return;
+                //             await pushScreen(
+                //               context,
+                //               CancelClientServiceScreen(
+                //                 serviceRequestId: serviceRequestId,
+                //               ),
+                //             );
+                //             if (context.mounted) {
+                //               context.read<ServiceDetailBloc>().add(
+                //                 const RefreshServiceDetail(),
+                //               );
+                //             }
+                //           },
+                //         ),
+                //       ),
+                //       12.horizontalSpace,
+                //       Expanded(
+                //         child: WideButton(
+                //           label: isAssigned ? 'Mark Arrived' : 'Start Service',
+                //           backgroundColor: appColors.primary.shade500,
+                //           textColor: appColors.whiteColor,
+                //           onPressed: () async {
+                //             if (isAssigned) {
+                //               if (serviceRequestId != null) {
+                //                 context.read<BookingBloc>().add(
+                //                   ArriveBooking(
+                //                     serviceRequestId: serviceRequestId,
+                //                   ),
+                //                 );
+                //               }
+                //             } else if (isArrived) {
+                //               if (serviceRequestId != null) {
+                //                 context.read<BookingBloc>().add(
+                //                   StartBooking(
+                //                     serviceRequestId: serviceRequestId,
+                //                   ),
+                //                 );
+                //               }
+                //             }
+                //           },
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                if (isProgress)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: WideButton(
+                          label: 'Appeal',
+                          backgroundColor: appColors.primary.shade50,
+                          textColor: appColors.primary.shade500,
+                          onPressed: () async {
+                            await _handleAppeal(context, serviceRequestId);
+                          },
                         ),
                       ),
-                    ),
-                    10.w.horizontalSpace,
-                    if (widget.booking.status?.toUpperCase() ==
-                        BookingEnums.progress.name)
-                      20.horizontalSpace,
-                    Expanded(
-                      child: BlocBuilder<BookingBloc, BookingState>(
-                        builder: (context, state) {
-                          return ElevatedButton(
-                            onPressed:
-                                state is BookingLoading
-                                    ? null
-                                    : isAssigned
-                                    ? () {
-                                      log(serviceRequestId);
-                                      if (serviceRequestId != null) {
-                                        context.read<BookingBloc>().add(
-                                          ArriveBooking(
-                                            serviceRequestId: serviceRequestId,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                    : isArrived
-                                    ? () {
-                                      if (serviceRequestId != null) {
-                                        context.read<BookingBloc>().add(
-                                          StartBooking(
-                                            serviceRequestId: serviceRequestId,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                    : null,
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.resolveWith<Color>((
-                                    states,
-                                  ) {
-                                    return colors.primary.shade500;
-                                  }),
-                              foregroundColor: WidgetStateProperty.all(
-                                colors.whiteColor,
-                              ),
-                              shape: WidgetStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
+                      12.horizontalSpace,
+                      Expanded(
+                        child: WideButton(
+                          label: 'Complete',
+                          backgroundColor: appColors.primary.shade500,
+                          textColor: appColors.whiteColor,
+                          onPressed: () async {
+                            if (serviceRequestId != null) {
+                              await pushScreen(
+                                context,
+                                ClientServiceCompletedScreen(
+                                  serviceRequestId: serviceRequestId,
                                 ),
-                              ),
-                            ),
-                            child:
-                                state is BookingLoading
-                                    ? SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: colors.primary.shade500,
-                                      ),
-                                    )
-                                    : GenText(
-                                      isAssigned
-                                          ? 'Mark Arrived'
-                                          : isArrived
-                                          ? 'Start Service'
-                                          : 'In Progress',
-                                      height: 16.5,
-                                      color: colors.whiteColor,
-                                      weight: FontWeight.w500,
-                                    ),
-                          );
-                        },
+                              );
+                              if (context.mounted) {
+                                context.read<ServiceDetailBloc>().add(
+                                  const RefreshServiceDetail(),
+                                );
+                              }
+                            }
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _handleAppeal(
+    BuildContext context,
+    int? serviceRequestId,
+  ) async {
+    if (serviceRequestId == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const PaymentAppealDialog(isProvider: true),
+    );
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    showLoadingDialog(context);
+
+    final result = await SupportRepo.instance.fileDispute(
+      requestId: serviceRequestId,
+      reason: 'Service Appeal',
+      details:
+          'Provider filed an appeal for service request #$serviceRequestId',
+    );
+
+    if (!context.mounted) return;
+    Navigator.pop(context);
+
+    if (result.error != null) {
+      await showErrorSnackbar(context, result.error!);
+      return;
+    }
+
+    final chatId = result.data!;
+    await pushScreen(
+      context,
+      ChatDetailScreen(chatId: chatId, userType: UserType.provider),
     );
   }
 }

@@ -20,7 +20,6 @@ import 'package:resq360/features/customer/services/screens/service_categories_sc
 import 'package:resq360/features/customer/services/screens/service_providers_screen.dart';
 import 'package:resq360/features/intro/screens/select_account_type_screen.dart';
 import 'package:resq360/features/main_layout_provider.dart';
-import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/widgets/header_widget.dart';
 import 'package:resq360/features/widgets/promo_card_widget.dart';
@@ -69,9 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!_isGuest) {
         context.read<CustomerAuthBloc>().add(const CustomergetUserProfile());
 
-        context.read<CustomerBookingBloc>().add(
-          FetchCustomerBookings(status: BookingStatus.ongoing.value),
-        );
+        context.read<CustomerBookingBloc>().add(const FetchDashboardBookings());
       }
 
       context.read<ServiceCatalogBloc>().add(const FetchServices());
@@ -247,22 +244,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         }
 
-                        if (state is CustomerBookingLoaded) {
-                          if (state.bookings.isEmpty) {
+                        if (state is DashboardBookingLoaded) {
+                          final booking = state.booking;
+                          if (booking == null) {
                             return const SizedBox.shrink();
                           }
-
-                          if (state.bookings.isEmpty) {
-                            return const SizedBox.shrink();
-                          }
-
-                          final ongoingBooking = state.bookings.first;
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               UrbText(
-                                'Ongoing Service',
+                                state.label,
                                 size: 18,
                                 height: 28.5,
                                 weight: FontWeight.w700,
@@ -274,13 +266,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   await pushScreen(
                                     context,
                                     ProviderServiceDetailScreen(
-                                      booking: ongoingBooking,
+                                      booking: booking,
                                     ),
                                   );
                                 },
-                                child: OngoingServiceCard(
-                                  booking: ongoingBooking,
-                                ),
+                                child: OngoingServiceCard(booking: booking),
                               ),
                             ],
                           );

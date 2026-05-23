@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:resq360/__lib.dart';
+import 'package:resq360/core/bloc/booking_bloc/booking_bloc.dart';
 import 'package:resq360/core/utils/app_text.util.dart';
 import 'package:resq360/core/utils/booking_reciept_pdf_util.dart';
 import 'package:resq360/core/utils/dialer_util.dart';
@@ -164,35 +165,61 @@ class _ProviderBookingsScreenState extends State<ProviderBookingsScreen>
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [
-          _BookingList(type: 'upcoming'),
-          _BookingList(type: 'ongoing'),
-          _BookingList(type: 'completed'),
-          _BookingList(type: 'cancelled'),
-        ],
+      body: BlocListener<BookingBloc, BookingState>(
+        listener: (context, state) {
+          if (state is BookingStarted || state is BookingArrived) {
+            _fetchBookingsForTab(_tabController.index);
+          }
+        },
+        child: TabBarView(
+          controller: _tabController,
+          children: const [
+            _BookingList(type: 'upcoming'),
+            _BookingList(type: 'ongoing'),
+            _BookingList(type: 'completed'),
+            _BookingList(type: 'cancelled'),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _BookingList extends StatelessWidget {
+class _BookingList extends StatefulWidget {
   const _BookingList({required this.type});
   final String type;
 
-  String _mapTypeToStatus() {
-    switch (type) {
-      case 'upcoming':
-        return 'upcoming';
-      case 'ongoing':
-        return 'ongoing';
-      case 'completed':
-        return 'completed';
-      case 'cancelled':
-        return 'cancelled';
-      default:
-        return 'upcoming';
+  @override
+  State<_BookingList> createState() => _BookingListState();
+}
+
+class _BookingListState extends State<_BookingList> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final bloc = context.read<ProviderServiceBloc>();
+      final current = bloc.state;
+      if (current is ProviderBookingsLoaded &&
+          current.hasMore &&
+          !current.isLoadingMore) {
+        bloc.add(LoadMoreProviderBookings(status: widget.type));
+      }
     }
   }
 
@@ -222,7 +249,7 @@ class _BookingList extends StatelessWidget {
                     label: 'Retry',
                     onPressed: () {
                       context.read<ProviderServiceBloc>().add(
-                        ProviderFetchBookings(status: _mapTypeToStatus()),
+                        ProviderFetchBookings(status: widget.type),
                       );
                     },
                   ),
@@ -245,20 +272,29 @@ class _BookingList extends StatelessWidget {
           return RefreshIndicator(
             onRefresh: () async {
               context.read<ProviderServiceBloc>().add(
-                ProviderFetchBookings(status: _mapTypeToStatus()),
+                ProviderFetchBookings(status: widget.type),
               );
             },
             color: appColors.primary,
             child: ListView.separated(
+              controller: _scrollController,
               padding: EdgeInsets.only(
                 left: 16.w,
                 right: 16.w,
                 top: 16.h,
                 bottom: 100.h,
               ),
-              itemCount: bookings.length,
+              itemCount: bookings.length + (state.isLoadingMore ? 1 : 0),
               separatorBuilder: (_, _) => 16.verticalSpace,
               itemBuilder: (_, index) {
+                if (index >= bookings.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
                 final booking = bookings[index];
                 return BookingCard(
                   data: booking,

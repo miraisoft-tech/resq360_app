@@ -22,7 +22,7 @@ class UserReviewCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              PictureWidget(image:data.provider?.profileImage),
+              PictureWidget(image: data.provider?.profileImage),
               10.horizontalSpace,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

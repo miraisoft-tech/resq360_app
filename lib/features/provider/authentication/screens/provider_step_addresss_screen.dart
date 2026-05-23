@@ -31,7 +31,7 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
   final TextEditingController _cityCtrl = TextEditingController();
 
   ProviderModel? userInfo;
-  bool _isLoadingLocation = false;
+  bool isLoadingLocation = false;
   bool _usedCurrentLocation = false;
   AutocompletePrediction? _selectedPlace;
 
@@ -53,16 +53,16 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
     });
   }
 
-  Future<void> _getCurrentLocation() async {
+  Future<void> getCurrentLocation() async {
     setState(() {
-      _isLoadingLocation = true;
+      isLoadingLocation = true;
     });
 
     try {
       final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         await geo.Geolocator.openLocationSettings();
-        setState(() => _isLoadingLocation = false);
+        setState(() => isLoadingLocation = false);
         return;
       }
 
@@ -72,7 +72,7 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
       }
 
       if (permission == geo.LocationPermission.deniedForever) {
-        setState(() => _isLoadingLocation = false);
+        setState(() => isLoadingLocation = false);
         unawaited(
           showErrorSnackbar(
             context,
@@ -84,7 +84,7 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
 
       if (permission != geo.LocationPermission.always &&
           permission != geo.LocationPermission.whileInUse) {
-        setState(() => _isLoadingLocation = false);
+        setState(() => isLoadingLocation = false);
         return;
       }
 
@@ -112,7 +112,7 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
           _selectState.value = matchingState;
           _selectedPlace = null;
           _usedCurrentLocation = true;
-          _isLoadingLocation = false;
+          isLoadingLocation = false;
         });
 
         if (matchingState == null && stateFromLocation.isNotEmpty) {
@@ -125,7 +125,7 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
         }
       }
     } on Exception catch (e) {
-      setState(() => _isLoadingLocation = false);
+      setState(() => isLoadingLocation = false);
       unawaited(showErrorSnackbar(context, 'Failed to get location: $e'));
     }
   }
@@ -331,49 +331,49 @@ class _ProviderStepAddressScreenState extends State<ProviderStepAddressScreen> {
                               );
                             },
                           ),
-                          20.verticalSpace,
-                          GestureDetector(
-                            onTap:
-                                _isLoadingLocation ? null : _getCurrentLocation,
-                            child: Container(
-                              padding: pad(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: colors.primary.shade50,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: colors.primary.shade500,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (_isLoadingLocation)
-                                    SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: colors.primary.shade500,
-                                      ),
-                                    )
-                                  else
-                                    Icon(
-                                      Icons.my_location,
-                                      color: colors.primary.shade500,
-                                      size: 20,
-                                    ),
-                                  10.horizontalSpace,
-                                  UrbText(
-                                    _isLoadingLocation
-                                        ? 'Getting location...'
-                                        : 'Use Current Location',
-                                    weight: FontWeight.w600,
-                                    color: colors.primary.shade500,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          // 20.verticalSpace,
+                          // GestureDetector(
+                          //   onTap:
+                          //       _isLoadingLocation ? null : _getCurrentLocation,
+                          //   child: Container(
+                          //     padding: pad(vertical: 12),
+                          //     decoration: BoxDecoration(
+                          //       color: colors.primary.shade50,
+                          //       borderRadius: BorderRadius.circular(8),
+                          //       border: Border.all(
+                          //         color: colors.primary.shade500,
+                          //       ),
+                          //     ),
+                          //     child: Row(
+                          //       mainAxisAlignment: MainAxisAlignment.center,
+                          //       children: [
+                          //         if (_isLoadingLocation)
+                          //           SizedBox(
+                          //             width: 16,
+                          //             height: 16,
+                          //             child: CircularProgressIndicator(
+                          //               strokeWidth: 2,
+                          //               color: colors.primary.shade500,
+                          //             ),
+                          //           )
+                          //         else
+                          //           Icon(
+                          //             Icons.my_location,
+                          //             color: colors.primary.shade500,
+                          //             size: 20,
+                          //           ),
+                          //         10.horizontalSpace,
+                          //         UrbText(
+                          //           _isLoadingLocation
+                          //               ? 'Getting location...'
+                          //               : 'Use Current Location',
+                          //           weight: FontWeight.w600,
+                          //           color: colors.primary.shade500,
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ),
                           20.verticalSpace,
                         ],
                       ),

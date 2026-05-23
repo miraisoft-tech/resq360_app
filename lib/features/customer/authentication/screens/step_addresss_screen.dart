@@ -28,7 +28,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
   final TextEditingController _cityCtrl = TextEditingController();
 
   CustomerUserModel? userInfo;
-  bool _isLoadingLocation = false;
+  bool isLoadingLocation = false;
   bool _usedCurrentLocation = false;
   AutocompletePrediction? _selectedPlace;
 
@@ -47,9 +47,9 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
     });
   }
 
-  Future<void> _getCurrentLocation() async {
+  Future<void> getCurrentLocation() async {
     setState(() {
-      _isLoadingLocation = true;
+      isLoadingLocation = true;
     });
 
     try {
@@ -58,7 +58,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
         await geo.Geolocator.openLocationSettings();
         if (mounted) {
           setState(() {
-            _isLoadingLocation = false;
+            isLoadingLocation = false;
           });
         }
         return;
@@ -72,7 +72,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
       if (permission == geo.LocationPermission.deniedForever) {
         if (mounted) {
           setState(() {
-            _isLoadingLocation = false;
+            isLoadingLocation = false;
           });
           unawaited(
             showErrorSnackbar(
@@ -88,7 +88,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
           permission != geo.LocationPermission.whileInUse) {
         if (mounted) {
           setState(() {
-            _isLoadingLocation = false;
+            isLoadingLocation = false;
           });
         }
         return;
@@ -118,7 +118,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
           _selectState.value = matchingState;
           _selectedPlace = null;
           _usedCurrentLocation = true;
-          _isLoadingLocation = false;
+          isLoadingLocation = false;
         });
 
         if (matchingState == null && stateFromLocation.isNotEmpty) {
@@ -133,7 +133,7 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
     } on Exception catch (e) {
       if (mounted) {
         setState(() {
-          _isLoadingLocation = false;
+          isLoadingLocation = false;
         });
         unawaited(showErrorSnackbar(context, 'Failed to get location: $e'));
       }
@@ -346,49 +346,49 @@ class _StepAddressScreenState extends State<StepAddressScreen> {
                               );
                             },
                           ),
-                          20.verticalSpace,
-                          GestureDetector(
-                            onTap:
-                                _isLoadingLocation ? null : _getCurrentLocation,
-                            child: Container(
-                              padding: pad(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: colors.primary.shade50,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: colors.primary.shade500,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (_isLoadingLocation)
-                                    SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: colors.primary.shade500,
-                                      ),
-                                    )
-                                  else
-                                    Icon(
-                                      Icons.my_location,
-                                      color: colors.primary.shade500,
-                                      size: 20,
-                                    ),
-                                  10.horizontalSpace,
-                                  UrbText(
-                                    _isLoadingLocation
-                                        ? 'Getting location...'
-                                        : 'Use Current Location',
-                                    weight: FontWeight.w600,
-                                    color: colors.primary.shade500,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          // 20.verticalSpace,
+                          // GestureDetector(
+                          //   onTap:
+                          //       _isLoadingLocation ? null : _getCurrentLocation,
+                          //   child: Container(
+                          //     padding: pad(vertical: 12),
+                          //     decoration: BoxDecoration(
+                          //       color: colors.primary.shade50,
+                          //       borderRadius: BorderRadius.circular(8),
+                          //       border: Border.all(
+                          //         color: colors.primary.shade500,
+                          //       ),
+                          //     ),
+                          //     child: Row(
+                          //       mainAxisAlignment: MainAxisAlignment.center,
+                          //       children: [
+                          //         if (_isLoadingLocation)
+                          //           SizedBox(
+                          //             width: 16,
+                          //             height: 16,
+                          //             child: CircularProgressIndicator(
+                          //               strokeWidth: 2,
+                          //               color: colors.primary.shade500,
+                          //             ),
+                          //           )
+                          //         else
+                          //           Icon(
+                          //             Icons.my_location,
+                          //             color: colors.primary.shade500,
+                          //             size: 20,
+                          //           ),
+                          //         10.horizontalSpace,
+                          //         UrbText(
+                          //           _isLoadingLocation
+                          //               ? 'Getting location...'
+                          //               : 'Use Current Location',
+                          //           weight: FontWeight.w600,
+                          //           color: colors.primary.shade500,
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ),
                           20.verticalSpace,
                         ],
                       ),

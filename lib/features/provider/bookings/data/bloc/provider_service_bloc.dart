@@ -12,6 +12,7 @@ class ProviderServiceBloc
     extends Bloc<ProviderServiceEvent, ProviderServiceState> {
   ProviderServiceBloc() : super(ProviderServiceInitial()) {
     on<ProviderFetchBookings>(_onFetch);
+    on<LoadMoreProviderBookings>(_onLoadMore);
     on<ProviderArriveServiceBooking>(_onArriveBooking);
     on<ProviderStartServiceBooking>(_onStartBooking);
 
@@ -28,11 +29,57 @@ class ProviderServiceBloc
     final result = await serviceRepo.getServiceBookings(status: event.status);
     if (result.data != null) {
       final bookings = _sortBookings(result.data ?? [], event.status);
-      emit(ProviderBookingsLoaded(bookings));
+      final hasMore = result.meta?.hasMore ?? false;
+      final currentPage = result.meta?.currentPage ?? 1;
+      emit(
+        ProviderBookingsLoaded(
+          bookings,
+          currentPage: currentPage,
+          hasMore: hasMore,
+        ),
+      );
     } else {
       emit(
         ProviderServicesError(error: result.error ?? 'Failed to book service'),
       );
+    }
+  }
+
+  Future<void> _onLoadMore(
+    LoadMoreProviderBookings event,
+    Emitter<ProviderServiceState> emit,
+  ) async {
+    final current = state;
+    if (current is! ProviderBookingsLoaded) return;
+    if (current.isLoadingMore || !current.hasMore) return;
+
+    emit(current.copyWith(isLoadingMore: true));
+
+    try {
+      final nextPage = current.currentPage + 1;
+      final result = await serviceRepo.getServiceBookings(
+        status: event.status,
+        page: nextPage,
+      );
+
+      if (result.data != null) {
+        final newBookings = result.data ?? [];
+        final allBookings = [...current.bookings, ...newBookings];
+        final sorted = _sortBookings(allBookings, event.status);
+        final hasMore = result.meta?.hasMore ?? false;
+        final currentPage = result.meta?.currentPage ?? nextPage;
+        emit(
+          ProviderBookingsLoaded(
+            sorted,
+            currentPage: currentPage,
+            hasMore: hasMore,
+          ),
+        );
+      } else {
+        emit(current.copyWith(isLoadingMore: false));
+      }
+    } on Exception {
+      emit(current.copyWith(isLoadingMore: false));
     }
   }
 
@@ -150,6 +197,7 @@ class ProviderServiceBloc
         event.serviceRequestId,
         ratings: event.ratings,
         review: event.review,
+        isProvider: true,
       );
 
       if (result.error?.isNotEmpty ?? false) {

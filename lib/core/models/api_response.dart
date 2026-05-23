@@ -26,10 +26,22 @@ class ErrorResponse extends EmptyResponse {
 }
 
 class ApiResult<T> {
-
-  ApiResult({this.data, this.error});
+  ApiResult({this.data, this.error, this.meta});
   final T? data;
   final String? error;
+  final PaginationMeta? meta;
 
   bool get isSuccess => data != null && error == null;
+}
+
+class PaginationMeta {
+  const PaginationMeta({
+    required this.currentPage,
+    required this.totalPages,
+    required this.hasMore,
+  });
+
+  final int currentPage;
+  final int totalPages;
+  final bool hasMore;
 }

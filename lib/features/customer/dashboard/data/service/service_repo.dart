@@ -306,15 +306,25 @@ class ServiceRepo extends BaseAPI {
 
       if (res.statusCode == 200 && res.data != null) {
         final raw = res.data!;
-        final services =
-            raw['data']?['data']?['services'] as List<dynamic>? ?? [];
+        final dataObj = raw['data']?['data'] as Map<String, dynamic>? ?? {};
+        final services = dataObj['services'] as List<dynamic>? ?? [];
 
         final bookings =
             services
                 .map((e) => Bookings.fromJson(e as Map<String, dynamic>))
                 .toList();
 
-        return ApiResult(data: bookings);
+        final totalPages = dataObj['totalPages'] as int? ?? 1;
+        final currentPage = dataObj['currentPage'] as int? ?? page;
+
+        return ApiResult(
+          data: bookings,
+          meta: PaginationMeta(
+            currentPage: currentPage,
+            totalPages: totalPages,
+            hasMore: currentPage < totalPages,
+          ),
+        );
       } else {
         final error = res.data!['message'];
         return ApiResult(error: error.toString());
@@ -379,21 +389,83 @@ class ServiceRepo extends BaseAPI {
     int serviceRequestId, {
     required int ratings,
     required String review,
+    bool isProvider = false,
   }) async {
-    final result = await updateRequestStatus(
-      requestId: serviceRequestId,
-      status: 'COMPLETED',
-      reason: review,
-    );
+    final results = await Future.wait([
+      updateRequestStatus(
+        requestId: serviceRequestId,
+        status: 'COMPLETED',
+        reason: review,
+      ),
+      if (isProvider)
+        _rateUser(
+          serviceRequestId: serviceRequestId,
+          ratings: ratings,
+          review: review,
+        )
+      else
+        _rateProvider(
+          serviceRequestId: serviceRequestId,
+          ratings: ratings,
+          review: review,
+        ),
+    ]);
 
-    if (!result.isSuccess) {
+    final completeResult = results[0];
+    if (!completeResult.isSuccess) {
       return ApiResult(
-        error: result.error ?? 'Failed to complete service booking',
+        error: completeResult.error ?? 'Failed to complete service booking',
         data: false,
       );
     }
 
     return ApiResult(data: true);
+  }
+
+  Future<ApiResult<bool>> _rateProvider({
+    required int serviceRequestId,
+    required int ratings,
+    required String review,
+  }) async {
+    try {
+      final endpoint = '/services/$serviceRequestId/rate-provider';
+      final data = {'ratings': ratings, 'review': review};
+      final res = await dio().post<Map<String, dynamic>>(endpoint, data: data);
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return ApiResult(data: true);
+      }
+      return ApiResult(
+        error: res.data?['message']?.toString() ?? 'Failed to submit rating',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<bool>> _rateUser({
+    required int serviceRequestId,
+    required int ratings,
+    required String review,
+  }) async {
+    try {
+      final endpoint = '/services/$serviceRequestId/rate-user';
+      final data = {'ratings': ratings, 'review': review};
+      final res = await dio().post<Map<String, dynamic>>(endpoint, data: data);
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return ApiResult(data: true);
+      }
+      return ApiResult(
+        error: res.data?['message']?.toString() ?? 'Failed to submit rating',
+      );
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
   }
 
   Future<ApiResult<String>> updateRequestStatus({
@@ -470,6 +542,37 @@ class ServiceRepo extends BaseAPI {
               'Failed to complete service booking',
         );
       }
+    } on DioException catch (e) {
+      return handleDioError(e);
+    } on Exception catch (e) {
+      return ApiResult(error: e.toString());
+    }
+  }
+
+  Future<ApiResult<Bookings>> fetchServiceRequest(int serviceRequestId) async {
+    final endpoint = '/services/request/$serviceRequestId';
+    try {
+      final res = await dio().get<Map<String, dynamic>>(endpoint);
+
+      if (res.statusCode == 200 && res.data != null) {
+        final json = res.data!['data'] as Map<String, dynamic>?;
+        if (json == null) {
+          return ApiResult(error: 'No data returned');
+        }
+
+        // Map amountPaid to amount for Bookings model compatibility
+        if (json.containsKey('amountPaid') && !json.containsKey('amount')) {
+          json['amount'] = json['amountPaid'];
+        }
+
+        return ApiResult(data: Bookings.fromJson(json));
+      }
+
+      return ApiResult(
+        error:
+            res.data?['message'] as String? ??
+            'Failed to fetch service request',
+      );
     } on DioException catch (e) {
       return handleDioError(e);
     } on Exception catch (e) {

@@ -10,7 +10,6 @@ import 'package:resq360/features/chat/bloc/chat_details_bloc/chat_details_bloc.d
 import 'package:resq360/features/chat/bloc/chat_list_bloc/chat_list_bloc.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
-import 'package:resq360/features/chat/screens/chat_service_detail_screen.dart';
 import 'package:resq360/features/chat/screens/generate_invoice.bottomsheet.dart';
 import 'package:resq360/features/chat/screens/payment_completed.dialog.dart';
 import 'package:resq360/features/chat/widgets/appeal_closed_card.dart';
@@ -23,9 +22,12 @@ import 'package:resq360/features/chat/widgets/multi_image_chat_bubble.dart';
 import 'package:resq360/features/chat/widgets/provider_chat_invoice_card_widget.dart';
 import 'package:resq360/features/chat/widgets/report_chat_dialog.dart';
 import 'package:resq360/features/chat/widgets/report_message_dialog.dart';
+import 'package:resq360/features/customer/bookings/screens/provider_service_details.dart';
 import 'package:resq360/features/customer/dashboard/data/bloc/payment_bloc/customer_payment_bloc.dart';
+import 'package:resq360/features/customer/dashboard/data/models/bookings/booking.model.dart';
 import 'package:resq360/features/customer/dashboard/screens/paystack_webview.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
+import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
 import 'package:resq360/features/widgets/chat_box_widget.dart';
 import 'package:resq360/features/widgets/chat_bubble.dart';
 import 'package:resq360/features/widgets/dialogs/complete_payment_option.dialog.dart';
@@ -267,21 +269,67 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
                   if (canShowServiceDetails)
                     GestureDetector(
                       onTap: () async {
-                        final serviceMessage = state.messages.firstWhere(
-                          (m) =>
-                              m.messageType ==
-                                  MessageReceivedType.invoice.value &&
-                              m.metadata != null,
+                        final chat = state.chat;
+
+                        final invoiceMessage = state.messages
+                            .cast<MessageResponse?>()
+                            .firstWhere(
+                              (m) =>
+                                  m!.messageType ==
+                                      MessageReceivedType.invoice.value &&
+                                  m.metadata != null,
+                              orElse: () => null,
+                            );
+                        final amount =
+                            invoiceMessage?.metadata?.amount?.toString();
+
+                        final booking = Bookings(
+                          id: chat.serviceRequestId,
+                          status: chat.serviceRequestStatus,
+                          chatId: chat.id,
+                          invoiceId: chat.paymentInvoiceId,
+                          serviceCategoryId: chat.serviceCategoryId,
+                          amount: amount,
+                          serviceCategory:
+                              chat.serviceCategoryId != null
+                                  ? ServiceCategory(
+                                    id: chat.serviceCategoryId,
+                                    name: chat.serviceName,
+                                  )
+                                  : null,
+                          assignedProvider:
+                              chat.provider != null
+                                  ? AssignedProvider(
+                                    id: chat.provider!.id,
+                                    fullName: chat.provider!.fullName,
+                                    profileImage: chat.provider!.profileImage,
+                                    phoneNumber: chat.provider!.phoneNumber,
+                                  )
+                                  : null,
+                          assignedProviderId: chat.provider?.id,
+                          user:
+                              chat.user != null
+                                  ? User(
+                                    id: chat.user!.id,
+                                    fullName: chat.user!.fullName,
+                                    profileImage: chat.user!.profileImage,
+                                    phoneNumber: chat.user!.phoneNumber,
+                                  )
+                                  : null,
+                          userId: chat.user?.id,
                         );
 
-                        await pushScreen(
-                          context,
-                          ChatServiceDetailScreen(
-                            chat: state.chat,
-                            message: serviceMessage,
-                            userType: widget.userType,
-                          ),
-                        );
+                        if (isCustomer) {
+                          await pushScreen(
+                            context,
+                            ProviderServiceDetailScreen(booking: booking),
+                          );
+                        } else {
+                          await pushScreen(
+                            context,
+                            ClientServiceDetailScreen(booking: booking),
+                          );
+                        }
                       },
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -635,21 +683,66 @@ class _ChatDetailViewState extends State<_ChatDetailView> {
         body: PaymentCompleted(
           onViewDetails: () async {
             final chatDetailState = context.read<ChatDetailBloc>().state;
-            if (chatDetailState is ChatDetailReady &&
-                chatDetailState.messages.isNotEmpty) {
-              final serviceMessage = chatDetailState.messages.firstWhere(
-                (m) =>
-                    m.messageType == MessageReceivedType.invoice.value &&
-                    m.metadata != null,
+            if (chatDetailState is ChatDetailReady) {
+              final chat = chatDetailState.chat;
+
+              final invoiceMessage = chatDetailState.messages
+                  .cast<MessageResponse?>()
+                  .firstWhere(
+                    (m) =>
+                        m!.messageType == MessageReceivedType.invoice.value &&
+                        m.metadata != null,
+                    orElse: () => null,
+                  );
+              final amount = invoiceMessage?.metadata?.amount?.toString();
+
+              final booking = Bookings(
+                id: chat.serviceRequestId,
+                status: chat.serviceRequestStatus,
+                chatId: chat.id,
+                invoiceId: chat.paymentInvoiceId,
+                serviceCategoryId: chat.serviceCategoryId,
+                amount: amount,
+                serviceCategory:
+                    chat.serviceCategoryId != null
+                        ? ServiceCategory(
+                          id: chat.serviceCategoryId,
+                          name: chat.serviceName,
+                        )
+                        : null,
+                assignedProvider:
+                    chat.provider != null
+                        ? AssignedProvider(
+                          id: chat.provider!.id,
+                          fullName: chat.provider!.fullName,
+                          profileImage: chat.provider!.profileImage,
+                          phoneNumber: chat.provider!.phoneNumber,
+                        )
+                        : null,
+                assignedProviderId: chat.provider?.id,
+                user:
+                    chat.user != null
+                        ? User(
+                          id: chat.user!.id,
+                          fullName: chat.user!.fullName,
+                          profileImage: chat.user!.profileImage,
+                          phoneNumber: chat.user!.phoneNumber,
+                        )
+                        : null,
+                userId: chat.user?.id,
               );
-              await pushScreen(
-                context,
-                ChatServiceDetailScreen(
-                  chat: chatDetailState.chat,
-                  message: serviceMessage,
-                  userType: widget.userType,
-                ),
-              );
+
+              if (isCustomer) {
+                await pushScreen(
+                  context,
+                  ProviderServiceDetailScreen(booking: booking),
+                );
+              } else {
+                await pushScreen(
+                  context,
+                  ClientServiceDetailScreen(booking: booking),
+                );
+              }
               if (context.mounted) {
                 Navigator.pop(context);
               }

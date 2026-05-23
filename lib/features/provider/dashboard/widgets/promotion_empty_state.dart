@@ -1,12 +1,10 @@
 import 'package:resq360/__lib.dart';
 
 class PromotionEmptyState extends StatelessWidget {
-
   const PromotionEmptyState({
     required this.activeOnly,
     required this.onCreatePromotion,
     super.key,
-
   });
   final bool activeOnly;
   final VoidCallback onCreatePromotion;

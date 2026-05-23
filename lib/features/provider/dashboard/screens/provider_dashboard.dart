@@ -13,14 +13,15 @@ import 'package:resq360/features/provider/authentication/data/models/provider_re
 import 'package:resq360/features/provider/bookings/data/bloc/provider_service_bloc.dart';
 import 'package:resq360/features/provider/bookings/data/models/booking_enums.dart';
 import 'package:resq360/features/provider/bookings/screens/client_service_details_screen.dart';
+import 'package:resq360/features/provider/dashboard/data/bloc/provider_ongoing_bloc.dart';
 import 'package:resq360/features/provider/dashboard/data/bloc/provider_stats_bloc/provider_stats_bloc.dart';
 import 'package:resq360/features/provider/dashboard/screens/promote_service_screen.dart';
 import 'package:resq360/features/provider/dashboard/screens/provider_wallet_screen.dart';
 import 'package:resq360/features/provider/dashboard/widgets/advertisement_countdown_timer.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_account_progress.dart';
+import 'package:resq360/features/provider/dashboard/widgets/provider_ongoing_service_card.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_stats_card.dart';
 import 'package:resq360/features/provider/dashboard/widgets/provider_todo.dart';
-import 'package:resq360/features/provider/dashboard/widgets/provider_upcoming_service.dart';
 import 'package:resq360/features/provider/dashboard/widgets/service_requests.dart';
 import 'package:resq360/features/settings/screens/address_screen.dart';
 import 'package:resq360/features/settings/screens/settings_screen.dart';
@@ -56,8 +57,8 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
       CustomerFetchAdvertisement(creatorType: CreatorType.admin.name),
     );
 
-    context.read<ProviderServiceBloc>().add(
-      ProviderFetchBookings(status: BookingStatus.upcoming.value),
+    context.read<ProviderOngoingBloc>().add(
+      const FetchProviderOngoingService(),
     );
 
     context.read<ProviderStatsBloc>().add(const FetchProviderStats());
@@ -137,15 +138,6 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                             v is ProviderProfileLoadedState ? v.user : null;
                         providerData = user;
                         isApproved = providerData?.isApproved ?? false;
-                        // final profileNotDone =
-                        //     !(providerData?.isEmailVerified == true &&
-                        //         providerData?.isApproved == true &&
-                        //         providerData?.isKYCVerified == true &&
-                        //         (providerData?.providerServices?.isNotEmpty ??
-                        //             false) &&
-                        //         providerData?.address != null &&
-                        //         (providerData?.openingHours != null &&
-                        //             providerData?.closingHours != null));
 
                         return HeaderWidget(
                           name: user?.fullName?.capitalize ?? 'N/A',
@@ -287,36 +279,9 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                       ),
                       const PromoCardWidget(),
                       30.verticalSpace,
-                      BlocBuilder<ProviderServiceBloc, ProviderServiceState>(
+                      BlocBuilder<ProviderOngoingBloc, ProviderOngoingState>(
                         builder: (context, state) {
-                          if (state is ProviderBookingsLoaded) {
-                            final booking = state.bookings.firstOrNull;
-                            final serviceRequestId = booking?.id;
-                            if (serviceRequestId == null) {
-                              return const SizedBox.shrink();
-                            }
-                            if (booking != null) {
-                              return Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () async {
-                                      await pushScreen(
-                                        context,
-                                        ClientServiceDetailScreen(
-                                          booking: booking,
-                                        ),
-                                      );
-                                    },
-                                    child: ProviderUpcomingService(
-                                      booking: booking,
-                                    ),
-                                  ),
-                                  20.verticalSpace,
-                                ],
-                              );
-                            }
-                          }
-                          if (state is ProviderServicesLoading) {
+                          if (state is ProviderOngoingLoading) {
                             return Column(
                               children: [
                                 const SkeletonBookingCard(),
@@ -324,6 +289,39 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
                               ],
                             );
                           }
+
+                          if (state is ProviderOngoingLoaded &&
+                              state.bookings.isNotEmpty) {
+                            final ongoingBooking = state.bookings.first;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                UrbText(
+                                  'Ongoing Service',
+                                  size: 18,
+                                  height: 28.5,
+                                  weight: FontWeight.w700,
+                                  color: colors.black,
+                                ),
+                                12.verticalSpace,
+                                GestureDetector(
+                                  onTap: () async {
+                                    await pushScreen(
+                                      context,
+                                      ClientServiceDetailScreen(
+                                        booking: ongoingBooking,
+                                      ),
+                                    );
+                                  },
+                                  child: ProviderOngoingServiceCard(
+                                    booking: ongoingBooking,
+                                  ),
+                                ),
+                                20.verticalSpace,
+                              ],
+                            );
+                          }
+
                           return const SizedBox.shrink();
                         },
                       ),

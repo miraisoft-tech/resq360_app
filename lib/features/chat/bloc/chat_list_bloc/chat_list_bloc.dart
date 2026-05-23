@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:resq360/core/models/chat_summary.dart';
 import 'package:resq360/core/services/auth.local.repo.dart';
+import 'package:resq360/core/services/chat_socket_service.dart';
 import 'package:resq360/features/chat/data/models/chat_models.dart';
 import 'package:resq360/features/chat/data/services/chat_repo.dart';
 import 'package:resq360/features/intro/models/user_type.emum.dart';
@@ -18,12 +21,33 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     on<RefreshChatList>(_onRefreshChats);
     on<ChatSummaryUpdated>(_onChatUpdated);
     on<ClearUnreadCount>(_onClearUnread);
+
+    _socketSub = ChatSocketService.instance.messageStream.listen(_onNewMessage);
   }
 
   final ChatRepo _repo;
   final UserType? userType;
   int? _currentUserId;
   String? _participantType;
+  StreamSubscription<MessageResponse>? _socketSub;
+
+  void _onNewMessage(MessageResponse msg) {
+    if (msg.chatId == null) return;
+
+    add(
+      ChatSummaryUpdated(
+        chatId: msg.chatId!,
+        lastMessage: msg.content ?? '',
+        time: msg.createdAt ?? DateTime.now(),
+      ),
+    );
+  }
+
+  @override
+  Future<void> close() {
+    _socketSub?.cancel();
+    return super.close();
+  }
 
   Future<void> _ensureUserId() async {
     if (_currentUserId != null) return;

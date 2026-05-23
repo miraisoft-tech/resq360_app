@@ -141,25 +141,22 @@ class AdvertisementRepo extends BaseAPI {
   }
 
   Future<ApiResult<CreateAvertisementResponse>> createAdvertisement({
-    required int providerServiceId,
-    required int discountPercentage,
-    required int durationInMilliSeconds,
-    required String paymentMethod,
-    required String description,
+    required int discountPercentage, required int durationInMilliSeconds, required String paymentMethod, required String description, int? providerServiceId,
   }) async {
     const url = '/advertisements/promotion/providers';
 
     try {
-      final res = await dio().post<Map<String, dynamic>>(
-        url,
-        data: {
-          'providerServiceId': providerServiceId,
-          'discountPercentage': discountPercentage,
-          'durationInMilliSeconds': durationInMilliSeconds,
-          'paymentMethod': paymentMethod,
-          'description': description,
-        },
-      );
+      final data = <String, dynamic>{
+        'discountPercentage': discountPercentage,
+        'durationInMilliSeconds': durationInMilliSeconds,
+        'paymentMethod': paymentMethod,
+        'description': description,
+      };
+      if (providerServiceId != null) {
+        data['providerServiceId'] = providerServiceId;
+      }
+
+      final res = await dio().post<Map<String, dynamic>>(url, data: data);
 
       if (res.statusCode == 200 || res.statusCode == 201) {
         final data = CreateAvertisementResponse.fromJson(res.data ?? {});

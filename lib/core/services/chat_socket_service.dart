@@ -27,6 +27,7 @@ class ChatSocketService {
   final _allDeliveredController =
       StreamController<Map<String, dynamic>>.broadcast();
   final _allReadController = StreamController<Map<String, dynamic>>.broadcast();
+  final _paymentEventController = StreamController<int>.broadcast();
 
   Stream<MessageResponse> get messageStream => _messageController.stream;
   Stream<Map<String, dynamic>> get messageReadStream =>
@@ -36,6 +37,7 @@ class ChatSocketService {
   Stream<Map<String, dynamic>> get allDeliveredStream =>
       _allDeliveredController.stream;
   Stream<Map<String, dynamic>> get allReadStream => _allReadController.stream;
+  Stream<int> get paymentEventStream => _paymentEventController.stream;
 
   bool get isConnected => _socket?.connected ?? false;
 
@@ -236,6 +238,12 @@ class ChatSocketService {
         };
         _allReadController.add(payload);
 
+      case 'PAYMENT_EVENT':
+        final chatId = notification['chatId'] as int?;
+        if (chatId != null) {
+          _paymentEventController.add(chatId);
+        }
+
       default:
         log('Unknown type: $type');
     }
@@ -269,5 +277,6 @@ class ChatSocketService {
     await _messageDeliveredController.close();
     await _allDeliveredController.close();
     await _allReadController.close();
+    await _paymentEventController.close();
   }
 }

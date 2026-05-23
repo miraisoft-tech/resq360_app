@@ -2,13 +2,12 @@ part of 'chat_list_bloc.dart';
 
 // sealed class ChatListState extends Equatable {
 //   const ChatListState();
-  
+
 //   @override
 //   List<Object> get props => [];
 // }
 
 class ChatListState extends Equatable {
-
   const ChatListState({
     this.isLoading = false,
     this.chats = const [],
@@ -23,6 +22,9 @@ class ChatListState extends Equatable {
   final String? error;
 
   bool get canLoadMore => page < totalPages;
+
+  int get totalUnreadCount =>
+      chats.fold(0, (sum, chat) => sum + chat.unreadCount);
 
   ChatListState copyWith({
     bool? isLoading,
@@ -41,11 +43,5 @@ class ChatListState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        isLoading,
-        chats,
-        page,
-        totalPages,
-        error,
-      ];
+  List<Object?> get props => [isLoading, chats, page, totalPages, error];
 }

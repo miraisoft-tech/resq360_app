@@ -223,6 +223,13 @@ class ChatDetailBloc extends Bloc<ChatDetailEvent, ChatDetailState> {
               add(_AllMessagesRead(chatId));
             }
           }),
+        )
+        ..add(
+          _socket.paymentEventStream.listen((eventChatId) {
+            if (eventChatId == chatId) {
+              add(RefreshMessages());
+            }
+          }),
         );
     } on Exception catch (e) {
       log('Socket connection error: $e');

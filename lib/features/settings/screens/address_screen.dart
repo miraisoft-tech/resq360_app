@@ -26,7 +26,7 @@ class _AddressScreenState extends State<AddressScreen> {
   final TextEditingController _stateController = TextEditingController();
   final TextEditingController _zipCodeController = TextEditingController();
 
-  bool _isLoadingLocation = false;
+  bool isLoadingLocation = false;
   double? _latitude;
   double? _longitude;
   List<customer.Location> _savedLocations = [];
@@ -76,9 +76,9 @@ class _AddressScreenState extends State<AddressScreen> {
     }
   }
 
-  Future<void> _getCurrentLocation() async {
+  Future<void> getCurrentLocation() async {
     setState(() {
-      _isLoadingLocation = true;
+      isLoadingLocation = true;
     });
 
     try {
@@ -87,7 +87,7 @@ class _AddressScreenState extends State<AddressScreen> {
         await geo.Geolocator.openLocationSettings();
         if (mounted) {
           setState(() {
-            _isLoadingLocation = false;
+            isLoadingLocation = false;
           });
         }
         return;
@@ -101,7 +101,7 @@ class _AddressScreenState extends State<AddressScreen> {
       if (permission == geo.LocationPermission.deniedForever) {
         if (mounted) {
           setState(() {
-            _isLoadingLocation = false;
+            isLoadingLocation = false;
           });
           unawaited(
             showErrorSnackbar(
@@ -117,7 +117,7 @@ class _AddressScreenState extends State<AddressScreen> {
           permission != geo.LocationPermission.whileInUse) {
         if (mounted) {
           setState(() {
-            _isLoadingLocation = false;
+            isLoadingLocation = false;
           });
         }
         return;
@@ -148,13 +148,13 @@ class _AddressScreenState extends State<AddressScreen> {
           _cityController.text = place.locality ?? '';
           _stateController.text = place.administrativeArea ?? '';
           _zipCodeController.text = place.postalCode ?? '';
-          _isLoadingLocation = false;
+          isLoadingLocation = false;
         });
       }
     } on Exception catch (e) {
       if (mounted) {
         setState(() {
-          _isLoadingLocation = false;
+          isLoadingLocation = false;
         });
         unawaited(showErrorSnackbar(context, 'Failed to get location: $e'));
       }
@@ -415,49 +415,49 @@ class _AddressScreenState extends State<AddressScreen> {
                           keyboardType: TextInputType.number,
                           onChanged: (value) {},
                         ),
-                        20.verticalSpace,
-                        GestureDetector(
-                          onTap:
-                              _isLoadingLocation ? null : _getCurrentLocation,
-                          child: Container(
-                            padding: pad(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: appColors.primary.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: appColors.primary.shade500,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (_isLoadingLocation)
-                                  SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: appColors.primary.shade500,
-                                    ),
-                                  )
-                                else
-                                  Icon(
-                                    Icons.my_location,
-                                    color: appColors.primary.shade500,
-                                    size: 20,
-                                  ),
-                                10.horizontalSpace,
-                                UrbText(
-                                  _isLoadingLocation
-                                      ? 'Getting location...'
-                                      : 'Use Current Location',
-                                  weight: FontWeight.w600,
-                                  color: appColors.primary.shade500,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        // 20.verticalSpace,
+                        // GestureDetector(
+                        //   onTap:
+                        //       _isLoadingLocation ? null : _getCurrentLocation,
+                        //   child: Container(
+                        //     padding: pad(vertical: 12),
+                        //     decoration: BoxDecoration(
+                        //       color: appColors.primary.shade50,
+                        //       borderRadius: BorderRadius.circular(8),
+                        //       border: Border.all(
+                        //         color: appColors.primary.shade500,
+                        //       ),
+                        //     ),
+                        //     child: Row(
+                        //       mainAxisAlignment: MainAxisAlignment.center,
+                        //       children: [
+                        //         if (_isLoadingLocation)
+                        //           SizedBox(
+                        //             width: 16,
+                        //             height: 16,
+                        //             child: CircularProgressIndicator(
+                        //               strokeWidth: 2,
+                        //               color: appColors.primary.shade500,
+                        //             ),
+                        //           )
+                        //         else
+                        //           Icon(
+                        //             Icons.my_location,
+                        //             color: appColors.primary.shade500,
+                        //             size: 20,
+                        //           ),
+                        //         10.horizontalSpace,
+                        //         UrbText(
+                        //           _isLoadingLocation
+                        //               ? 'Getting location...'
+                        //               : 'Use Current Location',
+                        //           weight: FontWeight.w600,
+                        //           color: appColors.primary.shade500,
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),

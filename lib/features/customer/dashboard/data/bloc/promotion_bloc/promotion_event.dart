@@ -21,13 +21,13 @@ class FetchPromotionPrice extends PromotionEvent {}
 
 class CreatePromotion extends PromotionEvent {
   const CreatePromotion({
-    required this.providerServiceId,
     required this.discountPercentage,
     required this.durationInMilliSeconds,
     required this.paymentMethod,
     required this.description,
+    this.providerServiceId,
   });
-  final int providerServiceId;
+  final int? providerServiceId;
   final int discountPercentage;
   final int durationInMilliSeconds;
   final String paymentMethod;
